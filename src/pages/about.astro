@@ -179,6 +179,96 @@ const daily02Panels: Panel[] = [
   },
 ];
 
+// 「토리 일대기」 — 20컷 5장. 탄생에서 오늘까지. 인용 컷은 quote 캡션 강조.
+type LifeChapter = { title: string; sub: string; panels: Panel[] };
+const lifeChapters: LifeChapter[] = [
+  {
+    title: '제1장 — 흉년의 아이',
+    sub: '얕은 곳간과 셈하는 아버지',
+    panels: [
+      { img: 'life-01', alt: '폭풍우 치는 가을 숲의 작은 집', act: 'autumn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '66%', text: '토리는 흉년의 가을에 태어났습니다.' }] },
+      { img: 'life-02', alt: '도토리를 세는 아버지와 아기를 안은 어머니', act: 'night',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '76%', text: '그해 곳간은 얕았고, 아버지는 저녁마다 도토리를 세고 또 셌습니다.' }] },
+      { img: 'life-03', alt: '아버지의 셈돌에 손을 뻗는 아기 토리', act: 'night',
+        bubbles: [{ kind: 'speech', x: '4%', y: '5%', tail: 'br', w: '44%', text: '허 — 요 녀석, 세는 걸 좋아하는구나.' }] },
+      { img: 'life-04', alt: '겨울, 멀건 죽을 나누는 가족', act: 'winter',
+        bubbles: [
+          { kind: 'speech', x: '40%', y: '4%', tail: 'bl', w: '54%', text: '부족한 건 견딜 수 있어. 무서운 건, 얼마나 남았는지 모르는 것이지.' },
+          { kind: 'narration', x: '3%', y: 'b:4%', w: '60%', text: '얕은 곳간으로도 겨울을 난 이유였습니다.' },
+        ] },
+    ],
+  },
+  {
+    title: '제2장 — 첫 장부',
+    sub: '무엇이든 세던 아이',
+    panels: [
+      { img: 'life-05', alt: '나무껍질로 첫 공책을 만드는 어린 토리', act: 'autumn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '72%', text: '일곱 살, 토리는 나무껍질로 첫 장부를 만들었습니다.' }] },
+      { img: 'life-06', alt: '구름과 개미를 세는 어린 토리', act: 'autumn',
+        bubbles: [
+          { kind: 'speech', x: '48%', y: '6%', tail: 'bl', w: '40%', text: '구름 셋… 개미 마흔둘…' },
+          { kind: 'narration', x: '3%', y: 'b:4%', w: '52%', text: '처음에는, 무엇이든 셌습니다.' },
+        ] },
+      { img: 'life-07', alt: '홀로 기록하는 토리와 노는 아이들', act: 'autumn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '80%', text: '숲의 아이들에게 토리는 조금 이상한 아이였습니다 — 「첫 번째 도토리」의 그 아이입니다.' }] },
+      { img: 'life-08', alt: '도토리 두드리는 법을 가르치는 아버지', act: 'autumn',
+        bubbles: [{ kind: 'speech', x: '3.5%', y: '4%', tail: 'br', w: '48%', text: '두드려 보렴. 가벼운 소리가 나면, 속이 빈 게란다.' }] },
+    ],
+  },
+  {
+    title: '제3장 — 그 겨울',
+    sub: '기록이 곳간이 된 날',
+    panels: [
+      { img: 'life-09', alt: '눈밤, 창고를 여는 어린 토리와 마을 다람쥐들', act: 'winter',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '80%', text: '열두 살의 겨울 — 숲의 모두가 알게 되었습니다. 기록이 곧 곳간이라는 것을.' }] },
+      { img: 'life-10', alt: '봄 언덕에서 해돋이를 보는 토리', act: 'dawn',
+        bubbles: [
+          { kind: 'speech', x: '3.5%', y: '6%', tail: 'r', w: '46%', text: '좋은 도토리가 어디서 나는지, 매일 알려줄게.' },
+          { kind: 'narration', x: '3%', y: 'b:4%', w: '40%', text: '봄, 언덕 위의 약속.' },
+        ] },
+    ],
+  },
+  {
+    title: '제4장 — 항구와 소문',
+    sub: '전 재산을 잃고 얻은 한 줄',
+    panels: [
+      { img: 'life-11', alt: '숲의 경계에서 항구를 내려다보는 토리', act: 'dawn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '70%', text: '자란 토리는 숲 바깥의 숫자를 배우러 떠났습니다.' }] },
+      { img: 'life-12', alt: '항구 시장의 젊은 토리', act: 'autumn',
+        bubbles: [
+          { kind: 'speech', x: '30%', y: '4%', tail: 'b', w: '48%', text: '도토리 값이 바다를 건너면 달라지는구나!' },
+          { kind: 'narration', x: '3%', y: 'b:4%', w: '64%', text: '항구에는 숲에 없던 저울과 동전이 있었습니다.' },
+        ] },
+      { img: 'life-13', alt: '비 오는 항구, 빈 주머니와 속 빈 황금 도토리', act: 'winter',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '82%', text: '반짝이는 도토리의 소문에 전 재산을 건 적도 있었습니다 — 쪼개 보니, 속이 비어 있었습니다.' }] },
+      { img: 'life-14', alt: '처마 밑에서 도토리를 두드려 보는 토리', act: 'winter',
+        bubbles: [{ kind: 'speech', x: '3.5%', y: '5%', tail: 'br', w: '52%', text: '…아버지 말이 맞았어. 두드려 보지 않은 건, 아는 게 아니야.' }] },
+      { img: 'life-15', alt: '촛불 아래 새 장부의 첫 줄을 쓰는 토리', act: 'night',
+        bubbles: [{ kind: 'narration', x: '3%', y: 'b:4%', w: '84%', text: '그날 밤, 새 장부의 첫 줄에 평생의 규칙이 적혔습니다 — 확인한 것만 적는다.' }] },
+    ],
+  },
+  {
+    title: '제5장 — 무역토리',
+    sub: '청중 둘의 첫 브리핑, 그리고 오늘',
+    panels: [
+      { img: 'life-16', alt: '거울 앞에서 안경을 쓰는 토리', act: 'dawn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '84%', text: '숲으로 돌아온 날, 토리는 안경을 쓰고 조끼를 입었습니다 — 숫자 앞에 서는 자의 예복이었습니다.' }] },
+      { img: 'life-17', alt: '창고를 짓는 토리', act: 'autumn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '78%', text: '그리고 창고를 지었습니다 — 도토리 대신, 검증된 숫자를 쌓는 창고를.' }] },
+      { img: 'life-18', alt: '청중이 둘뿐인 첫 브리핑', act: 'dawn',
+        bubbles: [
+          { kind: 'speech', x: '3.5%', y: '5%', tail: 'br', w: '36%', text: '…그럼, 시작하겠습니다.' },
+          { kind: 'narration', x: '3%', y: 'b:4%', w: '78%', text: '첫 브리핑의 청중은 둘이었습니다. 토리는 개의치 않았습니다 — 숫자는 청중을 세지 않으니까요.' },
+        ] },
+      { img: 'life-19', alt: '사계절을 도는 브리핑과 쌓이는 장부', act: 'autumn',
+        bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '78%', text: '계절이 돌 때마다 청중이 늘었고, 장부가 쌓였고, 연필은 짧아졌습니다.' }] },
+      { img: 'life-20', alt: '새벽 서재에서 다음 줄을 쓰는 토리', act: 'dawn',
+        bubbles: [{ kind: 'narration', x: '3%', y: 'b:4%', w: '84%', text: '토리의 일대기는 아직 쓰는 중입니다 — 내일 아침 일곱 시, 다음 줄이 적힙니다.' }] },
+    ],
+  },
+];
+
 const principles = [
   { title: '주운 도토리만 말합니다', desc: '출처 있는 공식 데이터만 인용합니다. 소문과 추측(속이 빈 도토리)은 다루지 않습니다.' },
   { title: '도토리를 대신 골라주지 않습니다', desc: '무역토리는 정보를 전할 뿐, 투자 판단을 대신하지 않습니다. 모든 콘텐츠는 투자 자문이 아닙니다.' },
@@ -291,6 +381,46 @@ const principles = [
     )
   }
 
+  <section class="wrap story-head daily-head">
+    <div class="kicker-en" style="color: var(--accent);">LIFE STORY</div>
+    <h1 class="serif story-title">「토리 일대기」 — 숫자를 세는 다람쥐</h1>
+    <p class="story-sub">흉년의 아이가 숲의 이코노미스트가 되기까지, 다섯 장의 이야기</p>
+  </section>
+
+  {
+    lifeChapters.map((ch) => (
+      <>
+      <section class="wrap life-ch">
+        <h2 class="serif life-ch-title">{ch.title}</h2>
+        <p class="mono life-ch-sub">{ch.sub}</p>
+      </section>
+      <section class="strip wrap">
+        {ch.panels.map((p) => (
+          <figure class:list={['panel', 'reveal', `act-${p.act}`]}>
+            <div class="frame">
+              <img src={url(`/images/story/${p.img}.jpg`)} alt={p.alt} width="880" height="660" loading="lazy" />
+              <div class="fx" aria-hidden="true">
+                <i /><i /><i /><i /><i /><i />
+              </div>
+              {p.bubbles.map((b) => (
+                <div
+                  class:list={['bubble', b.kind, b.tail ? `tail-${b.tail}` : '']}
+                  style={`left:${b.x};${b.y.startsWith('b:') ? `bottom:${b.y.slice(2)}` : `top:${b.y}`};${b.w ? `max-width:${b.w};` : ''}`}
+                >
+                  {b.text}
+                </div>
+              ))}
+            </div>
+          </figure>
+        ))}
+      </section>
+      </>
+    ))
+  }
+  <section class="wrap">
+    <div class="story-close reveal serif">&ldquo;확인한 것만 적는다 — 일곱 살의 장부에서 오늘의 브리핑까지.&rdquo;</div>
+  </section>
+
   <section class="wrap creed">
     <h2 class="serif creed-title">토리의 세 가지 철칙</h2>
     <div class="creed-grid">
@@ -329,6 +459,9 @@ const principles = [
 <style>
   .story-head { text-align: center; padding-top: 56px; padding-bottom: 8px; }
   .daily-head { padding-top: 28px; }
+  .life-ch { text-align: center; padding-top: 26px; }
+  .life-ch-title { font-size: clamp(20px, 3vw, 26px); margin: 0 0 6px; color: var(--ink); }
+  .life-ch-sub { font-size: 11.5px; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 4px; }
   .story-title { font-size: clamp(30px, 5vw, 42px); font-weight: 900; margin: 12px 0 10px 0; }
   .story-sub { color: var(--sub); font-size: 14.5px; letter-spacing: 0.08em; }
 
