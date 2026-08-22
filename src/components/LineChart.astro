@@ -14,7 +14,7 @@ interface Props {
   height?: number;
   // 선 위에 점을 찍고 수치를 함께 표기하는 주요 지점.
   // label 을 생략하면 해당 값에 valueSuffix 를 붙여 자동 표기, dy 로 라벨 위치 수동 보정.
-  marks?: { idx: number; label?: string; dy?: number }[];
+  marks?: { idx: number; label?: string; dx?: number; dy?: number }[];
   valueSuffix?: string; // 마크 자동 라벨의 단위 접미사: '원', '%', '%p' 등
 }
 const {
@@ -60,7 +60,7 @@ const markPts = marks
       x,
       y,
       anchor,
-      tx: m.idx === 0 ? Math.max(x - 4, padL) : x,
+      tx: (m.idx === 0 ? Math.max(x - 4, padL) : x) + (m.dx ?? 0),
       ty: (below ? y + 20 : y - 11) + (m.dy ?? 0),
       label: m.label ?? `${fmt(values[m.idx])}${valueSuffix}`,
     };

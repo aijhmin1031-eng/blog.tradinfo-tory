@@ -1,0 +1,35 @@
+---
+// 미니 추이선 — 최근 구간의 고점·저점 수치를 함께 표기한다.
+// spark 는 4(높음)~26(낮음)으로 스케일된 y값 배열, hi/lo 는 표시용 문자열.
+interface Props {
+  spark: number[];
+  dir: 'up' | 'down';
+  hi?: string;
+  lo?: string;
+}
+const { spark, dir, hi = '', lo = '' } = Astro.props;
+const n = spark.length;
+const xs = spark.map((_, i) => 4 + (i * 80) / (n - 1));
+const pts = spark.map((v, i) => `${xs[i].toFixed(1)},${(v + 8).toFixed(1)}`).join(' ');
+const clampX = (x: number) => Math.min(74, Math.max(14, x));
+const hiIdx = spark.indexOf(Math.min(...spark)); // 스케일값이 작을수록 실제 값은 높다
+const loIdx = spark.indexOf(Math.max(...spark));
+const color = dir === 'up' ? 'var(--up)' : 'var(--down)';
+---
+
+<svg width="88" height="42" viewBox="0 0 88 42" aria-hidden="true">
+  {hi && (
+    <text x={clampX(xs[hiIdx])} y="9" text-anchor="middle" class="spark-label">{hi}</text>
+  )}
+  <polyline points={pts} fill="none" stroke={color} stroke-width="1.6" stroke-linejoin="round" />
+  <circle cx={xs[n - 1]} cy={spark[n - 1] + 8} r="2" fill={color} />
+  {lo && (
+    <text x={clampX(xs[loIdx])} y="41" text-anchor="middle" class="spark-label">{lo}</text>
+  )}
+</svg><style>
+  .spark-label {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    fill: var(--muted);
+  }
+</style>

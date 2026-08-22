@@ -7,7 +7,7 @@ export interface GlossaryEntry {
   label: string;
   def: string;
   icon: string;
-  group: 'money' | 'fx' | 'trade' | 'tariff' | 'stat';
+  group: 'money' | 'fx' | 'trade' | 'tariff' | 'stat' | 'industry';
 }
 
 export const GLOSSARY: Record<string, GlossaryEntry> = {
@@ -217,6 +217,32 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     group: 'tariff',
   },
 
+  // ── 산업·기술 ──────────────────────────────
+  HBM: {
+    label: 'HBM',
+    def: 'D램을 수직으로 쌓아 데이터가 오가는 통로를 극대화한 고대역폭 메모리. AI 가속기 옆에 붙어 연산의 데이터 병목을 푸는 핵심 부품이다.',
+    icon: 'chip',
+    group: 'industry',
+  },
+  파운드리: {
+    label: '파운드리',
+    def: '설계도를 받아 반도체를 위탁 생산하는 사업. 설계 전문 회사(팹리스)와 생산 전문 회사의 분업 구조를 이룬다.',
+    icon: 'warehouse',
+    group: 'industry',
+  },
+  팹리스: {
+    label: '팹리스',
+    def: '공장(팹) 없이 반도체 설계만 하는 회사. 생산은 파운드리에 맡기고 설계 역량으로 승부한다.',
+    icon: 'provisional',
+    group: 'industry',
+  },
+  D램: {
+    label: 'D램',
+    def: '전원이 꺼지면 내용이 사라지는 휘발성 메모리. 연산의 작업대 역할을 하며, 전원이 꺼져도 데이터가 남는 낸드플래시와 함께 메모리 반도체의 양대 축이다.',
+    icon: 'chip',
+    group: 'industry',
+  },
+
   // ── 통계·지표 ──────────────────────────────
   무역수지: {
     label: '무역수지',
@@ -244,4 +270,5 @@ export const GLOSSARY_GROUPS: Record<GlossaryEntry['group'], string> = {
   trade: '무역 실무',
   tariff: '관세·통상',
   stat: '통계·지표',
+  industry: '산업·기술',
 };

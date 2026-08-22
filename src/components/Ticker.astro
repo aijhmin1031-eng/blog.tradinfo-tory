@@ -3,24 +3,30 @@ import indicators from '../data/indicators.json';
 import Delta from './Delta.astro';
 
 const items = indicators.ticker;
+// 기준일은 오른쪽에 고정 표시 — 흐르는 항목 사이에 끼우면 지나갈 때만 보인다.
+const asofShort = indicators.asOf.slice(5).replace('-', '.');
 ---
 
 <div class="ticker" aria-label="주요 시세">
-  <div class="tk-track mono">
-    {
-      [0, 1].map((copy) => (
-        <div class="tk-set" aria-hidden={copy === 1 ? 'true' : undefined}>
-          {items.map((t) => (
-            <span class="tk">
-              <span class="tk-label">{t.label}</span>
-              <span class="tk-value">{t.value}</span>
-              <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark />
-            </span>
-          ))}
-          <span class="tk tk-asof">기준 {indicators.asOf}</span>
-        </div>
-      ))
-    }
+  <div class="tk-scroll">
+    <div class="tk-track mono">
+      {
+        [0, 1].map((copy) => (
+          <div class="tk-set" aria-hidden={copy === 1 ? 'true' : undefined}>
+            {items.map((t) => (
+              <span class="tk">
+                <span class="tk-label">{t.label}</span>
+                <span class="tk-value">{t.value}</span>
+                <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark />
+              </span>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+  <div class="tk-fixed mono" title={`데이터 기준일 ${indicators.asOf}`}>
+    <span class="tk-fixed-label">기준</span> {asofShort} 종가
   </div>
 </div>
 
@@ -28,6 +34,13 @@ const items = indicators.ticker;
   .ticker {
     background: var(--dark-band);
     color: var(--dark-band-ink);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+  }
+  .tk-scroll {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
   }
   .tk-track {
@@ -45,15 +58,27 @@ const items = indicators.ticker;
     align-items: center;
     gap: 30px;
     padding: 13px 15px;
+    padding-right: 30px;
     font-size: 12px;
     white-space: nowrap;
   }
   .tk { display: inline-flex; align-items: center; gap: 6px; }
   .tk-label { color: var(--dark-band-sub); }
   .tk-value { font-weight: 500; }
-  .tk-asof { color: var(--dark-band-sub); font-size: 10px; }
+  .tk-fixed {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0 15px 0 14px;
+    font-size: 11px;
+    white-space: nowrap;
+    border-left: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: -14px 0 14px -6px var(--dark-band);
+  }
+  .tk-fixed-label { color: var(--dark-band-sub); font-size: 10px; }
   @media (prefers-reduced-motion: reduce) {
     .tk-track { animation: none; }
-    .ticker { overflow-x: auto; scrollbar-width: none; }
+    .tk-scroll { overflow-x: auto; scrollbar-width: none; }
   }
 </style>

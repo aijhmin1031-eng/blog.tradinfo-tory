@@ -2,10 +2,8 @@
 // 도토리 창고 — 무역 관련주 시세 + 관심 종목 공시 (corp.json은 파이프라인이 갱신)
 import corp from '../data/corp.json';
 import Delta from './Delta.astro';
+import Spark from './Spark.astro';
 
-const sparkColor = (dir: string) => (dir === 'up' ? 'var(--up)' : 'var(--down)');
-const sparkPoints = (vals: number[]) =>
-  vals.map((v, i) => `${(i * 80) / (vals.length - 1)},${v}`).join(' ');
 const fmtDate = (d: string) => `${d.slice(4, 6)}.${d.slice(6, 8)}`;
 ---
 
@@ -30,15 +28,7 @@ const fmtDate = (d: string) => `${d.slice(4, 6)}.${d.slice(6, 8)}`;
                 <Delta dir={s.dir as 'up' | 'down'} text={s.delta} />
               </div>
             </div>
-            <svg width="80" height="28" viewBox="0 0 80 28" aria-hidden="true">
-              <polyline
-                points={sparkPoints(s.spark)}
-                fill="none"
-                stroke={sparkColor(s.dir)}
-                stroke-width="1.6"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <Spark spark={s.spark} dir={s.dir as 'up' | 'down'} hi={s.sparkHi} lo={s.sparkLo} />
           </div>
         ))}
         <div class="corp-asof mono">기준 {corp.asOf} · 금융위원회 주식시세정보 · 종가</div>

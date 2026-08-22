@@ -1,10 +1,7 @@
 ---
 import indicators from '../data/indicators.json';
 import Delta from './Delta.astro';
-
-const sparkColor = (dir: string) => (dir === 'up' ? 'var(--up)' : 'var(--down)');
-const sparkPoints = (vals: number[]) =>
-  vals.map((v, i) => `${(i * 80) / (vals.length - 1)},${v}`).join(' ');
+import Spark from './Spark.astro';
 ---
 
 <div class="tiles">
@@ -19,15 +16,7 @@ const sparkPoints = (vals: number[]) =>
             <Delta dir={t.dir as 'up' | 'down'} text={t.delta} />
           </div>
         </div>
-        <svg width="80" height="28" viewBox="0 0 80 28" aria-hidden="true">
-          <polyline
-            points={sparkPoints(t.spark)}
-            fill="none"
-            stroke={sparkColor(t.dir)}
-            stroke-width="1.6"
-            stroke-linejoin="round"
-          />
-        </svg>
+        <Spark spark={t.spark} dir={t.dir as 'up' | 'down'} hi={t.sparkHi} lo={t.sparkLo} />
       </div>
     ))
   }

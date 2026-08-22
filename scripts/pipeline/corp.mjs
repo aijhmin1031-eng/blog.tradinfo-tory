@@ -119,6 +119,7 @@ async function main() {
         const last = pts[pts.length - 1];
         const prev = pts[pts.length - 2] ?? last;
         const pct = ((last.v - prev.v) / prev.v) * 100;
+        const tail = pts.slice(-9).map((x) => x.v);
         stocks.push({
           name: item.name,
           sector: item.sector,
@@ -126,6 +127,8 @@ async function main() {
           delta: `${Math.abs(pct).toFixed(2)}%`,
           dir: pct >= 0 ? 'up' : 'down',
           spark: spark(pts),
+          sparkHi: fmtNum(Math.max(...tail)),
+          sparkLo: fmtNum(Math.min(...tail)),
           basDt: last.d,
         });
         console.log(`[corp] ${item.name}: ${pts.length}개 누적, 최신 ${last.d}`);

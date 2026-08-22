@@ -30,7 +30,7 @@ const posts = defineCollection({
         yTicks: z.array(z.number()).optional(),
         xLabels: z.array(z.object({ idx: z.number(), text: z.string() })).optional(),
         endLabel: z.string().optional(),
-        marks: z.array(z.object({ idx: z.number(), label: z.string().optional(), dy: z.number().optional() })).optional(),
+        marks: z.array(z.object({ idx: z.number(), label: z.string().optional(), dx: z.number().optional(), dy: z.number().optional() })).optional(),
         valueSuffix: z.string().optional(),
         source: z.string(),
         color: z.enum(['down', 'up', 'accent']).optional(),
@@ -61,7 +61,7 @@ const briefs = defineCollection({
         yTicks: z.array(z.number()).optional(),
         xLabels: z.array(z.object({ idx: z.number(), text: z.string() })).optional(),
         endLabel: z.string().optional(),
-        marks: z.array(z.object({ idx: z.number(), label: z.string().optional(), dy: z.number().optional() })).optional(),
+        marks: z.array(z.object({ idx: z.number(), label: z.string().optional(), dx: z.number().optional(), dy: z.number().optional() })).optional(),
         valueSuffix: z.string().optional(),
         source: z.string(),
       })

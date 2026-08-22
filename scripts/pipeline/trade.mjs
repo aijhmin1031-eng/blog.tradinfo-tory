@@ -17,6 +17,8 @@ const COUNTRIES = [
   { cc: 'VN', name: '베트남' },
 ];
 const MONTHS_BACK = 4; // 이번 달 포함 최근 4개월 재조회 (잠정치 갱신 겸용)
+// 품목 시계열 — 반도체·AI 허브 등에서 사용
+const ITEMS = [{ hs: '8542', id: 'hs8542', name: '반도체(전자집적회로)' }];
 
 const yymm = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
 const tag = (xml, name) => {
@@ -24,10 +26,12 @@ const tag = (xml, name) => {
   return m ? m[1] : null;
 };
 
-async function fetchMonth(cc, month) {
+async function fetchMonth(cc, month, hsSgn = '') {
   const url =
     `https://apis.data.go.kr/1220000/nitemtrade/getNitemtradeList` +
-    `?serviceKey=${KEY}&strtYymm=${month}&endYymm=${month}&cntyCd=${cc}&numOfRows=1&pageNo=1`;
+    `?serviceKey=${KEY}&strtYymm=${month}&endYymm=${month}` +
+    (hsSgn ? `&hsSgn=${hsSgn}` : `&cntyCd=${cc}`) +
+    `&numOfRows=1&pageNo=1`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`관세청 ${cc} ${month} HTTP ${res.status}`);
   const xml = await res.text();
@@ -101,6 +105,16 @@ async function main() {
     if (rows.length) {
       out.rows = rows;
       out.asOf = rows[0].month;
+    }
+    // 품목 시계열 (반도체 등)
+    for (const it of ITEMS) {
+      const fresh = [];
+      for (const m of months) {
+        const p = await fetchMonth('', m, it.hs);
+        if (p) fresh.push(p);
+      }
+      const stored = await accumulate(it.id, it.name, fresh);
+      console.log(`[trade] ${it.name}: ${stored.points.length}개월 누적`);
     }
   } catch (e) {
     console.log(`[trade] 수집 건너뜀(기존 유지): ${e.message}`);

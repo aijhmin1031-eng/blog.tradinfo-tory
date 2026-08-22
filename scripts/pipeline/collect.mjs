@@ -68,6 +68,13 @@ const spark = (s, n = 9) => {
   const hi = Math.max(...tail);
   return tail.map((v) => Math.round(26 - ((v - lo) / (hi - lo || 1)) * 22));
 };
+// 스파크 고점·저점 라벨 — 큰 수는 정수, 작은 수는 소수 2자리
+const fmtShort = (v) =>
+  Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('ko-KR') : fmtNum(v);
+const sparkHiLo = (s, n = 9) => {
+  const tail = s.points.slice(-n).map((x) => x.v);
+  return { sparkHi: fmtShort(Math.max(...tail)), sparkLo: fmtShort(Math.min(...tail)) };
+};
 
 async function main() {
   if (!ECOS || !FRED) {
@@ -115,9 +122,9 @@ async function main() {
     { label: '국고채 10Y', value: `${fmtNum(lastV(acc.ktb10y).v)}%`, delta: '', dir: 'up' },
   ];
   indicators.tiles = [
-    { label: '원/달러 환율', value: fmtNum(lastV(acc.usdkrw).v), delta: `${Math.abs(d.krw).toFixed(2)}%`, dir: dir(d.krw), spark: spark(acc.usdkrw) },
-    { label: '한·미 금리차 (10Y)', value: `${lastV(gap).v > 0 ? '+' : ''}${fmtNum(lastV(gap).v)}%p`, delta: `${Math.abs(d.gapbp)}bp`, dir: dir(d.gapbp), spark: spark(gap) },
-    { label: 'KOSPI', value: fmtNum(lastV(acc.kospi).v), delta: `${Math.abs(d.kospi).toFixed(2)}%`, dir: dir(d.kospi), spark: spark(acc.kospi) },
+    { label: '원/달러 환율', value: fmtNum(lastV(acc.usdkrw).v), delta: `${Math.abs(d.krw).toFixed(2)}%`, dir: dir(d.krw), spark: spark(acc.usdkrw), ...sparkHiLo(acc.usdkrw) },
+    { label: '한·미 금리차 (10Y)', value: `${lastV(gap).v > 0 ? '+' : ''}${fmtNum(lastV(gap).v)}%p`, delta: `${Math.abs(d.gapbp)}bp`, dir: dir(d.gapbp), spark: spark(gap), ...sparkHiLo(gap) },
+    { label: 'KOSPI', value: fmtNum(lastV(acc.kospi).v), delta: `${Math.abs(d.kospi).toFixed(2)}%`, dir: dir(d.kospi), spark: spark(acc.kospi), ...sparkHiLo(acc.kospi) },
   ];
   await writeFile(INDICATORS, JSON.stringify(indicators, null, 2) + '\n');
   console.log(`[collect] indicators.json 갱신 — 기준일 ${indicators.asOf}`);

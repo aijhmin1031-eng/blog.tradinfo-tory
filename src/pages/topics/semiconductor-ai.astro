@@ -1,0 +1,206 @@
+---
+import Base from '../../layouts/Base.astro';
+import LineChart from '../../components/LineChart.astro';
+import Spark from '../../components/Spark.astro';
+import Delta from '../../components/Delta.astro';
+import { getCollection } from 'astro:content';
+import { url, heroFor, fmtDate, CATEGORIES } from '../../lib/site';
+import { GLOSSARY } from '../../lib/glossary';
+import { PICTOGRAMS } from '../../lib/pictograms';
+import semi from '../../../data/series/trade_hs8542.json';
+import corp from '../../data/corp.json';
+
+// 이 주제에 속하는 기사 — 새 기사를 쓰면 이 목록에 추가한다
+const TOPIC_SLUGS = ['semiconductor-export-engine', 'ai-semiconductor-map'];
+
+const posts = (await getCollection('posts', ({ id, data }) => !data.draft && TOPIC_SLUGS.includes(id)))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const pts = semi.points;
+const eok = (v: number) => +(v / 1e8).toFixed(1);
+const values = pts.map((p) => eok(p.exp));
+const last = pts[pts.length - 1];
+const first = pts[0];
+const ratio = (last.exp / first.exp).toFixed(1);
+const lastBal = eok(last.bal);
+const hiIdx = values.indexOf(Math.max(...values));
+const mLabel = (d: string) => `'${d.slice(2, 4)}.${Number(d.slice(4))}`;
+const xIdx = [0, Math.round((pts.length - 1) / 2), pts.length - 1];
+const asOf = `${last.d.slice(0, 4)}.${last.d.slice(4)}`;
+
+const semiStock = corp.stocks.find((s) => s.sector === '반도체');
+const terms = Object.entries(GLOSSARY).filter(([, e]) => e.group === 'industry');
+---
+
+<Base
+  title="반도체·AI 도토리"
+  description="AI가 다시 그리는 한국 무역 — 반도체 수출 통계, 관련주, 산업 용어를 한 주제로 모았습니다"
+  compact
+  activeNav="topic-semi"
+>
+  <section class="wrap">
+    <header class="tp-head">
+      <div class="kicker-en" style="color: var(--accent);">TOPIC</div>
+      <h1 class="serif tp-title">반도체·AI 도토리</h1>
+      <p class="tp-sub">
+        지금 한국 무역에서 가장 뜨거운 이야기는 반도체와 AI입니다. 수출 통계와 관련주,
+        산업의 지도와 용어까지 — 이 주제의 도토리를 한곳에 모아 계속 쌓아 갑니다.
+      </p>
+    </header>
+
+    <div class="tp-stats">
+      <div class="tp-stat">
+        <div class="tp-stat-label">반도체 월 수출 ({asOf})</div>
+        <div class="tp-stat-value mono">{values[values.length - 1]}억 달러</div>
+      </div>
+      <div class="tp-stat">
+        <div class="tp-stat-label">반도체 무역흑자 ({asOf})</div>
+        <div class="tp-stat-value mono">+{lastBal}억 달러</div>
+      </div>
+      <div class="tp-stat">
+        <div class="tp-stat-label">1년 성장 배율</div>
+        <div class="tp-stat-value mono">{ratio}배</div>
+      </div>
+      {semiStock && (
+        <div class="tp-stat">
+          <div class="tp-stat-label">{semiStock.name} 종가</div>
+          <div class="tp-stat-row">
+            <span class="tp-stat-value mono">{semiStock.value}</span>
+            <Delta dir={semiStock.dir as 'up' | 'down'} text={semiStock.delta} />
+          </div>
+        </div>
+      )}
+    </div>
+
+    <LineChart
+      title={`반도체 월 수출 — ${mLabel(first.d)}월 ${values[0]}억에서 ${mLabel(last.d)}월 ${values[values.length - 1]}억 달러로`}
+      unit="억 달러 (HS 8542 · 통관 기준)"
+      values={values}
+      yTicks={[150, 250, 350]}
+      xLabels={xIdx.map((i) => ({ idx: i, text: mLabel(pts[i].d) }))}
+      endLabel={`${values[values.length - 1]}억`}
+      marks={[
+        { idx: 0, label: `${values[0]}억` },
+        { idx: hiIdx, label: `${values[hiIdx]}억`, dx: hiIdx >= values.length - 3 ? -34 : 0, dy: hiIdx >= values.length - 3 ? 4 : 0 },
+      ]}
+      valueSuffix="억"
+      color="up"
+      source="자료: 관세청 수출입무역통계 · HS 8542 · 매일 아침 자동 갱신"
+    />
+
+    <h2 class="serif tp-sec">이 주제의 기사</h2>
+    <div class="tp-posts">
+      {
+        posts.map((p) => (
+          <a class="tp-post" href={url(`/posts/${p.id}/`)}>
+            <img src={heroFor(p.data.category, p.data.hero)} alt="" width="220" height="124" loading="lazy" />
+            <div class="tp-post-body">
+              <span class="tp-post-cat" style={`color: var(--cat-${CATEGORIES[p.data.category].slug})`}>
+                {CATEGORIES[p.data.category].name}
+              </span>
+              <span class="tp-post-title serif">{p.data.title}</span>
+              <span class="tp-post-desc">{p.data.description}</span>
+              <span class="tp-post-meta mono">{fmtDate(p.data.pubDate)} · {p.data.readingMinutes}분 읽기</span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+    <p class="tp-note">새 기사가 발행되는 대로 이 주제에 계속 추가됩니다.</p>
+
+    <h2 class="serif tp-sec">이 주제의 용어</h2>
+    <div class="tp-terms">
+      {
+        terms.map(([key, e]) => (
+          <article class="tp-term">
+            <span
+              class="tp-term-pict"
+              set:html={`<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAMS[e.icon] ?? ''}</svg>`}
+            />
+            <div>
+              <h3 class="tp-term-name serif">{e.label}</h3>
+              <p class="tp-term-def">{e.def}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+    <p class="tp-note">
+      더 많은 용어는 <a href={url('/glossary/')} style="color: var(--accent);">용어 도토리</a>에 있습니다.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .tp-head { padding: 46px 0 8px; max-width: 720px; }
+  .tp-title { font-size: clamp(30px, 4.5vw, 42px); margin: 6px 0 12px; color: var(--ink); }
+  .tp-sub { font-size: 15px; color: var(--sub); line-height: 1.8; word-break: keep-all; }
+  .tp-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin: 26px 0 8px;
+  }
+  .tp-stat {
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 16px 18px;
+  }
+  .tp-stat-label { font-size: 11.5px; color: var(--sub); margin-bottom: 6px; }
+  .tp-stat-value { font-size: 21px; font-weight: 500; color: var(--ink); }
+  .tp-stat-row { display: flex; align-items: baseline; gap: 9px; }
+  .tp-sec {
+    font-size: 21px;
+    color: var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin: 40px 0 18px;
+  }
+  .tp-posts { display: flex; flex-direction: column; gap: 16px; }
+  .tp-post {
+    display: flex;
+    gap: 20px;
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 18px;
+    text-decoration: none;
+    align-items: flex-start;
+  }
+  .tp-post img { width: 220px; height: 124px; object-fit: cover; flex: none; }
+  .tp-post-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .tp-post-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+  .tp-post-title { font-size: 18px; font-weight: 700; color: var(--ink); word-break: keep-all; }
+  .tp-post:hover .tp-post-title { color: var(--accent); }
+  .tp-post-desc {
+    font-size: 13.5px;
+    color: var(--sub);
+    line-height: 1.7;
+    word-break: keep-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .tp-post-meta { font-size: 11px; color: var(--muted); }
+  @media (max-width: 640px) {
+    .tp-post { flex-direction: column; }
+    .tp-post img { width: 100%; height: auto; }
+  }
+  .tp-terms {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+  }
+  .tp-term {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 18px 20px;
+  }
+  .tp-term-pict { flex: none; color: var(--accent); display: inline-flex; margin-top: 2px; }
+  .tp-term-name { font-size: 16px; color: var(--ink); margin: 0 0 6px; }
+  .tp-term-def { font-size: 13.5px; line-height: 1.75; color: var(--sub); margin: 0; word-break: keep-all; }
+  .tp-note { font-size: 12.5px; color: var(--muted); margin: 14px 0 30px; }
+</style>
