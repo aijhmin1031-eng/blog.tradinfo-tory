@@ -7,6 +7,7 @@ interface Props {
   next: string;
 }
 const { what, why, next } = Astro.props;
+import Acorn from './Acorn.astro';
 const rows = [
   { tag: '무슨 일', text: what },
   { tag: '왜 중요', text: why },
@@ -22,10 +23,7 @@ const rows = [
   {
     rows.map((r) => (
       <div class="three-row">
-        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" class="acorn">
-          <path d="M4 10 Q12 3 20 10 L19 13 Q12 8 5 13 Z" fill="#6B4423" />
-          <ellipse cx="12" cy="16" rx="6.5" ry="7" fill="var(--accent)" />
-        </svg>
+        <span class="acorn"><Acorn size={13} label="" /></span>
         <div class="three-text">
           <span class="three-tag">{r.tag}</span>
           <span set:html={r.text} />

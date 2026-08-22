@@ -24,7 +24,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ca
       posts.length === 0 ? (
         <div class="empty">
           <img src={url('/images/poses/pose-04.jpg')} alt="생각에 잠긴 토리" width="120" height="120" />
-          <p>아직 이 창고엔 도토리가 없습니다. 토리가 곧 주워올게요.</p>
+          <p>아직 이 창고에는 도토리가 없습니다. 새 기사가 준비되는 대로 이곳에 채워집니다.</p>
         </div>
       ) : (
         posts.map((p) => (
