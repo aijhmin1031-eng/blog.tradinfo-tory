@@ -44,6 +44,8 @@ const navItems = [
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {SITE.naverVerify && <meta name="naver-site-verification" content={SITE.naverVerify} />}
+    {SITE.googleVerify && <meta name="google-site-verification" content={SITE.googleVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url('/rss.xml')} />
     <meta property="og:type" content="website" />

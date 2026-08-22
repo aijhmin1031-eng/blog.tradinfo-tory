@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aijhmin1031-eng.github.io/blog.tradinfo-tory/sitemap-index.xml

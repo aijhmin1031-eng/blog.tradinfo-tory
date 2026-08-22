@@ -5,6 +5,9 @@ export const SITE = {
   taglineSub: '무역·환율·금리·시장의 숫자를 매일 줍는 데이터 브리핑',
   description:
     '무역토리는 무역, 환율, 금리, 관세 등 돈이 움직이는 모든 거래의 데이터를 차트 한 장과 세 줄 요약으로 전하는 경제 브리핑 블로그입니다.',
+  // 검색엔진 소유확인 코드 — 네이버 서치어드바이저에서 발급받은 값을 넣으면 자동 반영
+  naverVerify: '',
+  googleVerify: '', // GSC는 토큰(siteOwner)으로 이미 확인됨. 필요 시 메타 방식 대비용
 };
 
 export const CATEGORIES = {
