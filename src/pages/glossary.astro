@@ -1,0 +1,164 @@
+---
+import Base from '../layouts/Base.astro';
+import { GLOSSARY, GLOSSARY_GROUPS } from '../lib/glossary';
+import { PICTOGRAMS } from '../lib/pictograms';
+
+const groups = (Object.keys(GLOSSARY_GROUPS) as (keyof typeof GLOSSARY_GROUPS)[]).map((g) => ({
+  key: g,
+  name: GLOSSARY_GROUPS[g],
+  entries: Object.entries(GLOSSARY)
+    .filter(([, e]) => e.group === g)
+    .sort(([, a], [, b]) => a.label.localeCompare(b.label, 'ko')),
+}));
+const total = Object.keys(GLOSSARY).length;
+---
+
+<Base
+  title="용어 도토리"
+  description="무역·경제 뉴스의 전문용어를 초보자의 언어로 풀이한 무역토리 용어 사전"
+  compact
+  activeNav="glossary"
+>
+  <section class="wrap">
+    <header class="gl-head">
+      <div class="kicker-en" style="color: var(--accent);">GLOSSARY</div>
+      <h1 class="serif gl-title">용어 도토리</h1>
+      <p class="gl-sub">
+        기사 본문의 점선 밑줄 용어를 누르면 열리는 풀이를 한곳에 모았습니다. 현재
+        <span class="mono">{total}</span>개 — 새 기사와 함께 계속 늘어납니다.
+      </p>
+      <div class="gl-search-wrap">
+        <input id="gl-search" type="search" placeholder="용어 검색 — 예: 스프레드" aria-label="용어 검색" autocomplete="off" />
+      </div>
+    </header>
+
+    {
+      groups.map((g) => (
+        <section class="gl-group" data-group>
+          <h2 class="serif gl-group-title">{g.name}</h2>
+          <div class="gl-grid">
+            {g.entries.map(([key, e]) => (
+              <article class="gl-card" id={`t-${key}`} data-term={`${key} ${e.label}`}>
+                <span
+                  class="gl-pict"
+                  set:html={`<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAMS[e.icon] ?? ''}</svg>`}
+                />
+                <div class="gl-body">
+                  <h3 class="gl-name serif">{e.label}</h3>
+                  <p class="gl-def">{e.def}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+    <p class="gl-empty" id="gl-empty" hidden>검색어와 일치하는 용어가 없습니다.</p>
+  </section>
+</Base>
+
+<style>
+  .gl-head {
+    padding: 46px 0 10px;
+    max-width: 720px;
+  }
+  .gl-title {
+    font-size: clamp(30px, 4.5vw, 42px);
+    margin: 6px 0 12px;
+    color: var(--ink);
+  }
+  .gl-sub {
+    font-size: 15px;
+    color: var(--sub);
+    line-height: 1.8;
+    word-break: keep-all;
+  }
+  .gl-search-wrap {
+    margin: 22px 0 8px;
+  }
+  #gl-search {
+    width: min(420px, 100%);
+    font: inherit;
+    font-size: 14.5px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  #gl-search:focus {
+    border-color: var(--accent);
+  }
+  #gl-search::placeholder {
+    color: var(--muted);
+  }
+  .gl-group {
+    margin: 34px 0 8px;
+  }
+  .gl-group-title {
+    font-size: 20px;
+    color: var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+  .gl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .gl-card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 18px 20px;
+  }
+  .gl-pict {
+    flex: none;
+    color: var(--accent);
+    display: inline-flex;
+    margin-top: 2px;
+  }
+  .gl-name {
+    font-size: 16px;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+  .gl-def {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--sub);
+    margin: 0;
+    word-break: keep-all;
+  }
+  .gl-empty {
+    color: var(--muted);
+    font-size: 14.5px;
+    padding: 30px 0 60px;
+  }
+</style>
+
+<script>
+  const input = document.getElementById('gl-search') as HTMLInputElement | null;
+  input?.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    let shown = 0;
+    document.querySelectorAll<HTMLElement>('.gl-card').forEach((card) => {
+      const hit =
+        !q ||
+        (card.dataset.term ?? '').toLowerCase().includes(q) ||
+        (card.textContent ?? '').toLowerCase().includes(q);
+      card.hidden = !hit;
+      if (hit) shown++;
+    });
+    document.querySelectorAll<HTMLElement>('[data-group]').forEach((g) => {
+      g.hidden = !g.querySelector('.gl-card:not([hidden])');
+    });
+    const empty = document.getElementById('gl-empty');
+    if (empty) empty.hidden = shown > 0;
+  });
+</script>
