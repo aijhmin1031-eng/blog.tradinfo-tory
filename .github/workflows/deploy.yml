@@ -42,7 +42,7 @@ jobs:
         run: |
           git config user.name "tori-pipeline"
           git config user.email "actions@users.noreply.github.com"
-          git add data src/data/indicators.json src/content/briefs
+          git add data src/data src/content/briefs
           if git diff --cached --quiet; then
             echo "변경 없음 — 커밋 생략"
           else

@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import StatTiles from '../components/StatTiles.astro';
 import CorpPanel from '../components/CorpPanel.astro';
+import TradePanel from '../components/TradePanel.astro';
 import indicators from '../data/indicators.json';
 import { getCollection } from 'astro:content';
 import { url } from '../lib/site';
@@ -26,10 +27,6 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
             <div class="wh-rm-desc">반도체·자동차·K-푸드 등 주요 품목의 월별 수출입액 (관세청)</div>
           </li>
           <li>
-            <div class="wh-rm-name">국가별 무역수지</div>
-            <div class="wh-rm-desc">주요 교역국별 흑자·적자 현황 (관세청 · UN Comtrade)</div>
-          </li>
-          <li>
             <div class="wh-rm-name">원자재 가격</div>
             <div class="wh-rm-desc">유가·구리·곡물 등 수입 물가를 좌우하는 원자재 시세 (FRED)</div>
           </li>
@@ -44,6 +41,7 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
 
     <div class="wh-grid" style="margin-top: 28px;">
       <CorpPanel />
+      <TradePanel />
     </div>
 
     <div class="wh-briefs">

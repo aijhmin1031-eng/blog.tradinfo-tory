@@ -1,0 +1,72 @@
+---
+// 도토리 창고 — 국가별 무역수지 (trade.json은 파이프라인이 갱신, 관세청 통관 기준)
+import trade from '../data/trade.json';
+
+const fmt = (v: number) =>
+  v.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+---
+
+<div class="trade-panel">
+  <div class="trade-head kicker">국가별 무역수지</div>
+  {
+    trade.rows.length === 0 ? (
+      <p class="trade-empty">관세청 수출입실적 연동을 준비하고 있습니다.</p>
+    ) : (
+      <>
+        <div class="trade-cols mono">
+          <span></span><span>수출</span><span>수입</span><span>수지</span>
+        </div>
+        {trade.rows.map((r) => (
+          <div class="trade-row">
+            <span class="trade-name">{r.name}</span>
+            <span class="mono trade-num">{fmt(r.exp)}</span>
+            <span class="mono trade-num">{fmt(r.imp)}</span>
+            <span class={`mono trade-num trade-bal ${r.bal >= 0 ? 'pos' : 'neg'}`}>
+              {r.bal >= 0 ? '+' : '−'}{fmt(Math.abs(r.bal))}
+            </span>
+          </div>
+        ))}
+        <div class="trade-asof mono">
+          {trade.asOf} 통관 기준 · 단위 억 달러 · 최근 월은 잠정치 · 자료: 관세청 수출입무역통계
+        </div>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .trade-panel {
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 26px 30px;
+  }
+  .trade-head {
+    color: var(--sub);
+    border-bottom: 1px solid var(--hair);
+    padding-bottom: 9px;
+    font-size: 11px;
+  }
+  .trade-empty { font-size: 13px; color: var(--sub); padding: 14px 0 4px; }
+  .trade-cols,
+  .trade-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 90px 90px;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .trade-cols {
+    font-size: 10px;
+    color: var(--muted);
+    padding: 12px 0 6px;
+    text-align: right;
+  }
+  .trade-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hair2);
+  }
+  .trade-name { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .trade-num { font-size: 14px; text-align: right; }
+  .trade-bal.pos { color: var(--up); }
+  .trade-bal.neg { color: var(--down); }
+  .trade-asof { font-size: 10px; color: var(--muted); padding-top: 11px; }
+</style>
