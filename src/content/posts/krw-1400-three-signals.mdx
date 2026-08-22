@@ -29,6 +29,7 @@ chart:
 
 import LineChart from '../../components/LineChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
+import PointCards from '../../components/PointCards.astro';
 
 8월 21일 서울 외환시장에서 원/달러 환율은 1,393.0원에 마감했다. 7월 7일 1,531.8원과
 비교하면 한 달 반 만에 138.8원, 비율로는 9.1%의 원화 강세다. 시장이 오래 주목해 온
@@ -75,6 +76,12 @@ import KeyStat from '../../components/KeyStat.astro';
 격차가 크게 줄어든 상태다. 여기에 KOSPI가 6,900선까지 오른 주식시장 강세가 겹쳐
 있다 — 환율, 금리, 주가가 모두 같은 방향, 즉 **원화 자산으로 자금이 들어오는 국면**을
 가리키고 있다.
+
+<PointCards items={[
+  { icon: 'chart', title: '고른 계단식 하락', desc: '32개 영업일 동안 의미 있는 반등은 두 번뿐. 방향이 정해진 시장이 보여 주는 전형적인 계단식 하락이다.' },
+  { icon: 'scale', title: '엔화보다 강한 원화', desc: '같은 기간 원/100엔도 -7.3% 내렸지만 원화가 더 강했다. 달러 요인 위에 원화 고유의 매수 요인이 얹혀 있다는 신호다.' },
+  { icon: 'coin', title: '좁혀진 금리 격차', desc: '국고채 10년 4.38% vs 미 국채 4.69%, 격차 -0.31%p. KOSPI 강세와 함께 원화 자산으로 자금이 들어오는 국면을 가리킨다.' },
+]} />
 
 ## 남는 질문
 

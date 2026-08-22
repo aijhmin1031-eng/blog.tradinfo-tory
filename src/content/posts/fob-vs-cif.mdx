@@ -13,6 +13,8 @@ toriNote: '무역 조건은 암기 과목이 아니라 "돈과 위험이 어디�
 dataAsOf: '2026-08-18'
 ---
 
+import PointCards from '../../components/PointCards.astro';
+
 해외 거래처에서 받은 견적서에 "USD 12,000 FOB Busan"이라고 적혀 있다. 옆 회사 견적서에는
 "USD 12,800 CIF Long Beach". 어느 쪽이 싼 걸까? — 이 질문에 바로 답할 수 없다면, 오늘
 기사가 그 답이다.
@@ -45,6 +47,12 @@ FOB와 CIF는 원래 재래식 벌크 화물 시절에 만들어진 조건이다
 시점(터미널 반입)이 어긋난다. 그래서 인코텀즈 2020은 컨테이너 화물에 대해 FOB 대신
 **FCA**, CIF 대신 **CIP**를 권장한다. 실무에서는 여전히 FOB/CIF가 관성적으로 쓰이지만,
 분쟁이 생기면 이 어긋남이 문제의 씨앗이 된다.
+
+<PointCards items={[
+  { icon: 'coin', title: '총도착비용 환산', desc: 'FOB든 CIF든 운임·보험을 더한 landed cost로 바꿔 비교한다.' },
+  { icon: 'check', title: '위험 이전 시점 확인', desc: 'CIF도 위험은 본선 적재 순간 구매자에게 넘어간다는 점을 계약 전에 확인.' },
+  { icon: 'ship', title: 'FCA/CIP 검토', desc: '컨테이너 화물이라면 인코텀즈 2020이 권장하는 대체 조건을 한 번쯤 검토.' },
+]} />
 
 ## 오늘의 결론
 
