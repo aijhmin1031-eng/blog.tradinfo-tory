@@ -1,8 +1,11 @@
 ---
 // 아이콘 요점 카드 그리드 — 나열식 문단을 시각적 카드로 바꿔 거부감을 줄인다.
 // 사용: <PointCards items={[{icon:'chart', title:'...', desc:'...'}, ...]} />
+// icon 은 아래 기본 8종 외에 lib/pictograms.ts 의 키도 쓸 수 있다.
+import { PICTOGRAMS } from '../lib/pictograms';
+
 interface Item {
-  icon?: 'chart' | 'coin' | 'ship' | 'doc' | 'scale' | 'warn' | 'check' | 'acorn';
+  icon?: string;
   title: string;
   desc: string;
 }
@@ -28,7 +31,7 @@ const paths: Record<string, string> = {
     items.map((it, i) => (
       <div class="point-card">
         <div class="pc-top">
-          <span class="pc-icon" set:html={`<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">${paths[it.icon ?? 'acorn']}</svg>`} />
+          <span class="pc-icon" set:html={`<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">${paths[it.icon ?? 'acorn'] ?? PICTOGRAMS[it.icon ?? ''] ?? paths.acorn}</svg>`} />
           <span class="pc-no mono">{String(i + 1).padStart(2, '0')}</span>
         </div>
         <div class="pc-title">{it.title}</div>
