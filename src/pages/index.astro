@@ -4,7 +4,7 @@ import StatTiles from '../components/StatTiles.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, SITE } from '../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
 
 const all = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -44,6 +44,15 @@ const jsonLd = {
               {fmtDate(featured.data.pubDate)}
             </time>
           </div>
+          <a class="hero-image" href={url(`/posts/${featured.id}/`)}>
+            <img
+              src={heroFor(featured.data.category, featured.data.hero)}
+              alt={`${featured.data.title} 대표 이미지`}
+              width="1200"
+              height="675"
+              fetchpriority="high"
+            />
+          </a>
           {featured.data.chart && (
             <div class="hero-chart">
               <LineChart {...featured.data.chart} height={210} />
@@ -84,7 +93,9 @@ const jsonLd = {
     {
       rest.map((p, i) => (
         <a class="row reveal" href={url(`/posts/${p.id}/`)}>
-          <div class="row-no mono">{String(i + 1).padStart(2, '0')}</div>
+          <div class="row-thumb">
+            <img src={heroFor(p.data.category, p.data.hero)} alt="" width="160" height="90" loading="lazy" />
+          </div>
           <div class="row-body">
             <div class="row-title serif">{p.data.title}</div>
             <div class="row-dek">{p.data.description}</div>
@@ -177,6 +188,15 @@ const jsonLd = {
   .hero-byline { display: flex; align-items: center; gap: 11px; font-size: 12px; color: var(--sub); }
   .byline-name { font-weight: 700; color: var(--ink); }
   .sep { width: 1px; height: 11px; background: var(--hair); }
+  .hero-image {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--hair);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .hero-image img { display: block; width: 100%; height: auto; transition: transform 0.4s ease; }
+  .hero-image:hover img { transform: scale(1.02); }
   .hero-chart { width: 100%; }
   .hero-chart :global(.chart) { margin: 6px 0 0 0; max-width: none; }
   .hero-cta {
@@ -201,13 +221,21 @@ const jsonLd = {
   .list-title { font-size: 25px; font-weight: 900; margin: 0 0 14px 0; }
   .row {
     display: grid;
-    grid-template-columns: 40px 1fr auto;
-    gap: 20px;
+    grid-template-columns: 148px 1fr auto;
+    gap: 22px;
     align-items: center;
-    padding: 26px 0;
+    padding: 22px 0;
     border-bottom: 1px solid var(--hair2);
   }
-  .row-no { font-size: 13px; color: var(--muted); align-self: start; padding-top: 4px; }
+  .row-thumb {
+    width: 148px;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--hair);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .row-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .row:hover .row-thumb img { transform: scale(1.05); }
   .row-title {
     font-size: 19px;
     font-weight: 700;
@@ -227,9 +255,9 @@ const jsonLd = {
   }
   .row-date { font-size: 11px; color: var(--muted); }
   @media (max-width: 640px) {
-    .row { grid-template-columns: 1fr; }
-    .row-no { display: none; }
-    .row-meta { flex-direction: row; align-items: center; }
+    .row { grid-template-columns: 96px 1fr; }
+    .row-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: flex-start; }
+    .row-thumb { width: 96px; }
   }
 
   #tori-greet {

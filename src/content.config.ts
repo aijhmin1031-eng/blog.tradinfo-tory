@@ -11,6 +11,7 @@ const posts = defineCollection({
     readingMinutes: z.number().default(5),
     featured: z.boolean().default(false),
     draft: z.boolean().default(false),
+    hero: z.string().optional(), // 대표 이미지 경로. 없으면 카테고리 배너 자동 사용
     place: z.string().optional(), // "오늘은 ~에 다녀왔습니다"
     three: z
       .object({

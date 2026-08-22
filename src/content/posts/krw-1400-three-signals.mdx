@@ -28,10 +28,13 @@ chart:
 ---
 
 import LineChart from '../../components/LineChart.astro';
+import KeyStat from '../../components/KeyStat.astro';
 
 8월 21일 서울 외환시장에서 원/달러 환율은 1,393.0원에 마감했다. 7월 7일 1,531.8원과
 비교하면 한 달 반 만에 138.8원, 비율로는 9.1%의 원화 강세다. 시장이 오래 주목해 온
 1,400원 선은 이번에는 위가 아니라 **아래로** 뚫렸다.
+
+<KeyStat value="-9.1%" label="한 달 반 만의 원화 강세 폭" sub="7/7 1,531.8원 → 8/21 1,393.0원" tone="down" />
 
 <LineChart
   title="한 달 반 만에 139원 — 1,400원 선이 아래로 뚫렸다"

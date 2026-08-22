@@ -1,0 +1,62 @@
+---
+// 아이콘 요점 카드 그리드 — 나열식 문단을 시각적 카드로 바꿔 거부감을 줄인다.
+// 사용: <PointCards items={[{icon:'chart', title:'...', desc:'...'}, ...]} />
+interface Item {
+  icon?: 'chart' | 'coin' | 'ship' | 'doc' | 'scale' | 'warn' | 'check' | 'acorn';
+  title: string;
+  desc: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+
+const paths: Record<string, string> = {
+  chart: '<path d="M4 20 V6 M4 20 H20 M8 16 L12 11 L15 14 L20 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  coin: '<ellipse cx="12" cy="7" rx="7" ry="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 7 V13 C5 14.7 8.1 16 12 16 C15.9 16 19 14.7 19 13 V7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 13 V17 C5 18.7 8.1 20 12 20 C15.9 20 19 18.7 19 17 V13" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+  ship: '<path d="M4 13 H20 L18 19 H6 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 13 V5 M12 5 L17 8 L12 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>',
+  doc: '<path d="M6 3 H14 L18 7 V21 H6 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3 V7 H18 M9 12 H15 M9 16 H15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+  scale: '<path d="M12 4 V20 M7 20 H17 M5 8 H19 M5 8 L3 13 H7 Z M19 8 L17 13 H21 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>',
+  warn: '<path d="M12 4 L21 19 H3 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10 V14 M12 16.5 V16.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>',
+  check: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 12.2 L11 14.7 L15.7 9.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>',
+  acorn: '<path d="M6 9 Q12 4 18 9 L17 11.5 Q12 8 7 11.5 Z" fill="currentColor"/><path d="M7 12.5 Q7.6 19 12 21 Q16.4 19 17 12.5 Z" fill="currentColor" opacity="0.55"/>',
+};
+---
+
+<div class="points">
+  {
+    items.map((it, i) => (
+      <div class="point-card">
+        <div class="pc-top">
+          <span class="pc-icon" set:html={`<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">${paths[it.icon ?? 'acorn']}</svg>`} />
+          <span class="pc-no mono">{String(i + 1).padStart(2, '0')}</span>
+        </div>
+        <div class="pc-title">{it.title}</div>
+        <div class="pc-desc">{it.desc}</div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .points {
+    max-width: 900px;
+    margin: 32px auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+  }
+  .point-card {
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pc-top { display: flex; justify-content: space-between; align-items: center; }
+  .pc-icon { color: var(--accent); display: inline-flex; }
+  .pc-no { font-size: 12px; color: var(--muted); }
+  .pc-title { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--ink); }
+  .pc-desc { font-size: 13.5px; color: var(--sub); line-height: 1.7; }
+</style>

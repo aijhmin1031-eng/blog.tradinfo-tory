@@ -20,5 +20,8 @@ export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export const url = (path: string) => `${base}${path.startsWith('/') ? path : `/${path}`}`;
 
+export const heroFor = (category: CategoryKey, hero?: string) =>
+  hero ? url(hero) : url(`/images/cat/${CATEGORIES[category].slug}.jpg`);
+
 export const fmtDate = (d: Date) =>
   `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;

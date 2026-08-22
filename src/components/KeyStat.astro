@@ -1,0 +1,36 @@
+---
+// 큰 수치 카드 — 본문 중간에 넣어 글의 밀도를 끊고 핵심 숫자를 눈에 박는다.
+// 사용: <KeyStat value="-9.1%" label="한 달 반 원화 강세 폭" sub="7/7 1,531.8 → 8/21 1,393.0" tone="down" />
+interface Props {
+  value: string;
+  label: string;
+  sub?: string;
+  tone?: 'up' | 'down' | 'neutral';
+}
+const { value, label, sub, tone = 'neutral' } = Astro.props;
+const color =
+  tone === 'up' ? 'var(--up)' : tone === 'down' ? 'var(--down)' : 'var(--accent)';
+---
+
+<div class="keystat" style={`--ks: ${color}`}>
+  <div class="ks-value mono">{value}</div>
+  <div class="ks-label">{label}</div>
+  {sub && <div class="ks-sub mono">{sub}</div>}
+</div>
+
+<style>
+  .keystat {
+    max-width: var(--w-prose);
+    margin: 32px auto;
+    padding: 26px 30px;
+    border: 1px solid var(--hair);
+    border-left: 5px solid var(--ks);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ks-value { font-size: clamp(34px, 7vw, 46px); font-weight: 500; color: var(--ks); line-height: 1; }
+  .ks-label { font-size: 15px; color: var(--body-ink); font-weight: 700; }
+  .ks-sub { font-size: 12px; color: var(--muted); }
+</style>

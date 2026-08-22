@@ -2,7 +2,7 @@
 import Base from './Base.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import ToriNote from '../components/ToriNote.astro';
-import { CATEGORIES, url, fmtDate, SITE } from '../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -10,9 +10,10 @@ interface Props {
   related: CollectionEntry<'posts'>[];
 }
 const { post, related } = Astro.props;
-const { title, description, category, pubDate, readingMinutes, place, three, toriNote, dataAsOf } =
+const { title, description, category, pubDate, readingMinutes, place, three, toriNote, dataAsOf, hero } =
   post.data;
 const cat = CATEGORIES[category];
+const heroImg = heroFor(category, hero);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -58,6 +59,10 @@ const jsonLd = {
       </div>
       {place && <div class="post-place">오늘은 <strong>{place}</strong>에 다녀왔습니다.</div>}
     </header>
+
+    <figure class="post-hero">
+      <img src={heroImg} alt={`${title} 대표 이미지`} width="1200" height="675" fetchpriority="high" />
+    </figure>
 
     {three && <ThreeLines what={three.what} why={three.why} next={three.next} />}
 
@@ -149,6 +154,15 @@ const jsonLd = {
   .asof { font-size: 10.5px; color: var(--muted); }
   .post-place { font-size: 13.5px; color: var(--sub); }
   .post-place strong { color: var(--ink); }
+
+  .post-hero {
+    max-width: 900px;
+    margin: 8px auto 0 auto;
+    border: 1px solid var(--hair);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .post-hero img { display: block; width: 100%; height: auto; }
 
   article :global(.three) { max-width: 820px; margin-left: auto; margin-right: auto; }
 
