@@ -24,6 +24,10 @@ chart:
     - { idx: 9, text: "'26.4" }
     - { idx: 11, text: "'26.6" }
   endLabel: '3.02%'
+  marks:
+    - { idx: 0, label: '2.50%' }
+    - { idx: 5, label: '2.89%' }
+  valueSuffix: '%'
   source: '자료: 한국은행 ECOS 121Y002 · 가중평균금리(신규취급액) · 무역토리 가공'
 ---
 
@@ -51,6 +55,11 @@ import KeyStat from '../../components/KeyStat.astro';
     { idx: 11, text: "'26.6" },
   ]}
   endLabel="3.02%"
+  marks={[
+    { idx: 0, label: '2.50%' },
+    { idx: 5, label: '2.89%' },
+  ]}
+  valueSuffix="%"
   source="자료: 한국은행 ECOS 121Y002 · 가중평균금리(신규취급액) · 무역토리 가공"
 />
 

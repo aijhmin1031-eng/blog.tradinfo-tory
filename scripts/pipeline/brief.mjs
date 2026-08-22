@@ -75,6 +75,18 @@ async function main() {
         { idx: chartPoints.length - 1, text: kdate(date) },
       ],
       endLabel: `${fmtNum(last(krw).v)}원`,
+      // 주요 지점 마크: 시작값 + (가장자리가 아니면) 기간 내 최고·최저
+      marks: (() => {
+        const vals = chartPoints.map((p) => p.v);
+        const marks = [{ idx: 0, label: `${fmtNum(vals[0])}원` }];
+        const hiIdx = vals.indexOf(hi);
+        const loIdx = vals.indexOf(lo);
+        for (const i of [hiIdx, loIdx]) {
+          if (i > 1 && i < vals.length - 2) marks.push({ idx: i, label: `${fmtNum(vals[i])}원` });
+        }
+        return marks;
+      })(),
+      valueSuffix: '원',
       source: '자료: 한국은행 ECOS · 미 연준 FRED · 무역토리 가공',
     },
   };

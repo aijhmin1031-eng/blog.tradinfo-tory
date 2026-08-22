@@ -25,6 +25,10 @@ chart:
     - { idx: 24, text: '8.11' }
     - { idx: 31, text: '8.21' }
   endLabel: '1,393.0원'
+  marks:
+    - { idx: 0, label: '1,531.8원' }
+    - { idx: 16, label: '1,450.1원' }
+  valueSuffix: '원'
   source: '자료: 한국은행 ECOS 731Y001 · 매매기준율 · 무역토리 가공'
 ---
 
@@ -52,6 +56,11 @@ import Term from '../../components/Term.astro';
     { idx: 31, text: '8.21' },
   ]}
   endLabel="1,393.0원"
+  marks={[
+    { idx: 0, label: '1,531.8원' },
+    { idx: 16, label: '1,450.1원' },
+  ]}
+  valueSuffix="원"
   source="자료: 한국은행 ECOS 731Y001 · 매매기준율 · 무역토리 가공"
 />
 

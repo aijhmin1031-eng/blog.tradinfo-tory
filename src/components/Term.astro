@@ -3,6 +3,7 @@
 // 사용: <Term t="스프레드" /> 또는 표기를 바꿀 때 <Term t="베이시스포인트">bp</Term>
 import { GLOSSARY } from '../lib/glossary';
 import { PICTOGRAMS } from '../lib/pictograms';
+import { url } from '../lib/site';
 
 interface Props {
   t: keyof typeof GLOSSARY | string;
@@ -18,11 +19,15 @@ const icon = pictograms[entry.icon] ?? pictograms.spread;
 <span class="term-wrap"
   ><button type="button" class="term-chip" aria-expanded="false"><slot>{t}</slot></button
   ><span class="term-card" role="note" hidden>
-    <span class="term-pict" set:html={`<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`} />
-    <span class="term-body">
-      <b class="term-name">{entry.label}</b>
-      <span class="term-def">{entry.def}</span>
+    <span class="term-tag mono">토리의 용어 메모</span>
+    <span class="term-main">
+      <span class="term-pict" set:html={`<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>`} />
+      <span class="term-body">
+        <b class="term-name">{entry.label}</b>
+        <span class="term-def">{entry.def}</span>
+      </span>
     </span>
+    <a class="term-more" href={url(`/glossary/#t-${t}`)}>용어 사전에서 전체 보기 →</a>
   </span></span><style>
   .term-wrap {
     position: relative;
@@ -54,17 +59,41 @@ const icon = pictograms[entry.icon] ?? pictograms.spread;
     width: max-content;
     max-width: min(340px, 86vw);
     display: flex;
-    gap: 12px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
     background: var(--surface);
     border: 1px solid var(--hair);
+    border-left: 3px solid var(--accent);
     box-shadow: 0 10px 28px rgba(16, 20, 28, 0.13);
-    padding: 14px 16px;
+    padding: 12px 16px 11px;
     text-align: left;
     word-break: keep-all;
   }
   .term-card[hidden] {
     display: none;
+  }
+  .term-tag {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .term-main {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .term-more {
+    align-self: flex-end;
+    font-size: 11.5px;
+    color: var(--muted);
+    text-decoration: none;
+    border-top: 1px solid var(--hair2, var(--hair));
+    padding-top: 7px;
+    width: 100%;
+    text-align: right;
+  }
+  .term-more:hover {
+    color: var(--accent);
   }
   .term-card::before {
     content: '';
