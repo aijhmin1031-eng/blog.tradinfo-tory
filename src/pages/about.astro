@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import { SITE, url } from '../lib/site';
+import { getCollection } from 'astro:content';
+import { SITE, url, isPublished } from '../lib/site';
 
 type Bubble = {
   text: string;
@@ -111,6 +112,73 @@ const dailyPanels: Panel[] = [
   },
 ];
 
+// 마일스톤 게이트 — 발행 기사 50편 달성 시 제2화 「만년필」 자동 공개 (worldview.md 진화 마일스톤)
+const publishedCount = (
+  await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))
+).length;
+const showEp2 = publishedCount >= 50;
+
+// 「토리의 일상」 제2화 「만년필」 — 12컷. 기사 50편 마일스톤 에피소드.
+const daily02Panels: Panel[] = [
+  {
+    img: 'daily-02-01', alt: '몽당연필로 장부를 쓰는 토리', act: 'autumn',
+    bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '76%', text: '쉰 번째 기사를 쓰던 아침, 연필은 엄지손가락만큼 남아 있었습니다.' }],
+  },
+  {
+    img: 'daily-02-02', alt: '쉰 권의 장부 옆에 놓인 몽당연필', act: 'autumn',
+    bubbles: [{ kind: 'speech', x: '48%', y: '6%', tail: 'bl', w: '42%', text: '…너와 참 많이도 적었구나.' }],
+  },
+  {
+    img: 'daily-02-03', alt: '문장 한가운데에서 부러지는 연필', act: 'autumn',
+    bubbles: [
+      { kind: 'narration', x: '3%', y: '4%', w: '60%', text: '그리고 쉰 번째 문장의 한가운데에서 —' },
+      { kind: 'speech', x: '62%', y: '30%', tail: 'bl', w: '18%', text: '앗.' },
+    ],
+  },
+  {
+    img: 'daily-02-04', alt: '숯덩이로 써 보다 얼굴이 검어진 토리', act: 'autumn',
+    bubbles: [{ kind: 'speech', x: '55%', y: '6%', tail: 'bl', w: '36%', text: '이건… 조금 크군.' }],
+  },
+  {
+    img: 'daily-02-05', alt: '깃펜에 재채기가 난 토리', act: 'autumn',
+    bubbles: [
+      { kind: 'speech', x: '58%', y: '5%', tail: 'bl', w: '28%', text: '엣취!' },
+      { kind: 'narration', x: '3%', y: 'b:4%', w: '70%', text: '숲의 도구들에게는 저마다 다른 주인이 있었습니다.' },
+    ],
+  },
+  {
+    img: 'daily-02-06', alt: '반 줄 짧아진 아침 브리핑 게시판 앞의 다람쥐들', act: 'winter',
+    bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '80%', text: '그 아침, 브리핑이 처음으로 반 줄 짧았습니다 — 숲은 반 줄의 공백을 금세 알아차렸습니다.' }],
+  },
+  {
+    img: 'daily-02-07', alt: '밤, 화로에 불을 붙이는 늙은 장인 다람쥐', act: 'night',
+    bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '66%', text: '그날 밤, 숲의 늙은 장인이 조용히 화로에 불을 붙였습니다.' }],
+  },
+  {
+    img: 'daily-02-08', alt: '도토리 금촉 만년필을 만드는 손', act: 'night',
+    bubbles: [{ kind: 'narration', x: '3%', y: 'b:4%', w: '72%', text: '도토리 껍질의 금빛으로 촉을, 참나무의 심으로 몸통을.' }],
+  },
+  {
+    img: 'daily-02-09', alt: '만년필을 선물받는 토리', act: 'dawn',
+    bubbles: [{ kind: 'speech', x: '3.5%', y: '5%', tail: 'br', w: '46%', text: '쉰 번을 적은 손에게 — 숲이 드리는 답례요.' }],
+  },
+  {
+    img: 'daily-02-10', alt: '쉰 권의 장부 앞에서 만년필을 들어 올린 토리', act: 'dawn',
+    bubbles: [{ kind: 'speech', x: '3.5%', y: '5%', tail: 'r', w: '52%', text: '연필은 지울 수 있어 정직했고, 만년필은 지울 수 없어 무겁습니다.' }],
+  },
+  {
+    img: 'daily-02-11', alt: '만년필로 쉰한 번째 기사의 첫 문장을 쓰는 토리', act: 'dawn',
+    bubbles: [
+      { kind: 'narration', x: '3%', y: '4%', w: '64%', text: '쉰한 번째 기사의 첫 문장이 그렇게 적혔습니다.' },
+      { kind: 'speech', x: '52%', y: 'b:10%', tail: 'tr', w: '40%', text: '— 오늘의 도토리, 세 알부터.' },
+    ],
+  },
+  {
+    img: 'daily-02-12', alt: '서재 벽 액자에 걸린 몽당연필', act: 'dawn',
+    bubbles: [{ kind: 'narration', x: '3%', y: 'b:4%', w: '84%', text: '몽당연필은 서재에서 가장 잘 보이는 자리에 걸렸습니다. 쉰 편의 겨울을 먼저 적어 둔, 첫 번째 도구였으니까요.' }],
+  },
+];
+
 const principles = [
   { title: '주운 도토리만 말합니다', desc: '출처 있는 공식 데이터만 인용합니다. 소문과 추측(속이 빈 도토리)은 다루지 않습니다.' },
   { title: '도토리를 대신 골라주지 않습니다', desc: '무역토리는 정보를 전할 뿐, 투자 판단을 대신하지 않습니다. 모든 콘텐츠는 투자 자문이 아닙니다.' },
@@ -189,6 +257,39 @@ const principles = [
       ))
     }
   </section>
+
+  {
+    showEp2 && (
+      <>
+      <section class="wrap story-head daily-head">
+        <div class="kicker-en" style="color: var(--accent);">DAILY STORY</div>
+        <h1 class="serif story-title">「토리의 일상」 제2화 — 만년필</h1>
+        <p class="story-sub">쉰 번째 기사를 적던 날, 몽당연필에게 생긴 일</p>
+      </section>
+      <section class="strip wrap">
+        {daily02Panels.map((p, i) => (
+          <figure class:list={['panel', 'reveal', `act-${p.act}`]}>
+            <div class="frame">
+              <img src={url(`/images/story/${p.img}.jpg`)} alt={p.alt} width="880" height="660" loading="lazy" />
+              <div class="fx" aria-hidden="true">
+                <i /><i /><i /><i /><i /><i />
+              </div>
+              {p.bubbles.map((b) => (
+                <div
+                  class:list={['bubble', b.kind, b.tail ? `tail-${b.tail}` : '']}
+                  style={`left:${b.x};${b.y.startsWith('b:') ? `bottom:${b.y.slice(2)}` : `top:${b.y}`};${b.w ? `max-width:${b.w};` : ''}`}
+                >
+                  {b.text}
+                </div>
+              ))}
+            </div>
+            <figcaption class="mono panel-no">{String(i + 1).padStart(2, '0')} / 12</figcaption>
+          </figure>
+        ))}
+      </section>
+      </>
+    )
+  }
 
   <section class="wrap creed">
     <h2 class="serif creed-title">토리의 세 가지 철칙</h2>
