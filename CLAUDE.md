@@ -5,6 +5,7 @@
 라이브: https://aijhmin1031-eng.github.io/blog.tradinfo-tory/ (GitHub Pages, Actions 배포)
 
 **이어서 작업하기 전에 반드시 `docs/worklog.md`(작업일지·현재 상태·미결 사항)를 읽을 것.**
+**작업은 일지에 기록하면서 진행할 것(소유주 지시)** — 의미 있는 작업 단위마다 `worklog.md`의 일지·현재 상태·미결 사항을 갱신해 같은 커밋에 포함한다. 일지 없는 작업 커밋 금지.
 
 ## 절대 규칙 (소유주 지시 — 위반 금지)
 
