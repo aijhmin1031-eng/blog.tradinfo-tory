@@ -88,6 +88,29 @@ const panels: Panel[] = [
   },
 ];
 
+// 「토리의 일상」 연작 — 제1화. 이미지는 무자막(말풍선은 HTML), 명세는 docs/worldview.md.
+const dailyPanels: Panel[] = [
+  {
+    img: 'daily-01-1', alt: '새벽, 서재에서 스탠드를 켜는 토리', act: 'night',
+    bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '78%', text: '여섯 시 오십 분 — 숲의 아침보다 먼저, 토리의 하루가 열립니다.' }],
+  },
+  {
+    img: 'daily-01-2', alt: '해 뜨는 항구에서 도토리를 줍는 토리', act: 'dawn',
+    bubbles: [{ kind: 'narration', x: '3%', y: '4%', w: '72%', text: '첫 행선지는 항구. 밤사이 바다를 건너온 숫자들이 기다립니다.' }],
+  },
+  {
+    img: 'daily-01-3', alt: '저울과 돋보기로 도토리를 검수하는 토리', act: 'autumn',
+    bubbles: [
+      { kind: 'speech', x: '55%', y: '5%', tail: 'bl', w: '34%', text: '음, 이건 가볍군.' },
+      { kind: 'narration', x: '3%', y: 'b:4%', w: '70%', text: '속이 빈 도토리는 장부에 오르지 못합니다.' },
+    ],
+  },
+  {
+    img: 'daily-01-4', alt: '아침 숲에서 차트로 브리핑하는 토리', act: 'dawn',
+    bubbles: [{ kind: 'speech', x: '3.5%', y: '5%', tail: 'r', w: '46%', text: '일곱 시입니다 — 오늘 주운 도토리, 세 알부터 보시죠.' }],
+  },
+];
+
 const principles = [
   { title: '주운 도토리만 말합니다', desc: '출처 있는 공식 데이터만 인용합니다. 소문과 추측(속이 빈 도토리)은 다루지 않습니다.' },
   { title: '도토리를 대신 골라주지 않습니다', desc: '무역토리는 정보를 전할 뿐, 투자 판단을 대신하지 않습니다. 모든 콘텐츠는 투자 자문이 아닙니다.' },
@@ -137,6 +160,36 @@ const principles = [
     <div class="story-close reveal serif">&ldquo;{SITE.tagline}&rdquo;</div>
   </section>
 
+  <section class="wrap story-head daily-head">
+    <div class="kicker-en" style="color: var(--accent);">DAILY STORY</div>
+    <h1 class="serif story-title">「토리의 일상」 제1화 — 새벽의 장부</h1>
+    <p class="story-sub">무역토리의 아침 브리핑은 이렇게 만들어집니다</p>
+  </section>
+
+  <section class="strip wrap">
+    {
+      dailyPanels.map((p, i) => (
+        <figure class:list={['panel', 'reveal', `act-${p.act}`]}>
+          <div class="frame">
+            <img src={url(`/images/story/${p.img}.jpg`)} alt={p.alt} width="880" height="660" loading="lazy" />
+            <div class="fx" aria-hidden="true">
+              <i /><i /><i /><i /><i /><i />
+            </div>
+            {p.bubbles.map((b) => (
+              <div
+                class:list={['bubble', b.kind, b.tail ? `tail-${b.tail}` : '']}
+                style={`left:${b.x};${b.y.startsWith('b:') ? `bottom:${b.y.slice(2)}` : `top:${b.y}`};${b.w ? `max-width:${b.w};` : ''}`}
+              >
+                {b.text}
+              </div>
+            ))}
+          </div>
+          <figcaption class="mono panel-no">{String(i + 1).padStart(2, '0')} / 04</figcaption>
+        </figure>
+      ))
+    }
+  </section>
+
   <section class="wrap creed">
     <h2 class="serif creed-title">토리의 세 가지 철칙</h2>
     <div class="creed-grid">
@@ -174,6 +227,7 @@ const principles = [
 
 <style>
   .story-head { text-align: center; padding-top: 56px; padding-bottom: 8px; }
+  .daily-head { padding-top: 28px; }
   .story-title { font-size: clamp(30px, 5vw, 42px); font-weight: 900; margin: 12px 0 10px 0; }
   .story-sub { color: var(--sub); font-size: 14.5px; letter-spacing: 0.08em; }
 
