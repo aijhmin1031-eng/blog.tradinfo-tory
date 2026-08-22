@@ -1,0 +1,60 @@
+---
+// 토리의 세 줄 요약 — Axios Smart Brevity 구조 채택:
+// ① 무슨 일이 ② 왜 중요한가 ③ 다음에 뭘 봐야 하나
+interface Props {
+  what: string;
+  why: string;
+  next: string;
+}
+const { what, why, next } = Astro.props;
+const rows = [
+  { tag: '무슨 일', text: what },
+  { tag: '왜 중요', text: why },
+  { tag: '다음 체크', text: next },
+];
+---
+
+<aside class="three card" aria-label="토리의 세 줄 요약">
+  <div class="three-head">
+    <span class="three-title">토리의 세 줄 요약</span>
+    <span class="three-sub mono">30초 안에 핵심만</span>
+  </div>
+  {
+    rows.map((r) => (
+      <div class="three-row">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" class="acorn">
+          <path d="M4 10 Q12 3 20 10 L19 13 Q12 8 5 13 Z" fill="#6B4423" />
+          <ellipse cx="12" cy="16" rx="6.5" ry="7" fill="var(--accent)" />
+        </svg>
+        <div class="three-text">
+          <span class="three-tag mono">{r.tag}</span>
+          <span set:html={r.text} />
+        </div>
+      </div>
+    ))
+  }
+</aside>
+
+<style>
+  .three {
+    border-color: var(--ink);
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 0 0 40px 0;
+  }
+  .three-head { display: flex; align-items: baseline; gap: 10px; }
+  .three-title { font-size: 14px; font-weight: 700; }
+  .three-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+  .three-row { display: flex; gap: 10px; }
+  .acorn { flex-shrink: 0; margin-top: 4px; }
+  .three-text { font-size: 14.5px; line-height: 1.7; }
+  .three-tag {
+    font-size: 10.5px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-right: 7px;
+    font-weight: 500;
+  }
+</style>

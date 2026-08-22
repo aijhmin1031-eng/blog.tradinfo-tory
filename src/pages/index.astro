@@ -1,0 +1,199 @@
+---
+import Base from '../layouts/Base.astro';
+import StatTiles from '../components/StatTiles.astro';
+import ThreeLines from '../components/ThreeLines.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, url, fmtDate, SITE } from '../lib/site';
+
+const all = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const featured = all.find((p) => p.data.featured) ?? all[0];
+const rest = all.filter((p) => p.id !== featured?.id);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.name,
+  description: SITE.description,
+  url: Astro.site ? new URL(url('/'), Astro.site).toString() : undefined,
+};
+---
+
+<Base activeNav="home">
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  {
+    featured && (
+      <section class="hero wrap">
+        <div class="hero-main">
+          <div class:list={['kicker', CATEGORIES[featured.data.category].cls]}>
+            {CATEGORIES[featured.data.category].name} — 오늘의 머리기사
+          </div>
+          <h1 class="hero-title serif">
+            <a href={url(`/posts/${featured.id}/`)}>{featured.data.title}</a>
+          </h1>
+          <p class="hero-dek">{featured.data.description}</p>
+          <div class="hero-byline">
+            <span class="byline-name">토리</span>
+            <span class="sep" />
+            <span>{featured.data.readingMinutes}분 읽기</span>
+            <span class="sep" />
+            <time datetime={featured.data.pubDate.toISOString()}>
+              {fmtDate(featured.data.pubDate)}
+            </time>
+          </div>
+          <a class="hero-cta" href={url(`/posts/${featured.id}/`)}>
+            기사 읽기
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+              <path
+                d="M2 6 H10 M6.5 2.5 L10 6 L6.5 9.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </a>
+        </div>
+        <aside class="hero-side">
+          {featured.data.three && (
+            <ThreeLines
+              what={featured.data.three.what}
+              why={featured.data.three.why}
+              next={featured.data.three.next}
+            />
+          )}
+          <StatTiles />
+        </aside>
+      </section>
+    )
+  }
+
+  <section class="list wrap">
+    <div class="list-head">
+      <h2 class="list-title serif">이번 주 도토리</h2>
+    </div>
+    {
+      rest.map((p) => (
+        <a class="row reveal" href={url(`/posts/${p.id}/`)}>
+          <div class="row-body">
+            <div class="row-title serif">{p.data.title}</div>
+            <div class="row-dek">{p.data.description}</div>
+          </div>
+          <div class="row-meta">
+            <span class:list={['chip', CATEGORIES[p.data.category].cls]}>
+              {CATEGORIES[p.data.category].name}
+            </span>
+            <span class="row-date mono">{fmtDate(p.data.pubDate)}</span>
+          </div>
+        </a>
+      ))
+    }
+  </section>
+
+  <section class="mascot wrap reveal">
+    <img
+      src={url('/images/tori/tori.jpg')}
+      alt="네이비 베스트를 입은 다람쥐 이코노미스트 토리"
+      class="mascot-img tori-idle"
+      width="180"
+      height="180"
+      loading="lazy"
+    />
+    <div>
+      <div class="mascot-quote serif">&ldquo;{SITE.tagline}&rdquo;</div>
+      <div class="mascot-sub">
+        토리는 매일 아침 무역·환율·금리 데이터를 줍고, 차트 한 장과 세 줄로 정리합니다.
+        <a href={url('/about/')}>토리의 이야기 보기 →</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-top: 52px;
+    padding-bottom: 52px;
+    border-bottom: 1px solid var(--ink);
+  }
+  @media (min-width: 960px) {
+    .hero { grid-template-columns: 2fr 1fr; gap: 48px; }
+    .hero-side { border-left: 1px solid var(--hair); padding-left: 36px; }
+  }
+  .hero-main { display: flex; flex-direction: column; gap: 17px; align-items: flex-start; }
+  .hero-title {
+    font-size: clamp(28px, 4.5vw, 42px);
+    font-weight: 900;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: pretty;
+  }
+  .hero-dek { font-size: 16px; line-height: 1.75; color: var(--sub); max-width: 640px; margin: 0; }
+  .hero-byline { display: flex; align-items: center; gap: 11px; font-size: 12px; color: var(--sub); }
+  .byline-name { font-weight: 700; color: var(--ink); }
+  .sep { width: 1px; height: 11px; background: var(--hair); }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 13.5px;
+    font-weight: 700;
+    padding: 10px 20px;
+  }
+  .hero-cta:hover { background: var(--accent); color: #fff; }
+  .hero-side { display: flex; flex-direction: column; gap: 26px; }
+  .hero-side :global(.three) { margin-bottom: 0; }
+
+  .list { padding-top: 52px; }
+  .list-head { border-bottom: 1px solid var(--ink); margin-bottom: 4px; }
+  .list-title { font-size: 25px; font-weight: 900; margin: 0 0 14px 0; }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--hair2);
+  }
+  .row-title { font-size: 19px; font-weight: 700; line-height: 1.5; }
+  .row:hover .row-title { color: var(--accent); }
+  .row-dek { font-size: 14px; color: var(--sub); line-height: 1.7; margin-top: 6px; }
+  .row-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+  .row-date { font-size: 11px; color: var(--muted); }
+  @media (max-width: 640px) {
+    .row { grid-template-columns: 1fr; }
+    .row-meta { flex-direction: row; align-items: center; }
+  }
+
+  .mascot {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+    padding-top: 64px;
+    flex-wrap: wrap;
+  }
+  .mascot-img {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--hair);
+  }
+  .mascot-quote { font-size: 22px; font-weight: 900; margin-bottom: 10px; }
+  .mascot-sub { font-size: 14px; color: var(--sub); line-height: 1.8; max-width: 480px; }
+  .mascot-sub a { color: var(--accent); font-weight: 700; }
+</style>

@@ -1,0 +1,57 @@
+---
+import indicators from '../data/indicators.json';
+import Delta from './Delta.astro';
+
+const sparkColor = (dir: string) => (dir === 'up' ? 'var(--up)' : 'var(--down)');
+const sparkPoints = (vals: number[]) =>
+  vals.map((v, i) => `${(i * 80) / (vals.length - 1)},${v}`).join(' ');
+---
+
+<div class="tiles">
+  <div class="tiles-head kicker">오늘의 지표</div>
+  {
+    indicators.tiles.map((t) => (
+      <div class="tile">
+        <div class="tile-info">
+          <div class="tile-label">{t.label}</div>
+          <div class="tile-row">
+            <span class="tile-value mono">{t.value}</span>
+            <Delta dir={t.dir as 'up' | 'down'} text={t.delta} />
+          </div>
+        </div>
+        <svg width="80" height="28" viewBox="0 0 80 28" aria-hidden="true">
+          <polyline
+            points={sparkPoints(t.spark)}
+            fill="none"
+            stroke={sparkColor(t.dir)}
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+    ))
+  }
+  <div class="tiles-asof mono">기준 {indicators.asOf} · 자동 갱신 준비 중</div>
+</div>
+
+<style>
+  .tiles { display: flex; flex-direction: column; }
+  .tiles-head {
+    color: var(--sub);
+    border-bottom: 1px solid var(--hair);
+    padding-bottom: 9px;
+    font-size: 11px;
+  }
+  .tile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--hair2);
+  }
+  .tile-label { font-size: 12px; color: var(--sub); margin-bottom: 3px; }
+  .tile-row { display: flex; align-items: baseline; gap: 9px; }
+  .tile-value { font-size: 19px; font-weight: 500; }
+  .tiles-asof { font-size: 10px; color: var(--muted); padding-top: 11px; }
+</style>

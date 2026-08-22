@@ -1,0 +1,66 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, url, fmtDate, type CategoryKey } from '../../lib/site';
+
+export async function getStaticPaths() {
+  return Object.keys(CATEGORIES).map((category) => ({ params: { category } }));
+}
+
+const { category } = Astro.params;
+const cat = CATEGORIES[category as CategoryKey];
+const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === category)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Base title={cat.name} compact activeNav={cat.slug}>
+  <section class="wrap">
+    <header class="cat-head">
+      <div class:list={['kicker', cat.cls]}>CATEGORY</div>
+      <h1 class="serif cat-title">{cat.name}</h1>
+    </header>
+    {
+      posts.length === 0 ? (
+        <div class="empty">
+          <img src={url('/images/poses/pose-04.jpg')} alt="생각에 잠긴 토리" width="120" height="120" />
+          <p>아직 이 창고엔 도토리가 없습니다. 토리가 곧 주워올게요.</p>
+        </div>
+      ) : (
+        posts.map((p) => (
+          <a class="row" href={url(`/posts/${p.id}/`)}>
+            <div>
+              <div class="row-title serif">{p.data.title}</div>
+              <div class="row-dek">{p.data.description}</div>
+            </div>
+            <span class="row-date mono">{fmtDate(p.data.pubDate)}</span>
+          </a>
+        ))
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .cat-head { padding: 48px 0 18px 0; border-bottom: 1px solid var(--ink); }
+  .cat-title { font-size: 30px; font-weight: 900; margin: 8px 0 16px 0; }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--hair2);
+  }
+  .row-title { font-size: 18px; font-weight: 700; line-height: 1.5; }
+  .row:hover .row-title { color: var(--accent); }
+  .row-dek { font-size: 13.5px; color: var(--sub); margin-top: 6px; line-height: 1.7; }
+  .row-date { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .empty {
+    text-align: center;
+    padding: 64px 0;
+    color: var(--sub);
+    font-size: 14.5px;
+  }
+  .empty img { border-radius: 50%; border: 1px solid var(--hair); margin-bottom: 14px; }
+</style>

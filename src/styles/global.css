@@ -1,0 +1,227 @@
+/* ==========================================================================
+   무역토리 디자인 시스템
+   - 경제 일간지 에디토리얼: 크림 종이 + 세리프 헤드라인 + 가는 괘선
+   - 상승 빨강 / 하락 파랑 (한국 금융 관습)
+   - 카테고리 4색: 색약 검증 통과 (라이트/다크 각각)
+   ========================================================================== */
+
+:root {
+  --paper: #F8F4EC;
+  --surface: #FFFFFF;
+  --ink: #231A10;
+  --body-ink: #2E2619;
+  --sub: #6E6252;
+  --muted: #9A8F7E;
+  --hair: #D8CFC0;
+  --hair2: #EDE6D8;
+  --accent: #B4552D;
+  --accent-hover: #8F3E1D;
+  --up: #C73E3A;
+  --down: #2F66A8;
+  --cat-money: #B4552D;
+  --cat-tariff: #2F66A8;
+  --cat-trade: #3F833B;
+  --cat-basics: #95549E;
+  --dark-band: #231A10;
+  --dark-band-ink: #E8DFCF;
+  --dark-band-sub: #B8AC97;
+  --dark-band-up: #E06A5E;
+  --dark-band-down: #7FA3D8;
+  --chart-grid: #EDE6D8;
+  --chart-axis: #C9BFAE;
+
+  --font-serif: 'Hahmlet', 'Apple SD Gothic Neo', 'Malgun Gothic', serif;
+  --font-sans: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --w-page: 1200px;
+  --w-prose: 680px;
+}
+
+:root[data-theme='dark'] {
+  --paper: #191410;
+  --surface: #221B14;
+  --ink: #F0E8DA;
+  --body-ink: #DED4C2;
+  --sub: #B8AC97;
+  --muted: #8A7E6B;
+  --hair: #3A3128;
+  --hair2: #2C251E;
+  --accent: #D97A4B;
+  --accent-hover: #E8925F;
+  --up: #E06A5E;
+  --down: #7FA3D8;
+  --cat-money: #C96B40;
+  --cat-tariff: #5B8FCB;
+  --cat-trade: #5FA25A;
+  --cat-basics: #AA76B4;
+  --dark-band: #110D09;
+  --chart-grid: #2C251E;
+  --chart-axis: #4A4034;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #191410;
+    --surface: #221B14;
+    --ink: #F0E8DA;
+    --body-ink: #DED4C2;
+    --sub: #B8AC97;
+    --muted: #8A7E6B;
+    --hair: #3A3128;
+    --hair2: #2C251E;
+    --accent: #D97A4B;
+    --accent-hover: #E8925F;
+    --up: #E06A5E;
+    --down: #7FA3D8;
+    --cat-money: #C96B40;
+    --cat-tariff: #5B8FCB;
+    --cat-trade: #5FA25A;
+    --cat-basics: #AA76B4;
+    --dark-band: #110D09;
+    --chart-grid: #2C251E;
+    --chart-axis: #4A4034;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--accent); }
+
+img { max-width: 100%; height: auto; }
+
+.wrap {
+  max-width: var(--w-page);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.serif { font-family: var(--font-serif); }
+.mono { font-family: var(--font-mono); }
+
+/* 다람쥐가 다니는 길: 공통 컴포넌트 */
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  font-weight: 500;
+}
+
+.chip {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.cat-money { color: var(--cat-money); }
+.cat-tariff { color: var(--cat-tariff); }
+.cat-trade { color: var(--cat-trade); }
+.cat-basics { color: var(--cat-basics); }
+
+.hairline { border: 0; border-top: 1px solid var(--hair); margin: 0; }
+
+.double-rule {
+  border-top: 2.5px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  height: 3px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hair);
+}
+
+/* 모션 — 토리의 숨결 */
+@keyframes tori-bob {
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50% { transform: translateY(-8px) rotate(0.5deg); }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes draw-line {
+  from { stroke-dashoffset: var(--line-len, 1600); }
+  to { stroke-dashoffset: 0; }
+}
+
+.tori-idle { animation: tori-bob 3.4s ease-in-out infinite; transform-origin: 50% 90%; }
+
+.reveal { opacity: 0; }
+.reveal.is-visible { animation: fade-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; }
+  html { scroll-behavior: auto; }
+}
+
+/* 본문 타이포 */
+.prose {
+  max-width: var(--w-prose);
+  margin: 0 auto;
+  font-size: 17px;
+  line-height: 1.9;
+  color: var(--body-ink);
+}
+.prose > * + * { margin-top: 1.5em; }
+.prose h2 {
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 900;
+  color: var(--ink);
+  line-height: 1.4;
+  border-top: 1px solid var(--hair);
+  padding-top: 26px;
+  margin-top: 2em;
+}
+.prose h3 {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.prose a { color: var(--accent); border-bottom: 1px solid currentColor; }
+.prose a:hover { color: var(--accent-hover); }
+.prose strong { color: var(--ink); }
+.prose blockquote {
+  margin: 1.5em 0;
+  padding: 4px 0 4px 20px;
+  border-left: 2px solid var(--ink);
+  color: var(--sub);
+}
+.prose table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.prose th, .prose td { border: 1px solid var(--hair); padding: 9px 12px; text-align: left; }
+.prose th { background: var(--surface); font-weight: 700; }
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--hair2);
+  padding: 1px 6px;
+}
+
+/* 숫자 강조 */
+.num-up { color: var(--up); font-weight: 700; }
+.num-down { color: var(--down); font-weight: 700; }
+
+/* 모바일 */
+@media (max-width: 720px) {
+  .wrap { padding: 0 18px; }
+  .prose { font-size: 16px; }
+}

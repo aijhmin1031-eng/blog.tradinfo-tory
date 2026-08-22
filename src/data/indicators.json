@@ -1,0 +1,35 @@
+{
+  "asOf": "2026-08-21",
+  "note": "초기 시드 데이터 — scripts/fetch-indicators.mjs 파이프라인 연결 후 자동 갱신 예정",
+  "ticker": [
+    { "label": "USD/KRW", "value": "1,388.50", "delta": "0.42%", "dir": "up" },
+    { "label": "JPY100", "value": "942.10", "delta": "0.16%", "dir": "down" },
+    { "label": "WTI", "value": "$71.24", "delta": "1.08%", "dir": "down" },
+    { "label": "KOSPI", "value": "2,741.30", "delta": "0.66%", "dir": "up" },
+    { "label": "美 10Y", "value": "4.12%", "delta": "2bp", "dir": "up" },
+    { "label": "수출(8.1~20)", "value": "+6.2%", "delta": "", "dir": "up" }
+  ],
+  "tiles": [
+    {
+      "label": "원/달러 환율",
+      "value": "1,388.50",
+      "delta": "0.42%",
+      "dir": "up",
+      "spark": [22, 18, 20, 14, 16, 10, 13, 7, 5]
+    },
+    {
+      "label": "한·미 금리차 (10Y)",
+      "value": "-1.28%p",
+      "delta": "3bp",
+      "dir": "down",
+      "spark": [8, 10, 9, 13, 12, 16, 14, 18, 17]
+    },
+    {
+      "label": "수출 증가율 (8.1~20 잠정)",
+      "value": "+6.2%",
+      "delta": "전년동기比",
+      "dir": "up",
+      "spark": [18, 20, 15, 17, 12, 14, 9, 11, 6]
+    }
+  ]
+}

@@ -1,0 +1,173 @@
+---
+import Base from './Base.astro';
+import ThreeLines from '../components/ThreeLines.astro';
+import ToriNote from '../components/ToriNote.astro';
+import { CATEGORIES, url, fmtDate, SITE } from '../lib/site';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+  related: CollectionEntry<'posts'>[];
+}
+const { post, related } = Astro.props;
+const { title, description, category, pubDate, readingMinutes, place, three, toriNote, dataAsOf } =
+  post.data;
+const cat = CATEGORIES[category];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  author: { '@type': 'Organization', name: SITE.name },
+  publisher: { '@type': 'Organization', name: SITE.name },
+};
+---
+
+<Base title={title} description={description} compact activeNav={cat.slug}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <div class="progress" id="read-progress" aria-hidden="true"></div>
+
+  <article class="wrap">
+    <header class="post-head">
+      <div class:list={['kicker', cat.cls]}>{cat.name}</div>
+      <h1 class="post-title serif">{title}</h1>
+      <p class="post-dek">{description}</p>
+      <div class="post-byline">
+        <img
+          src={url('/images/tori/tori.jpg')}
+          alt="토리"
+          width="26"
+          height="26"
+          class="byline-tori"
+        />
+        <span class="byline-name">토리</span>
+        <span class="sep"></span>
+        <time datetime={pubDate.toISOString()}>{fmtDate(pubDate)}</time>
+        <span class="sep"></span>
+        <span>{readingMinutes}분 읽기</span>
+        {
+          dataAsOf && (
+            <>
+              <span class="sep" />
+              <span class="mono asof">데이터 기준 {dataAsOf}</span>
+            </>
+          )
+        }
+      </div>
+      {place && <div class="post-place">오늘은 <strong>{place}</strong>에 다녀왔습니다.</div>}
+    </header>
+
+    {three && <ThreeLines what={three.what} why={three.why} next={three.next} />}
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    {toriNote && <ToriNote text={toriNote} />}
+
+    {
+      related.length > 0 && (
+        <section class="related">
+          <h2 class="related-title serif">함께 주우면 좋은 도토리</h2>
+          {related.map((r) => (
+            <a class="related-row" href={url(`/posts/${r.id}/`)}>
+              <span class="related-name">{r.data.title}</span>
+              <span class:list={['chip', CATEGORIES[r.data.category].cls]}>
+                {CATEGORIES[r.data.category].name}
+              </span>
+            </a>
+          ))}
+        </section>
+      )
+    }
+  </article>
+
+  <script>
+    const bar = document.getElementById('read-progress');
+    if (bar) {
+      const onScroll = () => {
+        const h = document.documentElement;
+        const max = h.scrollHeight - h.clientHeight;
+        bar.style.width = `${max > 0 ? (h.scrollTop / max) * 100 : 0}%`;
+      };
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+  </script>
+</Base>
+
+<style>
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--accent);
+    z-index: 100;
+  }
+  .post-head {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 52px 0 30px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .post-title {
+    font-size: clamp(27px, 5vw, 38px);
+    font-weight: 900;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: pretty;
+  }
+  .post-dek { font-size: 16.5px; color: var(--sub); line-height: 1.75; margin: 0; }
+  .post-byline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 11px;
+    font-size: 12px;
+    color: var(--sub);
+    border-top: 1px solid var(--hair);
+    border-bottom: 1px solid var(--hair);
+    padding: 11px 0;
+  }
+  .byline-tori {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: 50% 22%;
+    border: 1px solid var(--hair);
+  }
+  .byline-name { font-weight: 700; color: var(--ink); }
+  .sep { width: 1px; height: 11px; background: var(--hair); }
+  .asof { font-size: 10.5px; color: var(--muted); }
+  .post-place { font-size: 13.5px; color: var(--sub); }
+  .post-place strong { color: var(--ink); }
+
+  article :global(.three) { max-width: 820px; margin-left: auto; margin-right: auto; }
+
+  .related { max-width: var(--w-prose); margin: 56px auto 0 auto; }
+  .related-title {
+    font-size: 17px;
+    font-weight: 900;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 9px;
+    margin: 0 0 4px 0;
+  }
+  .related-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--hair2);
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+</style>

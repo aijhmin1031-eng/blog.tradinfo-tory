@@ -1,0 +1,27 @@
+---
+// 상승/하락 삼각형 + 수치 (한국 관습: 상승 빨강, 하락 파랑)
+interface Props {
+  dir: 'up' | 'down';
+  text?: string;
+  onDark?: boolean;
+}
+const { dir, text = '', onDark = false } = Astro.props;
+const color = onDark
+  ? dir === 'up'
+    ? 'var(--dark-band-up)'
+    : 'var(--dark-band-down)'
+  : dir === 'up'
+    ? 'var(--up)'
+    : 'var(--down)';
+---
+
+<span style={`display:inline-flex;align-items:center;gap:4px;color:${color};`}>
+  <svg width="8" height="8" viewBox="0 0 8 8" aria-label={dir === 'up' ? '상승' : '하락'}>
+    {dir === 'up' ? (
+      <path d="M4 1 L7.4 7 L0.6 7 Z" fill="currentColor"></path>
+    ) : (
+      <path d="M4 7 L7.4 1 L0.6 1 Z" fill="currentColor"></path>
+    )}
+  </svg>
+  {text && <span style="font-size:12px;font-weight:700;">{text}</span>}
+</span>
