@@ -71,7 +71,7 @@ const navItems = [
   <body>
     <header>
       <div class="topbar">
-        <div class="wrap topbar-in mono">
+        <div class="wrap topbar-in">
           <span class="topbar-date">{dateLine}</span>
           <span class="topbar-slogan">매일 아침 7시, 새 도토리가 올라옵니다</span>
           <span class="topbar-actions">
@@ -213,9 +213,10 @@ const navItems = [
     gap: 12px;
     padding-top: 11px;
     padding-bottom: 11px;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--sub);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
   }
   .topbar-slogan { display: none; }
   @media (min-width: 860px) { .topbar-slogan { display: inline; } }
@@ -279,7 +280,9 @@ const navItems = [
     font-weight: 500;
     color: var(--sub);
     white-space: nowrap;
+    transition: box-shadow 0.15s ease, color 0.15s ease;
   }
+  .nav-item:hover { color: var(--ink); box-shadow: inset 0 -2px 0 var(--hair); }
   .nav-item.active {
     color: var(--ink);
     font-weight: 700;

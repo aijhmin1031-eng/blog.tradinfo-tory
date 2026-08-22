@@ -6,14 +6,16 @@
    ========================================================================== */
 
 :root {
-  --paper: #F8F4EC;
+  --paper: #FBFBF9;
   --surface: #FFFFFF;
-  --ink: #231A10;
-  --body-ink: #2E2619;
-  --sub: #6E6252;
-  --muted: #9A8F7E;
-  --hair: #D8CFC0;
-  --hair2: #EDE6D8;
+  --ink: #16140F;
+  --body-ink: #26231D;
+  --sub: #5F5A50;
+  --muted: #8B8578;
+  --hair: #DDDAD2;
+  --hair2: #ECEAE4;
+  --brand: #1E3A5F;
+  --brand-hover: #2C4F7C;
   --accent: #B4552D;
   --accent-hover: #8F3E1D;
   --up: #C73E3A;
@@ -22,13 +24,13 @@
   --cat-tariff: #2F66A8;
   --cat-trade: #3F833B;
   --cat-basics: #95549E;
-  --dark-band: #231A10;
-  --dark-band-ink: #E8DFCF;
-  --dark-band-sub: #B8AC97;
-  --dark-band-up: #E06A5E;
-  --dark-band-down: #7FA3D8;
-  --chart-grid: #EDE6D8;
-  --chart-axis: #C9BFAE;
+  --dark-band: #101B2E;
+  --dark-band-ink: #E9EDF4;
+  --dark-band-sub: #8CA0BF;
+  --dark-band-up: #E2685C;
+  --dark-band-down: #82A9E0;
+  --chart-grid: #ECEAE4;
+  --chart-axis: #CBC8BF;
 
   --font-serif: 'Hahmlet', 'Apple SD Gothic Neo', 'Malgun Gothic', serif;
   --font-sans: 'IBM Plex Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
@@ -39,14 +41,16 @@
 }
 
 :root[data-theme='dark'] {
-  --paper: #191410;
-  --surface: #221B14;
-  --ink: #F0E8DA;
-  --body-ink: #DED4C2;
-  --sub: #B8AC97;
-  --muted: #8A7E6B;
-  --hair: #3A3128;
-  --hair2: #2C251E;
+  --paper: #14161A;
+  --surface: #1B1E24;
+  --ink: #EAE8E3;
+  --body-ink: #D6D3CC;
+  --sub: #A7A296;
+  --muted: #7E7A6F;
+  --hair: #33373F;
+  --hair2: #262A31;
+  --brand: #8FB4E8;
+  --brand-hover: #A9C6F0;
   --accent: #D97A4B;
   --accent-hover: #E8925F;
   --up: #E06A5E;
@@ -55,21 +59,23 @@
   --cat-tariff: #5B8FCB;
   --cat-trade: #5FA25A;
   --cat-basics: #AA76B4;
-  --dark-band: #110D09;
-  --chart-grid: #2C251E;
-  --chart-axis: #4A4034;
+  --dark-band: #0C141F;
+  --chart-grid: #262A31;
+  --chart-axis: #3E434C;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --paper: #191410;
-    --surface: #221B14;
-    --ink: #F0E8DA;
-    --body-ink: #DED4C2;
-    --sub: #B8AC97;
-    --muted: #8A7E6B;
-    --hair: #3A3128;
-    --hair2: #2C251E;
+    --paper: #14161A;
+    --surface: #1B1E24;
+    --ink: #EAE8E3;
+    --body-ink: #D6D3CC;
+    --sub: #A7A296;
+    --muted: #7E7A6F;
+    --hair: #33373F;
+    --hair2: #262A31;
+    --brand: #8FB4E8;
+    --brand-hover: #A9C6F0;
     --accent: #D97A4B;
     --accent-hover: #E8925F;
     --up: #E06A5E;
@@ -78,9 +84,9 @@
     --cat-tariff: #5B8FCB;
     --cat-trade: #5FA25A;
     --cat-basics: #AA76B4;
-    --dark-band: #110D09;
-    --chart-grid: #2C251E;
-    --chart-axis: #4A4034;
+    --dark-band: #0C141F;
+    --chart-grid: #262A31;
+    --chart-axis: #3E434C;
   }
 }
 
@@ -114,9 +120,14 @@ img { max-width: 100%; height: auto; }
 /* 다람쥐가 다니는 길: 공통 컴포넌트 */
 
 .kicker {
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+.kicker-en {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: 11px;
+  letter-spacing: 0.18em;
   font-weight: 500;
 }
 
@@ -197,8 +208,8 @@ img { max-width: 100%; height: auto; }
   font-weight: 700;
   color: var(--ink);
 }
-.prose a { color: var(--accent); border-bottom: 1px solid currentColor; }
-.prose a:hover { color: var(--accent-hover); }
+.prose a { color: var(--brand); border-bottom: 1px solid currentColor; }
+.prose a:hover { color: var(--brand-hover); }
 .prose strong { color: var(--ink); }
 .prose blockquote {
   margin: 1.5em 0;

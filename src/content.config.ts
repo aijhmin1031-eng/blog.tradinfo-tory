@@ -21,6 +21,18 @@ const posts = defineCollection({
       .optional(),
     toriNote: z.string().optional(),
     dataAsOf: z.string().optional(),
+    chart: z
+      .object({
+        title: z.string(),
+        unit: z.string().optional(),
+        values: z.array(z.number()),
+        yTicks: z.array(z.number()).optional(),
+        xLabels: z.array(z.object({ idx: z.number(), text: z.string() })).optional(),
+        endLabel: z.string().optional(),
+        source: z.string(),
+        color: z.enum(['down', 'up', 'accent']).optional(),
+      })
+      .optional(),
   }),
 });
 

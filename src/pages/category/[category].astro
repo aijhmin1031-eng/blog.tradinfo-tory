@@ -17,7 +17,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && data.ca
 <Base title={cat.name} compact activeNav={cat.slug}>
   <section class="wrap">
     <header class="cat-head">
-      <div class:list={['kicker', cat.cls]}>CATEGORY</div>
+      <div class:list={['kicker-en', cat.cls]}>CATEGORY</div>
       <h1 class="serif cat-title">{cat.name}</h1>
     </header>
     {

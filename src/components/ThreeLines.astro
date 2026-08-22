@@ -27,7 +27,7 @@ const rows = [
           <ellipse cx="12" cy="16" rx="6.5" ry="7" fill="var(--accent)" />
         </svg>
         <div class="three-text">
-          <span class="three-tag mono">{r.tag}</span>
+          <span class="three-tag">{r.tag}</span>
           <span set:html={r.text} />
         </div>
       </div>
@@ -51,10 +51,10 @@ const rows = [
   .acorn { flex-shrink: 0; margin-top: 4px; }
   .three-text { font-size: 14.5px; line-height: 1.7; }
   .three-tag {
-    font-size: 10.5px;
-    color: var(--accent);
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    color: var(--brand);
+    letter-spacing: 0.02em;
     margin-right: 7px;
-    font-weight: 500;
+    font-weight: 700;
   }
 </style>
