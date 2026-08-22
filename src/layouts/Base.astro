@@ -61,6 +61,7 @@ const navItems = [
     <script is:inline>
       // 테마 초기화 (FOUC 방지) — localStorage 실패 시 시스템 설정 따름
       (function () {
+        document.documentElement.classList.add('js');
         try {
           const t = localStorage.getItem('theme');
           if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
@@ -77,6 +78,12 @@ const navItems = [
           <span class="topbar-slogan">매일 아침 7시, 새 도토리가 올라옵니다</span>
           <span class="topbar-actions">
             <a href={url('/about/')}>토리 이야기</a>
+            <a href={url('/search/')} aria-label="검색" title="검색" class="topbar-icon">
+              <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+                <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+                <path d="M11 11 L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+              </svg>
+            </a>
             <button id="theme-toggle" aria-label="화면 테마 전환" title="라이트/다크 전환">
               <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
                 <circle cx="8" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"
@@ -213,6 +220,8 @@ const navItems = [
   .topbar-slogan { display: none; }
   @media (min-width: 860px) { .topbar-slogan { display: inline; } }
   .topbar-actions { display: inline-flex; align-items: center; gap: 14px; }
+  .topbar-icon { display: inline-flex; color: var(--sub); }
+  .topbar-icon:hover { color: var(--accent); }
   #theme-toggle {
     background: none;
     border: none;

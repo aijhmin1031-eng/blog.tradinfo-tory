@@ -176,7 +176,7 @@ img { max-width: 100%; height: auto; }
 
 .tori-idle { animation: tori-bob 3.4s ease-in-out infinite; transform-origin: 50% 90%; }
 
-.reveal { opacity: 0; }
+:root.js .reveal { opacity: 0; } /* JS 미작동 환경에서는 항상 표시 */
 .reveal.is-visible { animation: fade-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {

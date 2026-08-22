@@ -14,12 +14,27 @@ import { url } from '../lib/site';
     </header>
     <div class="wh-grid">
       <div class="card wh-card"><StatTiles /></div>
-      <div class="card wh-card wh-coming">
-        <img src={url('/images/poses/pose-07.jpg')} alt="도토리를 줍는 토리" width="140" height="140" />
-        <div>
-          <div class="wh-coming-title">창고 확장 공사 중</div>
-          <div class="wh-coming-desc">품목별 수출입 추이, 국가별 무역수지, 원자재 가격 차트가 순차적으로 추가될 예정입니다.</div>
-        </div>
+      <div class="card wh-card">
+        <div class="kicker" style="color: var(--sub); border-bottom: 1px solid var(--hair); padding-bottom: 9px; font-size: 11px;">입고 예정 지표</div>
+        <ul class="wh-roadmap">
+          <li>
+            <div class="wh-rm-name">품목별 수출입 추이</div>
+            <div class="wh-rm-desc">반도체·자동차·K-푸드 등 주요 품목의 월별 수출입액 (관세청)</div>
+          </li>
+          <li>
+            <div class="wh-rm-name">국가별 무역수지</div>
+            <div class="wh-rm-desc">주요 교역국별 흑자·적자 현황 (관세청 · UN Comtrade)</div>
+          </li>
+          <li>
+            <div class="wh-rm-name">원자재 가격</div>
+            <div class="wh-rm-desc">유가·구리·곡물 등 수입 물가를 좌우하는 원자재 시세 (FRED)</div>
+          </li>
+          <li>
+            <div class="wh-rm-name">시중 금리 동향</div>
+            <div class="wh-rm-desc">기준금리·예금금리·국고채 수익률 (한국은행 ECOS)</div>
+          </li>
+        </ul>
+        <div class="wh-rm-note">위 지표는 데이터 파이프라인 검증을 마치는 순서대로 공개됩니다.</div>
       </div>
     </div>
   </section>
@@ -33,8 +48,9 @@ import { url } from '../lib/site';
   .wh-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
   @media (min-width: 860px) { .wh-grid { grid-template-columns: 1fr 1fr; } }
   .wh-card { padding: 26px 30px; }
-  .wh-coming { display: flex; gap: 22px; align-items: center; }
-  .wh-coming img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hair); flex-shrink: 0; }
-  .wh-coming-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .wh-coming-desc { font-size: 13.5px; color: var(--sub); line-height: 1.75; }
+  .wh-roadmap { list-style: none; margin: 0; padding: 0; }
+  .wh-roadmap li { padding: 14px 0; border-bottom: 1px solid var(--hair2); }
+  .wh-rm-name { font-size: 14.5px; font-weight: 700; margin-bottom: 4px; }
+  .wh-rm-desc { font-size: 12.5px; color: var(--sub); line-height: 1.65; }
+  .wh-rm-note { font-size: 11.5px; color: var(--muted); padding-top: 12px; }
 </style>
