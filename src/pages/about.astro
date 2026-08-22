@@ -25,7 +25,7 @@ const panels: Panel[] = [
     img: '03', alt: '나무 아래에서 도토리를 살펴보고 장부에 적는 어린 토리', act: 'autumn',
     bubbles: [
       { kind: 'speech', x: '50%', y: '6%', tail: 'bl', w: '44%', text: '이건 꽉 찼고… 음, 이건 가볍네.' },
-      { kind: 'narration', x: '3%', y: '85%', w: '70%', text: '줍기 전에 꼭 들여다보고 장부에 적는, 조금 이상한 다람쥐가 있었습니다.' },
+      { kind: 'narration', x: '3%', y: 'b:4%', w: '70%', text: '줍기 전에 꼭 들여다보고 장부에 적는, 조금 이상한 다람쥐가 있었습니다.' },
     ],
   },
   {
@@ -63,7 +63,7 @@ const panels: Panel[] = [
     img: '11', alt: '모닥불에 둘러앉아 도토리를 나누는 다람쥐들', act: 'night',
     bubbles: [
       { kind: 'speech', x: '56%', y: '3.5%', tail: 'b', w: '38%', text: '고마워, 토리야!' },
-      { kind: 'narration', x: '3%', y: '87%', text: '숲의 모두가 함께 겨울을 났습니다.' },
+      { kind: 'narration', x: '3%', y: 'b:4%', text: '숲의 모두가 함께 겨울을 났습니다.' },
     ],
   },
   {
@@ -72,7 +72,7 @@ const panels: Panel[] = [
   },
   {
     img: '13', alt: '거울 앞에서 안경을 쓰는 토리, 옆에 걸린 네이비 베스트', act: 'dawn',
-    bubbles: [{ kind: 'narration', x: '3%', y: '87%', text: '그렇게 토리는 숲의 이코노미스트가 되었습니다.' }],
+    bubbles: [{ kind: 'narration', x: '3%', y: 'b:4%', w: '80%', text: '그렇게 토리는 숲의 이코노미스트가 되었습니다.' }],
   },
   {
     img: '14', alt: '컨테이너가 쌓인 항구를 걷는 어른 토리', act: 'dawn',
@@ -124,7 +124,7 @@ const principles = [
             {p.bubbles.map((b) => (
               <div
                 class:list={['bubble', b.kind, b.tail ? `tail-${b.tail}` : '']}
-                style={`left:${b.x};top:${b.y};${b.w ? `max-width:${b.w};` : ''}`}
+                style={`left:${b.x};${b.y.startsWith('b:') ? `bottom:${b.y.slice(2)}` : `top:${b.y}`};${b.w ? `max-width:${b.w};` : ''}`}
               >
                 {b.text}
               </div>

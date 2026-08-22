@@ -1,35 +1,95 @@
 {
   "asOf": "2026-08-21",
-  "note": "초기 시드 데이터 — scripts/fetch-indicators.mjs 파이프라인 연결 후 자동 갱신 예정",
+  "note": "ECOS·FRED 자동 수집 (환율·엔화·KOSPI·국고채10Y·美10Y·WTI)",
   "ticker": [
-    { "label": "USD/KRW", "value": "1,388.50", "delta": "0.42%", "dir": "up" },
-    { "label": "JPY100", "value": "942.10", "delta": "0.16%", "dir": "down" },
-    { "label": "WTI", "value": "$71.24", "delta": "1.08%", "dir": "down" },
-    { "label": "KOSPI", "value": "2,741.30", "delta": "0.66%", "dir": "up" },
-    { "label": "美 10Y", "value": "4.12%", "delta": "2bp", "dir": "up" },
-    { "label": "수출(8.1~20)", "value": "+6.2%", "delta": "", "dir": "up" }
+    {
+      "label": "USD/KRW",
+      "value": "1,393.00",
+      "delta": "0.68%",
+      "dir": "down"
+    },
+    {
+      "label": "JPY100",
+      "value": "876.43",
+      "delta": "1.13%",
+      "dir": "down"
+    },
+    {
+      "label": "WTI",
+      "value": "$86.48",
+      "delta": "0.51%",
+      "dir": "up"
+    },
+    {
+      "label": "KOSPI",
+      "value": "6,912.95",
+      "delta": "0.88%",
+      "dir": "up"
+    },
+    {
+      "label": "美 10Y",
+      "value": "4.69%",
+      "delta": "4bp",
+      "dir": "up"
+    },
+    {
+      "label": "국고채 10Y",
+      "value": "4.38%",
+      "delta": "",
+      "dir": "up"
+    }
   ],
   "tiles": [
     {
       "label": "원/달러 환율",
-      "value": "1,388.50",
-      "delta": "0.42%",
-      "dir": "up",
-      "spark": [22, 18, 20, 14, 16, 10, 13, 7, 5]
+      "value": "1,393.00",
+      "delta": "0.68%",
+      "dir": "down",
+      "spark": [
+        4,
+        8,
+        8,
+        8,
+        8,
+        8,
+        11,
+        18,
+        26
+      ]
     },
     {
       "label": "한·미 금리차 (10Y)",
-      "value": "-1.28%p",
-      "delta": "3bp",
+      "value": "-0.37%p",
+      "delta": "6bp",
       "dir": "down",
-      "spark": [8, 10, 9, 13, 12, 16, 14, 18, 17]
+      "spark": [
+        21,
+        26,
+        16,
+        14,
+        7,
+        12,
+        7,
+        4,
+        12
+      ]
     },
     {
-      "label": "수출 증가율 (8.1~20 잠정)",
-      "value": "+6.2%",
-      "delta": "전년동기比",
+      "label": "KOSPI",
+      "value": "6,912.95",
+      "delta": "0.88%",
       "dir": "up",
-      "spark": [18, 20, 15, 17, 12, 14, 9, 11, 6]
+      "spark": [
+        26,
+        25,
+        17,
+        9,
+        4,
+        8,
+        20,
+        8,
+        6
+      ]
     }
   ]
 }
