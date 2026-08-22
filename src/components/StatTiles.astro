@@ -55,3 +55,43 @@ const sparkPoints = (vals: number[]) =>
   .tile-value { font-size: 19px; font-weight: 500; }
   .tiles-asof { font-size: 10px; color: var(--muted); padding-top: 11px; }
 </style>
+
+<script>
+  // 지표 숫자 카운트업 — 화면에 들어올 때 0부터 실제 값까지
+  const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+  const animateValue = (el: Element) => {
+    const text = (el.textContent || '').trim();
+    const m = text.match(/-?[\d,]+(\.\d+)?/);
+    if (!m || m.index === undefined) return;
+    const target = parseFloat(m[0].replace(/,/g, ''));
+    const frac = (m[0].split('.')[1] || '').length;
+    const prefix = text.slice(0, m.index);
+    const suffix = text.slice(m.index + m[0].length);
+    const t0 = performance.now();
+    const D = 950;
+    const step = (now: number) => {
+      const p = Math.min(1, (now - t0) / D);
+      const v = target * easeOut(p);
+      el.textContent =
+        prefix +
+        v.toLocaleString('ko-KR', { minimumFractionDigits: frac, maximumFractionDigits: frac }) +
+        suffix;
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            animateValue(e.target);
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.6 }
+    );
+    document.querySelectorAll('.tile-value').forEach((el) => io.observe(el));
+  }
+</script>

@@ -1,20 +1,26 @@
 ---
 import indicators from '../data/indicators.json';
 import Delta from './Delta.astro';
+
+const items = indicators.ticker;
 ---
 
-<div class="ticker" role="marquee" aria-label="주요 시세">
-  <div class="ticker-inner mono">
+<div class="ticker" aria-label="주요 시세">
+  <div class="tk-track mono">
     {
-      indicators.ticker.map((t) => (
-        <span class="tk">
-          <span class="tk-label">{t.label}</span>
-          <span class="tk-value">{t.value}</span>
-          <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark />
-        </span>
+      [0, 1].map((copy) => (
+        <div class="tk-set" aria-hidden={copy === 1 ? 'true' : undefined}>
+          {items.map((t) => (
+            <span class="tk">
+              <span class="tk-label">{t.label}</span>
+              <span class="tk-value">{t.value}</span>
+              <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark />
+            </span>
+          ))}
+          <span class="tk tk-asof">기준 {indicators.asOf}</span>
+        </div>
       ))
     }
-    <span class="tk tk-asof">기준 {indicators.asOf}</span>
   </div>
 </div>
 
@@ -22,22 +28,32 @@ import Delta from './Delta.astro';
   .ticker {
     background: var(--dark-band);
     color: var(--dark-band-ink);
-    overflow-x: auto;
-    scrollbar-width: none;
+    overflow: hidden;
   }
-  .ticker::-webkit-scrollbar { display: none; }
-  .ticker-inner {
+  .tk-track {
+    display: flex;
+    width: max-content;
+    animation: tk-scroll 48s linear infinite;
+  }
+  .ticker:hover .tk-track { animation-play-state: paused; }
+  @keyframes tk-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .tk-set {
     display: flex;
     align-items: center;
-    gap: 26px;
-    padding: 13px 24px;
+    gap: 30px;
+    padding: 13px 15px;
     font-size: 12px;
     white-space: nowrap;
-    max-width: var(--w-page);
-    margin: 0 auto;
   }
   .tk { display: inline-flex; align-items: center; gap: 6px; }
   .tk-label { color: var(--dark-band-sub); }
   .tk-value { font-weight: 500; }
-  .tk-asof { color: var(--dark-band-sub); font-size: 10px; margin-left: auto; }
+  .tk-asof { color: var(--dark-band-sub); font-size: 10px; }
+  @media (prefers-reduced-motion: reduce) {
+    .tk-track { animation: none; }
+    .ticker { overflow-x: auto; scrollbar-width: none; }
+  }
 </style>

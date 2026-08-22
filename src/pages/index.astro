@@ -51,7 +51,7 @@ const jsonLd = {
           )}
           <a class="hero-cta" href={url(`/posts/${featured.id}/`)}>
             기사 읽기
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+            <svg class="cta-arrow" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
               <path
                 d="M2 6 H10 M6.5 2.5 L10 6 L6.5 9.5"
                 fill="none"
@@ -99,6 +99,38 @@ const jsonLd = {
       ))
     }
   </section>
+
+  <aside id="tori-greet" hidden aria-live="polite">
+    <div class="tg-bubble">오늘 주운 도토리, 보고 가세요!</div>
+    <img src={url('/images/poses/pose-01.jpg')} alt="손을 흔드는 토리" width="88" height="88" />
+    <button id="tg-close" aria-label="인사 닫기">&times;</button>
+  </aside>
+
+  <script>
+    // 토리 인사 팝업 — 세션당 1회, 잠시 인사하고 내려간다
+    try {
+      const KEY = 'tori-greeted';
+      const greet = document.getElementById('tori-greet');
+      if (greet && !sessionStorage.getItem(KEY)) {
+        const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const show = () => {
+          greet.hidden = false;
+          requestAnimationFrame(() => greet.classList.add('show'));
+        };
+        const hide = () => {
+          greet.classList.remove('show');
+          setTimeout(() => (greet.hidden = true), 700);
+        };
+        setTimeout(show, reduce ? 400 : 1300);
+        const autoHide = setTimeout(hide, 9500);
+        sessionStorage.setItem(KEY, '1');
+        document.getElementById('tg-close')?.addEventListener('click', () => {
+          clearTimeout(autoHide);
+          hide();
+        });
+      }
+    } catch (e) {}
+  </script>
 
   <section class="mascot wrap reveal">
     <img
@@ -159,6 +191,8 @@ const jsonLd = {
     transition: background 0.15s ease;
   }
   .hero-cta:hover { background: var(--brand-hover); color: #fff; }
+  .hero-cta .cta-arrow { transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .hero-cta:hover .cta-arrow { transform: translateX(4px); }
   .hero-side { display: flex; flex-direction: column; gap: 26px; }
   .hero-side :global(.three) { margin-bottom: 0; }
 
@@ -174,8 +208,15 @@ const jsonLd = {
     border-bottom: 1px solid var(--hair2);
   }
   .row-no { font-size: 13px; color: var(--muted); align-self: start; padding-top: 4px; }
-  .row-title { font-size: 19px; font-weight: 700; line-height: 1.5; }
-  .row:hover .row-title { color: var(--accent); }
+  .row-title {
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.5;
+    transition: color 0.15s ease, transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .row:hover .row-title { color: var(--accent); transform: translateX(6px); }
+  .row .row-no { transition: color 0.2s ease; }
+  .row:hover .row-no { color: var(--accent); }
   .row-dek { font-size: 14px; color: var(--sub); line-height: 1.7; margin-top: 6px; }
   .row-meta {
     display: flex;
@@ -189,6 +230,82 @@ const jsonLd = {
     .row { grid-template-columns: 1fr; }
     .row-no { display: none; }
     .row-meta { flex-direction: row; align-items: center; }
+  }
+
+  #tori-greet {
+    position: fixed;
+    right: 20px;
+    bottom: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 9px;
+    transform: translateY(120%);
+    transition: transform 0.65s cubic-bezier(0.2, 0.9, 0.25, 1.15);
+    padding-bottom: 16px;
+  }
+  #tori-greet.show { transform: translateY(0); }
+  #tori-greet img {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: 50% 18%;
+    border: 2px solid var(--ink);
+    background: #fff;
+    animation: tori-bob 3.2s ease-in-out infinite;
+  }
+  .tg-bubble {
+    background: #fff;
+    color: #231a10;
+    border: 2px solid #231a10;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 9px 14px;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(22, 20, 15, 0.12);
+  }
+  .tg-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -11px;
+    right: 30px;
+    border: solid transparent;
+    border-width: 11px 7px 0 7px;
+    border-top-color: #231a10;
+  }
+  .tg-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    right: 32px;
+    border: solid transparent;
+    border-width: 8px 5px 0 5px;
+    border-top-color: #fff;
+  }
+  #tg-close {
+    position: absolute;
+    top: -6px;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #tori-greet { transition: none; }
+    #tori-greet img { animation: none; }
+  }
+  @media (max-width: 640px) {
+    #tori-greet img { width: 68px; height: 68px; }
+    .tg-bubble { font-size: 12px; }
   }
 
   .mascot {

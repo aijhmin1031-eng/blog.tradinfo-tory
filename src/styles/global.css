@@ -179,6 +179,20 @@ img { max-width: 100%; height: auto; }
 :root.js .reveal { opacity: 0; } /* JS 미작동 환경에서는 항상 표시 */
 .reveal.is-visible { animation: fade-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
+/* 이스터에그 — 도토리 비 */
+.acorn-drop {
+  position: fixed;
+  top: -32px;
+  z-index: 999;
+  pointer-events: none;
+  animation: acorn-fall 1.4s cubic-bezier(0.4, 0.1, 0.8, 0.9) forwards;
+}
+@keyframes acorn-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(108vh) rotate(480deg); opacity: 0.6; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .reveal { opacity: 1; }

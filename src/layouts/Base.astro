@@ -186,6 +186,26 @@ const navItems = [
         } catch (e) {}
       });
 
+      // 이스터에그 — 홈에서 마스트헤드 도토리를 누르면 도토리 비
+      const logo = document.querySelector('.masthead-logo');
+      if (logo && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const ACORN =
+          '<svg width="22" height="26" viewBox="0 0 24 28"><path d="M12 3.1 C7 3.1 3.3 6.1 2.7 10.2 C2.6 10.9 3.1 11.5 3.8 11.5 L20.2 11.5 C20.9 11.5 21.4 10.9 21.3 10.2 C20.7 6.1 17 3.1 12 3.1 Z" fill="#5C3A22"></path><path d="M4.2 13 C4.9 19.3 7.8 24.1 11.3 26.2 C11.75 26.5 12.25 26.5 12.7 26.2 C16.2 24.1 19.1 19.3 19.8 13 Z" fill="#B4552D"></path></svg>';
+        logo.addEventListener('click', (e) => {
+          e.preventDefault();
+          for (let i = 0; i < 14; i++) {
+            const el = document.createElement('span');
+            el.className = 'acorn-drop';
+            el.innerHTML = ACORN;
+            el.style.left = `${Math.random() * 96}vw`;
+            el.style.animationDelay = `${Math.random() * 0.5}s`;
+            el.style.animationDuration = `${1.1 + Math.random() * 0.9}s`;
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+          }
+        });
+      }
+
       // 스크롤 리빌 + 차트 그리기
       const io = new IntersectionObserver(
         (entries) => {
