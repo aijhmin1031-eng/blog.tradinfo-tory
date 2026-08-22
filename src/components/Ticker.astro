@@ -38,6 +38,15 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
     display: flex;
     align-items: stretch;
   }
+  /* 데스크톱에서는 내비게이션 아래에 고정 — 지표가 스크롤과 무관하게 항상 보인다.
+     모바일은 세로 공간을 아끼기 위해 고정하지 않는다. */
+  @media (min-width: 860px) {
+    .ticker {
+      position: sticky;
+      top: 56px;
+      z-index: 49;
+    }
+  }
   .tk-scroll {
     flex: 1;
     min-width: 0;

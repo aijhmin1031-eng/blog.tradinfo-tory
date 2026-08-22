@@ -122,21 +122,21 @@ const navItems = [
         )
       }
       {!compact && <div class="double-rule wrap" style="padding:0;" />}
-
-      <nav class="nav" aria-label="주요 카테고리">
-        <div class="wrap nav-in">
-          {
-            navItems.map((n) => (
-              <a href={n.href} class:list={['nav-item', { active: activeNav === n.key }]}>
-                {n.name}
-              </a>
-            ))
-          }
-        </div>
-      </nav>
-
-      <Ticker />
     </header>
+
+    <nav class="nav" aria-label="주요 카테고리">
+      <div class="wrap nav-in">
+        {
+          navItems.map((n) => (
+            <a href={n.href} class:list={['nav-item', { active: activeNav === n.key }]}>
+              {n.name}
+            </a>
+          ))
+        }
+      </div>
+    </nav>
+
+    <Ticker />
 
     <main>
       <slot />
