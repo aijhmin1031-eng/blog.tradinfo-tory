@@ -1,7 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, type CategoryKey } from '../../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, isPublished, type CategoryKey } from '../../lib/site';
 
 export async function getStaticPaths() {
   return Object.keys(CATEGORIES).map((category) => ({ params: { category } }));
@@ -9,7 +9,7 @@ export async function getStaticPaths() {
 
 const { category } = Astro.params;
 const cat = CATEGORIES[category as CategoryKey];
-const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === category)).sort(
+const posts = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate) && data.category === category)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 ---

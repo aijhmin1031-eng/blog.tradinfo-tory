@@ -26,5 +26,12 @@ export const url = (path: string) => `${base}${path.startsWith('/') ? path : `/$
 export const heroFor = (category: CategoryKey, hero?: string) =>
   hero ? url(hero) : url(`/images/cat/${CATEGORIES[category].slug}.jpg`);
 
+// 예약 발행 게이트 — pubDate가 KST 기준 오늘 이후인 글은 빌드에서 제외한다.
+// 매일 아침 KST 06:50 파이프라인 빌드가 그날 일자 기사를 자동으로 발행하는 구조.
+export const isPublished = (pubDate: Date) => {
+  const kstToday = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  return pubDate.toISOString().slice(0, 10) <= kstToday;
+};
+
 export const fmtDate = (d: Date) =>
   `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;

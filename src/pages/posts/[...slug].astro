@@ -1,16 +1,17 @@
 ---
 import { getCollection, render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
+import { isPublished } from '../../lib/site';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  const posts = await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate));
   return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
 }
 
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-const all = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 const related = all

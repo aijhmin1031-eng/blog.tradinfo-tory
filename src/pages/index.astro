@@ -4,9 +4,9 @@ import StatTiles from '../components/StatTiles.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished } from '../lib/site';
 
-const all = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 const featured = all.find((p) => p.data.featured) ?? all[0];

@@ -4,9 +4,8 @@ on:
   push:
     branches: [main, 'claude/**']
   schedule:
-    # 평일 아침 KST 06:50 (UTC 21:50 전일) — 지표 수집·브리핑 발행·배포
-    # [임시] 6(UTC 토) = KST 일요일: 2026-08-23 자동화 첫날 1회 예외 — 실행 후 0-4로 되돌릴 것
-    - cron: '50 21 * * 0-4,6'
+    # 매일 아침 KST 06:50 (UTC 21:50 전일) — 지표 수집·브리핑 발행·그날 예약 기사 자동 발행·배포
+    - cron: '50 21 * * *'
   workflow_dispatch:
 
 permissions:
