@@ -36,4 +36,32 @@ const posts = defineCollection({
   }),
 });
 
-export const collections = { posts };
+const briefs = defineCollection({
+  loader: glob({ pattern: '**/*.json', base: './src/content/briefs' }),
+  schema: z.object({
+    date: z.string(),
+    title: z.string(),
+    summary: z.array(z.string()),
+    movers: z.array(
+      z.object({
+        label: z.string(),
+        value: z.string(),
+        delta: z.string(),
+        dir: z.enum(['up', 'down']),
+      })
+    ),
+    chart: z
+      .object({
+        title: z.string(),
+        unit: z.string().optional(),
+        values: z.array(z.number()),
+        yTicks: z.array(z.number()).optional(),
+        xLabels: z.array(z.object({ idx: z.number(), text: z.string() })).optional(),
+        endLabel: z.string().optional(),
+        source: z.string(),
+      })
+      .optional(),
+  }),
+});
+
+export const collections = { posts, briefs };

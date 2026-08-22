@@ -1,0 +1,13 @@
+{
+  "note": "무역토리 지표 정의서 — 파이프라인이 이 파일을 읽어 수집한다. 지표 추가는 여기에 한 줄 추가로 끝난다.",
+  "series": [
+    { "id": "usdkrw", "name": "원/달러 환율", "unit": "원", "frac": 2, "source": "ECOS", "stat": "731Y001", "item": "0000001", "cycle": "D", "license": "한국은행 ECOS" },
+    { "id": "jpy100", "name": "원/100엔 환율", "unit": "원", "frac": 2, "source": "ECOS", "stat": "731Y001", "item": "0000002", "cycle": "D", "license": "한국은행 ECOS" },
+    { "id": "kospi", "name": "KOSPI", "unit": "pt", "frac": 2, "source": "ECOS", "stat": "802Y001", "item": "0001000", "cycle": "D", "license": "한국은행 ECOS" },
+    { "id": "ktb10y", "name": "국고채 10년", "unit": "%", "frac": 3, "source": "ECOS", "stat": "817Y002", "item": "010210000", "cycle": "D", "license": "한국은행 ECOS" },
+    { "id": "baserate", "name": "한국은행 기준금리", "unit": "%", "frac": 2, "source": "ECOS", "stat": "722Y001", "item": "0101000", "cycle": "D", "license": "한국은행 ECOS" },
+    { "id": "deposit1y", "name": "정기예금 평균금리", "unit": "%", "frac": 2, "source": "ECOS", "stat": "121Y002", "item": "BEABAA21", "cycle": "M", "license": "한국은행 ECOS" },
+    { "id": "us10y", "name": "미 국채 10년", "unit": "%", "frac": 2, "source": "FRED", "fred": "DGS10", "cycle": "D", "license": "St. Louis Fed FRED" },
+    { "id": "wti", "name": "WTI 유가", "unit": "달러", "frac": 2, "source": "FRED", "fred": "DCOILWTICO", "cycle": "D", "license": "St. Louis Fed FRED" }
+  ]
+}

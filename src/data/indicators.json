@@ -1,6 +1,6 @@
 {
   "asOf": "2026-08-21",
-  "note": "ECOS·FRED 자동 수집 (환율·엔화·KOSPI·국고채10Y·美10Y·WTI)",
+  "note": "ECOS·FRED 자동 수집 — data/series/ 에 장기 축적",
   "ticker": [
     {
       "label": "USD/KRW",

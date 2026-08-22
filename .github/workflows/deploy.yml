@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, 'claude/**']
   schedule:
-    # 평일 아침 KST 06:50 (UTC 21:50 전일) — 지표 갱신 + 예약 발행분 공개
+    # 평일 아침 KST 06:50 (UTC 21:50 전일) — 지표 수집·브리핑 발행·배포
     - cron: '50 21 * * 0-4'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -27,11 +27,27 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Fetch latest indicators (optional)
+
+      - name: Run data pipeline (collect + daily brief)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         env:
           ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-        run: npm run fetch-data
+        run: npm run pipeline
+
+      - name: Commit accumulated data back to repo
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "tori-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add data src/data/indicators.json src/content/briefs
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 커밋 생략"
+          else
+            git commit -m "데이터 파이프라인: 지표 수집·브리핑 발행 ($(date -u +%F))"
+            git push
+          fi
+
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

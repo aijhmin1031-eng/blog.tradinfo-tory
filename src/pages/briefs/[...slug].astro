@@ -1,0 +1,80 @@
+---
+import Base from '../../layouts/Base.astro';
+import LineChart from '../../components/LineChart.astro';
+import Delta from '../../components/Delta.astro';
+import { getCollection } from 'astro:content';
+import { url } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const briefs = await getCollection('briefs');
+  return briefs.map((b) => ({ params: { slug: b.id }, props: { brief: b } }));
+}
+
+const { brief } = Astro.props;
+const { title, date, summary, movers, chart } = brief.data;
+---
+
+<Base title={title} description={`${date} 무역토리 데일리 브리핑 — 환율·금리·시장 핵심 지표`} compact activeNav="warehouse">
+  <article class="wrap br">
+    <header class="br-head">
+      <div class="kicker-en" style="color: var(--accent);">DAILY BRIEF</div>
+      <h1 class="serif br-title">{title}</h1>
+      <div class="br-date mono">{date} · 영업일 종가 기준</div>
+    </header>
+
+    <div class="br-movers">
+      {
+        movers.map((m) => (
+          <div class="br-mover card">
+            <div class="bm-label">{m.label}</div>
+            <div class="bm-row">
+              <span class="bm-value mono">{m.value}</span>
+              <Delta dir={m.dir} text={m.delta} />
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="br-summary">
+      {summary.map((s) => <p>{s}</p>)}
+    </div>
+
+    {chart && <LineChart {...chart} height={220} />}
+
+    <div class="br-foot">
+      <a href={url('/warehouse/')}>← 도토리 창고에서 지난 브리핑 보기</a>
+      <span>본 브리핑은 공식 통계의 기계적 요약이며 투자 자문이 아닙니다.</span>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .br { max-width: 820px; }
+  .br-head { padding: 48px 0 26px 0; }
+  .br-title { font-size: clamp(26px, 4.5vw, 34px); font-weight: 900; margin: 10px 0 12px 0; }
+  .br-date { font-size: 11px; color: var(--muted); }
+  .br-movers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+  .br-mover { padding: 16px 18px; }
+  .bm-label { font-size: 12px; color: var(--sub); margin-bottom: 6px; }
+  .bm-row { display: flex; align-items: baseline; gap: 9px; flex-wrap: wrap; }
+  .bm-value { font-size: 19px; font-weight: 500; }
+  .br-summary { font-size: 15.5px; line-height: 1.9; color: var(--body-ink); }
+  .br-summary p + p { margin-top: 0.9em; }
+  .br-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--hair);
+    padding: 16px 0 48px 0;
+  }
+  .br-foot a { color: var(--brand); font-weight: 700; }
+</style>
