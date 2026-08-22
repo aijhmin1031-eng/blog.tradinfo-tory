@@ -243,6 +243,19 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     group: 'industry',
   },
 
+  패키징: {
+    label: '패키징',
+    def: '만들어진 칩들을 자르고 쌓고 연결해 완성품으로 조립하는 반도체의 후공정. HBM처럼 칩을 수직으로 쌓는 시대가 되며 기술 난도와 중요도가 급격히 올라갔다.',
+    icon: 'chip',
+    group: 'industry',
+  },
+  수율: {
+    label: '수율',
+    def: '생산한 칩 중 정상 작동하는 비율. 수율이 곧 반도체 공장의 원가 경쟁력이며, 첨단 공정일수록 수율 확보가 어렵다.',
+    icon: 'check',
+    group: 'industry',
+  },
+
   // ── 통계·지표 ──────────────────────────────
   무역수지: {
     label: '무역수지',

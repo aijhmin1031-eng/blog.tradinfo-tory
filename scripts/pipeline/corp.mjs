@@ -14,6 +14,7 @@ const CORP = new URL('src/data/corp.json', ROOT);
 // 무역토리 관심 종목 — 수출·무역의 대표 업종
 const WATCHLIST = [
   { code: '005930', name: '삼성전자', sector: '반도체' },
+  { code: '000660', name: 'SK하이닉스', sector: '반도체' },
   { code: '005380', name: '현대차', sector: '자동차' },
   { code: '011200', name: 'HMM', sector: '해운' },
   { code: '005490', name: 'POSCO홀딩스', sector: '철강' },

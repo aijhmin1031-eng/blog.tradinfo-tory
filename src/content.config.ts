@@ -22,6 +22,8 @@ const posts = defineCollection({
       .optional(),
     toriNote: z.string().optional(),
     dataAsOf: z.string().optional(),
+    topics: z.array(z.string()).optional(), // 소속 특집 key 목록 (lib/topics.ts)
+    topicRole: z.enum(['입문', '데이터', '심층']).optional(), // 특집 내 역할 라벨
     chart: z
       .object({
         title: z.string(),

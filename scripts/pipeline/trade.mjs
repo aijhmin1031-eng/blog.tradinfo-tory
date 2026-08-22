@@ -18,7 +18,10 @@ const COUNTRIES = [
 ];
 const MONTHS_BACK = 4; // 이번 달 포함 최근 4개월 재조회 (잠정치 갱신 겸용)
 // 품목 시계열 — 반도체·AI 허브 등에서 사용
-const ITEMS = [{ hs: '8542', id: 'hs8542', name: '반도체(전자집적회로)' }];
+const ITEMS = [
+  { hs: '8542', id: 'hs8542', name: '반도체(전자집적회로)' },
+  { hs: '8486', id: 'hs8486', name: '반도체 제조 장비' },
+];
 
 const yymm = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
 const tag = (xml, name) => {

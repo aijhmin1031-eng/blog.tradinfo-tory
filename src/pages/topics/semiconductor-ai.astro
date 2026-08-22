@@ -1,40 +1,105 @@
 ---
+// 특집: 반도체·AI — docs/topics-standard.md v1.0의 구성 요소 기준을 따른다.
+// 수치는 전부 data/series·corp.json 바인딩 (하드코딩 금지), 기사는 frontmatter topics 태그로 자동 수집.
 import Base from '../../layouts/Base.astro';
 import LineChart from '../../components/LineChart.astro';
-import Spark from '../../components/Spark.astro';
 import Delta from '../../components/Delta.astro';
 import { getCollection } from 'astro:content';
 import { url, heroFor, fmtDate, CATEGORIES } from '../../lib/site';
 import { GLOSSARY } from '../../lib/glossary';
 import { PICTOGRAMS } from '../../lib/pictograms';
+import { TOPICS } from '../../lib/topics';
 import semi from '../../../data/series/trade_hs8542.json';
+import equip from '../../../data/series/trade_hs8486.json';
+import semiCN from '../../../data/series/trade_hs8542_CN.json';
+import semiHK from '../../../data/series/trade_hs8542_HK.json';
+import skStock from '../../../data/series/stk_000660.json';
 import corp from '../../data/corp.json';
 
-// 이 주제에 속하는 기사 — 새 기사를 쓰면 이 목록에 추가한다
-const TOPIC_SLUGS = ['semiconductor-export-engine', 'ai-semiconductor-map'];
+const topic = TOPICS.find((t) => t.key === 'topic-semi') ?? TOPICS[0];
 
-const posts = (await getCollection('posts', ({ id, data }) => !data.draft && TOPIC_SLUGS.includes(id)))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = (
+  await getCollection('posts', ({ data }) => !data.draft && (data.topics ?? []).includes('topic-semi'))
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const roleOrder = { 입문: 0, 데이터: 1, 심층: 2 } as const;
+const reading = [...posts].sort(
+  (a, b) => (roleOrder[a.data.topicRole ?? '데이터'] ?? 1) - (roleOrder[b.data.topicRole ?? '데이터'] ?? 1)
+);
 
-const pts = semi.points;
 const eok = (v: number) => +(v / 1e8).toFixed(1);
-const values = pts.map((p) => eok(p.exp));
+const fmtB = (v: number) => eok(v).toLocaleString('ko-KR', { minimumFractionDigits: 1 });
+const mLabel = (d: string) => `'${d.slice(2, 4)}.${Number(d.slice(4))}`;
+
+// ── 시리즈 파생값 (전부 바인딩) ──
+const pts = semi.points;
 const last = pts[pts.length - 1];
 const first = pts[0];
+const prev = pts[pts.length - 2];
+const values = pts.map((p) => eok(p.exp));
 const ratio = (last.exp / first.exp).toFixed(1);
-const lastBal = eok(last.bal);
+const expDelta = ((last.exp - prev.exp) / prev.exp) * 100;
 const hiIdx = values.indexOf(Math.max(...values));
-const mLabel = (d: string) => `'${d.slice(2, 4)}.${Number(d.slice(4))}`;
-const xIdx = [0, Math.round((pts.length - 1) / 2), pts.length - 1];
-const asOf = `${last.d.slice(0, 4)}.${last.d.slice(4)}`;
+const asOfMonth = `${last.d.slice(0, 4)}.${last.d.slice(4)}`;
 
-const semiStock = corp.stocks.find((s) => s.sector === '반도체');
-const terms = Object.entries(GLOSSARY).filter(([, e]) => e.group === 'industry');
+const cnLast = semiCN.points[semiCN.points.length - 1];
+const hkLast = semiHK.points[semiHK.points.length - 1];
+const greaterChinaShare = (((cnLast.exp + hkLast.exp) / last.exp) * 100).toFixed(1);
+const cnPrev = semiCN.points[semiCN.points.length - 2];
+const hkPrev = semiHK.points[semiHK.points.length - 2];
+const sharePrev = ((cnPrev.exp + hkPrev.exp) / prev.exp) * 100;
+const shareDelta = +greaterChinaShare - sharePrev;
+
+const eqPts = equip.points;
+const eqLast = eqPts[eqPts.length - 1];
+const eqValues = eqPts.map((p) => eok(p.imp));
+const eqHiIdx = eqValues.indexOf(Math.max(...eqValues));
+
+const skPts = skStock.points;
+const skValues = skPts.map((p) => p.v / 10000); // 만원 단위
+const skLast = skPts[skPts.length - 1];
+const skFirst = skPts[0];
+const skHiIdx = skValues.indexOf(Math.max(...skValues));
+
+const semiStocks = corp.stocks.filter((s) => s.sector === '반도체');
+const semiCorps = new Set(['삼성전자', 'SK하이닉스']);
+const semiDisclosures = corp.disclosures.filter((d) => semiCorps.has(d.corp)).slice(0, 5);
+const fmtD8 = (d: string) => `${d.slice(4, 6)}.${d.slice(6, 8)}`;
+const termEntries = topic.glossaryKeys.map((k) => GLOSSARY[k]).filter(Boolean);
+
+// 연표 — 이 특집의 국면 전환 (월 점검 시 이월·추가; 수치는 시리즈에서 바인딩)
+const findM = (arr: { d: string; exp: number }[], d: string) => arr.find((p) => p.d === d);
+
+// 차트 속성 사전 계산 — JSX 속성 안의 복잡식(스프레드·조건식)을 피한다
+const semiXLabels = [0, Math.round((pts.length - 1) / 2), pts.length - 1].map((i) => ({ idx: i, text: mLabel(pts[i].d) }));
+const semiMarks = [
+  { idx: 0, label: `${fmtB(first.exp)}억` },
+  { idx: hiIdx, label: `${fmtB(pts[hiIdx].exp)}억`, dx: hiIdx >= pts.length - 3 ? -34 : 0, dy: hiIdx >= pts.length - 3 ? 4 : 0 },
+];
+const eqXLabels = [0, Math.round((eqPts.length - 1) / 2), eqPts.length - 1].map((i) => ({ idx: i, text: mLabel(eqPts[i].d) }));
+const eqMarks = [
+  { idx: 0, label: `${eok(eqPts[0].imp)}억` },
+  { idx: eqHiIdx, label: `${eok(eqPts[eqHiIdx].imp)}억` },
+];
+const skRounded = skValues.map((v) => +v.toFixed(1));
+const skTicks = [Math.floor(Math.min.apply(null, skValues)), Math.ceil(Math.max.apply(null, skValues))];
+const skXLabels = [
+  { idx: 0, text: fmtD8(skFirst.d) },
+  { idx: skPts.length - 1, text: fmtD8(skLast.d) },
+];
+const skMarks = [{ idx: skHiIdx, label: `${(skPts[skHiIdx].v / 10000).toFixed(1)}만`, dx: skHiIdx >= skPts.length - 3 ? -30 : 0, dy: skHiIdx >= skPts.length - 3 ? 4 : 0 }];
+const skEnd = `${(skLast.v / 10000).toFixed(1)}만원`;
+const timeline = [
+  { date: '2025.07', text: `월 수출 ${fmtB(findM(pts, '202507')!.exp)}억 달러 — 이번 사이클의 출발점`, src: '관세청' },
+  { date: '2025.12', text: `${fmtB(findM(pts, '202512')!.exp)}억 달러 — 한 달 새 20% 뛰며 층이 올라서다`, src: '관세청' },
+  { date: '2026.03', text: `${fmtB(findM(pts, '202603')!.exp)}억 달러 — 월 200억 대를 처음 넘어서다`, src: '관세청' },
+  { date: '2026.06', text: `${fmtB(findM(pts, '202606')!.exp)}억 달러 — 사상 최고치`, src: '관세청' },
+  { date: '2026.08.21', text: '삼성전자, 자기주식 취득 결정 공시', src: 'DART' },
+];
 ---
 
 <Base
   title="반도체·AI 도토리"
-  description="AI가 다시 그리는 한국 무역 — 반도체 수출 통계, 관련주, 산업 용어를 한 주제로 모았습니다"
+  description="AI가 다시 그리는 한국 무역 — 반도체 수출 통계·국가별 지도·장비 투자·관련주·산업 용어를 한 지면에서 추적합니다"
   compact
   activeNav="topic-semi"
 >
@@ -42,61 +107,158 @@ const terms = Object.entries(GLOSSARY).filter(([, e]) => e.group === 'industry')
     <header class="tp-head">
       <div class="kicker-en" style="color: var(--accent);">TOPIC</div>
       <h1 class="serif tp-title">반도체·AI 도토리</h1>
+      <div class="tp-stamp mono">
+        데이터 기준 {asOfMonth} 통관 · 매일 아침 자동 갱신 &nbsp;|&nbsp; 편집 갱신 {topic.editedAt}
+      </div>
       <p class="tp-sub">
-        지금 한국 무역에서 가장 뜨거운 이야기는 반도체와 AI입니다. 수출 통계와 관련주,
-        산업의 지도와 용어까지 — 이 주제의 도토리를 한곳에 모아 계속 쌓아 갑니다.
+        한국 무역의 지도가 반도체를 중심으로 다시 그려지고 있다. {asOfMonth.slice(5)}월 반도체
+        수출은 <strong class="mono">{fmtB(last.exp)}억 달러</strong> — 1년 전의
+        <strong class="mono">{ratio}배</strong>다(관세청 통관 기준). 그 절반이 넘는
+        <strong class="mono">{greaterChinaShare}%</strong>가 중화권으로 향하고, 번 돈의 일부는
+        월 {fmtB(eqLast.imp)}억 달러의 제조 장비 수입으로 되돌아간다. 이 지면은 그 순환 전체를
+        수치·기사·용어로 추적하며, 데이터는 파이프라인이 매일 아침 갱신한다.
       </p>
     </header>
 
     <div class="tp-stats">
       <div class="tp-stat">
-        <div class="tp-stat-label">반도체 월 수출 ({asOf})</div>
-        <div class="tp-stat-value mono">{values[values.length - 1]}억 달러</div>
-      </div>
-      <div class="tp-stat">
-        <div class="tp-stat-label">반도체 무역흑자 ({asOf})</div>
-        <div class="tp-stat-value mono">+{lastBal}억 달러</div>
-      </div>
-      <div class="tp-stat">
-        <div class="tp-stat-label">1년 성장 배율</div>
-        <div class="tp-stat-value mono">{ratio}배</div>
-      </div>
-      {semiStock && (
-        <div class="tp-stat">
-          <div class="tp-stat-label">{semiStock.name} 종가</div>
-          <div class="tp-stat-row">
-            <span class="tp-stat-value mono">{semiStock.value}</span>
-            <Delta dir={semiStock.dir as 'up' | 'down'} text={semiStock.delta} />
-          </div>
+        <div class="tp-stat-label">반도체 월 수출</div>
+        <div class="tp-stat-row">
+          <span class="tp-stat-value mono">{fmtB(last.exp)}억$</span>
+          <Delta dir={expDelta >= 0 ? 'up' : 'down'} text={`${Math.abs(expDelta).toFixed(1)}%`} />
         </div>
-      )}
+        <div class="tp-stat-src mono">관세청 · {asOfMonth}</div>
+      </div>
+      <div class="tp-stat">
+        <div class="tp-stat-label">반도체 무역흑자</div>
+        <div class="tp-stat-value mono">+{fmtB(last.bal)}억$</div>
+        <div class="tp-stat-src mono">관세청 · {asOfMonth}</div>
+      </div>
+      <div class="tp-stat">
+        <div class="tp-stat-label">중화권 수출 비중</div>
+        <div class="tp-stat-row">
+          <span class="tp-stat-value mono">{greaterChinaShare}%</span>
+          <Delta dir={shareDelta >= 0 ? 'up' : 'down'} text={`${Math.abs(shareDelta).toFixed(1)}%p`} />
+        </div>
+        <div class="tp-stat-src mono">관세청 · 중국+홍콩 · {asOfMonth}</div>
+      </div>
+      {
+        semiStocks.map((s) => (
+          <div class="tp-stat">
+            <div class="tp-stat-label">{s.name} 종가</div>
+            <div class="tp-stat-row">
+              <span class="tp-stat-value mono">{s.value}</span>
+              <Delta dir={s.dir as 'up' | 'down'} text={s.delta} />
+            </div>
+            <div class="tp-stat-src mono">금융위 주식시세 · {corp.asOf}</div>
+          </div>
+        ))
+      }
+      <div class="tp-stat">
+        <div class="tp-stat-label">최근 7일 공시</div>
+        <div class="tp-stat-value mono">{semiDisclosures.length}건</div>
+        <div class="tp-stat-src mono">금융감독원 DART · 삼성전자·SK하이닉스</div>
+      </div>
     </div>
 
+    <div class="tp-note-card">
+      <div class="tp-note-head">
+        <img src={url('/images/tori/tori.jpg')} alt="" width="30" height="30" />
+        <span class="serif">토리의 노트 — 지금 국면</span>
+      </div>
+      <p>
+        수출은 최고치 부근에서 숨을 고르고, 장비 수입은 넉 달째 25억 달러대에 머물러 있습니다.
+        가격이 이끄는 호황과 진행 중인 증설이 겹친 국면입니다. 다만 수출 중량은 1년 전과
+        제자리라는 점 — 이 호황의 키가 물량이 아니라 단가에 있다는 사실 — 을 기억해 둘
+        필요가 있습니다. 다음 신호는 아래 확인 지점에서 기다립니다.
+      </p>
+    </div>
+
+    <h2 class="serif tp-sec">숫자 세 장면</h2>
+
     <LineChart
-      title={`반도체 월 수출 — ${mLabel(first.d)}월 ${values[0]}억에서 ${mLabel(last.d)}월 ${values[values.length - 1]}억 달러로`}
+      title={`반도체 월 수출 — ${mLabel(first.d)}월 ${fmtB(first.exp)}억에서 ${mLabel(last.d)}월 ${fmtB(last.exp)}억 달러로`}
       unit="억 달러 (HS 8542 · 통관 기준)"
       values={values}
       yTicks={[150, 250, 350]}
-      xLabels={xIdx.map((i) => ({ idx: i, text: mLabel(pts[i].d) }))}
-      endLabel={`${values[values.length - 1]}억`}
-      marks={[
-        { idx: 0, label: `${values[0]}억` },
-        { idx: hiIdx, label: `${values[hiIdx]}억`, dx: hiIdx >= values.length - 3 ? -34 : 0, dy: hiIdx >= values.length - 3 ? 4 : 0 },
-      ]}
+      xLabels={semiXLabels}
+      endLabel={`${fmtB(last.exp)}억`}
+      marks={semiMarks}
       valueSuffix="억"
       color="up"
+      height={230}
       source="자료: 관세청 수출입무역통계 · HS 8542 · 매일 아침 자동 갱신"
     />
+    <p class="tp-caption">
+      이 곡선에서 읽을 것은 기울기의 변화다. '25년 하반기의 완만한 회복이 '26년 봄부터
+      가속으로 바뀌었고, 최근 두 달은 고점 부근의 횡보다. 이 선이 꺾이는 달이 사이클의
+      변곡점이 된다.
+    </p>
+
+    <LineChart
+      title={`장비 수입 — 증설 투자의 그림자, 넉 달째 25억 달러대`}
+      unit="억 달러 (HS 8486 수입 · 통관 기준)"
+      values={eqValues}
+      yTicks={[15, 20, 25]}
+      xLabels={eqXLabels}
+      endLabel={`${fmtB(eqLast.imp)}억`}
+      marks={eqMarks}
+      valueSuffix="억"
+      color="accent"
+      height={210}
+      source="자료: 관세청 수출입무역통계 · HS 8486 · 매일 아침 자동 갱신"
+    />
+    <p class="tp-caption">
+      장비 수입은 공장 증설의 물증이자 선행지표다 — 지금 들어온 장비가 1~2년 뒤의 생산
+      능력이 된다. 수출보다 이 선의 방향 전환이 먼저 온다.
+    </p>
+
+    <LineChart
+      title={`SK하이닉스 종가 — 최근 30영업일`}
+      unit="만원 (종가)"
+      values={skRounded}
+      yTicks={skTicks}
+      xLabels={skXLabels}
+      endLabel={skEnd}
+      marks={skMarks}
+      valueSuffix="만"
+      color="up"
+      height={200}
+      source="자료: 금융위원회 주식시세정보 · 종가 · 매일 아침 자동 갱신"
+    />
+    <p class="tp-caption">
+      시장은 통계보다 빠르게 기대를 반영한다. HBM 중심의 메모리 업황 기대가 주가에 어떻게
+      쌓이는지, 수출 통계와 나란히 두고 보면 사이클의 온도가 읽힌다.
+    </p>
+
+    <h2 class="serif tp-sec">이 사이클의 연표</h2>
+    <ol class="tp-timeline">
+      {
+        timeline.map((t) => (
+          <li>
+            <span class="tl-date mono">{t.date}</span>
+            <span class="tl-text">{t.text}</span>
+            <span class="tl-src mono">{t.src}</span>
+          </li>
+        ))
+      }
+    </ol>
 
     <h2 class="serif tp-sec">이 주제의 기사</h2>
+    <p class="tp-reading mono">
+      처음이라면 이 순서로 — {reading.map((p) => p.data.topicRole ?? '데이터').join(' → ')}
+    </p>
     <div class="tp-posts">
       {
-        posts.map((p) => (
+        reading.map((p) => (
           <a class="tp-post" href={url(`/posts/${p.id}/`)}>
             <img src={heroFor(p.data.category, p.data.hero)} alt="" width="220" height="124" loading="lazy" />
             <div class="tp-post-body">
-              <span class="tp-post-cat" style={`color: var(--cat-${CATEGORIES[p.data.category].slug})`}>
-                {CATEGORIES[p.data.category].name}
+              <span class="tp-post-meta-row">
+                <span class="tp-role" data-role={p.data.topicRole ?? '데이터'}>{p.data.topicRole ?? '데이터'}</span>
+                <span class="tp-post-cat" style={`color: var(--cat-${CATEGORIES[p.data.category].slug})`}>
+                  {CATEGORIES[p.data.category].name}
+                </span>
               </span>
               <span class="tp-post-title serif">{p.data.title}</span>
               <span class="tp-post-desc">{p.data.description}</span>
@@ -106,12 +268,30 @@ const terms = Object.entries(GLOSSARY).filter(([, e]) => e.group === 'industry')
         ))
       }
     </div>
-    <p class="tp-note">새 기사가 발행되는 대로 이 주제에 계속 추가됩니다.</p>
+    <p class="tp-note">새 기사는 발행과 동시에 이 목록에 자동 편입됩니다.</p>
+
+    {
+      semiDisclosures.length > 0 && (
+        <>
+          <h2 class="serif tp-sec">관련 공시</h2>
+          <div class="tp-dart">
+            {semiDisclosures.map((d) => (
+              <a class="tp-dart-row" href={d.url} target="_blank" rel="noopener">
+                <span class="mono tp-dart-date">{fmtD8(d.date)}</span>
+                <span class="tp-dart-corp">{d.corp}</span>
+                <span class="tp-dart-title">{d.title}</span>
+              </a>
+            ))}
+            <div class="tp-caption" style="margin-top: 8px;">최근 7일 · 자료: 금융감독원 DART · 매일 아침 자동 갱신</div>
+          </div>
+        </>
+      )
+    }
 
     <h2 class="serif tp-sec">이 주제의 용어</h2>
     <div class="tp-terms">
       {
-        terms.map(([key, e]) => (
+        termEntries.map((e) => (
           <article class="tp-term">
             <span
               class="tp-term-pict"
@@ -128,79 +308,125 @@ const terms = Object.entries(GLOSSARY).filter(([, e]) => e.group === 'industry')
     <p class="tp-note">
       더 많은 용어는 <a href={url('/glossary/')} style="color: var(--accent);">용어 도토리</a>에 있습니다.
     </p>
+
+    <h2 class="serif tp-sec">다음 확인 지점</h2>
+    <ul class="tp-next">
+      <li>
+        <span class="tn-when mono">매월 1일</span>
+        <span class="tn-what">관세청 수출입 동향의 반도체 수출 — 증가세가 꺾이는 첫 달이 사이클 변곡의 신호다. 위 수출 차트에 자동 반영된다.</span>
+      </li>
+      <li>
+        <span class="tn-when mono">매월</span>
+        <span class="tn-what">장비 수입 25억 달러대 유지 여부 — 증설 투자의 지속을 보여주는 선행지표. 이 선이 먼저 움직인다.</span>
+      </li>
+      <li>
+        <span class="tn-when mono">분기</span>
+        <span class="tn-what">삼성전자·SK하이닉스 실적 공시(DART) — 수출 통계의 단가 효과가 기업 이익으로 실제 확인되는 순간. 관련 공시 박스에 자동 수집된다.</span>
+      </li>
+    </ul>
   </section>
 </Base>
 
 <style>
-  .tp-head { padding: 46px 0 8px; max-width: 720px; }
-  .tp-title { font-size: clamp(30px, 4.5vw, 42px); margin: 6px 0 12px; color: var(--ink); }
-  .tp-sub { font-size: 15px; color: var(--sub); line-height: 1.8; word-break: keep-all; }
+  .tp-head { padding: 46px 0 8px; max-width: 760px; }
+  .tp-title { font-size: clamp(30px, 4.5vw, 42px); margin: 6px 0 10px; color: var(--ink); }
+  .tp-stamp { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .tp-sub { font-size: 15.5px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+  .tp-sub .mono { color: var(--ink); }
   .tp-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
     gap: 14px;
     margin: 26px 0 8px;
   }
-  .tp-stat {
+  .tp-stat { background: var(--surface); border: 1px solid var(--hair); padding: 15px 17px; }
+  .tp-stat-label { font-size: 11.5px; color: var(--sub); margin-bottom: 6px; }
+  .tp-stat-value { font-size: 20px; font-weight: 500; color: var(--ink); }
+  .tp-stat-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .tp-stat-src { font-size: 9.5px; color: var(--muted); margin-top: 6px; }
+  .tp-note-card {
     background: var(--surface);
     border: 1px solid var(--hair);
-    padding: 16px 18px;
+    border-left: 3px solid var(--accent);
+    padding: 18px 22px;
+    margin: 22px 0 8px;
+    max-width: 860px;
   }
-  .tp-stat-label { font-size: 11.5px; color: var(--sub); margin-bottom: 6px; }
-  .tp-stat-value { font-size: 21px; font-weight: 500; color: var(--ink); }
-  .tp-stat-row { display: flex; align-items: baseline; gap: 9px; }
-  .tp-sec {
-    font-size: 21px;
-    color: var(--ink);
-    border-bottom: 2px solid var(--ink);
-    padding-bottom: 10px;
-    margin: 40px 0 18px;
+  .tp-note-head { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 8px; }
+  .tp-note-head img { border-radius: 50%; }
+  .tp-note-card p { font-size: 14px; color: var(--sub); line-height: 1.85; margin: 0; word-break: keep-all; }
+  .tp-sec { font-size: 21px; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin: 42px 0 18px; }
+  .tp-caption {
+    max-width: 760px;
+    margin: -26px auto 30px;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.75;
+    word-break: keep-all;
+    padding: 0 4px;
   }
+  .tp-timeline { list-style: none; margin: 0; padding: 0; max-width: 860px; }
+  .tp-timeline li {
+    display: flex;
+    gap: 14px;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hair2);
+  }
+  .tl-date { flex: none; width: 86px; font-size: 12px; color: var(--accent); font-weight: 700; }
+  .tl-text { font-size: 14px; color: var(--ink); word-break: keep-all; }
+  .tl-src { margin-left: auto; flex: none; font-size: 10px; color: var(--muted); }
+  .tp-reading { font-size: 11.5px; color: var(--muted); margin: -6px 0 14px; }
   .tp-posts { display: flex; flex-direction: column; gap: 16px; }
   .tp-post {
-    display: flex;
-    gap: 20px;
-    background: var(--surface);
-    border: 1px solid var(--hair);
-    padding: 18px;
-    text-decoration: none;
-    align-items: flex-start;
+    display: flex; gap: 20px;
+    background: var(--surface); border: 1px solid var(--hair);
+    padding: 18px; text-decoration: none; align-items: flex-start;
   }
   .tp-post img { width: 220px; height: 124px; object-fit: cover; flex: none; }
   .tp-post-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .tp-post-meta-row { display: flex; align-items: center; gap: 10px; }
+  .tp-role {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+    border: 1px solid var(--hair); color: var(--sub);
+    padding: 2px 8px;
+  }
+  .tp-role[data-role='입문'] { color: var(--accent); border-color: var(--accent); }
   .tp-post-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
   .tp-post-title { font-size: 18px; font-weight: 700; color: var(--ink); word-break: keep-all; }
   .tp-post:hover .tp-post-title { color: var(--accent); }
   .tp-post-desc {
-    font-size: 13.5px;
-    color: var(--sub);
-    line-height: 1.7;
-    word-break: keep-all;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 13.5px; color: var(--sub); line-height: 1.7; word-break: keep-all;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .tp-post-meta { font-size: 11px; color: var(--muted); }
   @media (max-width: 640px) {
     .tp-post { flex-direction: column; }
     .tp-post img { width: 100%; height: auto; }
   }
-  .tp-terms {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 14px;
+  .tp-dart { max-width: 860px; }
+  .tp-dart-row {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--hair2); text-decoration: none;
   }
+  .tp-dart-date { font-size: 11px; color: var(--muted); flex: none; }
+  .tp-dart-corp { font-size: 13px; font-weight: 700; color: var(--ink); flex: none; }
+  .tp-dart-title { font-size: 13px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tp-dart-row:hover .tp-dart-title { color: var(--accent); }
+  .tp-terms { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
   .tp-term {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    background: var(--surface);
-    border: 1px solid var(--hair);
-    padding: 18px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--hair); padding: 18px 20px;
   }
   .tp-term-pict { flex: none; color: var(--accent); display: inline-flex; margin-top: 2px; }
   .tp-term-name { font-size: 16px; color: var(--ink); margin: 0 0 6px; }
   .tp-term-def { font-size: 13.5px; line-height: 1.75; color: var(--sub); margin: 0; word-break: keep-all; }
-  .tp-note { font-size: 12.5px; color: var(--muted); margin: 14px 0 30px; }
+  .tp-next { list-style: none; margin: 0 0 60px; padding: 0; max-width: 860px; }
+  .tp-next li {
+    display: flex; gap: 14px; align-items: baseline;
+    padding: 13px 0; border-bottom: 1px solid var(--hair2);
+  }
+  .tn-when { flex: none; width: 86px; font-size: 11.5px; color: var(--accent); font-weight: 700; }
+  .tn-what { font-size: 14px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
+  .tp-note { font-size: 12.5px; color: var(--muted); margin: 14px 0 6px; }
 </style>
