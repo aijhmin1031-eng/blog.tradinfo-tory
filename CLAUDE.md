@@ -44,7 +44,7 @@
 - 빌드는 **반드시 repo 디렉토리에서** `npm run build`. 커밋 전 빌드 통과 확인.
 - 스크린샷 검증: dist를 `python3 -m http.server 8123`으로 서빙(scratchpad에 symlink), Playwright 스크립트는 **repo 디렉토리 안에 두고** 실행(`/opt/pw-browsers/chromium`), 데스크톱+390px 모바일 확인.
 - 이 원격 컨테이너에서는 **node fetch가 프록시에 막힌다**(503/000) — 로컬 데이터 시드는 curl로. CI에서는 문제 없음.
-- 이미지 생성: Pollo API(nano-banana-2), 캐릭터 일관성은 레퍼런스 이미지 URL 필수(스크래치패드 `tori-char/url_p1.txt`; 유실 시 기존 이미지로 재업로드).
+- 이미지 생성: Pollo API(nano-banana-2), 캐릭터 일관성은 레퍼런스 이미지 URL 필수 — **정본은 repo `docs/character/`**(이미지+URL+복구 절차 README). 스크래치패드 사본은 세션과 함께 사라지므로 믿지 말 것.
   스타일 프롬프트: "Same flat vector cartoon style as the reference squirrel character (navy vest with brass buttons and golden acorn pin, gold-rimmed round glasses), clean thick outlines, flat solid colors, warm cream background… Strictly no text, no letters, no signboards, no numbers, no watermark."
   캐릭터 디테일 명세 v2는 `docs/worldview.md` 참조(2026-08-22 고도화 — 레퍼런스 교체됨, 이전 URL은 `tori-char/url_p1_v1_backup.txt`).
   생성물은 반드시 눈으로 검수(깨진 글자·색 규약 위반은 재생성). 기사 대표 이미지는 `public/images/hero/{slug}.jpg` + frontmatter `hero`.
