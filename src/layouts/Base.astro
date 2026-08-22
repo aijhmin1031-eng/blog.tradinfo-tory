@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Ticker from '../components/Ticker.astro';
+import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
 import { SITE, CATEGORIES, url, fmtDate } from '../lib/site';
 
@@ -25,17 +26,38 @@ const days = ['일', '월', '화', '수', '목', '금', '토'];
 const dateLine = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일 ${days[today.getDay()]}요일`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
-const navItems = [
+// 내비게이션은 7슬롯 고정 — 특집·창고는 드롭다운(데스크톱)이 증가분을 흡수한다.
+// 새 특집은 lib/topics.ts에만 추가하면 된다.
+const navItems: {
+  key: string;
+  name: string;
+  href: string;
+  children?: { key: string; name: string; href: string; desc?: string }[];
+}[] = [
   { key: 'home', name: '오늘의 도토리', href: url('/') },
   ...Object.values(CATEGORIES).map((c) => ({
     key: c.slug,
     name: c.name,
     href: url(`/category/${c.slug}/`),
   })),
-  { key: 'topic-semi', name: '반도체·AI', href: url('/topics/semiconductor-ai/') },
-  { key: 'warehouse', name: '도토리 창고', href: url('/warehouse/') },
-  { key: 'glossary', name: '용어 도토리', href: url('/glossary/') },
+  {
+    key: 'topics',
+    name: '특집',
+    href: url('/topics/'),
+    children: TOPICS.map((t) => ({ key: t.key, name: t.name, href: url(t.href), desc: t.desc })),
+  },
+  {
+    key: 'warehouse',
+    name: '도토리 창고',
+    href: url('/warehouse/'),
+    children: [
+      { key: 'warehouse', name: '오늘의 지표', href: url('/warehouse/'), desc: '환율·금리·관련주·무역수지 대시보드' },
+      { key: 'glossary', name: '용어 도토리', href: url('/glossary/'), desc: '무역·경제 용어 사전' },
+    ],
+  },
 ];
+const isActive = (n: (typeof navItems)[number]) =>
+  activeNav === n.key || (n.children?.some((c) => c.key === activeNav) ?? false);
 ---
 
 <!doctype html>
@@ -127,11 +149,27 @@ const navItems = [
     <nav class="nav" aria-label="주요 카테고리">
       <div class="wrap nav-in">
         {
-          navItems.map((n) => (
-            <a href={n.href} class:list={['nav-item', { active: activeNav === n.key }]}>
-              {n.name}
-            </a>
-          ))
+          navItems.map((n) =>
+            n.children ? (
+              <div class="nav-group">
+                <a href={n.href} class:list={['nav-item', 'nav-parent', { active: isActive(n) }]}>
+                  {n.name}<span class="nav-caret" aria-hidden="true">▾</span>
+                </a>
+                <div class="nav-panel" role="menu">
+                  {n.children.map((c) => (
+                    <a href={c.href} class:list={['nav-sub', { active: activeNav === c.key }]} role="menuitem">
+                      <span class="nav-sub-name">{c.name}</span>
+                      {c.desc && <span class="nav-sub-desc">{c.desc}</span>}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <a href={n.href} class:list={['nav-item', { active: activeNav === n.key }]}>
+                {n.name}
+              </a>
+            )
+          )
         }
       </div>
     </nav>
@@ -299,6 +337,70 @@ const navItems = [
     scrollbar-width: none;
   }
   .nav-in::-webkit-scrollbar { display: none; }
+  /* 데스크톱: 내비 폭이 넉넉하므로 스크롤 컨테이너를 풀어 드롭다운이 잘리지 않게 한다 */
+  @media (min-width: 860px) {
+    .nav-in { overflow: visible; }
+  }
+  .nav-group { position: relative; display: flex; }
+  .nav-caret {
+    font-size: 8px;
+    margin-left: 5px;
+    color: var(--muted);
+    display: none;
+  }
+  .nav-panel { display: none; }
+  @media (min-width: 860px) {
+    .nav-caret { display: inline; }
+    .nav-panel {
+      display: block;
+      visibility: hidden;
+      opacity: 0;
+      translate: 0 -4px;
+      transition: opacity 0.15s ease, translate 0.15s ease, visibility 0.15s;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 230px;
+      background: var(--surface);
+      border: 1px solid var(--hair);
+      border-top: 2px solid var(--ink);
+      box-shadow: 0 12px 30px rgba(16, 20, 28, 0.12);
+      padding: 6px 0;
+      z-index: 60;
+    }
+    .nav-group:hover .nav-panel,
+    .nav-group:focus-within .nav-panel {
+      visibility: visible;
+      opacity: 1;
+      translate: 0 0;
+    }
+    .nav-sub {
+      display: block;
+      padding: 11px 18px;
+      text-decoration: none;
+    }
+    .nav-sub:hover { background: var(--paper); }
+    .nav-sub-name {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .nav-sub.active .nav-sub-name { color: var(--accent); }
+    .nav-sub:hover .nav-sub-name { color: var(--accent); }
+    .nav-sub-desc {
+      display: block;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 3px;
+      word-break: keep-all;
+    }
+  }
+  /* 모바일: 드롭다운 없이 부모 링크만 — 특집은 /topics/ 인덱스로 이동 */
+  @media (max-width: 859.98px) {
+    .nav-panel { display: none !important; }
+  }
   .nav-item {
     padding: 15px 22px;
     font-size: 14.5px;

@@ -1,0 +1,78 @@
+---
+import Base from '../../layouts/Base.astro';
+import { TOPICS } from '../../lib/topics';
+import { url } from '../../lib/site';
+---
+
+<Base
+  title="특집"
+  description="무역토리가 집중해서 쌓아 가는 주제들 — 데이터·기사·용어를 주제별로 모았습니다"
+  compact
+  activeNav="topics"
+>
+  <section class="wrap">
+    <header class="ti-head">
+      <div class="kicker-en" style="color: var(--accent);">TOPICS</div>
+      <h1 class="serif ti-title">특집</h1>
+      <p class="ti-sub">
+        하나의 주제를 데이터·기사·용어로 꾸준히 쌓아 가는 무역토리의 기획 지면입니다.
+        경제의 흐름이 바뀌면 새 특집이 열립니다.
+      </p>
+    </header>
+
+    <div class="ti-grid">
+      {
+        TOPICS.map((t) => (
+          <a class="ti-card" href={url(t.href)}>
+            <img src={url(t.image)} alt="" width="520" height="292" loading="lazy" />
+            <div class="ti-body">
+              <h2 class="ti-name serif">{t.name}</h2>
+              <p class="ti-desc">{t.desc}</p>
+              <span class="ti-more mono">특집 보기 →</span>
+            </div>
+          </a>
+        ))
+      }
+      <div class="ti-card ti-soon">
+        <div class="ti-body">
+          <h2 class="ti-name serif">다음 특집 준비 중</h2>
+          <p class="ti-desc">
+            환율·통상 등 다음 주제를 살피고 있습니다. 아침 브리핑과 기사에서 먼저 예고해 드립니다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .ti-head { padding: 46px 0 10px; max-width: 720px; }
+  .ti-title { font-size: clamp(30px, 4.5vw, 42px); margin: 6px 0 12px; color: var(--ink); }
+  .ti-sub { font-size: 15px; color: var(--sub); line-height: 1.8; word-break: keep-all; }
+  .ti-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin: 26px 0 60px;
+  }
+  .ti-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    text-decoration: none;
+    overflow: hidden;
+  }
+  .ti-card img { width: 100%; height: auto; display: block; }
+  .ti-body { padding: 20px 22px 22px; }
+  .ti-name { font-size: 21px; color: var(--ink); margin: 0 0 8px; }
+  .ti-card:hover .ti-name { color: var(--accent); }
+  .ti-desc { font-size: 13.5px; color: var(--sub); line-height: 1.75; margin: 0 0 12px; word-break: keep-all; }
+  .ti-more { font-size: 11.5px; color: var(--accent); }
+  .ti-soon {
+    display: flex;
+    align-items: center;
+    border-style: dashed;
+    background: transparent;
+  }
+  .ti-soon .ti-name { color: var(--muted); }
+</style>
