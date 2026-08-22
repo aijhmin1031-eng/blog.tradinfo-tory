@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import StatTiles from '../components/StatTiles.astro';
+import CorpPanel from '../components/CorpPanel.astro';
 import indicators from '../data/indicators.json';
 import { getCollection } from 'astro:content';
 import { url } from '../lib/site';
@@ -39,6 +40,10 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
         </ul>
         <div class="wh-rm-note">위 지표는 데이터 파이프라인 검증을 마치는 순서대로 공개됩니다.</div>
       </div>
+    </div>
+
+    <div class="wh-grid" style="margin-top: 28px;">
+      <CorpPanel />
     </div>
 
     <div class="wh-briefs">

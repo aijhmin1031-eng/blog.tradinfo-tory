@@ -8,7 +8,7 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "fetch-data": "node scripts/pipeline/collect.mjs",
-    "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/brief.mjs"
+    "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/corp.mjs && node scripts/pipeline/brief.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",

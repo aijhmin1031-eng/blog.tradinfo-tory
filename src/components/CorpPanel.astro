@@ -1,0 +1,115 @@
+---
+// 도토리 창고 — 무역 관련주 시세 + 관심 종목 공시 (corp.json은 파이프라인이 갱신)
+import corp from '../data/corp.json';
+import Delta from './Delta.astro';
+
+const sparkColor = (dir: string) => (dir === 'up' ? 'var(--up)' : 'var(--down)');
+const sparkPoints = (vals: number[]) =>
+  vals.map((v, i) => `${(i * 80) / (vals.length - 1)},${v}`).join(' ');
+const fmtDate = (d: string) => `${d.slice(4, 6)}.${d.slice(6, 8)}`;
+---
+
+<div class="corp-stocks">
+  <div class="corp-head kicker">무역 관련주</div>
+  {
+    corp.stocks.length === 0 ? (
+      <p class="corp-empty">
+        주식시세 API 연동 승인을 기다리고 있습니다. 승인되면 반도체·자동차·해운·철강·배터리
+        대표 종목의 종가가 평일 아침 자동 입고됩니다.
+      </p>
+    ) : (
+      <>
+        {corp.stocks.map((s) => (
+          <div class="tile">
+            <div>
+              <div class="tile-label">
+                {s.name} <span class="corp-sector">{s.sector}</span>
+              </div>
+              <div class="tile-row">
+                <span class="tile-value mono">{s.value}</span>
+                <Delta dir={s.dir as 'up' | 'down'} text={s.delta} />
+              </div>
+            </div>
+            <svg width="80" height="28" viewBox="0 0 80 28" aria-hidden="true">
+              <polyline
+                points={sparkPoints(s.spark)}
+                fill="none"
+                stroke={sparkColor(s.dir)}
+                stroke-width="1.6"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+        ))}
+        <div class="corp-asof mono">기준 {corp.asOf} · 금융위원회 주식시세정보 · 종가</div>
+      </>
+    )
+  }
+</div>
+
+<div class="corp-dart">
+  <div class="corp-head kicker">관심 종목 공시</div>
+  {
+    corp.disclosures.length === 0 ? (
+      <p class="corp-empty">최근 7일 사이 관심 종목의 정기·주요사항 공시가 없습니다.</p>
+    ) : (
+      <>
+        {corp.disclosures.map((d) => (
+          <a class="dart-row" href={d.url} target="_blank" rel="noopener">
+            <span class="dart-date mono">{fmtDate(d.date)}</span>
+            <span class="dart-corp">{d.corp}</span>
+            <span class="dart-title">{d.title}</span>
+          </a>
+        ))}
+        <div class="corp-asof mono">최근 7일 · 유가증권시장 정기·주요사항 공시 · 자료: 금융감독원 DART</div>
+      </>
+    )
+  }
+</div>
+
+<style>
+  .corp-stocks,
+  .corp-dart {
+    background: var(--surface);
+    border: 1px solid var(--hair);
+    padding: 26px 30px;
+  }
+  .corp-head {
+    color: var(--sub);
+    border-bottom: 1px solid var(--hair);
+    padding-bottom: 9px;
+    font-size: 11px;
+  }
+  .corp-empty { font-size: 13px; color: var(--sub); line-height: 1.75; padding: 14px 0 4px; word-break: keep-all; }
+  .tile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--hair2);
+  }
+  .tile-label { font-size: 12px; color: var(--sub); margin-bottom: 3px; }
+  .corp-sector {
+    font-size: 10px;
+    color: var(--muted);
+    border: 1px solid var(--hair);
+    padding: 1px 6px;
+    margin-left: 4px;
+  }
+  .tile-row { display: flex; align-items: baseline; gap: 9px; }
+  .tile-value { font-size: 18px; font-weight: 500; }
+  .corp-asof { font-size: 10px; color: var(--muted); padding-top: 11px; }
+  .dart-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--hair2);
+    text-decoration: none;
+  }
+  .dart-date { font-size: 11px; color: var(--muted); flex: none; }
+  .dart-corp { font-size: 13px; font-weight: 700; color: var(--ink); flex: none; }
+  .dart-title { font-size: 13px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dart-row:hover .dart-title { color: var(--accent); }
+</style>
