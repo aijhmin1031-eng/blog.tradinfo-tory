@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+<!-- 도토리경제 그림함 · 편집 가능 SVG · 출처 표기 후 자유 사용 -->
+<g stroke="#4A3826" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+
+  <path id="handle" fill="none" d="M120 22 v14 M92 52 q28 -22 56 0"/>
+  <path id="top" fill="#1E3A5F" d="M88 52 h64 l6 16 h-76 z"/>
+  <path id="body" fill="#F5E9D0" d="M84 68 h72 q8 46 0 92 h-72 q-8 -46 0 -92 z"/>
+  <path id="body-line1" fill="none" stroke-width="4" d="M100 68 q-6 46 0 92"/>
+  <path id="body-line2" fill="none" stroke-width="4" d="M140 68 q6 46 0 92"/>
+  <path id="bottom" fill="#B4552D" d="M82 160 h76 l-6 16 h-64 z"/>
+  <path id="tassel" fill="none" d="M120 176 v22 M110 176 q-4 14 -8 18 M130 176 q4 14 8 18"/>
+
+</g>
+</svg>

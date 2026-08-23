@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+<!-- 도토리경제 그림함 · 편집 가능 SVG · 출처 표기 후 자유 사용 -->
+<g stroke="#4A3826" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+
+  <path id="stalks" fill="none" d="M104 206 q0 -66 8 -100 M136 206 q0 -66 -8 -100 M120 206 v-96"/>
+  <g id="head-left" fill="#D9A441" stroke-width="5">
+    <path id="hl-curve" fill="none" stroke-width="7" d="M112 106 q-4 -22 -22 -34"/>
+    <ellipse cx="108" cy="92" rx="8" ry="12" transform="rotate(-20 108 92)"/>
+    <ellipse cx="100" cy="80" rx="8" ry="12" transform="rotate(-40 100 80)"/>
+    <ellipse cx="88" cy="72" rx="8" ry="12" transform="rotate(-62 88 72)"/>
+    <ellipse cx="76" cy="68" rx="8" ry="12" transform="rotate(-80 76 68)"/>
+  </g>
+  <g id="head-right" fill="#D9A441" stroke-width="5">
+    <path id="hr-curve" fill="none" stroke-width="7" d="M128 106 q4 -22 22 -34"/>
+    <ellipse cx="132" cy="92" rx="8" ry="12" transform="rotate(20 132 92)"/>
+    <ellipse cx="140" cy="80" rx="8" ry="12" transform="rotate(40 140 80)"/>
+    <ellipse cx="152" cy="72" rx="8" ry="12" transform="rotate(62 152 72)"/>
+    <ellipse cx="164" cy="68" rx="8" ry="12" transform="rotate(80 164 68)"/>
+  </g>
+  <g id="head-center" fill="#D9A441" stroke-width="5">
+    <ellipse cx="120" cy="96" rx="8" ry="13"/>
+    <ellipse cx="120" cy="74" rx="8" ry="13"/>
+    <ellipse cx="120" cy="52" rx="8" ry="13"/>
+  </g>
+  <path id="band" fill="#B4552D" d="M96 152 q24 10 48 0 l5 20 q-29 12 -58 0 z"/>
+
+</g>
+</svg>

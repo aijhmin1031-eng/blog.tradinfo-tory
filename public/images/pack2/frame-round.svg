@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+<!-- 도토리경제 그림함 · 편집 가능 SVG · 출처 표기 후 자유 사용 -->
+<g stroke="#4A3826" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+
+  <circle id="ring-outer" cx="120" cy="120" r="88" fill="none"/>
+  <circle id="ring-inner" cx="120" cy="120" r="72" fill="none" stroke-width="4"/>
+  <g id="acorn-top">
+    <path fill="#D9A441" d="M108 24 a12 16 0 0 0 24 0 v-6 h-24 z"/>
+    <path fill="#6B4A2B" d="M106 18 a14 10 0 0 1 28 0 z"/>
+  </g>
+  <g id="leaf-left"><path fill="#B4552D" d="M28 96 q-16 20 0 40 q16 -20 0 -40 z"/></g>
+  <g id="leaf-right"><path fill="#B4552D" d="M212 96 q16 20 0 40 q-16 -20 0 -40 z"/></g>
+  <g id="acorn-bottom">
+    <path fill="#D9A441" d="M108 208 a12 16 0 0 1 24 0 v6 h-24 z"/>
+    <path fill="#6B4A2B" d="M106 216 a14 10 0 0 0 28 0 z"/>
+  </g>
+
+</g>
+</svg>

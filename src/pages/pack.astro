@@ -24,6 +24,25 @@ const PACK1: { file: string; name: string }[] = [
   { file: 'tori-treasure', name: '도토리를 안은 토리' },
   { file: 'tori-reading', name: '공부하는 토리' },
 ];
+
+const PACK2: { file: string; name: string }[] = [
+  { file: 'full-moon', name: '보름달' },
+  { file: 'songpyeon', name: '송편' },
+  { file: 'gift-bojagi', name: '보자기 선물' },
+  { file: 'persimmon', name: '감' },
+  { file: 'chestnut', name: '알밤' },
+  { file: 'acorn-trio', name: '도토리 삼형제' },
+  { file: 'oak-leaf', name: '참나무 잎' },
+  { file: 'ginkgo-leaf', name: '은행잎' },
+  { file: 'rice-sheaf', name: '벼 이삭단' },
+  { file: 'coin-pouch', name: '복주머니' },
+  { file: 'lantern', name: '청사초롱' },
+  { file: 'yakgwa', name: '약과' },
+  { file: 'ribbon-label', name: '리본 라벨' },
+  { file: 'frame-round', name: '원형 프레임' },
+  { file: 'corner-flourish', name: '모서리 장식' },
+  { file: 'divider', name: '구분선' },
+];
 ---
 
 <Base
@@ -82,6 +101,34 @@ const PACK1: { file: string; name: string }[] = [
       원본은 1024×1024 JPG입니다. 저장은 원본을 연 뒤 길게 누르거나(모바일)
       오른쪽 클릭으로 할 수 있고, 한 번에 받으려면 위의 ZIP을 이용해 주십시오.
     </p>
+
+    <div class="pk-pack-head" style="margin-top: 52px;">
+      <h2 class="serif pk-pack-title">2탄, 한가위·가을 부품 <span class="pk-badge">SVG · 편집 가능</span> <span class="pk-count mono">16장</span></h2>
+      <a class="pk-zip" href={url('/downloads/dotori-pack-02-svg.zip')} download>전체 내려받기 (ZIP)</a>
+    </div>
+    <p class="pk-pack-sub">
+      다가오는 한가위와 가을 콘텐츠를 위한 부품 모음입니다. 전부 손으로 그린
+      벡터(SVG)라 아무리 키워도 깨지지 않고, 일러스트 프로그램·피그마에서
+      열어 색과 모양을 직접 고칠 수 있습니다. 리본·프레임·구분선 같은 장식
+      부품도 함께 담았습니다.
+    </p>
+    <div class="pk-grid">
+      {PACK2.map((p) => (
+        <a class="pk-card" href={url(`/images/pack2/${p.file}.svg`)} target="_blank" rel="noopener" title="새 창에서 SVG 열기">
+          <div class="pk-thumb pk-thumb-svg">
+            <img src={url(`/images/pack2/${p.file}.svg`)} alt={`${p.name} 벡터 일러스트`} width="240" height="240" loading="lazy" />
+          </div>
+          <div class="pk-card-foot">
+            <span class="pk-name">{p.name}</span>
+            <span class="pk-dl mono">SVG</span>
+          </div>
+        </a>
+      ))}
+    </div>
+    <p class="pk-note">
+      SVG는 브라우저에서 열린 뒤 오른쪽 클릭으로 저장하거나 위의 ZIP으로 한 번에
+      받을 수 있습니다. 파일 안의 색상값을 바꾸면 팔레트도 자유롭게 조정됩니다.
+    </p>
   </section>
 
   <section class="wrap" style="padding-bottom: 56px;">
@@ -105,6 +152,9 @@ const PACK1: { file: string; name: string }[] = [
   .pk-pack-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
   .pk-pack-title { font-size: 22px; font-weight: 900; }
   .pk-count { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .pk-badge { font-size: 11px; font-weight: 700; color: var(--accent); border: 1.5px solid var(--accent); border-radius: 999px; padding: 3px 10px; vertical-align: 3px; margin-left: 8px; letter-spacing: 0.03em; }
+  .pk-pack-sub { font-size: 13.5px; color: var(--sub); line-height: 1.85; margin-top: 14px; max-width: 640px; word-break: keep-all; }
+  .pk-thumb-svg { background: #F7EEDD; padding: 14px; box-sizing: border-box; }
   .pk-zip { background: var(--brand); color: #fff; font-size: 13px; font-weight: 700; padding: 10px 20px; }
   .pk-zip:hover { background: var(--brand-hover); color: #fff; }
   .pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; margin-top: 22px; }

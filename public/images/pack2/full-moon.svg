@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+<!-- 도토리경제 그림함 · 편집 가능 SVG · 출처 표기 후 자유 사용 -->
+<g stroke="#4A3826" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+
+  <circle id="moon" cx="120" cy="110" r="72" fill="#D9A441"/>
+  <circle id="crater1" cx="98" cy="92" r="12" fill="#B07B24" stroke="none"/>
+  <circle id="crater2" cx="140" cy="128" r="8" fill="#B07B24" stroke="none"/>
+  <path id="cloud-left" fill="#1E3A5F" d="M20 168 a18 18 0 0 1 26-14 a22 22 0 0 1 42 6 a16 16 0 0 1 14 16 h-82 z"/>
+  <path id="cloud-right" fill="#F5E9D0" d="M140 196 a16 16 0 0 1 24-12 a20 20 0 0 1 38 5 a14 14 0 0 1 12 14 h-74 z"/>
+
+</g>
+</svg>

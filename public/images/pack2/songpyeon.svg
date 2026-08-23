@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" fill="none">
+<!-- 도토리경제 그림함 · 편집 가능 SVG · 출처 표기 후 자유 사용 -->
+<g stroke="#4A3826" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+
+  <ellipse id="plate" cx="120" cy="170" rx="90" ry="22" fill="#1E3A5F"/>
+  <path id="song-left" fill="#F5E9D0" d="M46 158 a32 28 0 0 1 62 0 q-31 10 -62 0 z"/>
+  <path id="song-right" fill="#D9A441" d="M132 158 a32 28 0 0 1 62 0 q-31 10 -62 0 z"/>
+  <path id="song-top" fill="#B4552D" d="M89 132 a32 28 0 0 1 62 0 q-31 10 -62 0 z"/>
+
+</g>
+</svg>
