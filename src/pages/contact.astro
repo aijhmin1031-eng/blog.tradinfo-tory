@@ -3,11 +3,11 @@ import Base from '../layouts/Base.astro';
 import { url } from '../lib/site';
 ---
 
-<Base title="문의" description="토리노믹스에 대한 제보·정정 요청과 협업·제휴 문의 창구입니다." compact>
+<Base title="문의" description="도토리경제에 대한 제보·정정 요청과 협업·제휴 문의 창구입니다." compact>
   <section class="wrap" style="max-width: 760px; padding-top: 48px;">
     <h1 class="serif" style="font-size: 28px; font-weight: 900;">문의</h1>
     <div class="prose" style="margin-top: 24px;">
-      <p>제보, 정정 요청, 협업·제휴 문의를 환영합니다. 특히 데이터 오류 제보는 토리노믹스의 정확성을 지키는 가장 큰 도움입니다.</p>
+      <p>제보, 정정 요청, 협업·제휴 문의를 환영합니다. 특히 데이터 오류 제보는 도토리경제의 정확성을 지키는 가장 큰 도움입니다.</p>
 
       <h2>협업·제휴 문의</h2>
       <p>
@@ -32,7 +32,7 @@ import { url } from '../lib/site';
       </ul>
 
       <h2>인용과 공유</h2>
-      <p>본 사이트의 콘텐츠는 정보 제공을 목적으로 하며 투자 자문이 아닙니다. 기사와 차트의 인용·공유는 출처(토리노믹스)를 표기하는 조건으로 자유롭게 하실 수 있습니다.</p>
+      <p>본 사이트의 콘텐츠는 정보 제공을 목적으로 하며 투자 자문이 아닙니다. 기사와 차트의 인용·공유는 출처(도토리경제)를 표기하는 조건으로 자유롭게 하실 수 있습니다.</p>
     </div>
   </section>
 </Base>
@@ -45,7 +45,7 @@ import { url } from '../lib/site';
   const el = document.getElementById('contact-mail');
   if (el) {
     const a = document.createElement('a');
-    a.href = 'mailto:' + addr + '?subject=' + encodeURIComponent('[토리노믹스] 협업 문의');
+    a.href = 'mailto:' + addr + '?subject=' + encodeURIComponent('[도토리경제] 협업 문의');
     a.textContent = addr;
     a.className = 'mail-link';
     el.prepend(a);

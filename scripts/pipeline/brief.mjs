@@ -87,7 +87,7 @@ async function main() {
         return marks;
       })(),
       valueSuffix: '원',
-      source: '자료: 한국은행 ECOS · 미 연준 FRED · 토리노믹스 가공',
+      source: '자료: 한국은행 ECOS · 미 연준 FRED · 도토리경제 가공',
     },
   };
 
