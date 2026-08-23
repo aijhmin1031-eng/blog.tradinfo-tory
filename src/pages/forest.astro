@@ -1,0 +1,174 @@
+---
+// 도토리 숲 — 기사 전체 허브.
+// 상단 메뉴를 '숲(읽을거리)'과 '창고(도구)' 두 갈래로 정리하면서, 분야·특집·최신을
+// 한 화면에서 고르도록 만든 착지 페이지다. 카테고리 4개는 이 페이지 아래로 들어간다.
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, url, fmtDate, heroFor, isPublished } from '../lib/site';
+import { TOPICS } from '../lib/topics';
+
+const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const catKeys = Object.keys(CATEGORIES) as (keyof typeof CATEGORIES)[];
+const blocks = catKeys.map((key) => ({
+  key,
+  ...CATEGORIES[key],
+  posts: all.filter((p) => p.data.category === key).slice(0, 4),
+  count: all.filter((p) => p.data.category === key).length,
+}));
+
+const latest = all.slice(0, 6);
+const topicBlocks = TOPICS.map((t) => ({
+  ...t,
+  posts: all.filter((p) => (p.data.topics ?? []).includes(t.key)).slice(0, 3),
+  count: all.filter((p) => (p.data.topics ?? []).includes(t.key)).length,
+}));
+
+const desc =
+  `도토리경제가 발행한 무역·환율·금리·관세 기사 ${all.length}편을 분야와 특집으로 나누어 모았습니다. ` +
+  '돈의 흐름, 관세·통상, 수출입 리포트, 상식 사전 네 갈래에서 필요한 글을 골라 읽으실 수 있습니다.';
+---
+
+<Base title="도토리 숲, 기사 모아보기" description={desc} activeNav="forest" compact>
+  <section class="wrap fo-head">
+    <div class="kicker-en" style="color: var(--accent);">ARCHIVE</div>
+    <h1 class="serif fo-title">도토리 숲</h1>
+    <p class="fo-sub">
+      토리가 주워 온 도토리가 쌓이는 곳입니다. 지금까지 <strong>{all.length}편</strong>,
+      매일 아침 일반 기사 한 편과 특집 한 편이 자동으로 더해집니다.
+      아래 네 갈래에서 필요한 글을 골라 읽으십시오.
+    </p>
+  </section>
+
+  <section class="wrap fo-latest">
+    <h2 class="serif fo-h2">가장 최근에 떨어진 도토리</h2>
+    <div class="fo-latest-grid">
+      {
+        latest.map((p) => (
+          <a class="fo-card" href={url(`/posts/${p.id}/`)}>
+            <div class="fo-thumb">
+              <img
+                src={heroFor(p.data.category, p.data.hero)}
+                alt={`${p.data.title} 대표 이미지`}
+                width="400"
+                height="225"
+                loading="lazy"
+              />
+            </div>
+            <div class:list={['kicker', CATEGORIES[p.data.category].cls]}>
+              {CATEGORIES[p.data.category].name}
+            </div>
+            <div class="fo-card-title">{p.data.title}</div>
+            <time class="fo-date mono" datetime={p.data.pubDate.toISOString()}>
+              {fmtDate(p.data.pubDate)}
+            </time>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap fo-cats">
+    <h2 class="serif fo-h2">네 갈래로 나눈 숲</h2>
+    <div class="fo-cat-grid">
+      {
+        blocks.map((b) => (
+          <div class="fo-cat">
+            <div class="fo-cat-head">
+              <a class:list={['fo-cat-name', 'serif', b.cls]} href={url(`/category/${b.slug}/`)}>
+                {b.name}
+              </a>
+              <span class="fo-count mono">{b.count}편</span>
+            </div>
+            <p class="fo-cat-desc">{b.desc}</p>
+            <ul class="fo-list">
+              {b.posts.map((p) => (
+                <li>
+                  <a href={url(`/posts/${p.id}/`)}>{p.data.title}</a>
+                  <time class="mono" datetime={p.data.pubDate.toISOString()}>{fmtDate(p.data.pubDate)}</time>
+                </li>
+              ))}
+            </ul>
+            <a class="fo-more" href={url(`/category/${b.slug}/`)}>{b.name} 전체 보기</a>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap fo-topics">
+    <h2 class="serif fo-h2">한 주제를 오래 파는 특집</h2>
+    <div class="fo-topic-grid">
+      {
+        topicBlocks.map((t) => (
+          <a class="fo-topic" href={url(t.href)}>
+            <div class="fo-topic-thumb">
+              <img src={url(t.image)} alt={`${t.name} 특집`} width="480" height="270" loading="lazy" />
+            </div>
+            <div class="fo-topic-body">
+              <div class="fo-topic-name serif">{t.name} 특집 <span class="fo-count mono">{t.count}편</span></div>
+              <p class="fo-topic-desc">{t.desc}</p>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+    <p class="fo-note">
+      특집은 흩어진 기사를 한 주제로 묶어 연표와 차트까지 함께 보는 자리입니다.
+      <a href={url('/topics/')}>특집 전체 보기</a>
+    </p>
+  </section>
+
+  <section class="wrap fo-cross">
+    <h2 class="serif fo-h2">읽었다면, 창고도 열어 보십시오</h2>
+    <p class="fo-note">
+      기사에 쓰인 지표와 용어, 그림은 <a href={url('/warehouse/')}>도토리 창고</a>에 정리돼 있습니다.
+      환율·금리 대시보드, 무역 용어 사전, 무료 이미지 나눔, 주간 전망 연재까지 한곳에 있습니다.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .fo-head { padding-top: 46px; }
+  .fo-title { font-size: clamp(30px, 4.6vw, 44px); font-weight: 900; color: var(--ink); margin-top: 6px; }
+  .fo-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: 640px; word-break: keep-all; }
+  .fo-h2 { font-size: 19px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+
+  .fo-latest { margin-top: 40px; }
+  .fo-latest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; margin-top: 20px; }
+  .fo-card { display: block; }
+  .fo-thumb { border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 9; background: var(--surface); }
+  .fo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fo-card-title { font-size: 14.5px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-top: 4px; word-break: keep-all; }
+  .fo-card:hover .fo-card-title { color: var(--accent); }
+  .fo-date { display: block; font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+  .fo-cats { margin-top: 46px; }
+  .fo-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 34px; margin-top: 20px; }
+  @media (max-width: 760px) { .fo-cat-grid { grid-template-columns: 1fr; } }
+  .fo-cat-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .fo-cat-name { font-size: 17px; font-weight: 900; color: var(--ink); }
+  .fo-count { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .fo-cat-desc { font-size: 13px; color: var(--sub); line-height: 1.8; margin-top: 10px; word-break: keep-all; }
+  .fo-list { list-style: none; padding: 0; margin: 12px 0 0; }
+  .fo-list li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px dashed var(--hair, var(--line)); }
+  .fo-list a { font-size: 13.5px; color: var(--ink); line-height: 1.6; word-break: keep-all; }
+  .fo-list a:hover { color: var(--accent); }
+  .fo-list time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .fo-more { display: inline-block; font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 12px; }
+
+  .fo-topics { margin-top: 46px; }
+  .fo-topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
+  .fo-topic { display: block; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
+  .fo-topic:hover { border-color: var(--accent); }
+  .fo-topic-thumb { aspect-ratio: 16 / 9; background: var(--surface); }
+  .fo-topic-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fo-topic-body { padding: 13px 15px 16px; }
+  .fo-topic-name { font-size: 16px; font-weight: 900; color: var(--ink); }
+  .fo-topic-desc { font-size: 12.5px; color: var(--sub); line-height: 1.8; margin-top: 7px; word-break: keep-all; }
+
+  .fo-cross { margin: 46px 0 56px; }
+  .fo-note { font-size: 13px; color: var(--sub); line-height: 1.9; margin-top: 14px; word-break: keep-all; }
+</style>
