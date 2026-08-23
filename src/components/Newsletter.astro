@@ -2,6 +2,7 @@
 // 아침 편지 구독 폼. Supabase 엣지 함수(subscribe)로 저장한다.
 // variant: 'footer'(남색 푸터용, 기본) | 'inline'(본문 밝은 지면용 카드)
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
+import { url } from '../lib/site';
 
 interface Props {
   source?: string;
@@ -30,6 +31,7 @@ const { source = 'footer', variant = 'footer' } = Astro.props;
     <button class="nl-btn" type="submit">구독</button>
   </form>
   <p class="nl-msg" role="status" aria-live="polite"></p>
+  <p class="nl-privacy">입력하신 이메일은 뉴스레터 발송에만 사용됩니다. <a href={url('/privacy/')}>개인정보처리방침</a></p>
 </div>
 
 <script>
@@ -89,6 +91,9 @@ const { source = 'footer', variant = 'footer' } = Astro.props;
   .nl-btn:disabled { opacity: 0.6; cursor: default; }
   .nl-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
   .nl-msg { grid-column: 1 / -1; font-size: 11.5px; color: var(--dark-band-sub); min-height: 1em; margin: 0; }
+  .nl-privacy { grid-column: 1 / -1; font-size: 10.5px; color: color-mix(in oklab, var(--dark-band-sub) 75%, transparent); margin: 0; word-break: keep-all; }
+  .nl-privacy a { color: inherit; text-decoration: underline; }
+  .nl.inline .nl-privacy { color: var(--muted); }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
   /* 본문용 밝은 지면 카드 */

@@ -91,6 +91,10 @@
   Client ID/Secret 입력 ③ Authentication→URL Configuration에 Site URL(https://aijhmin1031-eng.github.io)과 Redirect URLs
   (https://aijhmin1031-eng.github.io/blog.tradinfo-tory/**, https://tradetory.vercel.app/**) 등록. 완료 통보 시 스위치 true로
   전환·개인정보처리방침에 수집 항목(이름·프로필 이미지) 추가·실동작 검증. 네이버 로그인은 Supabase 미지원(카카오는 공식 지원, 원하면 추가 가능).
+- **개인정보처리방침 실태 반영**: 뉴스레터 이메일 수집(목적 한정·삭제 절차), 익명 조회수 집계, Supabase 위탁(서울 리전),
+  문의 페이지 삭제 요청 경로 명시. 댓글 항목은 `NATIVE_COMMENTS_LIVE` 게이트로 넣어 자체 댓글 개통 시 자동 공개.
+  구독 폼 하단에 수집 고지 한 줄+방침 링크. comments 테이블 author_id 인덱스 추가(성능 어드바이저).
+  구글 OAuth 개통은 소유주 "킵" 지시로 대기(조건은 위 항목 참조).
 - **본문 구독 박스 추가(소유주 지시)**: 기사 끝(토리의 한 마디 아래)에 "토리의 아침 편지" 구독 박스 삽입.
   Newsletter 컴포넌트에 `variant='inline'`(밝은 지면 카드) 추가, source='post'로 유입 경로 구분. 푸터 폼과 병행.
 - **지도 모바일 가독성(소유주 지시 "L1~L3 글자가 안 보임")**: 원인은 좁은 화면의 가로 스크롤 잘림(안내 없음).
