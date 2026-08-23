@@ -41,6 +41,11 @@
 
 ## 미결 사항 (다음 세션이 볼 것)
 
+0. **[소유주 2클릭 대기] Vercel git 연결** — 코드 준비(base 분기·noindex)는 완료·푸시됨.
+   Vercel 계정의 GitHub 연동에 `aijhmin1031-eng/blog.tradinfo-tory` 접근 권한이 없어 `repo_no_access` 400.
+   소유주가 https://github.com/apps/vercel → Configure에서 이 repo를 허용(또는 vercel.com 새 프로젝트 Import에서 GitHub 승인)하면,
+   다음 세션이 `create_git_project`(팀 `team_2TuSMGLV14FFgLlL7okddMHE`, 프로젝트명 tradetory)로 즉시 연결 가능.
+   MCP 인라인 배포는 이미지 28MB라 비실용(시도 후 판단). 도메인 구매는 별도 건 — 소유주 통보 대기.
 1. **[소유주 결정 대기] 커스텀 도메인** — 애드센스 신청의 선행 조건.
    3렌즈 심사로 **torinomics.com** 확정 추천($11.25/년, Vercel 구매 가능 확인, 2위 torireport.com).
    tradetory.com은 제3자 선점(파킹, 2027-04 만료 — 백오더 후보). 소유주는 "트래픽 늘면 구매" 입장 →
