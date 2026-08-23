@@ -76,10 +76,31 @@ const collection = {
     </div>
   </section>
 
+  <section class="wrap pk-filter" aria-label="그림 찾기">
+    <label class="pk-search">
+      <span class="sr-only">그림 이름이나 쓰임으로 찾기</span>
+      <input
+        type="search"
+        id="pk-q"
+        placeholder="찾으시는 그림이 있습니까 (예: 차트, 노트북, 커피)"
+        autocomplete="off"
+      />
+    </label>
+    <div class="pk-tabs" role="group" aria-label="묶음 고르기">
+      <button class="pk-tab is-on" data-filter="all" type="button">전체 {total}장</button>
+      {PACKS.map((pack) => (
+        <button class="pk-tab" data-filter={pack.key} type="button">
+          {pack.label ?? `${pack.vol}탄`} {pack.items.length}
+        </button>
+      ))}
+    </div>
+    <p class="pk-hit mono" id="pk-hit" hidden></p>
+  </section>
+
   <section class="wrap pk-body">
     {
       PACKS.map((pack, idx) => (
-        <div class="pk-pack">
+        <div class="pk-pack" data-pack data-key={pack.key}>
           <div class="pk-pack-head" id={pack.key} style={idx > 0 ? 'margin-top: 52px;' : ''}>
             <h2 class="serif pk-pack-title">
               {pack.label ?? `${pack.vol}탄`}, {pack.title}
@@ -99,7 +120,12 @@ const collection = {
           </p>
           <div class="pk-grid">
             {pack.items.map((item) => (
-              <a class="pk-card" href={url(`/pack/${item.slug}/`)}>
+              <a
+                class="pk-card"
+                href={url(`/pack/${item.slug}/`)}
+                data-item
+                data-search={`${item.name} ${item.slug} ${item.keywords.join(' ')}`}
+              >
                 <div class={`pk-thumb${pack.transparent ? ' pk-thumb-alpha alpha-grid' : ''}`}>
                   <img
                     src={url(thumbOf(pack, item))}
@@ -129,8 +155,71 @@ const collection = {
     <Collab source="site" variant="inline" />
   </section>
 </Base>
+<script>
+  // 58장이 되면서 훑기가 버거워졌다. 이름·키워드로 걸러 주고, 묶음 탭으로 좁힌다.
+  const q = document.getElementById('pk-q') as HTMLInputElement | null;
+  const hit = document.getElementById('pk-hit');
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.pk-tab'));
+  const packs = Array.from(document.querySelectorAll<HTMLElement>('[data-pack]'));
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-item]'));
+  let group = 'all';
+
+  const apply = () => {
+    const term = (q?.value ?? '').trim().toLowerCase();
+    let shown = 0;
+    for (const el of items) {
+      const inGroup = group === 'all' || el.closest('[data-pack]')?.dataset.key === group;
+      const match = !term || (el.dataset.search ?? '').toLowerCase().includes(term);
+      const on = inGroup && match;
+      el.hidden = !on;
+      if (on) shown += 1;
+    }
+    // 남은 그림이 없는 묶음은 제목까지 접는다
+    for (const p of packs) {
+      const any = Array.from(p.querySelectorAll<HTMLElement>('[data-item]')).some((el) => !el.hidden);
+      p.hidden = !any;
+    }
+    if (hit) {
+      const filtering = term || group !== 'all';
+      hit.hidden = !filtering;
+      hit.textContent = shown === 0 ? '찾으시는 그림이 없습니다. 다른 말로 찾아보십시오.' : `${shown}장`;
+    }
+  };
+
+  q?.addEventListener('input', apply);
+  for (const t of tabs) {
+    t.addEventListener('click', () => {
+      group = t.dataset.filter ?? 'all';
+      for (const o of tabs) o.classList.toggle('is-on', o === t);
+      apply();
+    });
+  }
+</script>
+
+
 
 <style>
+  .pk-filter { margin-top: 34px; }
+  .pk-search input {
+    width: 100%; max-width: var(--measure); box-sizing: border-box;
+    font: inherit; font-size: 14.5px; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+    padding: 13px 16px;
+  }
+  .pk-search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+  .pk-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .pk-tab {
+    font: inherit; font-size: 12.5px; font-weight: 700; color: var(--sub); cursor: pointer;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px;
+  }
+  .pk-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .pk-tab.is-on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .pk-hit { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* hidden 속성의 기본 display:none 은 작성자 display 규칙에 진다.
+     .pk-card 가 display:block 이라 걸러도 카드가 남아 있었다. */
+  .pk-card[hidden], .pk-pack[hidden] { display: none; }
+
   .pk-head { padding-top: 46px; }
   .pk-title { font-size: clamp(30px, 4.6vw, 44px); font-weight: 900; color: var(--ink); margin-top: 6px; }
   .pk-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: var(--measure-wide); word-break: keep-all; }
