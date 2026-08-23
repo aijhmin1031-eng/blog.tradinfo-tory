@@ -4,7 +4,7 @@ import Ticker from '../components/Ticker.astro';
 import Collab from '../components/Collab.astro';
 import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
-import { SITE, CATEGORIES, url, fmtDate } from '../lib/site';
+import { SITE, CATEGORIES, url, fmtDate, dateLineIn, shortDateIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
 
 interface Props {
   title?: string;
@@ -27,9 +27,12 @@ const {
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} | ${SITE.taglineSub}`;
-const today = new Date();
-const days = ['일', '월', '화', '수', '목', '금', '토'];
-const dateLine = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일 ${days[today.getDay()]}요일`;
+// 이 블로그의 기준 시간은 한국이다. 빌드가 UTC 서버에서 돌아 예전에는 하루가 밀려 나왔다.
+// 미 국채·달러 지표가 '어제 값'인 이유를 읽는 분이 알 수 있도록 뉴욕 날짜를 참고로 함께 적는다.
+const now = new Date();
+const dateLine = dateLineIn(TZ_KST, now);
+const etLine = shortDateIn(TZ_ET, now);
+const kstYear = todayIn(TZ_KST, now).slice(0, 4);
 // 정본 주소는 커스텀 도메인 한 곳이다. GitHub Pages 미러도 canonical은 이 도메인을 가리켜
 // 색인 신호가 둘로 갈리지 않게 한다(중복 페이지는 noindex가 아니라 canonical로 합치는 것이 권장 방식).
 const CANONICAL_ORIGIN = 'https://dotoriecon.com';
@@ -131,7 +134,10 @@ const isActive = (n: (typeof navItems)[number]) =>
     <header>
       <div class="topbar">
         <div class="wrap topbar-in">
-          <span class="topbar-date">{dateLine}</span>
+          <span class="topbar-date">
+            {dateLine}
+            <span class="topbar-et" title="뉴욕 현지 날짜 · 미 증시와 국채 지표의 기준">뉴욕 {etLine}</span>
+          </span>
           <span class="topbar-slogan">매일 아침 7시, 새 도토리가 올라옵니다</span>
           <span class="topbar-actions">
             <a href={url('/story/')}>토리 이야기</a>
@@ -228,7 +234,7 @@ const isActive = (n: (typeof navItems)[number]) =>
             <Acorn size={17} cap="#8CA0BF" body="#C77B4A" label="도토리경제" />
             <span class="serif">도토리경제</span>
           </div>
-          <div class="footer-tag">{SITE.tagline}<br />&copy; {today.getFullYear()} Dotori Economy</div>
+          <div class="footer-tag">{SITE.tagline}<br />&copy; {kstYear} Dotori Economy</div>
         </div>
         <div class="footer-links">
           <div>
@@ -323,6 +329,15 @@ const isActive = (n: (typeof navItems)[number]) =>
     color: var(--sub);
     letter-spacing: 0.01em;
   }
+  .topbar-et {
+    display: none;
+    margin-left: 8px;
+    padding-left: 8px;
+    border-left: 1px solid var(--hair);
+    color: var(--muted);
+    font-size: 0.92em;
+  }
+  @media (min-width: 720px) { .topbar-et { display: inline; } }
   .topbar-slogan { display: none; }
   @media (min-width: 860px) { .topbar-slogan { display: inline; } }
   .topbar-actions { display: inline-flex; align-items: center; gap: 14px; }

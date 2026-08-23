@@ -26,12 +26,52 @@ export const url = (path: string) => `${base}${path.startsWith('/') ? path : `/$
 export const heroFor = (category: CategoryKey, hero?: string) =>
   hero ? url(hero) : url(`/images/cat/${CATEGORIES[category].slug}.jpg`);
 
-// 예약 발행 게이트, pubDate가 KST 기준 오늘 이후인 글은 빌드에서 제외한다.
-// 매일 아침 KST 06:50 파이프라인 빌드가 그날 일자 기사를 자동으로 발행하는 구조.
-export const isPublished = (pubDate: Date) => {
-  const kstToday = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
-  return pubDate.toISOString().slice(0, 10) <= kstToday;
+// ── 시간대 ────────────────────────────────────────────────
+// 이 블로그의 기준 시간은 한국(KST)이다. 빌드는 UTC 서버에서 도는데
+// new Date() 의 지역 게터를 그대로 쓰면 UTC 날짜가 찍혀 하루가 밀린다(요일까지 어긋난다).
+// 그래서 표시용 날짜는 전부 Intl 로 시간대를 명시해 뽑는다.
+export const TZ_KST = 'Asia/Seoul';
+export const TZ_ET = 'America/New_York'; // 미 증시·국채 기준, 서머타임은 Intl 이 알아서 처리한다
+
+const partsIn = (tz: string, d: Date) => {
+  const f = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  });
+  const p = Object.fromEntries(f.formatToParts(d).map((x) => [x.type, x.value]));
+  return { y: p.year, m: p.month, d: p.day, wd: p.weekday };
 };
 
+const KO_DAYS: Record<string, string> = {
+  Mon: '월', Tue: '화', Wed: '수', Thu: '목', Fri: '금', Sat: '토', Sun: '일',
+};
+
+/** 오늘 날짜(YYYY-MM-DD)를 해당 시간대 기준으로 */
+export const todayIn = (tz: string, now: Date = new Date()) => {
+  const { y, m, d } = partsIn(tz, now);
+  return `${y}-${m}-${d}`;
+};
+
+/** 상단 표시용: 2026년 8월 24일 월요일 */
+export const dateLineIn = (tz: string, now: Date = new Date()) => {
+  const { y, m, d, wd } = partsIn(tz, now);
+  return `${y}년 ${Number(m)}월 ${Number(d)}일 ${KO_DAYS[wd] ?? wd}요일`;
+};
+
+/** 참고 표시용: 8월 23일 (일) */
+export const shortDateIn = (tz: string, now: Date = new Date()) => {
+  const { m, d, wd } = partsIn(tz, now);
+  return `${Number(m)}월 ${Number(d)}일 (${KO_DAYS[wd] ?? wd})`;
+};
+
+// 예약 발행 게이트, pubDate가 KST 기준 오늘 이후인 글은 빌드에서 제외한다.
+// 매일 아침 KST 06:50 파이프라인 빌드가 그날 일자 기사를 자동으로 발행하는 구조.
+export const isPublished = (pubDate: Date) => pubDate.toISOString().slice(0, 10) <= todayIn(TZ_KST);
+
+// 기사 pubDate 는 프런트매터의 'YYYY-MM-DD' 가 UTC 자정으로 파싱된 값이다.
+// 지역 게터를 쓰면 실행 시간대에 따라 하루가 밀리므로 UTC 게터로 고정해 읽는다.
 export const fmtDate = (d: Date) =>
-  `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  `${d.getUTCFullYear()}.${String(d.getUTCMonth() + 1).padStart(2, '0')}.${String(d.getUTCDate()).padStart(2, '0')}`;
