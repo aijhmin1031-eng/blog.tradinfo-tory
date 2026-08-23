@@ -78,7 +78,7 @@ const breadcrumb = {
     </nav>
 
     <div class="it-top">
-      <div class={`it-stage${pack.transparent ? ' alpha' : ''}`}>
+      <div class={`it-stage${pack.transparent ? ' alpha alpha-grid' : ''}`}>
         <img
           src={preview}
           alt={`${item.name} 무료 이미지 · 도토리경제 그림함`}
@@ -94,7 +94,7 @@ const breadcrumb = {
         <dl class="it-spec">
           <div><dt>형식</dt><dd class="mono">{formatName}</dd></div>
           <div><dt>크기</dt><dd class="mono">{pack.size}</dd></div>
-          <div><dt>배경</dt><dd>{pack.transparent ? '투명 (어떤 색 위에도 올릴 수 있습니다)' : '단색 배경 포함'}</dd></div>
+          <div><dt>배경</dt><dd>{pack.transparent ? '없음 — 투명 PNG (어떤 색 위에도 흰 네모 없이 얹힙니다)' : '단색 배경 포함'}</dd></div>
           <div><dt>이용</dt><dd>출처 표기 시 상업적 사용 가능, 재판매 금지</dd></div>
         </dl>
 
@@ -133,7 +133,7 @@ const breadcrumb = {
       <div class="it-grid">
         {others.map((o) => (
           <a class="it-card" href={url(`/pack/${o.slug}/`)}>
-            <div class={`it-thumb${pack.transparent ? ' alpha' : ''}`}>
+            <div class={`it-thumb${pack.transparent ? ' alpha alpha-grid' : ''}`}>
               <img src={url(thumbOf(pack, o))} alt={`${o.name} 무료 이미지`} width="200" height="200" loading="lazy" />
             </div>
             <span>{o.name}</span>
@@ -164,7 +164,7 @@ const breadcrumb = {
   .it-top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 34px; margin-top: 18px; align-items: start; }
   @media (max-width: 780px) { .it-top { grid-template-columns: 1fr; gap: 22px; } }
   .it-stage { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); display: grid; place-items: center; padding: 22px; }
-  .it-stage.alpha { background: #F7EEDD; }
+
   .it-stage img { width: 100%; height: auto; display: block; }
 
   .it-title { font-size: clamp(24px, 3.4vw, 34px); font-weight: 900; color: var(--ink); word-break: keep-all; }
@@ -189,7 +189,7 @@ const breadcrumb = {
   .it-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; margin-top: 18px; }
   .it-card { display: block; text-align: center; }
   .it-thumb { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); aspect-ratio: 1; overflow: hidden; }
-  .it-thumb.alpha { background: #F7EEDD; padding: 10px; box-sizing: border-box; }
+  .it-thumb.alpha { padding: 10px; box-sizing: border-box; }
   .it-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
   .it-card span { display: block; font-size: 12px; font-weight: 700; color: var(--ink); margin-top: 7px; }
   .it-card:hover .it-thumb { border-color: var(--accent); }

@@ -8,6 +8,9 @@
 :root {
   --paper: #FBFBF9;
   --surface: #FFFFFF;
+  /* 투명 배경임을 보여 주는 체커보드 */
+  --grid-a: #E8E4DC;
+  --grid-b: #FAF8F4;
   --ink: #16140F;
   --body-ink: #26231D;
   --sub: #5F5A50;
@@ -43,6 +46,8 @@
 :root[data-theme='dark'] {
   --paper: #14161A;
   --surface: #1B1E24;
+  --grid-a: #2A2E35;
+  --grid-b: #21242A;
   --ink: #EAE8E3;
   --body-ink: #D6D3CC;
   --sub: #A7A296;
@@ -68,6 +73,8 @@
   :root:not([data-theme='light']) {
     --paper: #14161A;
     --surface: #1B1E24;
+    --grid-a: #2A2E35;
+    --grid-b: #21242A;
     --ink: #EAE8E3;
     --body-ink: #D6D3CC;
     --sub: #A7A296;
@@ -251,4 +258,14 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 720px) {
   .wrap { padding: 0 18px; }
   .prose { font-size: 16px; }
+}
+
+/* 배경이 없는 이미지(투명 PNG·SVG)를 보여 줄 때 까는 격자.
+   크림색 판을 깔면 배경이 있는 그림처럼 보이므로 반드시 이 격자를 쓴다. */
+.alpha-grid {
+  background-color: var(--grid-b);
+  background-image:
+    conic-gradient(var(--grid-a) 25%, transparent 0 50%, var(--grid-a) 0 75%, transparent 0);
+  background-size: 18px 18px;
+  background-position: 0 0;
 }
