@@ -41,10 +41,12 @@
 
 ## 미결 사항 (다음 세션이 볼 것)
 
-0. **[소유주 2클릭 대기] Vercel git 연결** — 코드 준비(base 분기·noindex)는 완료·푸시됨.
-   Vercel 계정의 GitHub 연동에 `aijhmin1031-eng/blog.tradinfo-tory` 접근 권한이 없어 `repo_no_access` 400.
-   소유주가 https://github.com/apps/vercel → Configure에서 이 repo를 허용(또는 vercel.com 새 프로젝트 Import에서 GitHub 승인)하면,
-   다음 세션이 `create_git_project`(팀 `team_2TuSMGLV14FFgLlL7okddMHE`, 프로젝트명 tradetory)로 즉시 연결 가능.
+0. **[소유주 대기] Vercel git 연결** — 코드 준비(base 분기·noindex)는 완료·푸시됨.
+   8/23 진단: GitHub App은 전체 repo 승인 상태(소유주 확인)인데도 `repo_no_access` 400 지속 →
+   원인은 **Vercel 계정의 GitHub Login Connection이 repo 쓰기 권한 계정(aijhmin1031-eng)이 아님**.
+   해결(소유주): vercel.com → Account Settings → Authentication에서 GitHub을 aijhmin1031-eng로 연결
+   (또는 연결된 계정을 repo Collaborator(write)로 추가). 완료 통보 후
+   `create_git_project`(팀 `team_2TuSMGLV14FFgLlL7okddMHE`, 프로젝트명 tradetory) 재시도.
    MCP 인라인 배포는 이미지 28MB라 비실용(시도 후 판단). 도메인 구매는 별도 건 — 소유주 통보 대기.
 1. **[소유주 결정 대기] 커스텀 도메인** — 애드센스 신청의 선행 조건.
    3렌즈 심사로 **torinomics.com** 확정 추천($11.25/년, Vercel 구매 가능 확인, 2위 torireport.com).
