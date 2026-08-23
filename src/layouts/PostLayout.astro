@@ -5,6 +5,7 @@ import ToriNote from '../components/ToriNote.astro';
 import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
+import Newsletter from '../components/Newsletter.astro';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import type { CollectionEntry } from 'astro:content';
 
@@ -98,6 +99,8 @@ const jsonLd = {
     }
 
     {toriNote && <ToriNote text={toriNote} />}
+
+    <Newsletter source="post" variant="inline" />
 
     {
       related.length > 0 && (
