@@ -1,0 +1,223 @@
+---
+// 자체 댓글 (Supabase Auth 구글 로그인). NATIVE_COMMENTS_LIVE가 켜진 뒤에만 사용된다.
+// term: 스레드 키(기사 논리 경로 또는 '/board/'). 배포 주소와 무관하게 스레드를 공유한다.
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
+
+interface Props {
+  term: string;
+  title?: string;
+  note?: string;
+}
+const {
+  term,
+  title = '댓글',
+  note = '구글 계정으로 로그인해 의견을 남길 수 있습니다. 격려도, 오류 제보도 환영합니다. 잘못된 수치 제보는 확인 후 정정합니다.',
+} = Astro.props;
+---
+
+<section class="cthread" data-term={term} data-sb-url={SUPABASE_URL} data-sb-key={SUPABASE_ANON_KEY}>
+  <h2 class="serif ct-title">{title}</h2>
+  <p class="ct-note">{note}</p>
+
+  <div class="ct-list" data-role="list" aria-live="polite">
+    <p class="ct-empty" data-role="empty">첫 댓글을 기다리고 있습니다.</p>
+  </div>
+
+  <div class="ct-composer">
+    <div class="ct-signin" data-role="signin" hidden>
+      <button class="ct-google" data-role="login" type="button">
+        <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        구글 계정으로 로그인하고 댓글 쓰기
+      </button>
+    </div>
+    <form class="ct-form" data-role="form" hidden>
+      <div class="ct-me">
+        <img class="ct-avatar" data-role="avatar" alt="" width="26" height="26" />
+        <span class="ct-name" data-role="name"></span>
+        <button class="ct-signout" data-role="logout" type="button">로그아웃</button>
+      </div>
+      <textarea
+        class="ct-input"
+        data-role="input"
+        rows="3"
+        maxlength="2000"
+        placeholder="의견을 남겨 주시기 바랍니다."
+        required></textarea>
+      <div class="ct-actions">
+        <span class="ct-msg" data-role="msg" role="status"></span>
+        <button class="ct-submit" data-role="submit" type="submit">등록</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+  import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+
+  type Row = {
+    id: string;
+    author_id: string;
+    author_name: string;
+    author_avatar: string | null;
+    body: string;
+    created_at: string;
+  };
+
+  const fmtTime = (iso: string) => {
+    const d = new Date(iso);
+    const p = (n: number) => String(n).padStart(2, '0');
+    const k = new Date(d.getTime() + 9 * 3600 * 1000);
+    return `${k.getUTCFullYear()}.${p(k.getUTCMonth() + 1)}.${p(k.getUTCDate())} ${p(k.getUTCHours())}:${p(k.getUTCMinutes())}`;
+  };
+
+  for (const box of document.querySelectorAll<HTMLElement>('.cthread')) {
+    const term = box.dataset.term!;
+    const sb: SupabaseClient = createClient(box.dataset.sbUrl!, box.dataset.sbKey!);
+    const $ = <T extends HTMLElement = HTMLElement>(role: string) =>
+      box.querySelector<T>(`[data-role="${role}"]`)!;
+    const list = $('list');
+    const empty = $('empty');
+    const form = $<HTMLFormElement>('form');
+    const signin = $('signin');
+    const input = $<HTMLTextAreaElement>('input');
+    const msg = $('msg');
+    const submit = $<HTMLButtonElement>('submit');
+    let uid: string | null = null;
+
+    const render = (rows: Row[]) => {
+      list.querySelectorAll('.ct-item').forEach((el) => el.remove());
+      empty.hidden = rows.length > 0;
+      for (const r of rows) {
+        const item = document.createElement('div');
+        item.className = 'ct-item';
+        const head = document.createElement('div');
+        head.className = 'ct-item-head';
+        if (r.author_avatar) {
+          const img = document.createElement('img');
+          img.src = r.author_avatar;
+          img.alt = '';
+          img.width = 22;
+          img.height = 22;
+          img.className = 'ct-avatar';
+          img.referrerPolicy = 'no-referrer';
+          head.appendChild(img);
+        }
+        const name = document.createElement('span');
+        name.className = 'ct-name';
+        name.textContent = r.author_name;
+        head.appendChild(name);
+        const time = document.createElement('span');
+        time.className = 'ct-time mono';
+        time.textContent = fmtTime(r.created_at);
+        head.appendChild(time);
+        if (uid && r.author_id === uid) {
+          const del = document.createElement('button');
+          del.className = 'ct-del';
+          del.type = 'button';
+          del.textContent = '삭제';
+          del.addEventListener('click', async () => {
+            if (!confirm('이 댓글을 삭제합니까?')) return;
+            await sb.from('comments').delete().eq('id', r.id);
+            load();
+          });
+          head.appendChild(del);
+        }
+        const body = document.createElement('p');
+        body.className = 'ct-body';
+        body.textContent = r.body;
+        item.appendChild(head);
+        item.appendChild(body);
+        list.appendChild(item);
+      }
+    };
+
+    const load = async () => {
+      const { data } = await sb
+        .from('comments')
+        .select('id, author_id, author_name, author_avatar, body, created_at')
+        .eq('path', term)
+        .order('created_at', { ascending: true })
+        .limit(500);
+      render((data as Row[]) ?? []);
+    };
+
+    const syncAuth = async () => {
+      const { data } = await sb.auth.getSession();
+      const user = data.session?.user ?? null;
+      uid = user?.id ?? null;
+      signin.hidden = !!user;
+      form.hidden = !user;
+      if (user) {
+        const meta = (user.user_metadata ?? {}) as Record<string, string>;
+        $('name').textContent = meta.full_name || meta.name || '독자';
+        const av = $<HTMLImageElement>('avatar');
+        if (meta.avatar_url) {
+          av.src = meta.avatar_url;
+          av.referrerPolicy = 'no-referrer';
+          av.hidden = false;
+        } else av.hidden = true;
+      }
+      load();
+    };
+
+    $('login').addEventListener('click', () => {
+      sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: location.href },
+      });
+    });
+    $('logout').addEventListener('click', async () => {
+      await sb.auth.signOut();
+      syncAuth();
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = input.value.trim();
+      if (!body) return;
+      submit.disabled = true;
+      msg.textContent = '등록하는 중입니다…';
+      const { error } = await sb.from('comments').insert({ path: term, body });
+      if (error) {
+        msg.textContent = error.message.includes('rate_limited')
+          ? '잠시 후 다시 시도해 주시기 바랍니다. (도배 방지)'
+          : '등록에 실패했습니다. 잠시 후 다시 시도해 주시기 바랍니다.';
+      } else {
+        msg.textContent = '';
+        input.value = '';
+        load();
+      }
+      submit.disabled = false;
+    });
+
+    sb.auth.onAuthStateChange(() => syncAuth());
+    syncAuth();
+  }
+</script>
+
+<style>
+  .cthread { margin-top: 46px; padding-top: 26px; border-top: 1px solid var(--line); max-width: var(--w-prose); margin-left: auto; margin-right: auto; }
+  .ct-title { font-size: 20px; margin: 0 0 6px; color: var(--ink); }
+  .ct-note { font-size: 13px; color: var(--muted); margin: 0 0 18px; word-break: keep-all; }
+  .ct-item { padding: 13px 0; border-top: 1px solid var(--hair); }
+  .ct-item-head { display: flex; align-items: center; gap: 8px; }
+  .ct-avatar { border-radius: 50%; display: block; }
+  .ct-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .ct-time { font-size: 10.5px; color: var(--muted); }
+  .ct-del { margin-left: auto; font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .ct-del:hover { color: var(--down); }
+  .ct-body { font-size: 14px; color: var(--sub); line-height: 1.8; margin: 7px 0 0 0; word-break: keep-all; white-space: pre-wrap; }
+  .ct-empty { font-size: 13px; color: var(--muted); padding: 6px 0 14px; }
+  .ct-composer { margin-top: 6px; border-top: 1px solid var(--hair); padding-top: 16px; }
+  .ct-google { display: inline-flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 600; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 9px; padding: 10px 16px; cursor: pointer; font-family: inherit; }
+  .ct-google:hover { border-color: var(--accent); }
+  .ct-me { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .ct-signout { margin-left: auto; font-size: 11.5px; color: var(--muted); background: none; border: none; cursor: pointer; font-family: inherit; }
+  .ct-signout:hover { color: var(--accent); }
+  .ct-input { width: 100%; box-sizing: border-box; background: transparent; border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; font-size: 14px; color: var(--ink); font-family: inherit; line-height: 1.7; resize: vertical; }
+  .ct-input:focus { outline: none; border-color: var(--accent); }
+  .ct-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 9px; }
+  .ct-msg { font-size: 12px; color: var(--sub); }
+  .ct-submit { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 22px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+  .ct-submit:hover { filter: brightness(1.08); }
+  .ct-submit:disabled { opacity: 0.6; cursor: default; }
+</style>

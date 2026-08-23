@@ -2,7 +2,8 @@
 // 도토리 광장, 자유 의견 게시판 (giscus, mapping=specific 고정 스레드)
 import Base from '../layouts/Base.astro';
 import { url } from '../lib/site';
-import { GISCUS, COMMENTS_ENABLED } from '../lib/comments';
+import { GISCUS, COMMENTS_ENABLED, NATIVE_COMMENTS_LIVE } from '../lib/comments';
+import CommentThread from '../components/CommentThread.astro';
 ---
 
 <Base
@@ -25,7 +26,13 @@ import { GISCUS, COMMENTS_ENABLED } from '../lib/comments';
       <li>협업·제휴 문의는 <a href={url('/contact/')}>문의 페이지</a>의 연락 채널을 이용해 주십시오.</li>
     </ul>
 
-    {COMMENTS_ENABLED ? (
+    {NATIVE_COMMENTS_LIVE ? (
+      <CommentThread
+        term="/board/"
+        title="광장 글"
+        note="구글 계정으로 로그인해 글을 남길 수 있습니다."
+      />
+    ) : COMMENTS_ENABLED ? (
       <div class="giscus-wrap">
         <script
           is:inline

@@ -82,8 +82,15 @@
   미인식 → aijhmin1031-eng로 재설치). giscus API로 repoId/categoryId 발급받아 comments.ts 기입, 카테고리는 Announcements
   (관리자·giscus만 스레드 생성 가능, 장난 스레드 방지). 기사 댓글은 `data-mapping="specific"` + 논리 경로 term으로 변경:
   GitHub Pages·Vercel·미래 도메인이 **같은 댓글 스레드를 공유**한다. Astro 함정: 속성 있는 script는 `is:inline` 명시.
-- **[소유주 결정] 댓글 구글 로그인 제안 기각**: giscus는 GitHub 로그인 전용(구조적 한계)이라 구글 로그인은
-  Supabase 자체 댓글 전환이 필요함을 안내 → 소유주가 "지금 giscus 유지" 선택(8/23). 재제안하지 말 것.
+- **[소유주 결정 번복] 자체 댓글(구글 로그인) 전환 구축**: 처음 "giscus 유지"였다가 "구글 로그인이 대중적" 이유로 전환 결정.
+  무중단 전환 구조: `comments` 테이블(RLS: 공개 읽기·본인만 쓰기/삭제, before-insert 트리거가 작성자 이름·아바타를
+  auth.users 메타데이터로 강제 기입 + 도배 방지 분당 3건·일 50건) + `CommentThread.astro`(supabase-js 번들, 구글 로그인
+  버튼·목록·등록·본인 삭제, 라이트·다크 검수). **스위치 `NATIVE_COMMENTS_LIVE`(lib/comments.ts) = false 상태로 배포** —
+  켜기 전까지 giscus가 계속 서비스. 개통 조건(소유주): ① 구글 클라우드 콘솔 OAuth 클라이언트(Web) 발급, redirect URI =
+  https://tfksqpxfpniavvnwfjiu.supabase.co/auth/v1/callback ② Supabase 대시보드 Authentication→Providers→Google에
+  Client ID/Secret 입력 ③ Authentication→URL Configuration에 Site URL(https://aijhmin1031-eng.github.io)과 Redirect URLs
+  (https://aijhmin1031-eng.github.io/blog.tradinfo-tory/**, https://tradetory.vercel.app/**) 등록. 완료 통보 시 스위치 true로
+  전환·개인정보처리방침에 수집 항목(이름·프로필 이미지) 추가·실동작 검증. 네이버 로그인은 Supabase 미지원(카카오는 공식 지원, 원하면 추가 가능).
 - **본문 구독 박스 추가(소유주 지시)**: 기사 끝(토리의 한 마디 아래)에 "토리의 아침 편지" 구독 박스 삽입.
   Newsletter 컴포넌트에 `variant='inline'`(밝은 지면 카드) 추가, source='post'로 유입 경로 구분. 푸터 폼과 병행.
 - **지도 모바일 가독성(소유주 지시 "L1~L3 글자가 안 보임")**: 원인은 좁은 화면의 가로 스크롤 잘림(안내 없음).

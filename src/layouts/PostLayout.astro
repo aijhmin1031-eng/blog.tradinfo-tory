@@ -5,6 +5,8 @@ import ToriNote from '../components/ToriNote.astro';
 import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
+import CommentThread from '../components/CommentThread.astro';
+import { NATIVE_COMMENTS_LIVE } from '../lib/comments';
 import Newsletter from '../components/Newsletter.astro';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import type { CollectionEntry } from 'astro:content';
@@ -117,7 +119,7 @@ const jsonLd = {
         </section>
       )
     }
-    <Comments term={viewPath} />
+    {NATIVE_COMMENTS_LIVE ? <CommentThread term={viewPath} /> : <Comments term={viewPath} />}
   </article>
 
   <script>

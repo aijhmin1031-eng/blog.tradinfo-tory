@@ -9,3 +9,8 @@ export const GISCUS = {
   categoryId: 'DIC_kwDOUAK_9M4DD_C2',
 };
 export const COMMENTS_ENABLED = GISCUS.repoId !== '' && GISCUS.categoryId !== '';
+
+// 자체 댓글(구글 로그인, Supabase Auth) 전환 스위치 — 소유주 결정(8/23): 구글 로그인이 대중적이라 전환.
+// 구글 클라우드 OAuth 클라이언트 발급 + Supabase 대시보드 Google provider 설정이 끝나면 true로.
+// true가 되면 기사·광장이 CommentThread(자체 댓글)로 바뀌고 giscus는 물러난다.
+export const NATIVE_COMMENTS_LIVE = false;
