@@ -1,0 +1,136 @@
+---
+// 「토리 이야기」 목차. 전에는 about 한 페이지에 65컷이 통째로 쌓여 있어
+// 어느 화가 있는지 보이지도, 한 화만 공유하지도 못했다. 여기서 화별로 갈라 준다.
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { url, isPublished } from '../../lib/site';
+import { EPISODES } from '../../data/story';
+
+const publishedCount = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).length;
+
+const open = EPISODES.filter((e) => !e.gateAtPosts || publishedCount >= e.gateAtPosts).sort((a, b) => a.order - b.order);
+const locked = EPISODES.filter((e) => e.gateAtPosts && publishedCount < e.gateAtPosts).sort((a, b) => a.order - b.order);
+const totalCuts = open.reduce((n, e) => n + e.cuts, 0);
+
+
+const desc =
+  `도토리경제의 다람쥐 이코노미스트 토리를 그린 카툰 ${open.length}편, 모두 ${totalCuts}컷입니다. ` +
+  '기원 동화 「첫 번째 도토리」부터 「토리의 일상」 연작과 일대기까지 화별로 읽으실 수 있습니다.';
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: '토리 이야기',
+  description: desc,
+  url: new URL(url('/story/'), Astro.site).href,
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: open.length,
+    itemListElement: open.map((e, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: e.title,
+      url: new URL(url(`/story/${e.slug}/`), Astro.site).href,
+    })),
+  },
+};
+---
+
+<Base title="토리 이야기, 카툰 모아보기" description={desc} activeNav="forest" compact>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+
+  <section class="wrap st-head">
+    <div class="kicker-en" style="color: var(--accent);">CARTOON</div>
+    <h1 class="serif st-title">토리 이야기</h1>
+    <p class="st-sub">
+      도토리경제를 쓰는 다람쥐 이코노미스트 토리의 이야기입니다.
+      지금까지 <strong>{open.length}편 {totalCuts}컷</strong>, 한 화씩 골라 읽으십시오.
+    </p>
+  </section>
+
+  <section class="wrap st-group">
+    <h2 class="serif st-h2">읽을 수 있는 이야기</h2>
+    <div class="st-grid">
+      {
+        open.map((e) => (
+          <a class="st-card" href={url(`/story/${e.slug}/`)}>
+            <div class="st-thumb">
+              <img
+                src={url(`/images/story/${e.cover}.jpg`)}
+                alt={`${e.title} 대표 컷`}
+                width="440"
+                height="330"
+                loading="lazy"
+              />
+            </div>
+            <div class="st-body">
+              <div class="st-series">{e.series}</div>
+              <div class="st-card-title serif">{e.title}</div>
+              <p class="st-card-sub">{e.sub}</p>
+              <div class="mono st-meta">{e.cuts}컷</div>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    locked.length > 0 && (
+      <section class="wrap st-group">
+        <h2 class="serif st-h2">아직 그리는 중</h2>
+        <ul class="st-locked">
+          {locked.map((e) => (
+            <li>
+              <span class="st-locked-title serif">{e.title}</span>
+              <span class="st-locked-sub">{e.sub}</span>
+              <span class="mono st-locked-when">
+                기사 {e.gateAtPosts}편에 공개 · 지금 {publishedCount}편
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="wrap st-foot">
+    <p class="st-note">
+      토리가 쓰는 말(도토리, 겨울, 창고)이 무엇을 가리키는지는
+      <a href={url('/about/')}>토리는 누구인가</a>에 정리돼 있습니다.
+      토리가 매일 아침 주워 온 것은 <a href={url('/forest/')}>도토리 숲</a>에 쌓입니다.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .st-head { padding-top: 46px; }
+  .st-title { font-size: clamp(30px, 4.6vw, 44px); font-weight: 900; color: var(--ink); margin-top: 6px; }
+  .st-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: var(--measure-wide); word-break: keep-all; }
+
+  .st-group { margin-top: 42px; }
+  .st-h2 { font-size: 19px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .st-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-top: 20px; }
+  @media (max-width: 900px) { .st-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .st-grid { grid-template-columns: 1fr; } }
+
+  .st-card { display: block; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
+  .st-card:hover { border-color: var(--accent); }
+  .st-thumb { aspect-ratio: 4 / 3; background: var(--surface); }
+  .st-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .st-body { padding: 14px 16px 17px; }
+  .st-series { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; margin-bottom: 9px; }
+  .st-card-title { font-size: 16.5px; font-weight: 900; color: var(--ink); line-height: 1.45; word-break: keep-all; }
+  .st-card:hover .st-card-title { color: var(--accent); }
+  .st-card-sub { font-size: 12.5px; color: var(--sub); line-height: 1.8; margin-top: 7px; word-break: keep-all; }
+  .st-meta { font-size: 11px; color: var(--muted); margin-top: 9px; }
+  .st-locked { list-style: none; padding: 0; margin: 18px 0 0; }
+  .st-locked li { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; border: 1px dashed var(--line); border-radius: 10px; padding: 13px 16px; }
+  .st-locked li + li { margin-top: 10px; }
+  .st-locked-title { font-size: 15px; font-weight: 900; color: var(--ink); }
+  .st-locked-sub { flex: 1 1 200px; font-size: 12.5px; color: var(--sub); word-break: keep-all; }
+  .st-locked-when { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  .st-foot { margin: 44px 0 56px; }
+  .st-note { font-size: 13px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+</style>

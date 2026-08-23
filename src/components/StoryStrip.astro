@@ -1,0 +1,226 @@
+---
+// 카툰 스트립 한 덩어리. about.astro 한 파일에 흩어져 있던 컷 마크업과 말풍선·계절 효과
+// CSS를 여기로 모았다. /story/<slug>/ 낱장 페이지와 홈 미리보기가 같은 조판을 쓴다.
+import { url } from '../lib/site';
+import type { Panel } from '../data/story';
+
+interface Props {
+  panels: Panel[];
+  /** 컷 번호를 'nn / 총컷수'로 적는다. 0이면 번호를 숨긴다(장으로 쪼갠 연작). */
+  total?: number;
+  /** 이 스트립이 전체에서 몇 번째 컷부터인지 */
+  offset?: number;
+  /** 첫 두 컷을 즉시 불러올지 */
+  eager?: boolean;
+}
+const { panels, total = 0, offset = 0, eager = false } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<div class="strip wrap">
+  {
+    panels.map((p, i) => (
+      <figure class:list={['panel', 'reveal', `act-${p.act}`]}>
+        <div class="frame">
+          <img
+            src={url(`/images/story/${p.img}.jpg`)}
+            alt={p.alt}
+            width="880"
+            height="660"
+            loading={eager && i < 2 ? 'eager' : 'lazy'}
+          />
+          <div class="fx" aria-hidden="true">
+            <i /><i /><i /><i /><i /><i />
+          </div>
+          {p.bubbles.map((b) => (
+            <div
+              class:list={['bubble', b.kind, b.tail ? `tail-${b.tail}` : '']}
+              style={`left:${b.x};${b.y.startsWith('b:') ? `bottom:${b.y.slice(2)}` : `top:${b.y}`};${b.w ? `max-width:${b.w};` : ''}`}
+            >
+              {b.text}
+            </div>
+          ))}
+        </div>
+        {total > 0 && <figcaption class="mono panel-no">{pad(offset + i + 1)} / {pad(total)}</figcaption>}
+      </figure>
+    ))
+  }
+</div>
+
+<style>
+  .strip { max-width: 760px; padding-top: 34px; }
+  .panel { margin: 0 0 44px 0; }
+  .frame {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--ink);
+    padding: 10px;
+    overflow: hidden;
+  }
+  .frame img { display: block; width: 100%; height: auto; }
+  .panel-no { font-size: 10px; color: var(--muted); text-align: right; margin-top: 7px; }
+
+  /* 말풍선, HTML 텍스트라 선명하고 수정·번역·검색 전부 가능.
+     화자 좌표(x,y)에 놓이고 tail-* 클래스가 입 방향으로 꼬리를 그린다. */
+  .bubble {
+    position: absolute;
+    max-width: 60%;
+    font-size: clamp(12px, 1.9vw, 14.5px);
+    line-height: 1.5;
+    padding: 10px 15px;
+    z-index: 2;
+  }
+  .bubble.speech,
+  .bubble.thought {
+    background: #fff;
+    color: #231a10;
+    border: 2px solid #231a10;
+    border-radius: 16px;
+    font-weight: 700;
+    text-align: center;
+  }
+  .bubble.thought {
+    color: #57503f;
+    border-style: dashed;
+    border-width: 1.5px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .bubble.narration {
+    background: #231a10;
+    color: #f8f4ec;
+    font-size: clamp(11px, 1.7vw, 13px);
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+  }
+
+  /* 꼬리: 잉크 삼각형(::before) 위에 흰 삼각형(::after)을 겹쳐 외곽선 유지 */
+  .bubble.speech::before,
+  .bubble.speech::after {
+    content: '';
+    position: absolute;
+    border: solid transparent;
+  }
+  .bubble.tail-b::before, .bubble.tail-bl::before, .bubble.tail-br::before {
+    bottom: -13px;
+    border-width: 13px 8px 0 8px;
+    border-top-color: #231a10;
+  }
+  .bubble.tail-b::after, .bubble.tail-bl::after, .bubble.tail-br::after {
+    bottom: -8px;
+    border-width: 10px 6px 0 6px;
+    border-top-color: #fff;
+  }
+  .bubble.tail-b::before { left: 50%; margin-left: -8px; }
+  .bubble.tail-b::after { left: 50%; margin-left: -6px; }
+  .bubble.tail-bl::before { left: 18%; }
+  .bubble.tail-bl::after { left: calc(18% + 2px); }
+  .bubble.tail-br::before { right: 18%; }
+  .bubble.tail-br::after { right: calc(18% + 2px); }
+  .bubble.tail-r::before {
+    right: -13px;
+    top: 55%;
+    border-width: 8px 0 8px 13px;
+    border-left-color: #231a10;
+  }
+  .bubble.tail-r::after {
+    right: -8px;
+    top: 55%;
+    margin-top: 2px;
+    border-width: 6px 0 6px 10px;
+    border-left-color: #fff;
+  }
+  .bubble.tail-l::before {
+    left: -13px;
+    top: 55%;
+    border-width: 8px 13px 8px 0;
+    border-right-color: #231a10;
+  }
+  .bubble.tail-l::after {
+    left: -8px;
+    top: 55%;
+    margin-top: 2px;
+    border-width: 6px 10px 6px 0;
+    border-right-color: #fff;
+  }
+  .bubble.tail-tr::before {
+    top: -13px;
+    right: 18%;
+    border-width: 0 8px 13px 8px;
+    border-bottom-color: #231a10;
+  }
+  .bubble.tail-tr::after {
+    top: -8px;
+    right: calc(18% + 2px);
+    border-width: 0 6px 10px 6px;
+    border-bottom-color: #fff;
+  }
+
+  /* 생각 풍선 꼬리: 화자 쪽으로 작아지는 동그라미 두 개 */
+  .bubble.thought.tail-br::before,
+  .bubble.thought.tail-br::after {
+    content: '';
+    position: absolute;
+    background: #fff;
+    border: 1.5px dashed #57503f !important;
+    border-radius: 50%;
+  }
+  .bubble.thought.tail-br::before { width: 10px; height: 10px; right: 10%; bottom: -16px; }
+  .bubble.thought.tail-br::after { width: 6px; height: 6px; right: 2%; bottom: -27px; }
+
+  /* 주변 효과, 막마다 계절이 흐른다 */
+  .fx { position: absolute; inset: 10px; pointer-events: none; z-index: 1; }
+  .fx i { position: absolute; top: -8%; display: block; }
+  .fx i:nth-child(1) { left: 12%; animation-delay: 0s; }
+  .fx i:nth-child(2) { left: 30%; animation-delay: 1.4s; }
+  .fx i:nth-child(3) { left: 48%; animation-delay: 0.6s; }
+  .fx i:nth-child(4) { left: 63%; animation-delay: 2.1s; }
+  .fx i:nth-child(5) { left: 78%; animation-delay: 0.9s; }
+  .fx i:nth-child(6) { left: 90%; animation-delay: 1.8s; }
+
+  @keyframes fx-fall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+    12% { opacity: 0.9; }
+    100% { transform: translateY(560px) rotate(300deg); opacity: 0; }
+  }
+  @keyframes fx-twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.6); }
+    50% { opacity: 0.9; transform: scale(1); }
+  }
+
+  .act-autumn .fx i {
+    width: 10px; height: 7px;
+    background: #d9a05b;
+    border-radius: 60% 0 60% 0;
+    animation: fx-fall 7s linear infinite;
+  }
+  .act-winter .fx i,
+  .act-night .fx i {
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.85;
+    animation: fx-fall 9s linear infinite;
+  }
+  .act-night .fx i:nth-child(odd) {
+    top: auto; left: auto;
+    animation: fx-twinkle 3.2s ease-in-out infinite;
+    background: #ffd98a;
+    width: 5px; height: 5px;
+  }
+  .act-night .fx i:nth-child(1) { top: 18%; left: 14%; }
+  .act-night .fx i:nth-child(3) { top: 10%; left: 66%; }
+  .act-night .fx i:nth-child(5) { top: 26%; left: 86%; }
+  .act-dawn .fx i {
+    top: auto; bottom: 12%;
+    width: 7px; height: 7px;
+    background: #f0c46a;
+    border-radius: 50%;
+    animation: fx-twinkle 4s ease-in-out infinite;
+  }
+  .act-dawn .fx i:nth-child(2) { bottom: 30%; }
+  .act-dawn .fx i:nth-child(4) { bottom: 46%; }
+
+  @media (prefers-reduced-motion: reduce) { .fx { display: none; } }
+
+</style>

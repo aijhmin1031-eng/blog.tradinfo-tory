@@ -1,0 +1,167 @@
+---
+// 화별 카툰 페이지. 한 화가 곧 한 URL이라 공유·검색·색인이 된다.
+// 조판은 StoryStrip이 전부 맡고, 이 파일은 머리말·다음 화 안내·구조화 데이터만 다룬다.
+import Base from '../../layouts/Base.astro';
+import StoryStrip from '../../components/StoryStrip.astro';
+import { getCollection } from 'astro:content';
+import { SITE, url, isPublished } from '../../lib/site';
+import { EPISODES } from '../../data/story';
+
+export async function getStaticPaths() {
+  const { EPISODES } = await import('../../data/story');
+  return EPISODES.map((ep) => ({ params: { slug: ep.slug }, props: { ep } }));
+}
+
+const { ep } = Astro.props;
+const publishedCount = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).length;
+const gated = !!ep.gateAtPosts && publishedCount < ep.gateAtPosts;
+
+const ordered = [...EPISODES].sort((a, b) => a.order - b.order);
+const visible = ordered.filter((e) => !e.gateAtPosts || publishedCount >= e.gateAtPosts);
+const here = visible.findIndex((e) => e.slug === ep.slug);
+const prev = here > 0 ? visible[here - 1] : null;
+const next = here >= 0 && here < visible.length - 1 ? visible[here + 1] : null;
+
+// 장으로 나뉜 연작은 장별로 스트립을 끊되 컷 번호는 이어서 센다.
+let run = 0;
+const chapterRuns = (ep.chapters ?? []).map((ch) => {
+  const offset = run;
+  run += ch.panels.length;
+  return { ...ch, offset };
+});
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'ComicStory',
+  name: ep.title,
+  alternativeHeadline: ep.sub,
+  description: ep.desc,
+  url: new URL(url(`/story/${ep.slug}/`), Astro.site).href,
+  image: new URL(url(`/images/story/${ep.cover}.jpg`), Astro.site).href,
+  inLanguage: 'ko-KR',
+  isPartOf: {
+    '@type': 'CreativeWorkSeries',
+    name: ep.series,
+    url: new URL(url('/story/'), Astro.site).href,
+  },
+  author: { '@type': 'Organization', name: SITE.title },
+  publisher: { '@type': 'Organization', name: SITE.title },
+};
+
+const crumbs = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '도토리경제', item: new URL(url('/'), Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: '토리 이야기', item: new URL(url('/story/'), Astro.site).href },
+    { '@type': 'ListItem', position: 3, name: ep.title },
+  ],
+};
+---
+
+<Base title={ep.title} description={ep.desc} activeNav="forest" compact>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
+
+  <section class="wrap ep-head">
+    <a class="ep-back" href={url('/story/')}>← 토리 이야기 목차</a>
+    <div class="kicker-en" style="color: var(--accent);">{ep.series}</div>
+    <h1 class="serif ep-title">{ep.title}</h1>
+    <p class="ep-sub">{ep.sub}</p>
+    <div class="mono ep-meta">{ep.cuts}컷</div>
+  </section>
+
+  {
+    gated ? (
+      <section class="wrap ep-gate">
+        <p class="ep-gate-text">
+          이 화는 기사 <strong>{ep.gateAtPosts}편</strong>에 맞춰 공개합니다.
+          지금은 {publishedCount}편입니다. 매일 아침 한 편씩 쌓이는 중입니다.
+        </p>
+        <a class="ep-gate-cta" href={url('/story/')}>다른 화 보기</a>
+      </section>
+    ) : (
+      <>
+        {ep.panels && <StoryStrip panels={ep.panels} total={ep.cuts} eager />}
+        {chapterRuns.map((ch) => (
+          <>
+            <section class="wrap ep-ch">
+              <h2 class="serif ep-ch-title">{ch.title}</h2>
+              <p class="mono ep-ch-sub">{ch.sub}</p>
+            </section>
+            <StoryStrip panels={ch.panels} total={ep.cuts} offset={ch.offset} />
+          </>
+        ))}
+      </>
+    )
+  }
+
+  {
+    !gated && (
+      <section class="wrap">
+        <div class="ep-close serif">&ldquo;{SITE.tagline}&rdquo;</div>
+      </section>
+    )
+  }
+
+  <section class="wrap ep-nav">
+    {
+      prev ? (
+        <a class="ep-nav-card" href={url(`/story/${prev.slug}/`)}>
+          <div class="mono ep-nav-label">이전 화</div>
+          <div class="serif ep-nav-title">{prev.title}</div>
+        </a>
+      ) : (
+        <span />
+      )
+    }
+    {
+      next ? (
+        <a class="ep-nav-card right" href={url(`/story/${next.slug}/`)}>
+          <div class="mono ep-nav-label">다음 화</div>
+          <div class="serif ep-nav-title">{next.title}</div>
+        </a>
+      ) : (
+        <span />
+      )
+    }
+  </section>
+
+  <section class="wrap ep-foot">
+    <p class="ep-note">
+      토리가 매일 아침 주워 온 것은 <a href={url('/forest/')}>도토리 숲</a>에 쌓입니다.
+      토리가 쓰는 말은 <a href={url('/about/')}>토리는 누구인가</a>에 풀어 두었습니다.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .ep-head { text-align: center; padding-top: 40px; padding-bottom: 6px; }
+  .ep-back { display: inline-block; font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+  .ep-back:hover { color: var(--accent); }
+  .ep-title { font-size: clamp(28px, 5vw, 42px); font-weight: 900; margin: 10px 0 10px; color: var(--ink); word-break: keep-all; }
+  .ep-sub { color: var(--sub); font-size: 14.5px; letter-spacing: 0.06em; word-break: keep-all; }
+  .ep-meta { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  .ep-ch { text-align: center; padding-top: 26px; }
+  .ep-ch-title { font-size: clamp(20px, 3vw, 26px); margin: 0 0 6px; color: var(--ink); }
+  .ep-ch-sub { font-size: 11.5px; color: var(--muted); letter-spacing: 0.06em; }
+
+  .ep-close { text-align: center; font-size: clamp(19px, 3vw, 25px); font-weight: 900; padding: 18px 0 10px; color: var(--ink); }
+
+  .ep-gate { text-align: center; margin: 40px auto 20px; max-width: var(--measure); border: 1px dashed var(--line); border-radius: 12px; padding: 34px 26px; }
+  .ep-gate-text { font-size: 14px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+  .ep-gate-cta { display: inline-block; margin-top: 16px; font-size: 13px; font-weight: 700; color: var(--accent); }
+
+  .ep-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+  @media (max-width: 620px) { .ep-nav { grid-template-columns: 1fr; } }
+  .ep-nav-card { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; background: var(--paper); }
+  .ep-nav-card:hover { border-color: var(--accent); }
+  .ep-nav-card.right { text-align: right; }
+  .ep-nav-label { font-size: 10.5px; color: var(--muted); }
+  .ep-nav-title { font-size: 15px; font-weight: 900; color: var(--ink); margin-top: 6px; line-height: 1.5; word-break: keep-all; }
+  .ep-nav-card:hover .ep-nav-title { color: var(--accent); }
+
+  .ep-foot { margin: 34px 0 56px; }
+  .ep-note { font-size: 13px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+</style>

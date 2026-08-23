@@ -7,6 +7,7 @@ import { CATEGORIES, url, isPublished } from '../lib/site';
 import { GLOSSARY } from '../lib/glossary';
 import { TOPICS } from '../lib/topics';
 import { ALL_ITEMS } from '../data/pack';
+import { EPISODES } from '../data/story';
 
 const posts = await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate));
 const total = posts.length;
@@ -135,18 +136,36 @@ const tableRows = catKeys.map((c) => ({
 
 // KPI 밴드 (전부 빌드 산출 실측)
 const termCount = Object.keys(GLOSSARY).length;
-const showEp2 = total >= 50;
-const cartoonCuts = 16 + 20 + 4 + (showEp2 ? 12 : 0);
+const openEpisodes = EPISODES.filter((e) => !e.gateAtPosts || total >= e.gateAtPosts);
+const cartoonCuts = openEpisodes.reduce((n, e) => n + e.cuts, 0);
 const kpis = [
   { n: String(total), unit: '편', label: '발행 기사', note: '매일 2편 자동 발행' },
   { n: String(TOPICS.length), unit: '개', label: '연중 특집', note: '반도체·AI' },
   { n: String(termCount), unit: '개', label: '용어 도토리', note: '메모 칩·사전 연동' },
-  { n: String(cartoonCuts), unit: '컷', label: '토리 카툰', note: '기원·일대기·일상' },
+  { n: String(cartoonCuts), unit: '컷', label: '토리 카툰', note: `화별로 ${openEpisodes.length}편 공개` },
 ];
 // ── 사이트 구조: 읽을거리(숲) vs 도구(창고) 두 갈래 ──
 // 단위를 '페이지 수'로 통일해 두 갈래의 굵기를 정직하게 비교한다.
 const galimgilCount = posts.filter((p) => ((p as { slug?: string; id: string }).slug ?? p.id).startsWith('tori-galimgil')).length;
-const forestPages = total + catKeys.length + TOPICS.length + 1;
+const storyPages = openEpisodes.length + 1; // 화별 낱장 + 목차
+const forestPages = total + catKeys.length + TOPICS.length + storyPages + 1;
+const forestCorners = [
+  ...catKeys.map((k) => ({
+    name: CATEGORIES[k].name,
+    href: `/category/${CATEGORIES[k].slug}/`,
+    n: posts.filter((p) => p.data.category === k).length,
+    unit: '편',
+    note: CATEGORIES[k].desc,
+  })),
+  ...TOPICS.map((t) => ({
+    name: `${t.name} 특집`,
+    href: t.href,
+    n: posts.filter((p) => (p.data.topics ?? []).includes(t.key)).length,
+    unit: '편',
+    note: t.desc,
+  })),
+  { name: '토리 이야기', href: '/story/', n: openEpisodes.length, unit: '화', note: `카툰 ${cartoonCuts}컷 · 화별로 읽기` },
+];
 const warehouseCorners = [
   { name: '도토리 그림함', href: '/pack/', n: ALL_ITEMS.length, unit: '장', note: '무료 이미지 낱장 페이지' },
   { name: '용어 도토리', href: '/glossary/', n: termCount, unit: '개', note: '무역·경제 용어 사전' },
@@ -221,6 +240,17 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
         <text x="552" y={bWareY + bWareH / 2 - 3} class="bl-name">도토리 창고 · 쓸거리</text>
         <text x="552" y={bWareY + bWareH / 2 + 13} class="bl-num">{warehousePages}쪽</text>
       </svg>
+      <div class="branch-label">도토리 숲 · 읽을거리</div>
+      <div class="branch-corners">
+        {forestCorners.map((c) => (
+          <a class="bc" href={url(c.href)}>
+            <span class="bc-name">{c.name}</span>
+            <span class="bc-n mono">{c.n}{c.unit}</span>
+            <span class="bc-note">{c.note}</span>
+          </a>
+        ))}
+      </div>
+      <div class="branch-label">도토리 창고 · 쓸거리</div>
       <div class="branch-corners">
         {warehouseCorners.map((c) => (
           <a class="bc" href={url(c.href)}>
@@ -418,6 +448,7 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
   .branch-svg { width: 100%; height: auto; display: block; margin-top: 6px; }
   .bl-name { font-size: 13px; font-weight: 700; fill: var(--ink); }
   .bl-num { font-size: 11px; fill: var(--muted); font-family: var(--mono, monospace); }
+  .branch-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); margin-top: 20px; }
   .branch-corners { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
   .bc { display: block; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
   .bc:hover { border-color: var(--accent); }

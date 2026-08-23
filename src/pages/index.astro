@@ -6,6 +6,7 @@ import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
 import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished } from '../lib/site';
 import { TOPICS } from '../lib/topics';
+import { EPISODES } from '../data/story';
 
 const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -16,6 +17,12 @@ const FEATURED_TTL_MS = 2 * 86400 * 1000;
 const pinned = all.find((p) => p.data.featured && p.data.pubDate.valueOf() >= Date.now() - FEATURED_TTL_MS);
 const featured = pinned ?? all[0];
 const rest = all.filter((p) => p.id !== featured?.id);
+
+// 카툰은 상단 메뉴 깊숙이 두면 아무도 못 찾는다. 1면에 최근 세 화를 걸어 둔다.
+const storyEps = EPISODES.filter((e) => !e.gateAtPosts || all.length >= e.gateAtPosts)
+  .sort((a, b) => b.order - a.order)
+  .slice(0, 3);
+const storyCuts = EPISODES.filter((e) => !e.gateAtPosts || all.length >= e.gateAtPosts).reduce((n, e) => n + e.cuts, 0);
 
 // 1면 편집: 이번 주(최근 7일, 최대 8편)만 시간순으로, 나머지는 분야별 블록으로 정리한다.
 const WEEK_MS = 7 * 86400 * 1000;
@@ -232,6 +239,37 @@ const jsonLd = {
     <a class="pb-cta" href={url('/board/')}>광장 가기 →</a>
   </section>
 
+  <section class="story-band wrap reveal">
+    <div class="sb-head">
+      <div>
+        <div class="sb-title serif">토리 이야기</div>
+        <p class="sb-desc">
+          숫자를 세는 다람쥐가 어쩌다 매일 새벽 장부를 적게 됐는지, 카툰 {storyCuts}컷으로 그렸습니다.
+        </p>
+      </div>
+      <a class="sb-all" href={url('/story/')}>이야기 전체 보기 →</a>
+    </div>
+    <div class="sb-grid">
+      {
+        storyEps.map((e) => (
+          <a class="sb-card" href={url(`/story/${e.slug}/`)}>
+            <div class="sb-thumb">
+              <img
+                src={url(`/images/story/${e.cover}.jpg`)}
+                alt={`${e.title} 대표 컷`}
+                width="360"
+                height="270"
+                loading="lazy"
+              />
+            </div>
+            <div class="sb-card-title">{e.title}</div>
+            <div class="mono sb-meta">{e.series} · {e.cuts}컷</div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
   <section class="mascot wrap reveal">
     <img
       src={url('/images/tori/tori.jpg')}
@@ -245,13 +283,27 @@ const jsonLd = {
       <div class="mascot-quote serif">&ldquo;{SITE.tagline}&rdquo;</div>
       <div class="mascot-sub">
         토리는 매일 아침 무역·환율·금리 데이터를 줍고, 차트 한 장과 세 줄로 정리합니다.
-        <a href={url('/about/')}>토리의 이야기 보기 →</a>
+        <a href={url('/about/')}>토리는 누구인가 →</a>
       </div>
     </div>
   </section>
 </Base>
 
 <style>
+  .story-band { margin-top: 52px; }
+  .sb-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+  .sb-title { font-size: 19px; font-weight: 900; color: var(--ink); }
+  .sb-desc { font-size: 13px; color: var(--sub); line-height: 1.8; margin-top: 6px; max-width: var(--measure); word-break: keep-all; }
+  .sb-all { font-size: 12.5px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .sb-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 20px; }
+  @media (max-width: 760px) { .sb-grid { grid-template-columns: 1fr 1fr; } .sb-grid > :nth-child(3) { display: none; } }
+  .sb-card { display: block; }
+  .sb-thumb { border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--surface); }
+  .sb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sb-card-title { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-top: 9px; word-break: keep-all; }
+  .sb-card:hover .sb-card-title { color: var(--accent); }
+  .sb-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
   .hero {
     display: grid;
     grid-template-columns: 1fr;
