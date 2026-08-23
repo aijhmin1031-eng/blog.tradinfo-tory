@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { GLOSSARY, GLOSSARY_GROUPS } from '../lib/glossary';
 import { PICTOGRAMS } from '../lib/pictograms';
+import { url } from '../lib/site';
 
 const groups = (Object.keys(GLOSSARY_GROUPS) as (keyof typeof GLOSSARY_GROUPS)[]).map((g) => ({
   key: g,
@@ -44,8 +45,11 @@ const total = Object.keys(GLOSSARY).length;
                   set:html={`<svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAMS[e.icon] ?? ''}</svg>`}
                 />
                 <div class="gl-body">
-                  <h3 class="gl-name serif">{e.label}</h3>
+                  <h3 class="gl-name serif">
+                    <a href={url(`/glossary/${key}/`)}>{e.label}</a>
+                  </h3>
                   <p class="gl-def">{e.def}</p>
+                  <a class="gl-more" href={url(`/glossary/${key}/`)}>자세히 보기</a>
                 </div>
               </article>
             ))}
@@ -58,6 +62,10 @@ const total = Object.keys(GLOSSARY).length;
 </Base>
 
 <style>
+  .gl-name a { color: inherit; }
+  .gl-card:hover .gl-name a { color: var(--accent); }
+  .gl-more { display: inline-block; font-size: 11.5px; font-weight: 700; color: var(--accent); margin-top: 8px; }
+
   .gl-head {
     padding: 46px 0 10px;
     max-width: 720px;

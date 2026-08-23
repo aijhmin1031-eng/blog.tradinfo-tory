@@ -1,0 +1,159 @@
+---
+// 용어 낱장. 41개 용어가 /glossary/ 한 장에 몰려 있어 "기준금리 뜻" 같은 검색어를
+// 통째로 놓치고 있었다. 그림함 낱장과 같은 구조로 용어마다 주소를 준다.
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { GLOSSARY, GLOSSARY_GROUPS } from '../../lib/glossary';
+import { PICTOGRAMS } from '../../lib/pictograms';
+import { CATEGORIES, url, fmtDate, isPublished } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const { GLOSSARY } = await import('../../lib/glossary');
+  return Object.keys(GLOSSARY).map((term) => ({ params: { term }, props: { term } }));
+}
+
+const { term } = Astro.props;
+const entry = GLOSSARY[term];
+const groupName = GLOSSARY_GROUPS[entry.group];
+
+// 같은 갈래의 다른 용어
+const siblings = Object.entries(GLOSSARY)
+  .filter(([k, e]) => e.group === entry.group && k !== term)
+  .sort(([, a], [, b]) => a.label.localeCompare(b.label, 'ko'))
+  .slice(0, 8);
+
+// 이 용어를 실제로 쓴 기사 — 본문의 <Term t="..." /> 를 훑는다.
+const posts = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+// Term 칩으로 표시한 기사를 먼저, 그다음 본문에 말이 나오는 기사로 채운다.
+const tagged = posts.filter((p) => (p.body ?? '').includes(`t="${term}"`));
+const mentioned = posts.filter((p) => !tagged.includes(p) && (p.body ?? '').includes(term));
+const used = [...tagged, ...mentioned].slice(0, 6);
+
+const abs = (p: string) => new URL(p, Astro.site).href;
+const desc = `${entry.label}의 뜻을 초보자의 언어로 풀이합니다. ${entry.def}`;
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'DefinedTerm',
+  name: entry.label,
+  description: entry.def,
+  inDefinedTermSet: {
+    '@type': 'DefinedTermSet',
+    name: '도토리경제 용어 도토리',
+    url: abs(url('/glossary/')),
+  },
+  url: abs(url(`/glossary/${term}/`)),
+  inLanguage: 'ko-KR',
+};
+
+const crumbs = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '도토리경제', item: abs(url('/')) },
+    { '@type': 'ListItem', position: 2, name: '용어 도토리', item: abs(url('/glossary/')) },
+    { '@type': 'ListItem', position: 3, name: entry.label },
+  ],
+};
+---
+
+<Base title={`${entry.label} 뜻`} description={desc} activeNav="glossary" compact>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
+
+  <nav class="wrap gt-crumb">
+    <a href={url('/glossary/')}>용어 도토리</a>
+    <span>·</span>
+    <span>{groupName}</span>
+  </nav>
+
+  <section class="wrap gt-head">
+    <div
+      class="gt-icon"
+      set:html={`<svg width="54" height="54" viewBox="0 0 24 24" aria-hidden="true">${PICTOGRAMS[entry.icon] ?? ''}</svg>`}
+    />
+    <div>
+      <h1 class="serif gt-title">{entry.label}</h1>
+      <div class="mono gt-group">{groupName}</div>
+    </div>
+  </section>
+
+  <section class="wrap gt-body">
+    <p class="gt-def">{entry.def}</p>
+  </section>
+
+  {
+    used.length > 0 && (
+      <section class="wrap gt-block">
+        <h2 class="serif gt-h2">이 말이 나오는 기사</h2>
+        <ul class="gt-posts">
+          {used.map((p) => (
+            <li>
+              <a href={url(`/posts/${p.id}/`)}>
+                <span class:list={['kicker', CATEGORIES[p.data.category].cls]}>
+                  {CATEGORIES[p.data.category].name}
+                </span>
+                <span class="gt-post-title">{p.data.title}</span>
+              </a>
+              <time class="mono" datetime={p.data.pubDate.toISOString()}>{fmtDate(p.data.pubDate)}</time>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  {
+    siblings.length > 0 && (
+      <section class="wrap gt-block">
+        <h2 class="serif gt-h2">{groupName}의 다른 말</h2>
+        <div class="gt-chips">
+          {siblings.map(([k, e]) => (
+            <a class="gt-chip" href={url(`/glossary/${k}/`)}>{e.label}</a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="wrap gt-foot">
+    <p class="gt-note">
+      낯선 말이 더 있으면 <a href={url('/glossary/')}>용어 도토리</a>에서 찾아보십시오.
+      기사에 쓰인 지표와 그림은 <a href={url('/warehouse/')}>도토리 창고</a>에 정리돼 있습니다.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .gt-crumb { padding-top: 30px; font-size: 12px; color: var(--muted); display: flex; gap: 8px; }
+  .gt-crumb a:hover { color: var(--accent); }
+
+  .gt-head { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+  .gt-head > div:last-child { min-width: 0; }
+  .gt-icon { width: 54px; height: 54px; flex: 0 0 auto; color: var(--accent); }
+  .gt-icon :global(svg) { width: 100%; height: 100%; display: block; }
+  .gt-title { font-size: clamp(28px, 4.4vw, 40px); font-weight: 900; color: var(--ink); }
+  .gt-group { font-size: 11.5px; color: var(--muted); margin-top: 6px; letter-spacing: 0.06em; }
+
+  .gt-body { margin-top: 22px; }
+  .gt-def { font-size: 16px; line-height: 2; color: var(--sub); max-width: var(--measure); word-break: keep-all; }
+
+  .gt-block { margin-top: 42px; }
+  .gt-h2 { font-size: 18px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+
+  .gt-posts { list-style: none; padding: 0; margin: 16px 0 0; }
+  .gt-posts li { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 11px 0; border-bottom: 1px dashed var(--hair, var(--line)); }
+  .gt-posts a { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .gt-post-title { font-size: 14px; color: var(--ink); line-height: 1.6; word-break: keep-all; }
+  .gt-posts a:hover .gt-post-title { color: var(--accent); }
+  .gt-posts time { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  .gt-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .gt-chip { font-size: 13px; font-weight: 700; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; background: var(--paper); }
+  .gt-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+  .gt-foot { margin: 44px 0 56px; }
+  .gt-note { font-size: 13px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+</style>
