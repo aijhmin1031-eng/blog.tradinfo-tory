@@ -27,7 +27,7 @@ const icon = pictograms[entry.icon] ?? pictograms.spread;
         <span class="term-def">{entry.def}</span>
       </span>
     </span>
-    <a class="term-more" href={url(`/glossary/#t-${t}`)}>용어 사전에서 전체 보기 →</a>
+    <a class="term-more" href={url(`/glossary/${t}/`)}>{entry.label} 자세히 보기 →</a>
   </span></span><style>
   .term-wrap {
     position: relative;
