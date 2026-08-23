@@ -1,0 +1,197 @@
+---
+// 무료 이미지 낱장 페이지. 그림 한 장마다 독립 주소를 두어 검색에 걸리게 하고,
+// 구글 이미지의 라이선스 표시를 위해 ImageObject 구조화 데이터를 싣는다.
+import Base from '../../layouts/Base.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { url } from '../../lib/site';
+import { PACKS, ALL_ITEMS, fileOf, thumbOf } from '../../data/pack';
+import type { Pack, PackItem } from '../../data/pack';
+
+export function getStaticPaths() {
+  return ALL_ITEMS.map(({ pack, item }) => ({
+    params: { slug: item.slug },
+    props: { pack, item },
+  }));
+}
+
+type Props = { pack: Pack; item: PackItem };
+const { pack, item } = Astro.props;
+
+const file = url(fileOf(pack, item));
+const preview = pack.format === 'png' ? url(thumbOf(pack, item)) : file;
+const abs = (path: string) => new URL(path, Astro.site).href;
+const pageUrl = abs(url(`/pack/${item.slug}/`));
+
+const formatName = { jpg: 'JPG', png: '투명 PNG', svg: '벡터 SVG' }[pack.format];
+const desc =
+  `${item.name} 무료 이미지입니다. ${item.desc} ` +
+  `출처를 표기하면 블로그와 SNS, 상업적 용도로도 쓸 수 있습니다.`;
+
+const others = pack.items.filter((i) => i.slug !== item.slug).slice(0, 6);
+
+const imageLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ImageObject',
+  name: `${item.name} 무료 이미지`,
+  description: item.desc,
+  contentUrl: abs(file),
+  thumbnailUrl: abs(url(thumbOf(pack, item))),
+  encodingFormat: pack.format === 'svg' ? 'image/svg+xml' : `image/${pack.format === 'jpg' ? 'jpeg' : 'png'}`,
+  license: abs(url('/pack/')),
+  acquireLicensePage: pageUrl,
+  creditText: '도토리경제',
+  copyrightNotice: '도토리경제',
+  creator: { '@type': 'Organization', name: '도토리경제', url: abs(url('/')) },
+  keywords: item.keywords.join(', '),
+  inLanguage: 'ko',
+  isAccessibleForFree: true,
+};
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '도토리경제', item: abs(url('/')) },
+    { '@type': 'ListItem', position: 2, name: '무료 이미지 나눔', item: abs(url('/pack/')) },
+    { '@type': 'ListItem', position: 3, name: `${item.name} 무료 이미지`, item: pageUrl },
+  ],
+};
+---
+
+<Base
+  title={`${item.name} 무료 이미지 · 상업적 이용 가능`}
+  description={desc}
+  ogImage={file}
+  activeNav="pack"
+  compact
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(imageLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />
+  </Fragment>
+
+  <section class="wrap it-wrap">
+    <nav class="it-crumb" aria-label="위치">
+      <a href={url('/pack/')}>무료 이미지 나눔</a>
+      <span aria-hidden="true">·</span>
+      <span>{pack.label ?? `${pack.vol}탄`} {pack.title}</span>
+    </nav>
+
+    <div class="it-top">
+      <div class={`it-stage${pack.transparent ? ' alpha' : ''}`}>
+        <img
+          src={preview}
+          alt={`${item.name} 무료 이미지 · 도토리경제 그림함`}
+          width="600"
+          height="600"
+        />
+      </div>
+
+      <div class="it-info">
+        <h1 class="serif it-title">{item.name} 무료 이미지</h1>
+        <p class="it-desc">{item.desc}</p>
+
+        <dl class="it-spec">
+          <div><dt>형식</dt><dd class="mono">{formatName}</dd></div>
+          <div><dt>크기</dt><dd class="mono">{pack.size}</dd></div>
+          <div><dt>배경</dt><dd>{pack.transparent ? '투명 (어떤 색 위에도 올릴 수 있습니다)' : '단색 배경 포함'}</dd></div>
+          <div><dt>이용</dt><dd>출처 표기 시 상업적 사용 가능, 재판매 금지</dd></div>
+        </dl>
+
+        <a class="it-dl" href={file} download>이 그림 내려받기</a>
+        <p class="it-hint">
+          내려받은 뒤에는 글이나 자료에 출처 <strong>도토리경제</strong>와 이 페이지 링크를 함께
+          남겨 주십시오. 그것이 이 그림함을 계속 채우는 힘이 됩니다.
+        </p>
+
+        {pack.origin && (
+          <p class="it-origin">
+            이 그림은 <a href={pack.origin.href} rel="noopener">{pack.origin.name}</a>에서 그렸습니다.
+            {' '}{pack.origin.note}
+          </p>
+        )}
+
+        <ul class="it-keys">
+          {item.keywords.map((k) => <li>{k}</li>)}
+        </ul>
+      </div>
+    </div>
+
+    <section class="it-use">
+      <h2 class="serif it-h2">어디에 쓰면 좋을까요</h2>
+      <ul>
+        <li>블로그 글의 대표 이미지와 본문 삽화</li>
+        <li>인스타그램·스레드 카드 뉴스의 배경 요소</li>
+        <li>보고서와 발표 자료의 아이콘, 표지 장식</li>
+        {pack.transparent && <li>배경이 비어 있어 색이 있는 슬라이드 위에 그대로 올릴 수 있습니다</li>}
+        {pack.format === 'svg' && <li>일러스트 프로그램이나 피그마에서 색과 모양을 직접 고쳐 쓰기</li>}
+      </ul>
+    </section>
+
+    <section class="it-more">
+      <h2 class="serif it-h2">{pack.label ?? `${pack.vol}탄`}의 다른 그림</h2>
+      <div class="it-grid">
+        {others.map((o) => (
+          <a class="it-card" href={url(`/pack/${o.slug}/`)}>
+            <div class={`it-thumb${pack.transparent ? ' alpha' : ''}`}>
+              <img src={url(thumbOf(pack, o))} alt={`${o.name} 무료 이미지`} width="200" height="200" loading="lazy" />
+            </div>
+            <span>{o.name}</span>
+          </a>
+        ))}
+      </div>
+      <p class="it-all">
+        <a href={url('/pack/')}>무료 이미지 {ALL_ITEMS.length}장 전체 보기</a>
+        {PACKS.filter((p) => p.key !== pack.key).map((p) => (
+          <>
+            {' · '}
+            <a href={url(`/pack/#${p.key}`)}>{p.label ?? `${p.vol}탄`} {p.title}</a>
+          </>
+        ))}
+      </p>
+    </section>
+
+    <Newsletter source="site" variant="inline" />
+  </section>
+</Base>
+
+<style>
+  .it-wrap { padding: 32px 0 56px; }
+  .it-crumb { font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .it-crumb a { color: var(--muted); }
+  .it-crumb a:hover { color: var(--accent); }
+
+  .it-top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 34px; margin-top: 18px; align-items: start; }
+  @media (max-width: 780px) { .it-top { grid-template-columns: 1fr; gap: 22px; } }
+  .it-stage { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); display: grid; place-items: center; padding: 22px; }
+  .it-stage.alpha { background: #F7EEDD; }
+  .it-stage img { width: 100%; height: auto; display: block; }
+
+  .it-title { font-size: clamp(24px, 3.4vw, 34px); font-weight: 900; color: var(--ink); word-break: keep-all; }
+  .it-desc { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; word-break: keep-all; }
+  .it-spec { margin: 20px 0 0; border-top: 1px solid var(--line); }
+  .it-spec > div { display: grid; grid-template-columns: 70px 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .it-spec dt { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .it-spec dd { font-size: 13px; color: var(--ink); margin: 0; word-break: keep-all; }
+  .it-dl { display: inline-block; margin-top: 20px; background: var(--brand); color: #fff; font-size: 14px; font-weight: 700; padding: 12px 26px; border-radius: 4px; }
+  .it-dl:hover { background: var(--brand-hover); color: #fff; }
+  .it-hint { font-size: 12px; color: var(--muted); line-height: 1.8; margin-top: 12px; word-break: keep-all; }
+  .it-origin { font-size: 12.5px; color: var(--sub); line-height: 1.8; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; word-break: keep-all; }
+  .it-keys { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 18px 0 0; }
+  .it-keys li { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+
+  .it-h2 { font-size: 18px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .it-use { margin-top: 44px; }
+  .it-use ul { margin: 14px 0 0; padding-left: 18px; }
+  .it-use li { font-size: 13.5px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+
+  .it-more { margin-top: 44px; }
+  .it-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 14px; margin-top: 18px; }
+  .it-card { display: block; text-align: center; }
+  .it-thumb { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); aspect-ratio: 1; overflow: hidden; }
+  .it-thumb.alpha { background: #F7EEDD; padding: 10px; box-sizing: border-box; }
+  .it-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .it-card span { display: block; font-size: 12px; font-weight: 700; color: var(--ink); margin-top: 7px; }
+  .it-card:hover .it-thumb { border-color: var(--accent); }
+  .it-all { font-size: 13px; color: var(--sub); margin-top: 22px; line-height: 1.9; }
+</style>
