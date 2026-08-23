@@ -11,7 +11,7 @@ const ROOT = new URL('../../', import.meta.url);
 const SERIES_DIR = new URL('data/series/', ROOT);
 const CORP = new URL('src/data/corp.json', ROOT);
 
-// 무역토리 관심 종목 — 수출·무역의 대표 업종
+// 토리노믹스 관심 종목 — 수출·무역의 대표 업종
 const WATCHLIST = [
   { code: '005930', name: '삼성전자', sector: '반도체' },
   { code: '000660', name: 'SK하이닉스', sector: '반도체' },
