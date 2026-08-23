@@ -28,6 +28,7 @@ import { GISCUS, COMMENTS_ENABLED } from '../lib/comments';
     {COMMENTS_ENABLED ? (
       <div class="giscus-wrap">
         <script
+          is:inline
           src="https://giscus.app/client.js"
           data-repo={GISCUS.repo}
           data-repo-id={GISCUS.repoId}

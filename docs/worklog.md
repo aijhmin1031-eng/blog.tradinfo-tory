@@ -78,6 +78,10 @@
     테스트 행 삭제. 보안 어드바이저 경고 3건은 전부 의도된 설계(주석 참조).
   - 채점 절차(아침 Routine용): 일요일 갈림길 다음 화 작성 시 `galimgil_scores`에 지난 화 verdict(a/b/partial)·verdict_note·
     scored_on을 MCP `execute_sql`로 UPDATE하고 새 화 INSERT. anon 키는 `src/lib/supabase.ts`(공개용 설계).
+- **댓글·광장 개장(giscus 활성화 완료)**: 소유주가 Discussions 켜기+giscus 앱 설치(처음엔 jhmin1031-hub 계정에 설치돼
+  미인식 → aijhmin1031-eng로 재설치). giscus API로 repoId/categoryId 발급받아 comments.ts 기입, 카테고리는 Announcements
+  (관리자·giscus만 스레드 생성 가능, 장난 스레드 방지). 기사 댓글은 `data-mapping="specific"` + 논리 경로 term으로 변경:
+  GitHub Pages·Vercel·미래 도메인이 **같은 댓글 스레드를 공유**한다. Astro 함정: 속성 있는 script는 `is:inline` 명시.
 - **본문 구독 박스 추가(소유주 지시)**: 기사 끝(토리의 한 마디 아래)에 "토리의 아침 편지" 구독 박스 삽입.
   Newsletter 컴포넌트에 `variant='inline'`(밝은 지면 카드) 추가, source='post'로 유입 경로 구분. 푸터 폼과 병행.
 - **지도 모바일 가독성(소유주 지시 "L1~L3 글자가 안 보임")**: 원인은 좁은 화면의 가로 스크롤 잘림(안내 없음).
