@@ -15,7 +15,13 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
     <header class="wh-head">
       <div class="kicker-en" style="color: var(--accent);">WAREHOUSE</div>
       <h1 class="serif wh-title">도토리 창고</h1>
-      <p class="wh-sub">토리가 매일 주워 오는 핵심 지표들. 데이터 파이프라인 연결 후 평일 아침 자동 갱신됩니다. <span class="mono">(현재 기준일: {indicators.asOf})</span></p>
+      <p class="wh-sub">토리가 매일 아침 6시 50분에 주워 오는 핵심 지표들. 한국은행 ECOS·미 연준 FRED·관세청·DART에서 자동 수집합니다. <span class="mono">(기준일: {indicators.asOf}, 주말·공휴일은 직전 영업일 값)</span></p>
+      <nav class="wh-corners" aria-label="창고의 다른 코너">
+        <a href={url('/glossary/')}>용어 도토리</a>
+        <a href={url('/galimgil/')}>토리의 갈림길</a>
+        <a href={url('/map/')}>블로그 지도</a>
+        <a href={url('/board/')}>도토리 광장</a>
+      </nav>
     </header>
     <div class="wh-grid">
       <div class="card wh-card"><StatTiles /></div>
@@ -23,19 +29,19 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
         <div class="kicker" style="color: var(--sub); border-bottom: 1px solid var(--hair); padding-bottom: 9px; font-size: 11px;">입고 예정 지표</div>
         <ul class="wh-roadmap">
           <li>
-            <div class="wh-rm-name">품목별 수출입 추이</div>
-            <div class="wh-rm-desc">반도체·자동차·K-푸드 등 주요 품목의 월별 수출입액 (관세청)</div>
+            <div class="wh-rm-name">수출입 전체 총액</div>
+            <div class="wh-rm-desc">국가 구분 없는 월별 수출입 총액과 무역수지 (관세청, API 제약 해소 시)</div>
+          </li>
+          <li>
+            <div class="wh-rm-name">세계 교역 지표</div>
+            <div class="wh-rm-desc">주요국 교역 규모와 한국의 위치 (UN Comtrade, 연동 검증 중)</div>
           </li>
           <li>
             <div class="wh-rm-name">원자재 가격</div>
-            <div class="wh-rm-desc">유가·구리·곡물 등 수입 물가를 좌우하는 원자재 시세 (FRED)</div>
-          </li>
-          <li>
-            <div class="wh-rm-name">시중 금리 동향</div>
-            <div class="wh-rm-desc">기준금리·예금금리·국고채 수익률 (한국은행 ECOS)</div>
+            <div class="wh-rm-desc">구리·곡물 등 수입 물가를 좌우하는 원자재 시세 (FRED)</div>
           </li>
         </ul>
-        <div class="wh-rm-note">위 지표는 데이터 파이프라인 검증을 마치는 순서대로 공개됩니다.</div>
+        <div class="wh-rm-note">위 지표는 데이터 검증을 마치는 순서대로 입고됩니다. 품목별 수출입(HS 8542·8486)과 국가별 무역수지, 관련주 시세·공시는 이미 아래에 입고되어 매일 갱신 중입니다.</div>
       </div>
     </div>
 
@@ -68,6 +74,9 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
   .wh-title { font-size: 30px; font-weight: 900; margin: 8px 0 10px 0; }
   .wh-sub { color: var(--sub); font-size: 14.5px; max-width: 560px; line-height: 1.75; }
   .wh-sub .mono { font-size: 11px; color: var(--muted); }
+  .wh-corners { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }
+  .wh-corners a { font-size: 12.5px; font-weight: 600; color: var(--sub); border: 1px solid var(--line); border-radius: 999px; padding: 7px 15px; }
+  .wh-corners a:hover { color: var(--accent); border-color: var(--accent); }
   .wh-grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
   @media (min-width: 860px) { .wh-grid { grid-template-columns: 1fr 1fr; } }
   .wh-card { padding: 26px 30px; }

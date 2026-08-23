@@ -11,10 +11,10 @@ export const SITE = {
 };
 
 export const CATEGORIES = {
-  money: { name: '돈의 흐름', slug: 'money', cls: 'cat-money' },
-  tariff: { name: '관세·통상', slug: 'tariff', cls: 'cat-tariff' },
-  trade: { name: '수출입 리포트', slug: 'trade', cls: 'cat-trade' },
-  basics: { name: '상식 사전', slug: 'basics', cls: 'cat-basics' },
+  money: { name: '돈의 흐름', slug: 'money', cls: 'cat-money', desc: '환율·금리·물가, 돈의 값이 정해지는 구조를 데이터로 읽습니다.' },
+  tariff: { name: '관세·통상', slug: 'tariff', cls: 'cat-tariff', desc: '관세와 통상 규범, 국경을 넘는 거래의 규칙을 해설합니다.' },
+  trade: { name: '수출입 리포트', slug: 'trade', cls: 'cat-trade', desc: '수출입 통계와 품목·국가별 흐름을 통관 데이터로 짚습니다.' },
+  basics: { name: '상식 사전', slug: 'basics', cls: 'cat-basics', desc: '경제·무역 기사의 낯선 용어와 제도를 입문자의 눈높이로 풉니다.' },
 } as const;
 
 export type CategoryKey = keyof typeof CATEGORIES;

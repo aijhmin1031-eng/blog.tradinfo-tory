@@ -5,12 +5,34 @@ import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
 import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished } from '../lib/site';
+import { TOPICS } from '../lib/topics';
 
 const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 const featured = all.find((p) => p.data.featured) ?? all[0];
 const rest = all.filter((p) => p.id !== featured?.id);
+
+// 1면 편집: 이번 주(최근 7일, 최대 8편)만 시간순으로, 나머지는 분야별 블록으로 정리한다.
+const WEEK_MS = 7 * 86400 * 1000;
+const weekPosts = rest
+  .filter((p) => p.data.pubDate.valueOf() >= Date.now() - WEEK_MS)
+  .slice(0, 8);
+const shownIds = new Set([featured?.id, ...weekPosts.map((p) => p.id)]);
+
+// 연중 특집 밴드 (등록부 첫 특집)
+const mainTopic = TOPICS[0];
+const topicPosts = mainTopic
+  ? all.filter((p) => (p.data.topics ?? []).includes(mainTopic.key)).slice(0, 3)
+  : [];
+
+// 분야별 아카이브: 위에서 이미 보여준 기사는 제외한 최신 3편씩
+const catBlocks = (Object.keys(CATEGORIES) as (keyof typeof CATEGORIES)[])
+  .map((key) => ({
+    ...CATEGORIES[key],
+    posts: all.filter((p) => p.data.category === key && !shownIds.has(p.id)).slice(0, 3),
+  }))
+  .filter((b) => b.posts.length > 0);
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -86,30 +108,85 @@ const jsonLd = {
     )
   }
 
-  <section class="list wrap">
-    <div class="list-head">
-      <h2 class="list-title serif">이번 주 도토리</h2>
-    </div>
-    {
-      rest.map((p, i) => (
-        <a class="row reveal" href={url(`/posts/${p.id}/`)}>
-          <div class="row-thumb">
-            <img src={heroFor(p.data.category, p.data.hero)} alt="" width="160" height="90" loading="lazy" />
+  {
+    weekPosts.length > 0 && (
+      <section class="list wrap">
+        <div class="list-head">
+          <h2 class="list-title serif">이번 주 도토리</h2>
+        </div>
+        {weekPosts.map((p) => (
+          <a class="row reveal" href={url(`/posts/${p.id}/`)}>
+            <div class="row-thumb">
+              <img src={heroFor(p.data.category, p.data.hero)} alt="" width="160" height="90" loading="lazy" />
+            </div>
+            <div class="row-body">
+              <div class="row-title serif">{p.data.title}</div>
+              <div class="row-dek">{p.data.description}</div>
+            </div>
+            <div class="row-meta">
+              <span class:list={['chip', CATEGORIES[p.data.category].cls]}>
+                {CATEGORIES[p.data.category].name}
+              </span>
+              <span class="row-date mono">{fmtDate(p.data.pubDate)}</span>
+            </div>
+          </a>
+        ))}
+      </section>
+    )
+  }
+
+  {
+    mainTopic && topicPosts.length > 0 && (
+      <section class="fband wrap reveal">
+        <div class="fband-head">
+          <div>
+            <div class="kicker-en" style="color: var(--accent);">SPECIAL REPORT</div>
+            <h2 class="serif fband-title">연중 특집, {mainTopic.name}</h2>
+            <p class="fband-desc">{mainTopic.desc}</p>
           </div>
-          <div class="row-body">
-            <div class="row-title serif">{p.data.title}</div>
-            <div class="row-dek">{p.data.description}</div>
-          </div>
-          <div class="row-meta">
-            <span class:list={['chip', CATEGORIES[p.data.category].cls]}>
-              {CATEGORIES[p.data.category].name}
-            </span>
-            <span class="row-date mono">{fmtDate(p.data.pubDate)}</span>
-          </div>
-        </a>
-      ))
-    }
-  </section>
+          <a class="fband-more" href={url(mainTopic.href)}>특집 허브 보기 →</a>
+        </div>
+        <div class="fband-cards">
+          {topicPosts.map((p) => (
+            <a class="fband-card" href={url(`/posts/${p.id}/`)}>
+              <div class="fband-thumb">
+                <img src={heroFor(p.data.category, p.data.hero)} alt="" width="320" height="180" loading="lazy" />
+              </div>
+              <div class="fband-card-title serif">{p.data.title}</div>
+              <div class="fband-card-date mono">{fmtDate(p.data.pubDate)}</div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    catBlocks.length > 0 && (
+      <section class="catgrid wrap">
+        <div class="list-head">
+          <h2 class="list-title serif">분야별 아카이브</h2>
+        </div>
+        <div class="cg-grid">
+          {catBlocks.map((b) => (
+            <div class="cg-block reveal">
+              <div class="cg-head">
+                <span class:list={['chip', b.cls]}>{b.name}</span>
+                <p class="cg-desc">{b.desc}</p>
+              </div>
+              {b.posts.map((p) => (
+                <a class="cg-row" href={url(`/posts/${p.id}/`)}>
+                  <span class="cg-row-title serif">{p.data.title}</span>
+                  <span class="cg-row-date mono">{fmtDate(p.data.pubDate)}</span>
+                </a>
+              ))}
+              <a class="cg-more" href={url(`/category/${b.slug}/`)}>{b.name} 전체 보기 →</a>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   <aside id="tori-greet" hidden aria-live="polite">
     <div class="tg-bubble">오늘 주운 도토리, 보고 가세요!</div>
@@ -142,6 +219,14 @@ const jsonLd = {
       }
     } catch (e) {}
   </script>
+
+  <section class="plaza-band wrap reveal">
+    <div>
+      <div class="pb-title serif">도토리 광장이 열려 있습니다</div>
+      <p class="pb-desc">다뤄 줬으면 하는 주제, 숫자에 대한 질문, 데이터 오류 제보, 그리고 응원까지. 기사에 담기지 않은 이야기를 나누는 자유 게시판입니다.</p>
+    </div>
+    <a class="pb-cta" href={url('/board/')}>광장 가기 →</a>
+  </section>
 
   <section class="mascot wrap reveal">
     <img
@@ -335,6 +420,47 @@ const jsonLd = {
     #tori-greet img { width: 68px; height: 68px; }
     .tg-bubble { font-size: 12px; }
   }
+
+  /* 연중 특집 밴드 */
+  .fband { margin-top: 56px; border-top: 2px solid var(--ink); padding-top: 22px; }
+  .fband-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 18px; flex-wrap: wrap; margin-bottom: 20px; }
+  .fband-title { font-size: 24px; font-weight: 900; margin: 6px 0 8px; }
+  .fband-desc { font-size: 13.5px; color: var(--sub); max-width: 560px; line-height: 1.75; margin: 0; word-break: keep-all; }
+  .fband-more { font-size: 13px; font-weight: 700; color: var(--accent); flex-shrink: 0; padding-bottom: 3px; }
+  .fband-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .fband-card { display: block; }
+  .fband-thumb { aspect-ratio: 16 / 9; border: 1px solid var(--hair); background: var(--surface); overflow: hidden; }
+  .fband-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .fband-card:hover .fband-thumb img { transform: scale(1.04); }
+  .fband-card-title { font-size: 15.5px; font-weight: 700; line-height: 1.55; margin-top: 11px; word-break: keep-all; }
+  .fband-card:hover .fband-card-title { color: var(--accent); }
+  .fband-card-date { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  @media (max-width: 720px) {
+    .fband-cards { grid-template-columns: 1fr; gap: 18px; }
+    .fband-card { display: grid; grid-template-columns: 120px 1fr; gap: 0 14px; align-items: start; }
+    .fband-thumb { grid-row: span 2; }
+    .fband-card-title { margin-top: 0; }
+  }
+
+  /* 분야별 아카이브 */
+  .catgrid { padding-top: 56px; }
+  .cg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 34px 44px; padding-top: 10px; }
+  @media (max-width: 720px) { .cg-grid { grid-template-columns: 1fr; } }
+  .cg-block { border-top: 2px solid var(--ink); padding-top: 15px; }
+  .cg-head { margin-bottom: 4px; }
+  .cg-desc { font-size: 12.5px; color: var(--muted); margin: 9px 0 4px; line-height: 1.7; word-break: keep-all; }
+  .cg-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--hair2); }
+  .cg-row-title { font-size: 15px; font-weight: 700; line-height: 1.55; word-break: keep-all; }
+  .cg-row:hover .cg-row-title { color: var(--accent); }
+  .cg-row-date { font-size: 10.5px; color: var(--muted); flex-shrink: 0; }
+  .cg-more { display: inline-block; font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 12px; }
+
+  /* 도토리 광장 초대 배너 */
+  .plaza-band { margin-top: 56px; border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .pb-title { font-size: 18px; font-weight: 900; color: var(--ink); }
+  .pb-desc { font-size: 13px; color: var(--sub); line-height: 1.75; margin: 7px 0 0; max-width: 620px; word-break: keep-all; }
+  .pb-cta { flex-shrink: 0; background: var(--brand); color: #fff; font-size: 13.5px; font-weight: 700; padding: 11px 22px; }
+  .pb-cta:hover { background: var(--brand-hover); color: #fff; }
 
   .mascot {
     display: flex;

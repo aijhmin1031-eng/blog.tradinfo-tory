@@ -19,6 +19,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && isPubli
     <header class="cat-head">
       <div class:list={['kicker-en', cat.cls]}>CATEGORY</div>
       <h1 class="serif cat-title">{cat.name}</h1>
+      <p class="cat-desc">{cat.desc}</p>
     </header>
     {
       posts.length === 0 ? (
@@ -46,7 +47,8 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && isPubli
 
 <style>
   .cat-head { padding: 48px 0 18px 0; border-bottom: 1px solid var(--ink); }
-  .cat-title { font-size: 30px; font-weight: 900; margin: 8px 0 16px 0; }
+  .cat-title { font-size: 30px; font-weight: 900; margin: 8px 0 6px 0; }
+  .cat-desc { font-size: 14px; color: var(--sub); margin: 0 0 16px 0; line-height: 1.75; word-break: keep-all; }
   .row {
     display: grid;
     grid-template-columns: 148px 1fr auto;

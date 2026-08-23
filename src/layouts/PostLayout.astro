@@ -36,7 +36,7 @@ const jsonLd = {
 };
 ---
 
-<Base title={title} description={description} compact activeNav={cat.slug}>
+<Base title={title} description={description} compact activeNav={cat.slug} footerNewsletter={false}>
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <div class="progress" id="read-progress" aria-hidden="true"></div>
 
@@ -110,6 +110,9 @@ const jsonLd = {
           <h2 class="related-title serif">함께 주우면 좋은 도토리</h2>
           {related.map((r) => (
             <a class="related-row" href={url(`/posts/${r.id}/`)}>
+              <span class="related-thumb">
+                <img src={heroFor(r.data.category, r.data.hero)} alt="" width="96" height="54" loading="lazy" />
+              </span>
               <span class="related-name">{r.data.title}</span>
               <span class:list={['chip', CATEGORIES[r.data.category].cls]}>
                 {CATEGORIES[r.data.category].name}
@@ -206,6 +209,8 @@ const jsonLd = {
   .sep { width: 1px; height: 11px; background: var(--hair); }
   .view-chip { display: inline-flex; align-items: center; gap: 11px; }
   .view-chip[hidden] { display: none; }
+  .related-thumb { display: block; width: 96px; aspect-ratio: 16 / 9; border: 1px solid var(--hair); background: var(--surface); overflow: hidden; }
+  .related-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .asof { font-size: 10.5px; color: var(--muted); }
   .post-place { font-size: 13.5px; color: var(--sub); }
   .post-place strong { color: var(--ink); }
@@ -248,11 +253,11 @@ const jsonLd = {
     margin: 0 0 4px 0;
   }
   .related-row {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 96px 1fr auto;
     align-items: center;
     gap: 16px;
-    padding: 15px 0;
+    padding: 13px 0;
     border-bottom: 1px solid var(--hair2);
     font-size: 14.5px;
     font-weight: 500;

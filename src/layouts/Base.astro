@@ -12,6 +12,8 @@ interface Props {
   compact?: boolean;
   ogImage?: string;
   activeNav?: string;
+  /** 본문에 구독 박스가 이미 있는 페이지(기사)는 푸터 폼을 생략해 2중 노출을 피한다 */
+  footerNewsletter?: boolean;
 }
 const {
   title,
@@ -19,6 +21,7 @@ const {
   compact = false,
   ogImage = url('/images/og-default.jpg'),
   activeNav = '',
+  footerNewsletter = true,
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} | ${SITE.taglineSub}`;
@@ -104,6 +107,7 @@ const isActive = (n: (typeof navItems)[number]) =>
     <slot name="head" />
   </head>
   <body>
+    <a class="skip-link" href="#main">본문 바로가기</a>
     <header>
       <div class="topbar">
         <div class="wrap topbar-in">
@@ -172,7 +176,11 @@ const isActive = (n: (typeof navItems)[number]) =>
                 </div>
               </div>
             ) : (
-              <a href={n.href} class:list={['nav-item', { active: activeNav === n.key }]}>
+              <a
+                href={n.href}
+                class:list={['nav-item', { active: activeNav === n.key }]}
+                aria-current={activeNav === n.key ? 'page' : undefined}
+              >
                 {n.name}
               </a>
             )
@@ -183,7 +191,7 @@ const isActive = (n: (typeof navItems)[number]) =>
 
     <Ticker />
 
-    <main>
+    <main id="main">
       <slot />
     </main>
 
@@ -208,6 +216,7 @@ const isActive = (n: (typeof navItems)[number]) =>
           <div>
             <div class="footer-col-title">무역토리</div>
             <a href={url('/about/')}>소개</a>
+            <a href={url('/board/')}>도토리 광장</a>
             <a href={url('/contact/')}>문의</a>
             <a href={url('/privacy/')}>개인정보처리방침</a>
             <a href={url('/rss.xml')}>RSS</a>
@@ -218,7 +227,7 @@ const isActive = (n: (typeof navItems)[number]) =>
           ECOS, 관세청 수출입무역통계, 미 연준 FRED, UN Comtrade. 데이터는 발표 기관 사정에 따라
           정정될 수 있습니다.
         </div>
-        <Newsletter source="footer" />
+        {footerNewsletter && <Newsletter source="footer" />}
       </div>
     </footer>
 
@@ -349,6 +358,8 @@ const isActive = (n: (typeof navItems)[number]) =>
   @media (min-width: 860px) {
     .nav-in { overflow: visible; }
   }
+  .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--ink); color: var(--paper); padding: 10px 18px; font-size: 13px; font-weight: 700; }
+  .skip-link:focus { left: 0; }
   .nav-group { position: relative; display: flex; }
   .nav-caret {
     font-size: 8px;
