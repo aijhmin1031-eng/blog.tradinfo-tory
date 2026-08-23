@@ -39,7 +39,7 @@ const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.locale
 
 <style>
   .ba-title { font-size: 30px; font-weight: 900; margin: 8px 0 10px; }
-  .ba-sub { font-size: 14.5px; color: var(--sub); line-height: 1.8; max-width: 560px; word-break: keep-all; }
+  .ba-sub { font-size: 14.5px; color: var(--sub); line-height: 1.8; max-width: var(--measure); word-break: keep-all; }
   .ba-sub a { color: var(--accent); font-weight: 700; }
   .ba-list { margin-top: 22px; border-top: 2px solid var(--ink); }
   .ba-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 15px 0; border-bottom: 1px solid var(--hair2); }

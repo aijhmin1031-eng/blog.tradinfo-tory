@@ -433,7 +433,7 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
   .meta-badge.live { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
   .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2.2s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
-  .map-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: 680px; word-break: keep-all; }
+  .map-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: var(--measure-wide); word-break: keep-all; }
 
   /* KPI 밴드: 헤어라인 분할 히어로 숫자 */
   .kpi-band { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 22px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
@@ -454,7 +454,7 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
   .chart-card { margin-top: 26px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); overflow: hidden; }
   .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding: 20px 22px 6px; }
   .card-title { font-size: 18px; font-weight: 900; color: var(--ink); }
-  .card-sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; max-width: 520px; word-break: keep-all; }
+  .card-sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; max-width: var(--measure); word-break: keep-all; }
   .card-legend { display: flex; gap: 14px; flex-wrap: wrap; padding-top: 4px; }
   .lg-item { font-size: 11.5px; color: var(--sub); display: inline-flex; align-items: center; gap: 6px; }
   .lg-dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex: none; }

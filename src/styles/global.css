@@ -9,6 +9,10 @@
   --paper: #FBFBF9;
   --surface: #FFFFFF;
   /* 투명 배경임을 보여 주는 체커보드 */
+  /* 본문 문단 최대 폭. 한글은 한 줄 40~50자가 읽기 좋다(≈720px).
+     그리드·카드와 나란히 놓여 오른쪽이 비어 보이면 wide를 쓴다. */
+  --measure: 720px;
+  --measure-wide: 1000px;
   --grid-a: #E8E4DC;
   --grid-b: #FAF8F4;
   --ink: #16140F;

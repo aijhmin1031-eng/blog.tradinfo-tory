@@ -152,7 +152,7 @@ const upcomingDate = upcoming ? fmtDate(upcoming.data.pubDate) : null;
 <style>
   .gl-head { padding-top: 46px; }
   .gl-title { font-size: clamp(30px, 4.6vw, 44px); font-weight: 900; color: var(--ink); letter-spacing: -0.01em; margin-top: 6px; }
-  .gl-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: 640px; word-break: keep-all; }
+  .gl-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: var(--measure-wide); word-break: keep-all; }
 
   .gl-record { display: grid; grid-template-columns: repeat(5, 1fr); margin-top: 26px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
   .gl-rec-item { padding: 16px 14px 14px; border-left: 1px solid var(--line); }

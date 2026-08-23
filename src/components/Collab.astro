@@ -14,18 +14,14 @@ const { variant = 'footer', source = 'site' } = Astro.props;
 
 <div class:list={['cb', variant]} data-source={source}>
   <div class="cb-body">
-    <div class="cb-title serif">같이 해볼 만한 일이 있습니다</div>
+    <div class="cb-title serif">함께 일할 분을 찾습니다</div>
     <p class="cb-sub">
-      이 블로그는 매일 아침 네 곳의 공공 API에서 지표를 스스로 거둬 와 기사와 대시보드로 바꿉니다.
-      사람 손은 들어가지 않습니다. 이런 구조를 만들며 겪은 것을 나누고, 같은 문제를 다루는 분과 함께해 보고 싶습니다.
+      도토리경제는 매일 아침 스스로 지표를 거둬 기사와 대시보드로 바꾸는 구조로 굴러갑니다.
+      그 과정에서 쌓인 것을 나누고 싶습니다. 강의든 자문이든 같이 만드는 일이든,
+      형태는 이야기하며 정하면 됩니다.
     </p>
-    <ul class="cb-list">
-      <li><strong>강의·워크숍</strong> · AI 자동화와 데이터 수집·시각화를 실무 기준으로</li>
-      <li><strong>컨설팅·자문</strong> · 어디까지 자동에 맡기고 어디부터 사람이 볼지, 구조를 함께 잡기</li>
-      <li><strong>공동 개발</strong> · 같이 만들고 같이 굴리는 프로젝트</li>
-    </ul>
   </div>
-  <a class="cb-cta" href={url('/contact/')}>협업 이야기하기</a>
+  <a class="cb-cta" href={url('/contact/')}>협업 문의하기</a>
 </div>
 
 <style>
