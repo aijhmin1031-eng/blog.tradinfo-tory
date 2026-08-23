@@ -1,0 +1,120 @@
+---
+// 도토리 그림함: 도토리경제 스타일 일러스트 무료 나눔 (유입 장치)
+import Base from '../layouts/Base.astro';
+import Newsletter from '../components/Newsletter.astro';
+import { url } from '../lib/site';
+
+const PACK1: { file: string; name: string }[] = [
+  { file: 'coin-acorn', name: '도토리와 금화' },
+  { file: 'chart-up', name: '상승 차트' },
+  { file: 'chart-down', name: '하락 차트' },
+  { file: 'piggy-bank', name: '저금통' },
+  { file: 'banknotes', name: '지폐 다발' },
+  { file: 'gold-bars', name: '금괴' },
+  { file: 'cargo-ship', name: '컨테이너선' },
+  { file: 'harbor-crane', name: '항만 크레인' },
+  { file: 'globe-routes', name: '무역 항로' },
+  { file: 'ledger-pen', name: '장부와 만년필' },
+  { file: 'abacus', name: '주판' },
+  { file: 'bank-building', name: '은행' },
+  { file: 'exchange', name: '환전' },
+  { file: 'semiconductor', name: '반도체 칩' },
+  { file: 'scale', name: '저울' },
+  { file: 'lighthouse', name: '등대' },
+  { file: 'tori-treasure', name: '도토리를 안은 토리' },
+  { file: 'tori-reading', name: '공부하는 토리' },
+];
+---
+
+<Base
+  title="도토리 그림함"
+  description="도토리경제 스타일의 경제·무역 일러스트를 무료로 나눕니다. 출처를 표기하면 블로그·SNS·자료에 자유롭게 사용할 수 있습니다."
+  activeNav="pack"
+  compact
+>
+  <section class="wrap pk-head">
+    <div class="kicker-en" style="color: var(--accent);">IMAGE PACK</div>
+    <h1 class="serif pk-title">도토리 그림함</h1>
+    <p class="pk-sub">
+      도토리경제의 그림체로 그린 경제·무역 일러스트를 나눕니다. 아래 조건만
+      지키면 블로그, SNS, 발표 자료 어디에든 자유롭게 쓸 수 있습니다.
+      새 그림은 이 함에 계속 쌓입니다.
+    </p>
+    <div class="pk-license">
+      <div class="pk-lic-col">
+        <div class="pk-lic-title ok">이렇게 쓸 수 있습니다</div>
+        <ul>
+          <li>블로그·SNS·영상·발표 자료·상업적 사용 전부 가능</li>
+          <li>조건은 하나, 출처 <strong>"도토리경제"</strong>를 표기하고 이곳 링크를 남겨 주십시오</li>
+          <li>크기 조절·자르기 등 단순 편집 가능</li>
+        </ul>
+      </div>
+      <div class="pk-lic-col">
+        <div class="pk-lic-title no">이것만은 안 됩니다</div>
+        <ul>
+          <li>이미지 자체를 판매하거나 유료 소재로 재배포</li>
+          <li>본인이 만든 것처럼 출처를 감추는 사용</li>
+          <li>토리 캐릭터를 다른 서비스의 마스코트로 사용</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap pk-body">
+    <div class="pk-pack-head">
+      <h2 class="serif pk-pack-title">1탄, 돈의 물건들 <span class="pk-count mono">18장</span></h2>
+      <a class="pk-zip" href={url('/downloads/dotori-pack-01.zip')} download>전체 내려받기 (ZIP)</a>
+    </div>
+    <div class="pk-grid">
+      {PACK1.map((p) => (
+        <a class="pk-card" href={url(`/images/pack/${p.file}.jpg`)} target="_blank" rel="noopener" title="새 창에서 원본 열기">
+          <div class="pk-thumb">
+            <img src={url(`/images/pack/${p.file}-thumb.jpg`)} alt={`${p.name} 일러스트`} width="480" height="480" loading="lazy" />
+          </div>
+          <div class="pk-card-foot">
+            <span class="pk-name">{p.name}</span>
+            <span class="pk-dl mono">원본 보기</span>
+          </div>
+        </a>
+      ))}
+    </div>
+    <p class="pk-note">
+      원본은 1024×1024 JPG입니다. 저장은 원본을 연 뒤 길게 누르거나(모바일)
+      오른쪽 클릭으로 할 수 있고, 한 번에 받으려면 위의 ZIP을 이용해 주십시오.
+    </p>
+  </section>
+
+  <section class="wrap" style="padding-bottom: 56px;">
+    <Newsletter source="site" variant="inline" />
+  </section>
+</Base>
+
+<style>
+  .pk-head { padding-top: 46px; }
+  .pk-title { font-size: clamp(30px, 4.6vw, 44px); font-weight: 900; color: var(--ink); margin-top: 6px; }
+  .pk-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: 640px; word-break: keep-all; }
+  .pk-license { display: grid; grid-template-columns: 1fr 1fr; gap: 0 34px; border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px; margin-top: 22px; }
+  @media (max-width: 720px) { .pk-license { grid-template-columns: 1fr; gap: 16px; } }
+  .pk-lic-title { font-size: 13px; font-weight: 800; margin-bottom: 9px; }
+  .pk-lic-title.ok { color: var(--up); }
+  .pk-lic-title.no { color: var(--down); }
+  .pk-license ul { margin: 0; padding-left: 18px; }
+  .pk-license li { font-size: 13px; color: var(--sub); line-height: 1.85; word-break: keep-all; }
+
+  .pk-body { margin-top: 40px; }
+  .pk-pack-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+  .pk-pack-title { font-size: 22px; font-weight: 900; }
+  .pk-count { font-size: 13px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .pk-zip { background: var(--brand); color: #fff; font-size: 13px; font-weight: 700; padding: 10px 20px; }
+  .pk-zip:hover { background: var(--brand-hover); color: #fff; }
+  .pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; margin-top: 22px; }
+  .pk-card { display: block; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); transition: border-color 0.2s, transform 0.2s; }
+  .pk-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .pk-thumb { aspect-ratio: 1; background: var(--surface); }
+  .pk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pk-card-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 13px; }
+  .pk-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .pk-dl { font-size: 10px; color: var(--muted); }
+  .pk-card:hover .pk-dl { color: var(--accent); }
+  .pk-note { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.8; word-break: keep-all; }
+</style>
