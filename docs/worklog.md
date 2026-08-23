@@ -22,7 +22,8 @@
 | 브랜치 | `claude/secret-repo-age-master-setup-10hta5` — 푸시 시 자동 배포 |
 | 배포 | **정본 = https://dotoriecon.com (Vercel)**. GitHub Pages는 같은 내용을 서브경로로 계속 띄우는 미러이며 canonical을 정본 도메인으로 내보내 색인을 한곳에 모은다. noindex는 해제됨 |
 | 그림함 | **무료 이미지 58장**(1탄 18 · 2탄 16 · **3탄 사무·업무 도구 16** · 소소 특별판 8) — **전부 투명 PNG 1600px**. 낱장 페이지 58개 + 이미지 사이트맵. ZIP 배포 폐지 |
-| 도메인 | **dotoriecon.com** (Cloudflare Registrar, 2026-08-24 취득, ~2027-08-24, 자동갱신 $10.46/yr) |
+| 도메인 | **dotoriecon.com** (Cloudflare Registrar, 2026-08-24 취득, ~2027-08-24, 자동갱신 $10.46/yr). DNS=Cloudflare(프록시 끔). apex CNAME→Vercel, 구글 소유확인 TXT, Email Routing MX 3 + SPF + DKIM |
+| 메일 | **contact@dotoriecon.com → dotori.workroom@gmail.com** (Cloudflare Email Routing, 무료 전달). catch-all=drop(스팸 차단), subaddressing 켬(`contact+태그@`). **수신 테스트 확인 후 사이트 표기 교체 예정** |
 | 수익·협업 | 뉴스레터 자동 발송 **폐기**. 기사 끝·푸터·그림함은 **협업 카드**, 착지는 `/contact/` 「함께 일하기」 — **강의·컨설팅·공동 개발**(용역 수주 아님). 분야는 데이터 수집·분석·대시보드 / AI 자동화. 문의는 dotori.workroom@gmail.com. 운영자는 익명 유지 |
 | Supabase | 프로젝트 **tradetory**(서울, 무료) — 뉴스레터 구독(`subscribe` 함수+푸터 폼) · 조회수(`bump_view` RPC+기사 칩) · 갈림길 채점 아카이브(`galimgil-archive` 함수+`/galimgil/`) |
 
@@ -64,6 +65,19 @@
 7. 애드센스 신청은 도메인 연결 후: ads.txt 배치 → 신청 → 앵커 광고 슬롯(하단은 비워둠) 순.
 
 ## 일지
+
+### 2026-08-24 (Cloudflare Email Routing — contact@dotoriecon.com 개설)
+
+- 소유주가 최소 권한 API 토큰(DNS Edit / Email Routing Rules Edit / Email Routing Addresses Edit, zone 한정)을 발급해
+  DNS·메일 설정을 직접 수행. 토큰은 scratchpad에만 두고 커밋하지 않음. 작업 후 폐기 요청.
+- 구성: 수신 주소 `dotori.workroom@gmail.com` 등록·인증 → `contact@dotoriecon.com` 전달 규칙 생성 →
+  catch-all은 **drop**으로 유지(존재하지 않는 주소로 오는 스팸 차단) → subaddressing 활성화.
+- **토큰으로 안 되는 것**(대시보드 필요): Email Routing 최초 활성화, `/email/routing/dns` 조회, MX 자동 추가.
+  MX 호스트는 `route1~3.mx.cloudflare.net`에 우선순위 36·1·98로 **도메인마다 다르게 배정**되므로 추측 금지 —
+  대시보드의 `Add missing records` 버튼이 정답.
+- **함정 메모**: 공개 DNS 확인 시 Google 리졸버(dns.google)는 레코드 생성 전 조회의 **부정 캐시를 SOA 기준 30분** 유지한다.
+  전파 여부는 Cloudflare 리졸버(cloudflare-dns.com)로 교차 확인할 것. 실제로 여기서 '전파 안 됨'으로 오판할 뻔했다.
+- 검증 완료: MX 3건·SPF·DKIM 모두 권위 네임서버에 반영. 기존 Vercel CNAME·구글 TXT와 충돌 없음.
 
 ### 2026-08-24 (구글 서치콘솔 새 도메인 등록 — 검색 등록 마무리)
 
