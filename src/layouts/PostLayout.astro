@@ -7,7 +7,7 @@ import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
 import CommentThread from '../components/CommentThread.astro';
 import { NATIVE_COMMENTS_LIVE } from '../lib/comments';
-import Newsletter from '../components/Newsletter.astro';
+import Collab from '../components/Collab.astro';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import type { CollectionEntry } from 'astro:content';
 
@@ -113,7 +113,7 @@ const jsonLd = {
 
     {toriNote && <ToriNote text={toriNote} />}
 
-    <Newsletter source="post" variant="inline" />
+    <Collab source="post" variant="inline" />
 
     {
       related.length > 0 && (

@@ -1,39 +1,141 @@
 ---
+// 함께 일하기 — 협업 문의 착지 페이지.
+// 운영자를 익명으로 두는 대신 이 사이트 자체를 증거로 내세운다. 수치는 전부 빌드 시점 실측이라
+// 손으로 고칠 일이 없고, 내용이 늘면 이 페이지의 근거도 같이 자란다.
 import Base from '../layouts/Base.astro';
-import { url } from '../lib/site';
+import { getCollection } from 'astro:content';
+import { url, isPublished } from '../lib/site';
+import { GLOSSARY } from '../lib/glossary';
+import { ALL_ITEMS } from '../data/pack';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate));
+const scheduled = await getCollection('posts', ({ data }) => !data.draft && !isPublished(data.pubDate));
+const termCount = Object.keys(GLOSSARY).length;
+
+const proof = [
+  {
+    n: '4곳',
+    label: '자동 수집 중인 공공 API',
+    note: '한국은행 ECOS · 미 연준 FRED · 관세청 · 금융감독원 DART. 매일 아침 6시 50분에 스스로 거둬 옵니다.',
+    href: '/warehouse/',
+    hrefLabel: '수집 결과 보기',
+  },
+  {
+    n: `${posts.length}편`,
+    label: '사람 손 없이 발행된 기사',
+    note: `예약분 ${scheduled.length}편이 날짜 게이트를 기다리고 있습니다. 발행일이 되면 그날 아침 빌드가 스스로 내보냅니다.`,
+    href: '/forest/',
+    hrefLabel: '기사 보기',
+  },
+  {
+    n: `${ALL_ITEMS.length}장`,
+    label: '자동 생성된 이미지 페이지',
+    note: '등록부 파일 한 곳만 고치면 낱장 페이지와 이미지 사이트맵, 구조화 데이터가 함께 만들어집니다.',
+    href: '/pack/',
+    hrefLabel: '그림함 보기',
+  },
+  {
+    n: `${termCount}개`,
+    label: '본문과 연동된 용어 사전',
+    note: '기사 안의 용어 칩이 사전 항목과 자동으로 이어집니다. 사전에 한 줄 넣으면 모든 기사에 반영됩니다.',
+    href: '/glossary/',
+    hrefLabel: '사전 보기',
+  },
+];
+
+const desc =
+  '데이터 수집 파이프라인과 대시보드, AI 자동화 시스템을 함께 만듭니다. ' +
+  '이 블로그가 매일 아침 네 곳의 공공 API에서 지표를 스스로 거둬 기사와 대시보드로 바꾸는 방식 그대로입니다.';
 ---
 
-<Base title="문의" description="도토리경제에 대한 제보·정정 요청과 협업·제휴 문의 창구입니다." compact>
-  <section class="wrap" style="max-width: 760px; padding-top: 48px;">
-    <h1 class="serif" style="font-size: 28px; font-weight: 900;">문의</h1>
-    <div class="prose" style="margin-top: 24px;">
-      <p>제보, 정정 요청, 협업·제휴 문의를 환영합니다. 특히 데이터 오류 제보는 도토리경제의 정확성을 지키는 가장 큰 도움입니다.</p>
+<Base title="함께 일하기" description={desc} compact footerNewsletter={false}>
+  <section class="wrap ct-head">
+    <div class="kicker-en" style="color: var(--accent);">WORK WITH US</div>
+    <h1 class="serif ct-title">함께 일하기</h1>
+    <p class="ct-sub">
+      도토리경제는 사람이 매일 앉아서 쓰는 블로그가 아닙니다. 네 곳의 공공 API에서 지표를 거둬 오고,
+      검증하고, 기사와 대시보드로 바꾸고, 배포까지 하는 일을 <strong>매일 아침 6시 50분에 스스로</strong> 합니다.
+      같은 구조가 필요한 곳이라면 함께 만들 수 있습니다.
+    </p>
+  </section>
 
-      <h2>협업·제휴 문의</h2>
-      <p>
-        콘텐츠 제휴, 데이터 협업, 기고·인터뷰 등 함께할 제안은 아래 주소로 보내
-        주십시오. 확인하는 대로 회신드립니다.
-      </p>
-      <p class="contact-mail" id="contact-mail" aria-label="문의 이메일">
-        <noscript>이메일 주소는 스팸 방지를 위해 스크립트로 표시됩니다. aijhmin1031 (골뱅이) gmail (점) com</noscript>
-      </p>
-      <p>제안 메일에는 <strong>어떤 협업인지 한 줄 요약, 소속(또는 활동) 소개, 원하시는 일정</strong>을 담아 주시면 검토가 빨라집니다.</p>
-
-      <h2>의견과 제보</h2>
-      <p>
-        기사에 대한 의견은 각 기사 하단의 댓글로, 자유로운 이야기와 주제 제안은
-        <a href={url('/board/')}>도토리 광장</a>으로 남겨 주십시오.
-      </p>
-
-      <h2>정정 원칙</h2>
-      <ul>
-        <li>데이터 오류가 확인되면 해당 기사에 <strong>정정 사실과 일시를 명시</strong>합니다.</li>
-        <li>정정된 기사는 원문을 삭제하지 않고 수정 이력을 남기는 것을 원칙으로 합니다.</li>
-      </ul>
-
-      <h2>인용과 공유</h2>
-      <p>본 사이트의 콘텐츠는 정보 제공을 목적으로 하며 투자 자문이 아닙니다. 기사와 차트의 인용·공유는 출처(도토리경제)를 표기하는 조건으로 자유롭게 하실 수 있습니다.</p>
+  <section class="wrap ct-what">
+    <h2 class="serif ct-h2">맡을 수 있는 일</h2>
+    <div class="ct-cards">
+      <div class="ct-card">
+        <div class="ct-card-title serif">데이터 분석과 대시보드</div>
+        <ul>
+          <li>공공·상용 API 연동과 지표 수집 파이프라인 설계</li>
+          <li>수집한 데이터의 검증 규칙 수립(원자료 대조·이상값 적발)</li>
+          <li>웹 대시보드, 차트, 정기 리포트 자동 산출</li>
+          <li>축적된 시계열을 다루는 구조 설계(갱신·보존·재현)</li>
+        </ul>
+      </div>
+      <div class="ct-card">
+        <div class="ct-card-title serif">AI 자동화 시스템</div>
+        <ul>
+          <li>콘텐츠 자동 생산과 예약 발행 체계</li>
+          <li>이미지·문서 생성 파이프라인과 품질 검수 절차</li>
+          <li>검색 노출까지 따라오는 구조(사이트맵·구조화 데이터)</li>
+          <li>사람이 볼 지점과 자동에 맡길 지점의 경계 설계</li>
+        </ul>
+      </div>
     </div>
+  </section>
+
+  <section class="wrap ct-proof">
+    <h2 class="serif ct-h2">말 대신, 지금 돌아가는 것</h2>
+    <p class="ct-note">
+      아래 숫자는 이 페이지가 만들어질 때 실제로 세어 본 값입니다. 손으로 적지 않았고, 내용이 늘면 함께 자랍니다.
+      전부 눌러서 확인하실 수 있습니다.
+    </p>
+    <div class="ct-proof-grid">
+      {
+        proof.map((p) => (
+          <div class="ct-proof-item">
+            <div class="ct-n mono">{p.n}</div>
+            <div class="ct-label">{p.label}</div>
+            <p class="ct-pnote">{p.note}</p>
+            <a href={url(p.href)}>{p.hrefLabel}</a>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="wrap ct-how">
+    <h2 class="serif ct-h2">일하는 방식</h2>
+    <ol class="ct-steps">
+      <li><strong>문의</strong> · 무엇을 자동으로 만들고 싶은지 한 줄이면 충분합니다. 아직 정리되지 않았어도 괜찮습니다.</li>
+      <li><strong>범위 합의</strong> · 자동으로 할 일과 사람이 볼 일을 먼저 나눕니다. 여기서 비용의 대부분이 갈립니다.</li>
+      <li><strong>작동하는 것부터</strong> · 문서가 아니라 도는 물건을 먼저 드립니다. 이 블로그가 그렇게 만들어졌습니다.</li>
+      <li><strong>인수인계</strong> · 운영 문서와 절차를 남깁니다. 맡긴 쪽이 직접 굴릴 수 있어야 끝난 일입니다.</li>
+    </ol>
+  </section>
+
+  <section class="wrap ct-mail">
+    <h2 class="serif ct-h2">문의</h2>
+    <p class="ct-note">
+      아래 주소로 보내 주십시오. <strong>어떤 일인지 한 줄 요약, 소속(또는 하시는 일), 원하시는 일정</strong>을
+      담아 주시면 검토가 빨라집니다. 확인하는 대로 회신드립니다.
+    </p>
+    <p class="contact-mail" id="contact-mail" aria-label="문의 이메일">
+      <noscript>이메일 주소는 스팸 방지를 위해 스크립트로 표시됩니다. aijhmin1031 (골뱅이) gmail (점) com</noscript>
+    </p>
+    <p class="ct-fine">
+      이 블로그는 캐릭터 토리의 이름으로 씁니다. 실제 논의가 시작되면 신원과 이력을 밝히고 진행합니다.
+      먼저 만들어 둔 것을 보시고 판단하시라는 뜻입니다.
+    </p>
+  </section>
+
+  <section class="wrap ct-etc">
+    <h2 class="serif ct-h2">그 밖의 연락</h2>
+    <ul class="ct-etc-list">
+      <li><strong>제보와 정정</strong> · 데이터 오류 제보는 가장 큰 도움입니다. 확인되면 해당 기사에 정정 사실과 일시를 남기고, 원문은 지우지 않습니다.</li>
+      <li><strong>의견과 주제 제안</strong> · 기사 하단 댓글, 또는 <a href={url('/board/')}>도토리 광장</a>으로 남겨 주십시오.</li>
+      <li><strong>인용과 공유</strong> · 출처(도토리경제)를 표기하시면 기사와 차트를 자유롭게 인용하실 수 있습니다. 그림은 <a href={url('/pack/')}>그림함</a>에서 무료로 나눕니다.</li>
+      <li><strong>투자 자문 아님</strong> · 이 사이트의 내용은 정보 제공을 목적으로 합니다.</li>
+    </ul>
   </section>
 </Base>
 
@@ -53,6 +155,38 @@ import { url } from '../lib/site';
 </script>
 
 <style>
-  .contact-mail { font-size: 18px; font-weight: 700; }
-  .contact-mail :global(.mail-link) { color: var(--accent); text-decoration: none; border-bottom: 2px solid var(--accent); padding-bottom: 1px; }
+  .ct-head { padding-top: 46px; max-width: 760px; }
+  .ct-title { font-size: clamp(30px, 4.6vw, 42px); font-weight: 900; color: var(--ink); margin-top: 6px; }
+  .ct-sub { font-size: 15px; color: var(--sub); line-height: 1.95; margin-top: 14px; word-break: keep-all; }
+  .ct-h2 { font-size: 19px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .ct-note { font-size: 13.5px; color: var(--sub); line-height: 1.9; margin-top: 14px; max-width: 720px; word-break: keep-all; }
+
+  .ct-what { margin-top: 44px; }
+  .ct-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  @media (max-width: 760px) { .ct-cards { grid-template-columns: 1fr; } }
+  .ct-card { border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; background: var(--paper); }
+  .ct-card-title { font-size: 17px; font-weight: 900; color: var(--ink); }
+  .ct-card ul { margin: 12px 0 0; padding-left: 18px; }
+  .ct-card li { font-size: 13px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
+
+  .ct-proof { margin-top: 44px; }
+  .ct-proof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 18px; margin-top: 20px; }
+  .ct-proof-item { border-top: 2px solid var(--ink); padding-top: 12px; }
+  .ct-n { font-size: 26px; font-weight: 900; color: var(--accent); }
+  .ct-label { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 3px; }
+  .ct-pnote { font-size: 12px; color: var(--sub); line-height: 1.8; margin-top: 7px; word-break: keep-all; }
+  .ct-proof-item a { display: inline-block; font-size: 12px; font-weight: 700; color: var(--accent); margin-top: 8px; }
+
+  .ct-how { margin-top: 44px; }
+  .ct-steps { margin: 18px 0 0; padding-left: 20px; }
+  .ct-steps li { font-size: 13.5px; color: var(--sub); line-height: 1.95; padding-left: 4px; margin-bottom: 6px; word-break: keep-all; }
+
+  .ct-mail { margin-top: 44px; }
+  .contact-mail { font-size: 19px; font-weight: 700; margin-top: 16px; }
+  .contact-mail :global(.mail-link) { color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 1px; }
+  .ct-fine { font-size: 12px; color: var(--muted); line-height: 1.85; margin-top: 16px; max-width: 700px; word-break: keep-all; }
+
+  .ct-etc { margin: 44px 0 56px; }
+  .ct-etc-list { margin: 16px 0 0; padding-left: 18px; }
+  .ct-etc-list li { font-size: 13px; color: var(--sub); line-height: 1.9; margin-bottom: 6px; word-break: keep-all; }
 </style>
