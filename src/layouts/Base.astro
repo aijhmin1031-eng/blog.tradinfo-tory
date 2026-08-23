@@ -354,6 +354,13 @@ const isActive = (n: (typeof navItems)[number]) =>
     scrollbar-width: none;
   }
   .nav-in::-webkit-scrollbar { display: none; }
+  /* 좁은 화면: 가운데 정렬 + 넘침은 첫 항목 왼쪽이 잘려 닿을 수 없게 되므로 좌측 정렬로 스크롤,
+     오른쪽 페이드로 이어짐을 표시한다 */
+  @media (max-width: 859px) {
+    .nav { position: relative; }
+    .nav-in { justify-content: flex-start; }
+    .nav::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: linear-gradient(to left, var(--paper), transparent); pointer-events: none; }
+  }
   /* 데스크톱: 내비 폭이 넉넉하므로 스크롤 컨테이너를 풀어 드롭다운이 잘리지 않게 한다 */
   @media (min-width: 860px) {
     .nav-in { overflow: visible; }
