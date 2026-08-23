@@ -94,21 +94,33 @@ for (const c of catKeys) {
   });
   offRoot += h; d0 += 0.1;
 }
+// 리본 중심 곡선(양 끝 수평 제어점 베지에) 위의 t 지점 좌표.
+// 교차가 몰리는 2열에서는 라벨을 t=0.42/0.58로 번갈아 두어 숫자 겹침을 피한다.
+const curveAt = (t: number, xa: number, ya: number, xb: number, yb: number) => {
+  const m = (xa + xb) / 2;
+  const u = 1 - t;
+  return {
+    x: u * u * u * xa + 3 * u * u * t * m + 3 * u * t * t * m + t * t * t * xb,
+    y: ya + (yb - ya) * (3 * t * t - 2 * t * t * t),
+  };
+};
 const kindOff: Record<string, number> = {};
 for (const k of liveKinds) kindOff[k.key] = kindBox[k.key].y;
+let cellIdx = 0;
 for (const c of catKeys) {
   let off = catBox[c].y;
   for (const k of liveKinds) {
     const n = cellCount[c][k.key];
     if (!n) continue;
     const h = n * scale;
+    const lp = curveAt(cellIdx % 2 === 0 ? 0.42 : 0.58, X1 + NW, off + h / 2, X2, kindOff[k.key] + h / 2);
     ribbons.push({
       d: ribbonPath(X1 + NW, off, h, X2, kindOff[k.key], h),
       color: CAT_COLORS[c], n, delay: d0,
       from: CATEGORIES[c].name, to: k.name,
-      lx: (X1 + NW + X2) / 2, ly: (off + h / 2 + kindOff[k.key] + h / 2) / 2,
+      lx: lp.x, ly: lp.y,
     });
-    off += h; kindOff[k.key] += h; d0 += 0.06;
+    off += h; kindOff[k.key] += h; d0 += 0.06; cellIdx += 1;
   }
 }
 
@@ -187,7 +199,8 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
         <span>전체</span><span>카테고리</span><span>콘텐츠 유형</span>
       </div>
 
-      <div class="sankey-scroll">
+      <div class="sankey-stage">
+      <div class="sankey-scroll" id="sankey-scroll">
         <svg viewBox={`0 0 ${W} ${H}`} class="sankey" id="sankey" role="img" aria-label="무역토리 콘텐츠 구성 생키 다이어그램. 아래의 표로 보기에서 같은 데이터를 표로 확인할 수 있습니다.">
           <defs>
             <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
@@ -241,6 +254,10 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
           ))}
         </svg>
         <div class="sk-tip mono" id="sk-tip" role="status" aria-live="polite" hidden></div>
+      </div>
+      <div class="sk-fade left" aria-hidden="true"></div>
+      <div class="sk-fade right" aria-hidden="true"></div>
+      <div class="sk-hint mono" id="sk-hint" aria-hidden="true" hidden>옆으로 밀면 전체 흐름이 보입니다 →</div>
       </div>
 
       <div class="card-foot">
@@ -307,6 +324,28 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
         tip.hidden = true;
       });
     });
+
+    // 좁은 화면: 가려진 방향을 가장자리 페이드로 표시, 첫 스크롤에 안내 칩 제거
+    const hint = document.getElementById('sk-hint');
+    const updateEdges = () => {
+      const more = scroll.scrollWidth - scroll.clientWidth > 8;
+      scroll.classList.toggle('has-left', more && scroll.scrollLeft > 8);
+      scroll.classList.toggle(
+        'has-right',
+        more && scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 8
+      );
+      if (hint) hint.hidden = !more;
+    };
+    scroll.addEventListener(
+      'scroll',
+      () => {
+        updateEdges();
+        hint?.classList.add('seen');
+      },
+      { passive: true }
+    );
+    addEventListener('resize', updateEdges, { passive: true });
+    updateEdges();
   }
 </script>
 
@@ -347,8 +386,19 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
 
   .col-heads { display: flex; justify-content: space-between; padding: 14px 26px 0; font-size: 10px; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
 
+  .sankey-stage { position: relative; }
   .sankey-scroll { overflow-x: auto; position: relative; padding: 4px 8px 10px; }
   .sankey { display: block; min-width: 760px; width: 100%; height: auto; }
+
+  /* 좁은 화면: 가려진 방향 표시(페이드)와 안내 칩. 스크롤하면 안내는 물러난다 */
+  .sk-fade { position: absolute; top: 0; bottom: 0; width: 44px; pointer-events: none; opacity: 0; transition: opacity 0.25s; z-index: 2; }
+  .sk-fade.left { left: 0; background: linear-gradient(to right, var(--paper), transparent); }
+  .sk-fade.right { right: 0; background: linear-gradient(to left, var(--paper), transparent); }
+  .sankey-scroll.has-left ~ .sk-fade.left { opacity: 1; }
+  .sankey-scroll.has-right ~ .sk-fade.right { opacity: 1; }
+  .sk-hint { position: absolute; right: 10px; bottom: 12px; z-index: 3; font-size: 10.5px; color: var(--sub); background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08); pointer-events: none; transition: opacity 0.4s; }
+  .sk-hint[hidden] { display: none; }
+  .sk-hint.seen { opacity: 0; }
 
   .ribbon-fill { opacity: 0; animation: ribbonIn 0.8s ease-out forwards; animation-delay: var(--d); transition: opacity 0.25s; }
   @keyframes ribbonIn { to { opacity: 0.34; } }
@@ -356,7 +406,7 @@ const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS
   .sheen-layer { opacity: 0; animation: sheenIn 1.2s ease-out 1.2s forwards; transition: opacity 0.3s; pointer-events: none; }
   @keyframes sheenIn { to { opacity: 1; } }
   .sheen-rib { opacity: 0.26; }
-  .ribbon-n { font-size: 11px; fill: var(--sub); opacity: 0; animation: nodeIn 0.6s ease-out forwards; animation-delay: calc(var(--d) + 0.5s); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
+  .ribbon-n { font-size: 11px; fill: var(--ink); opacity: 0; animation: nodeIn 0.6s ease-out forwards; animation-delay: calc(var(--d) + 0.5s); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
 
   /* 초점 모드: 호버 리본만 남기고 물러난다 */
   .sankey.focusing .ribbon-fill { opacity: 0.1; }
