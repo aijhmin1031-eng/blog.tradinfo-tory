@@ -20,8 +20,9 @@
 | 검색 등록 | Google(사이트맵 API 제출 확인) · 네이버(소유확인+사이트맵+RSS) 완료 |
 | 정보 구조 | 상단 3슬롯: 오늘의 도토리 · **도토리 숲**(기사 전체, `/forest/`) · **도토리 창고**(도구). 카테고리·특집·**토리 이야기**는 숲 아래, 그림함·사전·지표는 창고 아래. `/about/`은 정체성·철칙·숲의 언어만 남기고 카툰은 `/story/`로 이관 |
 | 브랜치 | `claude/secret-repo-age-master-setup-10hta5` — 푸시 시 자동 배포 |
-| 배포 | GitHub Pages(정본) + **Vercel 병행 가동**(https://tradetory.vercel.app, 푸시마다 자동, noindex — 도메인 연결 시 정본 승격) |
+| 배포 | **정본 = https://dotoriecon.com (Vercel)**. GitHub Pages는 같은 내용을 서브경로로 계속 띄우는 미러이며 canonical을 정본 도메인으로 내보내 색인을 한곳에 모은다. noindex는 해제됨 |
 | 그림함 | **무료 이미지 58장**(1탄 18 · 2탄 16 · **3탄 사무·업무 도구 16** · 소소 특별판 8) — **전부 투명 PNG 1600px**. 낱장 페이지 58개 + 이미지 사이트맵. ZIP 배포 폐지 |
+| 도메인 | **dotoriecon.com** (Cloudflare Registrar, 2026-08-24 취득, ~2027-08-24, 자동갱신 $10.46/yr) |
 | 수익·협업 | 뉴스레터 자동 발송 **폐기**. 기사 끝·푸터·그림함은 **협업 카드**, 착지는 `/contact/` 「함께 일하기」 — **강의·컨설팅·공동 개발**(용역 수주 아님). 분야는 데이터 수집·분석·대시보드 / AI 자동화. 문의는 dotori.workroom@gmail.com. 운영자는 익명 유지 |
 | Supabase | 프로젝트 **tradetory**(서울, 무료) — 뉴스레터 구독(`subscribe` 함수+푸터 폼) · 조회수(`bump_view` RPC+기사 칩) · 갈림길 채점 아카이브(`galimgil-archive` 함수+`/galimgil/`) |
 
@@ -63,6 +64,17 @@
 7. 애드센스 신청은 도메인 연결 후: ads.txt 배치 → 신청 → 앵커 광고 슬롯(하단은 비워둠) 순.
 
 ## 일지
+
+### 2026-08-24 (커스텀 도메인 dotoriecon.com 취득 — 정본을 Vercel로 승격)
+
+- 소유주가 Cloudflare Registrar에서 **dotoriecon.com** 취득(자동갱신 켜짐). 후보 비교에서 `dotorieco.com`은
+  `eco`가 전 세계에서 '친환경'으로 읽혀 무역·금리 블로그의 주제 신호를 흐린다는 이유로 배제, `econ`(경제학 표준 약어)으로 확정.
+- `astro.config.mjs`: Vercel 빌드의 `site`를 정본 도메인으로 고정(`CANONICAL_ORIGIN`). base는 기존대로 Vercel `/`, Pages `/blog.tradinfo-tory`.
+- `Base.astro`: **canonical을 양쪽 빌드 모두 정본 도메인으로** 계산(BASE_URL 접두어를 벗겨 경로만 옮김). `og:url` 추가.
+  Vercel의 `noindex`는 해제. 중복은 noindex가 아니라 canonical로 합치는 것이 검색엔진 권장 방식이라 Pages 미러도 그대로 두고 신호만 모은다.
+- `public/robots.txt`: 사이트맵 2건을 정본 도메인 주소로 교체.
+- 양쪽 빌드 검증 완료 — Pages 빌드는 자산이 서브경로를 유지하면서 canonical만 정본을 가리키고,
+  Vercel 빌드는 자산·내부링크·사이트맵·이미지 사이트맵이 전부 루트 기준 정본 도메인으로 나온다.
 
 ### 2026-08-24 (그림함 3탄 「사무·업무 도구」 16종 + 미리보기 체커보드 회귀 수리)
 

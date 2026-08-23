@@ -5,5 +5,5 @@ Allow: /
 User-agent: Yeti
 Allow: /
 
-Sitemap: https://aijhmin1031-eng.github.io/blog.tradinfo-tory/sitemap-index.xml
-Sitemap: https://aijhmin1031-eng.github.io/blog.tradinfo-tory/pack-images.xml
+Sitemap: https://dotoriecon.com/sitemap-index.xml
+Sitemap: https://dotoriecon.com/pack-images.xml

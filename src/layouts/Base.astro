@@ -30,9 +30,14 @@ const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} | ${SITE.tag
 const today = new Date();
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 const dateLine = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일 ${days[today.getDay()]}요일`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
-// Vercel 병행 배포는 커스텀 도메인 연결 전까지 검색 중복 방지를 위해 색인 제외
-const isVercelBuild = !!process.env.VERCEL;
+// 정본 주소는 커스텀 도메인 한 곳이다. GitHub Pages 미러도 canonical은 이 도메인을 가리켜
+// 색인 신호가 둘로 갈리지 않게 한다(중복 페이지는 noindex가 아니라 canonical로 합치는 것이 권장 방식).
+const CANONICAL_ORIGIN = 'https://dotoriecon.com';
+const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+const canonicalPath = (basePath && Astro.url.pathname.startsWith(basePath)
+  ? Astro.url.pathname.slice(basePath.length)
+  : Astro.url.pathname) || '/';
+const canonical = new URL(canonicalPath, CANONICAL_ORIGIN).href;
 
 // 내비게이션은 7슬롯 고정, 특집·창고는 드롭다운(데스크톱)이 증가분을 흡수한다.
 // 새 특집은 lib/topics.ts에만 추가하면 된다.
@@ -91,7 +96,6 @@ const isActive = (n: (typeof navItems)[number]) =>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {isVercelBuild && <meta name="robots" content="noindex" />}
     {SITE.naverVerify && <meta name="naver-site-verification" content={SITE.naverVerify} />}
     {SITE.googleVerify && <meta name="google-site-verification" content={SITE.googleVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
@@ -100,6 +104,7 @@ const isActive = (n: (typeof navItems)[number]) =>
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:image" content={new URL(ogImage, Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
