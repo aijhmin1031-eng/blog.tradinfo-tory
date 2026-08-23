@@ -6,6 +6,7 @@ import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { CATEGORIES, url, fmtDate, heroFor, isPublished } from '../lib/site';
 import { TOPICS } from '../lib/topics';
+import { EPISODES } from '../data/story';
 
 const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -26,9 +27,13 @@ const topicBlocks = TOPICS.map((t) => ({
   count: all.filter((p) => (p.data.topics ?? []).includes(t.key)).length,
 }));
 
+// 카툰도 읽을거리다. 숲 드롭다운·1면에는 걸어 뒀는데 정작 숲 본문에서 빠져 있었다.
+const storyEps = EPISODES.filter((e) => !e.gateAtPosts || all.length >= e.gateAtPosts).sort((a, b) => a.order - b.order);
+const storyCuts = storyEps.reduce((n, e) => n + e.cuts, 0);
+
 const desc =
   `도토리경제가 발행한 무역·환율·금리·관세 기사 ${all.length}편을 분야와 특집으로 나누어 모았습니다. ` +
-  '돈의 흐름, 관세·통상, 수출입 리포트, 상식 사전 네 갈래에서 필요한 글을 골라 읽으실 수 있습니다.';
+  '돈의 흐름, 관세·통상, 수출입 리포트, 상식 사전 네 갈래와 토리 카툰까지 한자리에서 고르실 수 있습니다.';
 ---
 
 <Base title="도토리 숲, 기사 모아보기" description={desc} activeNav="forest" compact>
@@ -121,6 +126,36 @@ const desc =
     </p>
   </section>
 
+  <section class="wrap fo-story">
+    <div class="fo-story-head">
+      <h2 class="serif fo-h2">읽는 사이 쉬어 가는 곳, 토리 이야기</h2>
+    </div>
+    <p class="fo-note">
+      숫자를 세는 다람쥐가 어쩌다 매일 새벽 장부를 적게 됐는지 카툰 <strong>{storyCuts}컷</strong>으로 그렸습니다.
+      기사와 같은 손으로 만든 읽을거리라 숲 안에 두었습니다.
+    </p>
+    <div class="fo-story-grid">
+      {
+        storyEps.map((e) => (
+          <a class="fo-story-card" href={url(`/story/${e.slug}/`)}>
+            <div class="fo-story-thumb">
+              <img
+                src={url(`/images/story/${e.cover}.jpg`)}
+                alt={`${e.title} 대표 컷`}
+                width="360"
+                height="270"
+                loading="lazy"
+              />
+            </div>
+            <div class="fo-story-title">{e.title}</div>
+            <div class="mono fo-date">{e.series} · {e.cuts}컷</div>
+          </a>
+        ))
+      }
+    </div>
+    <a class="fo-more" href={url('/story/')}>토리 이야기 전체 보기</a>
+  </section>
+
   <section class="wrap fo-cross">
     <h2 class="serif fo-h2">읽었다면, 창고도 열어 보십시오</h2>
     <p class="fo-note">
@@ -168,6 +203,15 @@ const desc =
   .fo-topic-body { padding: 13px 15px 16px; }
   .fo-topic-name { font-size: 16px; font-weight: 900; color: var(--ink); }
   .fo-topic-desc { font-size: 12.5px; color: var(--sub); line-height: 1.8; margin-top: 7px; word-break: keep-all; }
+
+  .fo-story { margin-top: 46px; }
+  .fo-story-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 18px; }
+  @media (max-width: 760px) { .fo-story-grid { grid-template-columns: 1fr 1fr; } .fo-story-grid > :nth-child(3) { display: none; } }
+  .fo-story-card { display: block; }
+  .fo-story-thumb { border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--surface); }
+  .fo-story-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fo-story-title { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-top: 9px; word-break: keep-all; }
+  .fo-story-card:hover .fo-story-title { color: var(--accent); }
 
   .fo-cross { margin: 46px 0 56px; }
   .fo-note { font-size: 13px; color: var(--sub); line-height: 1.9; margin-top: 14px; word-break: keep-all; }
