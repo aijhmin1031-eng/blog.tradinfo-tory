@@ -1,6 +1,6 @@
-// 가공·발행 단계 — data/series/ 축적분에서 규칙 기반 데일리 브리핑을 생성한다.
+// 가공·발행 단계, data/series/ 축적분에서 규칙 기반 데일리 브리핑을 생성한다.
 //   산출물: src/content/briefs/<YYYY-MM-DD>.json (기준일 = 최신 영업일)
-//   같은 날짜가 이미 있으면 덮어쓴다(멱등). 문장은 결정론적 규칙으로 생성 — 추측·전망 없음.
+//   같은 날짜가 이미 있으면 덮어쓴다(멱등). 문장은 결정론적 규칙으로 생성, 추측·전망 없음.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 const ROOT = new URL('../../', import.meta.url);
@@ -53,7 +53,7 @@ async function main() {
   const summary = [
     `${kdate(date)} 시장에서 가장 큰 움직임은 ${top.label}이었습니다. 전일 대비 ${top.dir === 'up' ? '+' : '-'}${top.delta}, ${fmtNum(last(items.find((i) => i.label === top.label).s).v)}${top.label.includes('환율') ? '원' : top.label === 'WTI 유가' ? '달러' : ''}로 마감했습니다.`,
     `원/달러 환율은 ${fmtNum(last(krw).v)}원으로 전일 대비 ${moveWord(pct(krw))}. 원/100엔 환율은 ${fmtNum(last(jpy).v)}원을 기록했습니다.`,
-    `금리는 국고채 10년 ${fmtNum(last(ktb).v)}%, 미 국채 10년 ${fmtNum(last(us10).v)}% — 한·미 격차는 ${gap > 0 ? '+' : ''}${fmtNum(gap)}%p입니다.`,
+    `금리는 국고채 10년 ${fmtNum(last(ktb).v)}%, 미 국채 10년 ${fmtNum(last(us10).v)}%, 한·미 격차는 ${gap > 0 ? '+' : ''}${fmtNum(gap)}%p입니다.`,
   ];
 
   const chartPoints = krw.points.slice(-20);
@@ -66,7 +66,7 @@ async function main() {
     summary,
     movers: movers.map(({ pct, ...rest }) => rest),
     chart: {
-      title: `원/달러 환율 — 최근 20영업일 (${fmtNum(last(krw).v)}원)`,
+      title: `원/달러 환율, 최근 20영업일 (${fmtNum(last(krw).v)}원)`,
       unit: '원',
       values: chartPoints.map((p) => p.v),
       yTicks: [Math.round(lo), mid, Math.round(hi)],
@@ -94,7 +94,7 @@ async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   const out = new URL(`${brief.date}.json`, OUT_DIR);
   await writeFile(out, JSON.stringify(brief, null, 2) + '\n');
-  console.log(`[brief] 발행 — ${brief.date} (${brief.title})`);
+  console.log(`[brief] 발행, ${brief.date} (${brief.title})`);
 }
 
 main().catch((e) => {

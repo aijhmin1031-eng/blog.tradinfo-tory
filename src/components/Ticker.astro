@@ -3,7 +3,7 @@ import indicators from '../data/indicators.json';
 import Delta from './Delta.astro';
 
 const items = indicators.ticker;
-// 기준일은 오른쪽에 고정 표시 — 흐르는 항목 사이에 끼우면 지나갈 때만 보인다.
+// 기준일은 오른쪽에 고정 표시, 흐르는 항목 사이에 끼우면 지나갈 때만 보인다.
 const asofShort = indicators.asOf.slice(5).replace('-', '.');
 ---
 
@@ -38,7 +38,7 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
     display: flex;
     align-items: stretch;
   }
-  /* 데스크톱에서는 내비게이션 아래에 고정 — 지표가 스크롤과 무관하게 항상 보인다.
+  /* 데스크톱에서는 내비게이션 아래에 고정, 지표가 스크롤과 무관하게 항상 보인다.
      모바일은 세로 공간을 아끼기 위해 고정하지 않는다. */
   @media (min-width: 860px) {
     .ticker {

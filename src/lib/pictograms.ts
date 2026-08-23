@@ -1,4 +1,4 @@
-// 용어 사전 픽토그램 — Term 칩과 /glossary/ 페이지가 공유하는 선화 아이콘 (24×24 viewBox)
+// 용어 사전 픽토그램, Term 칩과 /glossary/ 페이지가 공유하는 선화 아이콘 (24×24 viewBox)
 export const PICTOGRAMS: Record<string, string> = {
   spread:
     '<path d="M4 6.5 H20 M4 17.5 H20 M12 9 V15 M9.5 11 L12 8.5 L14.5 11 M9.5 13 L12 15.5 L14.5 13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',

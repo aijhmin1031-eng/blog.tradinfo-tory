@@ -1,11 +1,11 @@
 ---
-// 카툰 컷 + 캡션 — 갈림길 등 연재 기사 본문용. img 는 /images/story/ 하위 파일명(확장자 제외).
+// 카툰 컷 + 캡션, 갈림길 등 연재 기사 본문용. img 는 /images/story/ 하위 파일명(확장자 제외).
 import { url } from '../lib/site';
 interface Props {
   img: string;
   alt?: string;
   cap?: string;
-  quote?: boolean; // 인용 컷 — 캡션을 경구체로 강조
+  quote?: boolean; // 인용 컷, 캡션을 경구체로 강조
 }
 const { img, alt = '', cap = '', quote = false } = Astro.props;
 ---

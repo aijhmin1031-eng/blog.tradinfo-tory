@@ -1,0 +1,240 @@
+---
+// 블로그 지도 — 생키 다이어그램. 발행 콘텐츠에서 빌드 시점에 자동 산출된다.
+// 매일 아침 06:50 빌드가 다시 그리므로, 기사가 늘면 지도도 함께 자란다.
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { CATEGORIES, url, isPublished } from '../lib/site';
+import { GLOSSARY } from '../lib/glossary';
+import { TOPICS } from '../lib/topics';
+
+const posts = await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate));
+const total = posts.length;
+
+// 성격 분류: 특집 > 갈림길 연재 > 데이터(차트) > 해설
+type Kind = 'topic' | 'series' | 'data' | 'guide';
+const kindOf = (p: (typeof posts)[number]): Kind => {
+  if ((p.data.topics ?? []).length > 0) return 'topic';
+  const slug = (p as { slug?: string; id: string }).slug ?? p.id;
+  if (slug.startsWith('tori-galimgil')) return 'series';
+  if (p.data.chart) return 'data';
+  return 'guide';
+};
+const KINDS: { key: Kind; name: string }[] = [
+  { key: 'topic', name: '반도체·AI 특집' },
+  { key: 'series', name: '갈림길 연재' },
+  { key: 'data', name: '데이터 기사' },
+  { key: 'guide', name: '해설·입문' },
+];
+const CAT_COLORS: Record<string, string> = {
+  money: 'var(--cat-money)',
+  tariff: 'var(--cat-tariff)',
+  trade: 'var(--cat-trade)',
+  basics: 'var(--cat-basics)',
+};
+
+const catKeys = Object.keys(CATEGORIES) as (keyof typeof CATEGORIES)[];
+const catCount: Record<string, number> = {};
+const cellCount: Record<string, Record<Kind, number>> = {};
+for (const c of catKeys) { catCount[c] = 0; cellCount[c] = { topic: 0, series: 0, data: 0, guide: 0 }; }
+for (const p of posts) {
+  const c = p.data.category as string;
+  catCount[c] = (catCount[c] ?? 0) + 1;
+  cellCount[c][kindOf(p)] += 1;
+}
+const kindCount: Record<Kind, number> = { topic: 0, series: 0, data: 0, guide: 0 };
+for (const c of catKeys) for (const k of KINDS) kindCount[k.key] += cellCount[c][k.key];
+
+// ── 생키 기하 (전부 사전 계산) ──
+const W = 920, H = 560, NW = 16, PADY = 26, GAP = 18;
+const X0 = 24, X1 = 430, X2 = 856; // 노드 x (좌측 기준), X2는 우측 열
+const usable = (n: number) => H - PADY * 2 - GAP * (n - 1);
+const scale = Math.min(
+  usable(1) / total,
+  usable(catKeys.length) / total,
+  usable(KINDS.filter((k) => kindCount[k.key] > 0).length) / total
+);
+
+type NodeBox = { x: number; y: number; h: number; name: string; n: number; color: string; anchor: 'start' | 'end' };
+const nodes: NodeBox[] = [];
+// 루트
+const rootH = total * scale;
+const rootY = (H - rootH) / 2;
+nodes.push({ x: X0, y: rootY, h: rootH, name: '무역토리', n: total, color: 'var(--ink)', anchor: 'start' });
+// 카테고리 열
+let y1 = PADY;
+const catBox: Record<string, { y: number; h: number }> = {};
+for (const c of catKeys) {
+  const h = catCount[c] * scale;
+  catBox[c] = { y: y1, h };
+  nodes.push({ x: X1, y: y1, h, name: CATEGORIES[c].name, n: catCount[c], color: CAT_COLORS[c], anchor: 'start' });
+  y1 += h + GAP;
+}
+// 성격 열
+let y2 = PADY;
+const kindBox: Record<string, { y: number; h: number }> = {};
+for (const k of KINDS) {
+  if (kindCount[k.key] === 0) continue;
+  const h = kindCount[k.key] * scale;
+  kindBox[k.key] = { y: y2, h };
+  nodes.push({ x: X2, y: y2, h, name: k.name, n: kindCount[k.key], color: 'var(--accent)', anchor: 'end' });
+  y2 += h + GAP;
+}
+
+// 리본 경로
+type Ribbon = { d: string; mid: string; color: string; n: number; delay: number };
+const ribbons: Ribbon[] = [];
+const ribbon = (xa: number, ya: number, ha: number, xb: number, yb: number, hb: number) => {
+  const m = (xa + xb) / 2;
+  return (
+    `M ${xa} ${ya} C ${m} ${ya}, ${m} ${yb}, ${xb} ${yb} ` +
+    `L ${xb} ${yb + hb} C ${m} ${yb + hb}, ${m} ${ya + ha}, ${xa} ${ya + ha} Z`
+  );
+};
+const centerline = (xa: number, ya: number, xb: number, yb: number) => {
+  const m = (xa + xb) / 2;
+  return `M ${xa} ${ya} C ${m} ${ya}, ${m} ${yb}, ${xb} ${yb}`;
+};
+// 1단: 루트 → 카테고리
+let offRoot = rootY;
+let d0 = 0;
+for (const c of catKeys) {
+  const h = catCount[c] * scale;
+  ribbons.push({
+    d: ribbon(X0 + NW, offRoot, h, X1, catBox[c].y, h),
+    mid: centerline(X0 + NW, offRoot + h / 2, X1, catBox[c].y + h / 2),
+    color: CAT_COLORS[c], n: catCount[c], delay: d0,
+  });
+  offRoot += h; d0 += 0.12;
+}
+// 2단: 카테고리 → 성격
+const kindOff: Record<string, number> = {};
+for (const k of KINDS) if (kindBox[k.key]) kindOff[k.key] = kindBox[k.key].y;
+for (const c of catKeys) {
+  let off = catBox[c].y;
+  for (const k of KINDS) {
+    const n = cellCount[c][k.key];
+    if (!n || !kindBox[k.key]) continue;
+    const h = n * scale;
+    ribbons.push({
+      d: ribbon(X1 + NW, off, h, X2, kindOff[k.key], h),
+      mid: centerline(X1 + NW, off + h / 2, X2, kindOff[k.key] + h / 2),
+      color: CAT_COLORS[c], n, delay: d0,
+    });
+    off += h; kindOff[k.key] += h; d0 += 0.07;
+  }
+}
+
+// 하단 현황 칩 (실시간, 빌드 산출)
+const termCount = Object.keys(GLOSSARY).length;
+const showEp2 = total >= 50;
+const cartoonCuts = 16 + 20 + 4 + (showEp2 ? 12 : 0);
+const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10).replace(/-/g, '.');
+const chips = [
+  { n: `${total}편`, label: '발행 기사' },
+  { n: `${TOPICS.length}개`, label: '특집' },
+  { n: `${termCount}개`, label: '용어 도토리' },
+  { n: `${cartoonCuts}컷`, label: '카툰 (기원·일대기·일상)' },
+];
+---
+
+<Base
+  title="블로그 지도"
+  description="무역토리의 전체 콘텐츠 구성을 한눈에 보는 생키 다이어그램. 매일 아침 빌드에서 자동으로 다시 그려집니다."
+  activeNav="map"
+  compact
+>
+  <section class="wrap map-head">
+    <div class="kicker-en" style="color: var(--accent);">SITE MAP</div>
+    <h1 class="serif map-title">블로그 지도</h1>
+    <p class="map-sub">
+      무역토리의 모든 기사가 어디에서 갈라져 어디로 모이는지, 한 장의 흐름으로 그린
+      지도입니다. 기사가 늘어나면 지도도 매일 아침 함께 자랍니다.
+    </p>
+    <p class="map-stamp mono">기준 {today} · 매일 아침 06:50 자동 갱신</p>
+  </section>
+
+  <section class="wrap map-stage">
+    <div class="sankey-scroll">
+      <svg viewBox={`0 0 ${W} ${H}`} class="sankey" role="img" aria-label="무역토리 콘텐츠 구성 생키 다이어그램">
+        {ribbons.map((r) => (
+          <g class="ribbon" style={`--d:${r.delay}s`}>
+            <path d={r.d} fill={r.color} class="ribbon-fill" />
+            <path d={r.mid} fill="none" stroke={r.color} class="ribbon-flow" />
+          </g>
+        ))}
+        {nodes.map((nd, i) => (
+          <g class="node" style={`--d:${0.1 + i * 0.05}s`}>
+            <rect x={nd.x} y={nd.y} width={NW} height={Math.max(nd.h, 3)} rx="3" fill={nd.color} />
+            <text
+              x={nd.anchor === 'end' ? nd.x - 8 : nd.x + NW + 8}
+              y={nd.y + Math.max(nd.h, 3) / 2 - 4}
+              text-anchor={nd.anchor}
+              class="node-name"
+            >{nd.name}</text>
+            <text
+              x={nd.anchor === 'end' ? nd.x - 8 : nd.x + NW + 8}
+              y={nd.y + Math.max(nd.h, 3) / 2 + 12}
+              text-anchor={nd.anchor}
+              class="node-count mono"
+            >{nd.n}편</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+
+    <div class="map-chips">
+      {chips.map((c) => (
+        <div class="map-chip">
+          <span class="chip-n serif">{c.n}</span>
+          <span class="chip-label">{c.label}</span>
+        </div>
+      ))}
+    </div>
+
+    <p class="map-legend">
+      굵기는 기사 수에 비례합니다. 특집은 <a href={url('/topics/')}>특집 인덱스</a>,
+      연재는 <a href={url('/posts/tori-galimgil-01/')}>토리의 갈림길</a>, 지표는
+      <a href={url('/warehouse/')}>도토리 창고</a>에서 이어 볼 수 있습니다.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .map-head { max-width: 760px; padding-top: 48px; }
+  .map-title { font-size: clamp(26px, 4vw, 34px); font-weight: 900; margin-top: 6px; }
+  .map-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; word-break: keep-all; }
+  .map-stamp { font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+  .map-stage { padding-bottom: 56px; }
+  .sankey-scroll { overflow-x: auto; margin-top: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper, var(--bg)); }
+  .sankey { display: block; min-width: 720px; width: 100%; height: auto; }
+
+  .ribbon-fill { opacity: 0; animation: ribbonIn 0.9s ease-out forwards; animation-delay: var(--d); }
+  .ribbon:hover .ribbon-fill { opacity: 0.85; transition: opacity 0.25s; }
+  @keyframes ribbonIn { from { opacity: 0; } to { opacity: 0.42; } }
+
+  .ribbon-flow {
+    stroke-width: 2.2; opacity: 0.5; stroke-linecap: round;
+    stroke-dasharray: 3 14;
+    animation: flow 2.6s linear infinite;
+  }
+  @keyframes flow { to { stroke-dashoffset: -68; } }
+
+  .node { opacity: 0; animation: nodeIn 0.7s ease-out forwards; animation-delay: var(--d); }
+  @keyframes nodeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .node-name { font-size: 13.5px; font-weight: 700; fill: var(--ink); }
+  .node-count { font-size: 11px; fill: var(--muted); }
+
+  .map-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .map-chip { border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 120px; }
+  .chip-n { font-size: 20px; font-weight: 900; color: var(--accent); }
+  .chip-label { font-size: 11.5px; color: var(--muted); }
+  .map-legend { font-size: 12.5px; color: var(--muted); margin-top: 14px; word-break: keep-all; }
+  .map-legend a { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ribbon-fill, .node { animation: none; opacity: 1; }
+    .ribbon-fill { opacity: 0.42; }
+    .ribbon-flow { animation: none; display: none; }
+  }
+</style>

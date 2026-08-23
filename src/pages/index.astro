@@ -29,7 +29,7 @@ const jsonLd = {
       <section class="hero wrap">
         <div class="hero-main">
           <div class:list={['kicker', CATEGORIES[featured.data.category].cls]}>
-            {CATEGORIES[featured.data.category].name} — 오늘의 머리기사
+            {CATEGORIES[featured.data.category].name}, 오늘의 머리기사
           </div>
           <h1 class="hero-title serif">
             <a href={url(`/posts/${featured.id}/`)}>{featured.data.title}</a>
@@ -118,7 +118,7 @@ const jsonLd = {
   </aside>
 
   <script>
-    // 토리 인사 팝업 — 세션당 1회, 잠시 인사하고 내려간다
+    // 토리 인사 팝업, 세션당 1회, 잠시 인사하고 내려간다
     try {
       const KEY = 'tori-greeted';
       const greet = document.getElementById('tori-greet');

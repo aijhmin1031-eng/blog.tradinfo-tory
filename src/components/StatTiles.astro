@@ -46,7 +46,7 @@ import Spark from './Spark.astro';
 </style>
 
 <script>
-  // 지표 숫자 카운트업 — 화면에 들어올 때 0부터 실제 값까지
+  // 지표 숫자 카운트업, 화면에 들어올 때 0부터 실제 값까지
   const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
   const animateValue = (el: Element) => {
     const text = (el.textContent || '').trim();

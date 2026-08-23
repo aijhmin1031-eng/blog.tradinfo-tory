@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const SP = '/tmp/claude-0/-home-user/1f3b5e92-e96b-5e88-8bc4-f151815d7774/scratchpad';
+const base = 'http://localhost:8123/blog.tradinfo-tory';
+const p = await b.newPage({ viewport: { width: 1280, height: 950 } });
+await p.goto(base + '/board/', { waitUntil: 'networkidle' });
+await p.waitForTimeout(500);
+await p.screenshot({ path: SP + '/hero-gen/board-page.png' });
+await p.goto(base + '/contact/', { waitUntil: 'networkidle' });
+await p.waitForTimeout(500);
+await p.screenshot({ path: SP + '/hero-gen/contact-page.png' });
+await b.close(); console.log('ok');
