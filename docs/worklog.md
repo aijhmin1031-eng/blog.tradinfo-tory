@@ -82,6 +82,8 @@
   미인식 → aijhmin1031-eng로 재설치). giscus API로 repoId/categoryId 발급받아 comments.ts 기입, 카테고리는 Announcements
   (관리자·giscus만 스레드 생성 가능, 장난 스레드 방지). 기사 댓글은 `data-mapping="specific"` + 논리 경로 term으로 변경:
   GitHub Pages·Vercel·미래 도메인이 **같은 댓글 스레드를 공유**한다. Astro 함정: 속성 있는 script는 `is:inline` 명시.
+- **[소유주 결정] 댓글 구글 로그인 제안 기각**: giscus는 GitHub 로그인 전용(구조적 한계)이라 구글 로그인은
+  Supabase 자체 댓글 전환이 필요함을 안내 → 소유주가 "지금 giscus 유지" 선택(8/23). 재제안하지 말 것.
 - **본문 구독 박스 추가(소유주 지시)**: 기사 끝(토리의 한 마디 아래)에 "토리의 아침 편지" 구독 박스 삽입.
   Newsletter 컴포넌트에 `variant='inline'`(밝은 지면 카드) 추가, source='post'로 유입 경로 구분. 푸터 폼과 병행.
 - **지도 모바일 가독성(소유주 지시 "L1~L3 글자가 안 보임")**: 원인은 좁은 화면의 가로 스크롤 잘림(안내 없음).
