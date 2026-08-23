@@ -77,6 +77,7 @@ const navItems: {
       { key: 'warehouse', name: '오늘의 지표', href: url('/warehouse/'), desc: '환율·금리·관련주·무역수지 대시보드' },
       { key: 'galimgil', name: '토리의 갈림길', href: url('/galimgil/'), desc: '주간 전망 연재·공개 채점 아카이브' },
       { key: 'board', name: '도토리 광장', href: url('/board/'), desc: '자유 의견·주제 제안·제보 게시판' },
+      { key: 'method', name: '숫자를 다루는 방법', href: url('/method/'), desc: '데이터 출처와 검증 원칙' },
       { key: 'map', name: '블로그 지도', href: url('/map/'), desc: '전체 콘텐츠 구성을 한눈에 (매일 자동 갱신)' },
     ],
   },
@@ -241,6 +242,7 @@ const isActive = (n: (typeof navItems)[number]) =>
           <div>
             <div class="footer-col-title">도토리경제</div>
             <a href={url('/about/')}>토리는 누구인가</a>
+            <a href={url('/method/')}>숫자를 다루는 방법</a>
             <a href={url('/story/')}>토리 이야기</a>
             <a href={url('/board/')}>도토리 광장</a>
             <a href={url('/contact/')}>협업 문의</a>
