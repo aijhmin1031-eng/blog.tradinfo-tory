@@ -14,6 +14,7 @@ interface Props {
   activeNav?: string;
   /** 본문에 구독 박스가 이미 있는 페이지(기사)는 푸터 폼을 생략해 2중 노출을 피한다 */
   footerNewsletter?: boolean;
+  ogType?: 'website' | 'article';
 }
 const {
   title,
@@ -22,6 +23,7 @@ const {
   ogImage = url('/images/og-default.jpg'),
   activeNav = '',
   footerNewsletter = true,
+  ogType = 'website',
 } = Astro.props;
 
 const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} | ${SITE.taglineSub}`;
@@ -82,7 +84,7 @@ const isActive = (n: (typeof navItems)[number]) =>
     {SITE.googleVerify && <meta name="google-site-verification" content={SITE.googleVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
     <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url('/rss.xml')} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />

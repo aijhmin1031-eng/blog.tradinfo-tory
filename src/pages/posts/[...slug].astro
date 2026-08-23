@@ -18,8 +18,13 @@ const related = all
   .filter((p) => p.id !== post.id)
   .sort((a, b) => (b.data.category === post.data.category ? 1 : 0) - (a.data.category === post.data.category ? 1 : 0))
   .slice(0, 2);
+
+// 발행일 순 이전·다음 기사 (all은 최신순이므로 next = 더 최신, prev = 더 과거)
+const idx = all.findIndex((p) => p.id === post.id);
+const newer = idx > 0 ? all[idx - 1] : undefined;
+const older = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : undefined;
 ---
 
-<PostLayout post={post} related={related}>
+<PostLayout post={post} related={related} newer={newer} older={older}>
   <Content />
 </PostLayout>

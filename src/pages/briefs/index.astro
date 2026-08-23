@@ -1,0 +1,49 @@
+---
+// 아침 브리핑 아카이브: 파이프라인이 매일 자동 발행한 브리핑 전체 목록
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { url } from '../../lib/site';
+
+const briefs = (await getCollection('briefs')).sort((a, b) => b.data.date.localeCompare(a.data.date));
+---
+
+<Base
+  title="아침 브리핑 아카이브"
+  description="도토리경제가 매일 아침 자동 발행하는 데일리 브리핑의 전체 기록입니다. 환율·금리·시장 핵심 지표를 영업일 종가 기준으로 요약합니다."
+  compact
+  activeNav="warehouse"
+>
+  <section class="wrap" style="max-width: 760px; padding-top: 48px; padding-bottom: 56px;">
+    <div class="kicker-en" style="color: var(--accent);">DAILY BRIEF</div>
+    <h1 class="serif ba-title">아침 브리핑 아카이브</h1>
+    <p class="ba-sub">
+      토리가 매일 아침 6시 50분에 전 영업일 종가를 요약해 자동 발행하는 브리핑의
+      전체 기록입니다. 오늘의 지표는 <a href={url('/warehouse/')}>도토리 창고</a>에서 볼 수 있습니다.
+    </p>
+    {
+      briefs.length === 0 ? (
+        <p class="ba-sub">첫 브리핑이 준비되는 대로 이곳에 쌓입니다.</p>
+      ) : (
+        <div class="ba-list">
+          {briefs.map((b) => (
+            <a class="ba-row" href={url(`/briefs/${b.id}/`)}>
+              <span class="ba-row-title serif">{b.data.title}</span>
+              <span class="ba-row-date mono">{b.data.date}</span>
+            </a>
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .ba-title { font-size: 30px; font-weight: 900; margin: 8px 0 10px; }
+  .ba-sub { font-size: 14.5px; color: var(--sub); line-height: 1.8; max-width: 560px; word-break: keep-all; }
+  .ba-sub a { color: var(--accent); font-weight: 700; }
+  .ba-list { margin-top: 22px; border-top: 2px solid var(--ink); }
+  .ba-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 15px 0; border-bottom: 1px solid var(--hair2); }
+  .ba-row-title { font-size: 15.5px; font-weight: 700; }
+  .ba-row:hover .ba-row-title { color: var(--accent); }
+  .ba-row-date { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+</style>
