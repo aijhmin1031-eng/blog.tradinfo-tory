@@ -1,6 +1,6 @@
 ---
-// 블로그 지도 — 생키 다이어그램. 발행 콘텐츠에서 빌드 시점에 자동 산출된다.
-// 매일 아침 06:50 빌드가 다시 그리므로, 기사가 늘면 지도도 함께 자란다.
+// 블로그 지도: 생키 다이어그램 리포트. 발행 컬렉션에서 빌드 시점 자동 산출(매일 아침 갱신).
+// 팔레트는 dataviz 6종 검사(라이트·다크) 통과: 카테고리 4색 + 잉크 텍스트, 색은 식별만 담당.
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { CATEGORIES, url, isPublished } from '../lib/site';
@@ -10,7 +10,6 @@ import { TOPICS } from '../lib/topics';
 const posts = await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate));
 const total = posts.length;
 
-// 성격 분류: 특집 > 갈림길 연재 > 데이터(차트) > 해설
 type Kind = 'topic' | 'series' | 'data' | 'guide';
 const kindOf = (p: (typeof posts)[number]): Kind => {
   if ((p.data.topics ?? []).length > 0) return 'topic';
@@ -43,24 +42,19 @@ for (const p of posts) {
 }
 const kindCount: Record<Kind, number> = { topic: 0, series: 0, data: 0, guide: 0 };
 for (const c of catKeys) for (const k of KINDS) kindCount[k.key] += cellCount[c][k.key];
+const liveKinds = KINDS.filter((k) => kindCount[k.key] > 0);
 
-// ── 생키 기하 (전부 사전 계산) ──
-const W = 920, H = 560, NW = 16, PADY = 26, GAP = 18;
-const X0 = 24, X1 = 430, X2 = 856; // 노드 x (좌측 기준), X2는 우측 열
+// ── 기하 (전부 사전 계산) ──
+const W = 960, H = 540, NW = 14, PADY = 24, GAP = 16;
+const X0 = 30, X1 = 448, X2 = 916;
 const usable = (n: number) => H - PADY * 2 - GAP * (n - 1);
-const scale = Math.min(
-  usable(1) / total,
-  usable(catKeys.length) / total,
-  usable(KINDS.filter((k) => kindCount[k.key] > 0).length) / total
-);
+const scale = Math.min(usable(1) / total, usable(catKeys.length) / total, usable(liveKinds.length) / total);
 
 type NodeBox = { x: number; y: number; h: number; name: string; n: number; color: string; anchor: 'start' | 'end' };
 const nodes: NodeBox[] = [];
-// 루트
 const rootH = total * scale;
 const rootY = (H - rootH) / 2;
-nodes.push({ x: X0, y: rootY, h: rootH, name: '무역토리', n: total, color: 'var(--ink)', anchor: 'start' });
-// 카테고리 열
+nodes.push({ x: X0, y: rootY, h: rootH, name: '발행 기사', n: total, color: 'var(--ink)', anchor: 'start' });
 let y1 = PADY;
 const catBox: Record<string, { y: number; h: number }> = {};
 for (const c of catKeys) {
@@ -69,172 +63,333 @@ for (const c of catKeys) {
   nodes.push({ x: X1, y: y1, h, name: CATEGORIES[c].name, n: catCount[c], color: CAT_COLORS[c], anchor: 'start' });
   y1 += h + GAP;
 }
-// 성격 열
 let y2 = PADY;
 const kindBox: Record<string, { y: number; h: number }> = {};
-for (const k of KINDS) {
-  if (kindCount[k.key] === 0) continue;
+for (const k of liveKinds) {
   const h = kindCount[k.key] * scale;
   kindBox[k.key] = { y: y2, h };
-  nodes.push({ x: X2, y: y2, h, name: k.name, n: kindCount[k.key], color: 'var(--accent)', anchor: 'end' });
+  nodes.push({ x: X2, y: y2, h, name: k.name, n: kindCount[k.key], color: 'var(--ink)', anchor: 'end' });
   y2 += h + GAP;
 }
 
-// 리본 경로
-type Ribbon = { d: string; mid: string; color: string; n: number; delay: number };
+type Ribbon = { d: string; color: string; n: number; delay: number; from: string; to: string; lx: number; ly: number };
 const ribbons: Ribbon[] = [];
-const ribbon = (xa: number, ya: number, ha: number, xb: number, yb: number, hb: number) => {
+const ribbonPath = (xa: number, ya: number, ha: number, xb: number, yb: number, hb: number) => {
   const m = (xa + xb) / 2;
   return (
     `M ${xa} ${ya} C ${m} ${ya}, ${m} ${yb}, ${xb} ${yb} ` +
     `L ${xb} ${yb + hb} C ${m} ${yb + hb}, ${m} ${ya + ha}, ${xa} ${ya + ha} Z`
   );
 };
-const centerline = (xa: number, ya: number, xb: number, yb: number) => {
-  const m = (xa + xb) / 2;
-  return `M ${xa} ${ya} C ${m} ${ya}, ${m} ${yb}, ${xb} ${yb}`;
-};
-// 1단: 루트 → 카테고리
 let offRoot = rootY;
 let d0 = 0;
 for (const c of catKeys) {
   const h = catCount[c] * scale;
+  const yb = catBox[c].y;
   ribbons.push({
-    d: ribbon(X0 + NW, offRoot, h, X1, catBox[c].y, h),
-    mid: centerline(X0 + NW, offRoot + h / 2, X1, catBox[c].y + h / 2),
+    d: ribbonPath(X0 + NW, offRoot, h, X1, yb, h),
     color: CAT_COLORS[c], n: catCount[c], delay: d0,
+    from: '발행 기사', to: CATEGORIES[c].name,
+    lx: (X0 + NW + X1) / 2, ly: (offRoot + h / 2 + yb + h / 2) / 2,
   });
-  offRoot += h; d0 += 0.12;
+  offRoot += h; d0 += 0.1;
 }
-// 2단: 카테고리 → 성격
 const kindOff: Record<string, number> = {};
-for (const k of KINDS) if (kindBox[k.key]) kindOff[k.key] = kindBox[k.key].y;
+for (const k of liveKinds) kindOff[k.key] = kindBox[k.key].y;
 for (const c of catKeys) {
   let off = catBox[c].y;
-  for (const k of KINDS) {
+  for (const k of liveKinds) {
     const n = cellCount[c][k.key];
-    if (!n || !kindBox[k.key]) continue;
+    if (!n) continue;
     const h = n * scale;
     ribbons.push({
-      d: ribbon(X1 + NW, off, h, X2, kindOff[k.key], h),
-      mid: centerline(X1 + NW, off + h / 2, X2, kindOff[k.key] + h / 2),
+      d: ribbonPath(X1 + NW, off, h, X2, kindOff[k.key], h),
       color: CAT_COLORS[c], n, delay: d0,
+      from: CATEGORIES[c].name, to: k.name,
+      lx: (X1 + NW + X2) / 2, ly: (off + h / 2 + kindOff[k.key] + h / 2) / 2,
     });
-    off += h; kindOff[k.key] += h; d0 += 0.07;
+    off += h; kindOff[k.key] += h; d0 += 0.06;
   }
 }
 
-// 하단 현황 칩 (실시간, 빌드 산출)
+// 표 보기 데이터
+const tableRows = catKeys.map((c) => ({
+  name: CATEGORIES[c].name,
+  color: CAT_COLORS[c],
+  cells: KINDS.map((k) => cellCount[c][k.key]),
+  sum: catCount[c],
+}));
+
+// KPI 밴드 (전부 빌드 산출 실측)
 const termCount = Object.keys(GLOSSARY).length;
 const showEp2 = total >= 50;
 const cartoonCuts = 16 + 20 + 4 + (showEp2 ? 12 : 0);
-const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10).replace(/-/g, '.');
-const chips = [
-  { n: `${total}편`, label: '발행 기사' },
-  { n: `${TOPICS.length}개`, label: '특집' },
-  { n: `${termCount}개`, label: '용어 도토리' },
-  { n: `${cartoonCuts}컷`, label: '카툰 (기원·일대기·일상)' },
+const kpis = [
+  { n: String(total), unit: '편', label: '발행 기사', note: '매일 2편 자동 발행' },
+  { n: String(TOPICS.length), unit: '개', label: '연중 특집', note: '반도체·AI' },
+  { n: String(termCount), unit: '개', label: '용어 도토리', note: '메모 칩·사전 연동' },
+  { n: String(cartoonCuts), unit: '컷', label: '토리 카툰', note: '기원·일대기·일상' },
 ];
+const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10).replace(/-/g, '.');
+const legend = catKeys.map((c) => ({ name: CATEGORIES[c].name, color: CAT_COLORS[c] }));
 ---
 
 <Base
   title="블로그 지도"
-  description="무역토리의 전체 콘텐츠 구성을 한눈에 보는 생키 다이어그램. 매일 아침 빌드에서 자동으로 다시 그려집니다."
+  description="무역토리의 전체 콘텐츠 구성을 한눈에 보는 생키 다이어그램 리포트. 매일 아침 빌드에서 자동으로 다시 그려집니다."
   activeNav="map"
   compact
 >
   <section class="wrap map-head">
-    <div class="kicker-en" style="color: var(--accent);">SITE MAP</div>
-    <h1 class="serif map-title">블로그 지도</h1>
+    <div class="mh-top">
+      <div>
+        <div class="kicker-en" style="color: var(--accent);">CONTENT ATLAS</div>
+        <h1 class="serif map-title">블로그 지도</h1>
+      </div>
+      <div class="mh-meta">
+        <span class="meta-badge mono">기준 {today}</span>
+        <span class="meta-badge mono live"><i class="live-dot" aria-hidden="true"></i>매일 06:50 자동 갱신</span>
+      </div>
+    </div>
     <p class="map-sub">
-      무역토리의 모든 기사가 어디에서 갈라져 어디로 모이는지, 한 장의 흐름으로 그린
-      지도입니다. 기사가 늘어나면 지도도 매일 아침 함께 자랍니다.
+      무역토리의 모든 기사가 어디에서 갈라져 어디로 모이는지 한 장으로 그린
+      흐름 지도입니다. 기사가 늘어나면 지도도 다음 날 아침 함께 자랍니다.
     </p>
-    <p class="map-stamp mono">기준 {today} · 매일 아침 06:50 자동 갱신</p>
   </section>
 
-  <section class="wrap map-stage">
-    <div class="sankey-scroll">
-      <svg viewBox={`0 0 ${W} ${H}`} class="sankey" role="img" aria-label="무역토리 콘텐츠 구성 생키 다이어그램">
-        {ribbons.map((r) => (
-          <g class="ribbon" style={`--d:${r.delay}s`}>
-            <path d={r.d} fill={r.color} class="ribbon-fill" />
-            <path d={r.mid} fill="none" stroke={r.color} class="ribbon-flow" />
-          </g>
-        ))}
-        {nodes.map((nd, i) => (
-          <g class="node" style={`--d:${0.1 + i * 0.05}s`}>
-            <rect x={nd.x} y={nd.y} width={NW} height={Math.max(nd.h, 3)} rx="3" fill={nd.color} />
-            <text
-              x={nd.anchor === 'end' ? nd.x - 8 : nd.x + NW + 8}
-              y={nd.y + Math.max(nd.h, 3) / 2 - 4}
-              text-anchor={nd.anchor}
-              class="node-name"
-            >{nd.name}</text>
-            <text
-              x={nd.anchor === 'end' ? nd.x - 8 : nd.x + NW + 8}
-              y={nd.y + Math.max(nd.h, 3) / 2 + 12}
-              text-anchor={nd.anchor}
-              class="node-count mono"
-            >{nd.n}편</text>
-          </g>
-        ))}
-      </svg>
-    </div>
-
-    <div class="map-chips">
-      {chips.map((c) => (
-        <div class="map-chip">
-          <span class="chip-n serif">{c.n}</span>
-          <span class="chip-label">{c.label}</span>
+  <section class="wrap">
+    <div class="kpi-band" role="list">
+      {kpis.map((k) => (
+        <div class="kpi" role="listitem">
+          <div class="kpi-n"><span class="mono">{k.n}</span><span class="kpi-unit">{k.unit}</span></div>
+          <div class="kpi-label">{k.label}</div>
+          <div class="kpi-note">{k.note}</div>
         </div>
       ))}
     </div>
+  </section>
 
-    <p class="map-legend">
-      굵기는 기사 수에 비례합니다. 특집은 <a href={url('/topics/')}>특집 인덱스</a>,
-      연재는 <a href={url('/posts/tori-galimgil-01/')}>토리의 갈림길</a>, 지표는
-      <a href={url('/warehouse/')}>도토리 창고</a>에서 이어 볼 수 있습니다.
+  <section class="wrap map-stage">
+    <div class="chart-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title serif">콘텐츠 구성 흐름</div>
+          <div class="card-sub">발행 기사 {total}편이 카테고리를 거쳐 콘텐츠 유형으로 모입니다. 리본의 굵기는 기사 수에 비례합니다.</div>
+        </div>
+        <div class="card-legend" aria-hidden="true">
+          {legend.map((l) => (
+            <span class="lg-item"><i class="lg-dot" style={`background:${l.color}`}></i>{l.name}</span>
+          ))}
+        </div>
+      </div>
+
+      <div class="col-heads mono" aria-hidden="true">
+        <span>전체</span><span>카테고리</span><span>콘텐츠 유형</span>
+      </div>
+
+      <div class="sankey-scroll">
+        <svg viewBox={`0 0 ${W} ${H}`} class="sankey" id="sankey" role="img" aria-label="무역토리 콘텐츠 구성 생키 다이어그램. 아래의 표로 보기에서 같은 데이터를 표로 확인할 수 있습니다.">
+          <defs>
+            <linearGradient id="sweepGrad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#fff" stop-opacity="0" />
+              <stop offset="0.5" stop-color="#fff" stop-opacity="1" />
+              <stop offset="1" stop-color="#fff" stop-opacity="0" />
+            </linearGradient>
+            <mask id="sweepMask" maskUnits="userSpaceOnUse" x={-700} y={-40} width={W + 1400} height={H + 80}>
+              <rect x={-620} y={-20} width="460" height={H + 40} fill="url(#sweepGrad)" transform="skewX(-14)">
+                <animateTransform
+                  attributeName="transform"
+                  type="translate"
+                  additive="sum"
+                  values="0 0; 1860 0; 1860 0"
+                  keyTimes="0; 0.5; 1"
+                  calcMode="spline"
+                  keySplines="0.4 0 0.2 1; 0 0 1 1"
+                  dur="8s"
+                  repeatCount="indefinite"
+                />
+              </rect>
+            </mask>
+          </defs>
+          {ribbons.map((r, i) => (
+            <g class="ribbon" style={`--d:${r.delay}s`} data-i={i} data-from={r.from} data-to={r.to} data-n={r.n}>
+              <path d={r.d} fill={r.color} class="ribbon-fill" />
+              {r.n >= 3 && (
+                <text x={r.lx} y={r.ly + 4} text-anchor="middle" class="ribbon-n mono">{r.n}</text>
+              )}
+            </g>
+          ))}
+          <g class="sheen-layer" mask="url(#sweepMask)" aria-hidden="true">
+            {ribbons.map((r) => <path d={r.d} fill={r.color} class="sheen-rib" />)}
+          </g>
+          {nodes.map((nd, i) => (
+            <g class="node" style={`--d:${0.08 + i * 0.045}s`}>
+              <rect x={nd.x} y={nd.y} width={NW} height={Math.max(nd.h, 3)} rx="2.5" fill={nd.color} />
+              <text
+                x={nd.anchor === 'end' ? nd.x - 9 : nd.x + NW + 9}
+                y={nd.y + Math.max(nd.h, 3) / 2 - 3}
+                text-anchor={nd.anchor}
+                class="node-name"
+              >{nd.name}</text>
+              <text
+                x={nd.anchor === 'end' ? nd.x - 9 : nd.x + NW + 9}
+                y={nd.y + Math.max(nd.h, 3) / 2 + 13}
+                text-anchor={nd.anchor}
+                class="node-count mono"
+              >{nd.n}편</text>
+            </g>
+          ))}
+        </svg>
+        <div class="sk-tip mono" id="sk-tip" role="status" aria-live="polite" hidden></div>
+      </div>
+
+      <div class="card-foot">
+        <details class="tbl-details">
+          <summary class="mono">데이터 표로 보기</summary>
+          <div class="tbl-scroll">
+            <table class="tbl">
+              <thead>
+                <tr><th>카테고리</th>{KINDS.map((k) => <th>{k.name}</th>)}<th>계</th></tr>
+              </thead>
+              <tbody>
+                {tableRows.map((r) => (
+                  <tr>
+                    <th scope="row"><i class="lg-dot" style={`background:${r.color}`}></i>{r.name}</th>
+                    {r.cells.map((v) => <td class="mono">{v || '·'}</td>)}
+                    <td class="mono sum">{r.sum}</td>
+                  </tr>
+                ))}
+                <tr class="total-row">
+                  <th scope="row">계</th>
+                  {KINDS.map((k) => <td class="mono">{kindCount[k.key] || '·'}</td>)}
+                  <td class="mono sum">{total}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+        <p class="method-note">
+          분류 기준: 특집=<code>topics</code> 태그 보유 · 갈림길 연재=주간 전망 시리즈 ·
+          데이터 기사=본문 차트 포함 · 해설·입문=그 외. 발행 기사 집계는 예약분을 제외한
+          당일 기준이며, 빌드마다 재산출됩니다.
+        </p>
+      </div>
+    </div>
+
+    <p class="map-legend-links">
+      특집은 <a href={url('/topics/')}>특집 인덱스</a>, 연재는 <a href={url('/galimgil/')}>토리의 갈림길</a>,
+      지표 대시보드는 <a href={url('/warehouse/')}>도토리 창고</a>에서 이어 볼 수 있습니다.
     </p>
   </section>
 </Base>
 
-<style>
-  .map-head { max-width: 760px; padding-top: 48px; }
-  .map-title { font-size: clamp(26px, 4vw, 34px); font-weight: 900; margin-top: 6px; }
-  .map-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; word-break: keep-all; }
-  .map-stamp { font-size: 11px; color: var(--muted); margin-top: 10px; }
-
-  .map-stage { padding-bottom: 56px; }
-  .sankey-scroll { overflow-x: auto; margin-top: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper, var(--bg)); }
-  .sankey { display: block; min-width: 720px; width: 100%; height: auto; }
-
-  .ribbon-fill { opacity: 0; animation: ribbonIn 0.9s ease-out forwards; animation-delay: var(--d); }
-  .ribbon:hover .ribbon-fill { opacity: 0.85; transition: opacity 0.25s; }
-  @keyframes ribbonIn { from { opacity: 0; } to { opacity: 0.42; } }
-
-  .ribbon-flow {
-    stroke-width: 2.2; opacity: 0.5; stroke-linecap: round;
-    stroke-dasharray: 3 14;
-    animation: flow 2.6s linear infinite;
+<script>
+  // 리본 호버: 초점 리본만 강조하고 나머지는 물러난다 + 툴팁
+  const svg = document.getElementById('sankey');
+  const tip = document.getElementById('sk-tip');
+  if (svg && tip) {
+    const scroll = svg.parentElement as HTMLElement;
+    svg.querySelectorAll<SVGGElement>('.ribbon').forEach((g) => {
+      g.addEventListener('mouseenter', () => {
+        svg.classList.add('focusing');
+        g.classList.add('hot');
+        tip.textContent = `${g.dataset.from} → ${g.dataset.to} · ${g.dataset.n}편`;
+        tip.hidden = false;
+      });
+      g.addEventListener('mousemove', (e) => {
+        const r = scroll.getBoundingClientRect();
+        tip.style.left = `${e.clientX - r.left + 14}px`;
+        tip.style.top = `${e.clientY - r.top - 34}px`;
+      });
+      g.addEventListener('mouseleave', () => {
+        svg.classList.remove('focusing');
+        g.classList.remove('hot');
+        tip.hidden = true;
+      });
+    });
   }
-  @keyframes flow { to { stroke-dashoffset: -68; } }
+</script>
 
-  .node { opacity: 0; animation: nodeIn 0.7s ease-out forwards; animation-delay: var(--d); }
-  @keyframes nodeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .node-name { font-size: 13.5px; font-weight: 700; fill: var(--ink); }
-  .node-count { font-size: 11px; fill: var(--muted); }
+<style>
+  .map-head { max-width: 980px; padding-top: 46px; }
+  .mh-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .map-title { font-size: clamp(26px, 4vw, 34px); font-weight: 900; margin-top: 6px; }
+  .mh-meta { display: flex; gap: 8px; padding-bottom: 6px; }
+  .meta-badge { font-size: 10.5px; color: var(--sub); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 6px; }
+  .meta-badge.live { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 40%, var(--line)); }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2.2s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+  .map-sub { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; max-width: 680px; word-break: keep-all; }
 
-  .map-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-  .map-chip { border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 120px; }
-  .chip-n { font-size: 20px; font-weight: 900; color: var(--accent); }
-  .chip-label { font-size: 11.5px; color: var(--muted); }
-  .map-legend { font-size: 12.5px; color: var(--muted); margin-top: 14px; word-break: keep-all; }
-  .map-legend a { color: var(--accent); }
+  /* KPI 밴드: 헤어라인 분할 히어로 숫자 */
+  .kpi-band { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 22px; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+  .kpi { padding: 18px 18px 16px; border-left: 1px solid var(--line); }
+  .kpi:first-child { border-left: none; padding-left: 2px; }
+  .kpi-n { font-size: 34px; font-weight: 700; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em; }
+  .kpi-unit { font-size: 15px; color: var(--sub); margin-left: 3px; font-weight: 500; }
+  .kpi-label { font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 7px; }
+  .kpi-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  @media (max-width: 720px) {
+    .kpi-band { grid-template-columns: 1fr 1fr; }
+    .kpi:nth-child(3) { border-left: none; padding-left: 2px; }
+    .kpi:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  }
+
+  /* 차트 카드 */
+  .map-stage { padding-bottom: 56px; }
+  .chart-card { margin-top: 26px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); overflow: hidden; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding: 20px 22px 6px; }
+  .card-title { font-size: 18px; font-weight: 900; color: var(--ink); }
+  .card-sub { font-size: 12.5px; color: var(--muted); margin-top: 4px; max-width: 520px; word-break: keep-all; }
+  .card-legend { display: flex; gap: 14px; flex-wrap: wrap; padding-top: 4px; }
+  .lg-item { font-size: 11.5px; color: var(--sub); display: inline-flex; align-items: center; gap: 6px; }
+  .lg-dot { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex: none; }
+
+  .col-heads { display: flex; justify-content: space-between; padding: 14px 26px 0; font-size: 10px; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }
+
+  .sankey-scroll { overflow-x: auto; position: relative; padding: 4px 8px 10px; }
+  .sankey { display: block; min-width: 760px; width: 100%; height: auto; }
+
+  .ribbon-fill { opacity: 0; animation: ribbonIn 0.8s ease-out forwards; animation-delay: var(--d); transition: opacity 0.25s; }
+  @keyframes ribbonIn { to { opacity: 0.34; } }
+  /* 광택 스윕: 리본 자체 색이 잠시 짙어지는 파동이 8초 주기로 지나간다 */
+  .sheen-layer { opacity: 0; animation: sheenIn 1.2s ease-out 1.2s forwards; transition: opacity 0.3s; pointer-events: none; }
+  @keyframes sheenIn { to { opacity: 1; } }
+  .sheen-rib { opacity: 0.26; }
+  .ribbon-n { font-size: 11px; fill: var(--sub); opacity: 0; animation: nodeIn 0.6s ease-out forwards; animation-delay: calc(var(--d) + 0.5s); paint-order: stroke; stroke: var(--paper); stroke-width: 3px; }
+
+  /* 초점 모드: 호버 리본만 남기고 물러난다 */
+  .sankey.focusing .ribbon-fill { opacity: 0.1; }
+  .sankey.focusing .sheen-layer { opacity: 0; animation: none; }
+  .sankey.focusing .ribbon.hot .ribbon-fill { opacity: 0.82; }
+
+  .node { opacity: 0; animation: nodeIn 0.6s ease-out forwards; animation-delay: var(--d); }
+  @keyframes nodeIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+  .node-name { font-size: 13px; font-weight: 700; fill: var(--ink); }
+  .node-count { font-size: 10.5px; fill: var(--muted); }
+
+  .sk-tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--paper); font-size: 11px; padding: 6px 10px; border-radius: 7px; white-space: nowrap; z-index: 5; box-shadow: 0 2px 10px rgba(0,0,0,0.18); }
+
+  .card-foot { border-top: 1px solid var(--line); padding: 12px 22px 16px; }
+  .tbl-details summary { font-size: 11px; color: var(--sub); cursor: pointer; letter-spacing: 0.06em; }
+  .tbl-details summary:hover { color: var(--accent); }
+  .tbl-scroll { overflow-x: auto; margin-top: 12px; }
+  .tbl { border-collapse: collapse; font-size: 12.5px; min-width: 560px; width: 100%; }
+  .tbl th, .tbl td { padding: 7px 12px; text-align: right; border-bottom: 1px solid var(--line); color: var(--sub); }
+  .tbl thead th { font-size: 11px; color: var(--muted); font-weight: 700; border-bottom: 1.5px solid var(--ink); }
+  .tbl th[scope='row'] { text-align: left; color: var(--ink); font-weight: 600; display: flex; align-items: center; gap: 7px; }
+  .tbl .sum { font-weight: 700; color: var(--ink); }
+  .total-row th, .total-row td { border-top: 1.5px solid var(--ink); border-bottom: none; }
+  .method-note { font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.8; word-break: keep-all; }
+  .method-note code { font-size: 10.5px; }
+
+  .map-legend-links { font-size: 12.5px; color: var(--muted); margin-top: 14px; word-break: keep-all; }
+  .map-legend-links a { color: var(--accent); }
 
   @media (prefers-reduced-motion: reduce) {
-    .ribbon-fill, .node { animation: none; opacity: 1; }
-    .ribbon-fill { opacity: 0.42; }
-    .ribbon-flow { animation: none; display: none; }
+    .ribbon-fill, .node, .ribbon-n { animation: none; opacity: 1; }
+    .ribbon-fill { opacity: 0.34; }
+    .sheen-layer { display: none; }
+    .live-dot { animation: none; }
   }
 </style>

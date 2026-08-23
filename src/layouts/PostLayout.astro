@@ -5,6 +5,7 @@ import ToriNote from '../components/ToriNote.astro';
 import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -14,6 +15,8 @@ interface Props {
 const { post, related } = Astro.props;
 const { title, description, category, pubDate, readingMinutes, place, three, toriNote, dataAsOf, hero } =
   post.data;
+// 조회수: 배포 주소(GitHub Pages·Vercel)와 무관한 논리 경로로 집계한다
+const viewPath = `/posts/${(post as { slug?: string; id: string }).slug ?? post.id}/`;
 const cat = CATEGORIES[category];
 const heroImg = heroFor(category, hero);
 // 이 기사가 속한 특집, 기사→특집 역링크 배너 (특집 편성 기준 §3 상호 링크)
@@ -60,6 +63,13 @@ const jsonLd = {
             </>
           )
         }
+        <span
+          class="view-chip"
+          hidden
+          data-sb-url={SUPABASE_URL}
+          data-sb-key={SUPABASE_ANON_KEY}
+          data-path={viewPath}
+        ><span class="sep"></span><span>조회 <span class="mono view-n"></span></span></span>
       </div>
       {place && <div class="post-place">오늘은 <strong>{place}</strong>에 다녀왔습니다.</div>}
     </header>
@@ -118,6 +128,26 @@ const jsonLd = {
       addEventListener('scroll', onScroll, { passive: true });
       onScroll();
     }
+
+    // 조회수 집계·표시. 자동화 브라우저와 로컬 미리보기는 세지 않는다.
+    const chip = document.querySelector<HTMLElement>('.view-chip');
+    if (chip && !navigator.webdriver && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      fetch(`${chip.dataset.sbUrl}/rest/v1/rpc/bump_view`, {
+        method: 'POST',
+        headers: {
+          apikey: chip.dataset.sbKey!,
+          Authorization: `Bearer ${chip.dataset.sbKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ p_path: chip.dataset.path }),
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject()))
+        .then((n: number) => {
+          chip.querySelector('.view-n')!.textContent = Number(n).toLocaleString('ko-KR');
+          chip.hidden = false;
+        })
+        .catch(() => {});
+    }
   </script>
 </Base>
 
@@ -169,6 +199,8 @@ const jsonLd = {
   }
   .byline-name { font-weight: 700; color: var(--ink); }
   .sep { width: 1px; height: 11px; background: var(--hair); }
+  .view-chip { display: inline-flex; align-items: center; gap: 11px; }
+  .view-chip[hidden] { display: none; }
   .asof { font-size: 10.5px; color: var(--muted); }
   .post-place { font-size: 13.5px; color: var(--sub); }
   .post-place strong { color: var(--ink); }

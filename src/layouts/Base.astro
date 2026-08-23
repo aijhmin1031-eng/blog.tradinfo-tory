@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Ticker from '../components/Ticker.astro';
+import Newsletter from '../components/Newsletter.astro';
 import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
 import { SITE, CATEGORIES, url, fmtDate } from '../lib/site';
@@ -25,6 +26,8 @@ const today = new Date();
 const days = ['일', '월', '화', '수', '목', '금', '토'];
 const dateLine = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일 ${days[today.getDay()]}요일`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+// Vercel 병행 배포는 커스텀 도메인 연결 전까지 검색 중복 방지를 위해 색인 제외
+const isVercelBuild = !!process.env.VERCEL;
 
 // 내비게이션은 7슬롯 고정, 특집·창고는 드롭다운(데스크톱)이 증가분을 흡수한다.
 // 새 특집은 lib/topics.ts에만 추가하면 된다.
@@ -53,6 +56,7 @@ const navItems: {
     children: [
       { key: 'warehouse', name: '오늘의 지표', href: url('/warehouse/'), desc: '환율·금리·관련주·무역수지 대시보드' },
       { key: 'glossary', name: '용어 도토리', href: url('/glossary/'), desc: '무역·경제 용어 사전' },
+      { key: 'galimgil', name: '토리의 갈림길', href: url('/galimgil/'), desc: '주간 전망 연재·공개 채점 아카이브' },
       { key: 'board', name: '도토리 광장', href: url('/board/'), desc: '자유 의견·주제 제안·제보 게시판' },
       { key: 'map', name: '블로그 지도', href: url('/map/'), desc: '전체 콘텐츠 구성을 한눈에 (매일 자동 갱신)' },
     ],
@@ -70,6 +74,7 @@ const isActive = (n: (typeof navItems)[number]) =>
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {isVercelBuild && <meta name="robots" content="noindex" />}
     {SITE.naverVerify && <meta name="naver-site-verification" content={SITE.naverVerify} />}
     {SITE.googleVerify && <meta name="google-site-verification" content={SITE.googleVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
@@ -213,6 +218,7 @@ const isActive = (n: (typeof navItems)[number]) =>
           ECOS, 관세청 수출입무역통계, 미 연준 FRED, UN Comtrade. 데이터는 발표 기관 사정에 따라
           정정될 수 있습니다.
         </div>
+        <Newsletter source="footer" />
       </div>
     </footer>
 

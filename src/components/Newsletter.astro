@@ -1,0 +1,94 @@
+---
+// 아침 편지 구독 폼. Supabase 엣지 함수(subscribe)로 저장한다.
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
+
+interface Props {
+  source?: string;
+}
+const { source = 'footer' } = Astro.props;
+---
+
+<div class="nl" data-sb-url={SUPABASE_URL} data-sb-key={SUPABASE_ANON_KEY} data-source={source}>
+  <div class="nl-head">
+    <div class="nl-title serif">토리의 아침 편지</div>
+    <p class="nl-sub">매일 아침 발행되는 도토리 소식을 받아볼 이메일을 남겨 주시면, 뉴스레터 개시와 함께 가장 먼저 전해 드립니다.</p>
+  </div>
+  <form class="nl-form" novalidate>
+    <label class="sr-only" for={`nl-email-${source}`}>이메일 주소</label>
+    <input
+      id={`nl-email-${source}`}
+      class="nl-input"
+      type="email"
+      name="email"
+      placeholder="이메일 주소"
+      autocomplete="email"
+      required
+    />
+    <input class="nl-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+    <button class="nl-btn" type="submit">구독</button>
+  </form>
+  <p class="nl-msg" role="status" aria-live="polite"></p>
+</div>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>('.nl')) {
+    const form = box.querySelector('form')!;
+    const input = box.querySelector<HTMLInputElement>('.nl-input')!;
+    const hp = box.querySelector<HTMLInputElement>('.nl-hp')!;
+    const btn = box.querySelector<HTMLButtonElement>('.nl-btn')!;
+    const msg = box.querySelector<HTMLElement>('.nl-msg')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = input.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+        msg.textContent = '이메일 주소의 형식을 확인해 주시기 바랍니다.';
+        return;
+      }
+      btn.disabled = true;
+      msg.textContent = '등록하는 중입니다…';
+      try {
+        const res = await fetch(`${box.dataset.sbUrl}/functions/v1/subscribe`, {
+          method: 'POST',
+          headers: {
+            apikey: box.dataset.sbKey!,
+            Authorization: `Bearer ${box.dataset.sbKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, source: box.dataset.source, website: hp.value }),
+        });
+        const data = await res.json();
+        if (res.ok && data.ok) {
+          msg.textContent = '등록되었습니다. 뉴스레터가 시작되면 이 주소로 안내해 드립니다.';
+          input.value = '';
+        } else {
+          msg.textContent =
+            data.error === 'invalid_email'
+              ? '이메일 주소의 형식을 확인해 주시기 바랍니다.'
+              : '등록에 실패했습니다. 잠시 후 다시 시도해 주시기 바랍니다.';
+        }
+      } catch {
+        msg.textContent = '연결에 실패했습니다. 잠시 후 다시 시도해 주시기 바랍니다.';
+      }
+      btn.disabled = false;
+    });
+  }
+</script>
+
+<style>
+  .nl { grid-column: 1 / -1; border-top: 1px solid color-mix(in oklab, var(--dark-band-ink) 22%, transparent); padding-top: 22px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 10px 34px; align-items: center; }
+  .nl-title { font-size: 16px; font-weight: 900; color: var(--dark-band-ink); }
+  .nl-sub { font-size: 12px; color: var(--dark-band-sub); line-height: 1.8; margin-top: 5px; word-break: keep-all; max-width: 420px; }
+  .nl-form { display: flex; gap: 8px; }
+  .nl-input { flex: 1; min-width: 0; background: color-mix(in oklab, var(--dark-band-ink) 8%, transparent); border: 1px solid color-mix(in oklab, var(--dark-band-ink) 26%, transparent); border-radius: 8px; padding: 10px 13px; font-size: 13px; color: var(--dark-band-ink); font-family: inherit; }
+  .nl-input::placeholder { color: color-mix(in oklab, var(--dark-band-ink) 40%, transparent); }
+  .nl-input:focus { outline: none; border-color: color-mix(in oklab, var(--dark-band-ink) 55%, transparent); }
+  .nl-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; flex: none; }
+  .nl-btn:hover { filter: brightness(1.08); }
+  .nl-btn:disabled { opacity: 0.6; cursor: default; }
+  .nl-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .nl-msg { grid-column: 1 / -1; font-size: 11.5px; color: var(--dark-band-sub); min-height: 1em; margin: 0; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  @media (max-width: 720px) {
+    .nl { grid-template-columns: 1fr; gap: 12px; }
+  }
+</style>

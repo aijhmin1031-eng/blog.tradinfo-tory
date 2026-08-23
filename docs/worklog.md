@@ -19,6 +19,8 @@
 | Actions Secrets | ECOS·FRED·DART·DATA_GO_KR(+Comtrade·관세청GW·USCensus 예비) 등록·실호출 검증 완료 |
 | 검색 등록 | Google(사이트맵 API 제출 확인) · 네이버(소유확인+사이트맵+RSS) 완료 |
 | 브랜치 | `claude/secret-repo-age-master-setup-10hta5` — 푸시 시 자동 배포 |
+| 배포 | GitHub Pages(정본) + **Vercel 병행**(base '/', noindex — 도메인 연결 시 정본 승격 예정) |
+| Supabase | 프로젝트 **tradetory**(서울, 무료) — 뉴스레터 구독(`subscribe` 함수+푸터 폼) · 조회수(`bump_view` RPC+기사 칩) · 갈림길 채점 아카이브(`galimgil-archive` 함수+`/galimgil/`) |
 
 ## 새 AI 부트스트랩 (처음 이어받는 세션은 이 순서로)
 
@@ -50,6 +52,28 @@
 6. 애드센스 신청은 도메인 연결 후: ads.txt 배치 → 신청 → 앵커 광고 슬롯(하단은 비워둠) 순.
 
 ## 일지
+
+### 2026-08-23 (오후, 지도 리디자인·Vercel 병행 배포·Supabase 풀스택 연동)
+
+- **지도 비즈니스 리디자인(소유주 지시 "전문 비즈니스 스타일, 매우매우 정성")**: /map/ 전면 재작성 — KPI 밴드(헤어라인 분할
+  히어로 숫자), 차트 카드(제목+범례 칩+열 헤더), 리본 직접 라벨(n≥3), 호버 초점 디밍+툴팁, 표 보기, 방법론 각주.
+  dataviz 스킬 6종 검사 팔레트 라이트·다크 모두 PASS.
+- **점선 제거(소유주 지시 "점선 저급해 보여")**: 점선 흐름 애니메이션 전부 삭제 → **광택 스윕**으로 교체. SVG 마스크+그라디언트로
+  리본 자체 색이 잠시 짙어지는 파동이 8초 주기로 사선으로 지나간다(SMIL, reduced-motion 시 비표시, 호버 초점 중에는 소등).
+- **Vercel 병행 배포(소유주 지시 "1번 세팅, 도메인 구매는 추후 통보")**: astro.config를 VERCEL env 분기 — Vercel 빌드는
+  base '/'·site vercel URL, GitHub Pages는 기존 그대로. 커스텀 도메인 연결 전까지 Vercel 사본은 `noindex`(검색 중복 방지,
+  Base.astro). 도메인 연결 시: noindex 제거 + site를 도메인으로 교체 + Vercel을 정본 승격.
+- **Supabase 풀스택 연동(소유주 지시 "빛나는 모든 기능 구현")**: 프로젝트 **tradetory**(`tfksqpxfpniavvnwfjiu`, 서울, 무료 티어 $0) 신설.
+  - 뉴스레터: `newsletter_subscribers` 테이블(RLS 정책 없음=service role 전용) + `subscribe` 엣지 함수(형식 검증·honeypot·
+    중복 병합). 푸터 전 페이지에 "토리의 아침 편지" 구독 폼(`components/Newsletter.astro`).
+  - 조회수: `page_views`(누적)+`page_views_daily`(KST 일별) + `bump_view` RPC(security definer, 경로 정규식 검증).
+    기사 바이라인에 "조회 N" 칩 — 배포 주소와 무관한 논리 경로로 집계, webdriver·localhost는 세지 않음.
+  - 갈림길 채점 아카이브: `galimgil_scores` 테이블(공개 읽기, 1화 시드 입력) + `galimgil-archive` 엣지 함수(전적 요약+회차
+    목록, 5분 캐시). **신규 `/galimgil/` 페이지** — 전적 밴드+회차 카드+채점 규칙, API로 판정 배지 실시간 표시. 창고 드롭다운·지도 링크 연결.
+  - 검증 완료: bump_view 증가·잘못된 경로 거부, anon 직접 INSERT 401 차단, subscribe 정상/무효 응답, 아카이브 JSON 응답.
+    테스트 행 삭제. 보안 어드바이저 경고 3건은 전부 의도된 설계(주석 참조).
+  - 채점 절차(아침 Routine용): 일요일 갈림길 다음 화 작성 시 `galimgil_scores`에 지난 화 verdict(a/b/partial)·verdict_note·
+    scored_on을 MCP `execute_sql`로 UPDATE하고 새 화 INSERT. anon 키는 `src/lib/supabase.ts`(공개용 설계).
 
 ### 2026-08-23 (아침, 소통 채널·문체 정비·블로그 지도)
 
