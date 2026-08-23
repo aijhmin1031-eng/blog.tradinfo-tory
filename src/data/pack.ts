@@ -97,13 +97,13 @@ export const PACKS: Pack[] = [
     title: '돈의 물건들',
     note:
       '경제와 무역을 다루는 글에 바로 얹을 수 있는 오브젝트 18종입니다. 도토리와 금화, 상승·하락 차트, 컨테이너선과 항만 크레인처럼 ' +
-      '숫자 이야기에 자주 나오는 물건들을 도토리경제의 그림체로 그렸습니다.',
+      '숫자 이야기에 자주 나오는 물건들을 도토리경제의 그림체로 그렸습니다. 배경이 비어 있는 투명 PNG입니다.',
     date: '2026-08-23',
     dir: '/images/pack',
-    format: 'jpg',
-    size: '1024 × 1024 픽셀',
-    transparent: false,
-    thumb: (s) => `/images/pack/${s}-thumb.jpg`,
+    format: 'png',
+    size: '1600 × 1600 픽셀',
+    transparent: true,
+    thumb: (s) => `/images/pack/thumb/${s}.png`,
     items: p1,
   },
   {
@@ -112,12 +112,13 @@ export const PACKS: Pack[] = [
     title: '한가위·가을 부품',
     note:
       '추석과 가을 콘텐츠에 쓰는 부품 16종입니다. 보름달과 송편, 도토리와 참나무 잎 같은 계절 오브젝트에 리본·프레임·구분선 같은 ' +
-      '장식 부품을 더했습니다. 벡터라 크게 키워도 깨지지 않고 색과 모양을 직접 고칠 수 있습니다.',
+      '장식 부품을 더했습니다. 배경이 비어 있어 색이 있는 지면 위에도 흰 네모 없이 얹힙니다.',
     date: '2026-08-23',
     dir: '/images/pack2',
-    format: 'svg',
-    size: '벡터, 크기 제한 없음',
+    format: 'png',
+    size: '1600 × 1600 픽셀',
     transparent: true,
+    thumb: (s) => `/images/pack2/thumb/${s}.png`,
     items: p2,
   },
   {

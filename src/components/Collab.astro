@@ -28,11 +28,11 @@ const { variant = 'footer', source = 'site' } = Astro.props;
 </div>
 
 <style>
-  .cb { border-radius: 14px; padding: 22px 24px; display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-  .cb.inline { background: var(--surface); border: 1px solid var(--line); margin: 34px 0; }
-  .cb.footer { background: transparent; border: 1px solid rgba(255, 255, 255, 0.18); padding: 20px 22px; }
-  .cb-body { flex: 1 1 320px; min-width: 0; }
-  .cb-title { font-size: 17px; font-weight: 900; color: var(--ink); }
+  .cb { border-radius: 14px; padding: 26px 28px; display: flex; gap: 28px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .cb.inline { background: var(--surface); border: 1px solid var(--line); margin: 34px auto; max-width: 880px; }
+  .cb.footer { background: transparent; border: 0; padding: 0; }
+  .cb-body { flex: 1 1 340px; min-width: 0; max-width: 620px; }
+  .cb-title { font-size: 18px; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
   .cb.footer .cb-title { color: #fff; }
   .cb-sub { font-size: 13px; line-height: 1.85; color: var(--sub); margin-top: 8px; word-break: keep-all; }
   .cb.footer .cb-sub { color: rgba(255, 255, 255, 0.72); }
@@ -40,7 +40,8 @@ const { variant = 'footer', source = 'site' } = Astro.props;
   .cb-list li { font-size: 12.5px; line-height: 1.85; color: var(--sub); word-break: keep-all; }
   .cb-list li::before { content: '·'; margin-right: 7px; color: var(--accent); font-weight: 900; }
   .cb.footer .cb-list li { color: rgba(255, 255, 255, 0.72); }
-  .cb-cta { flex: 0 0 auto; background: var(--brand); color: #fff; font-size: 13.5px; font-weight: 700; padding: 12px 24px; border-radius: 4px; white-space: nowrap; }
+  .cb-cta { flex: 0 0 auto; align-self: center; background: var(--brand); color: #fff; font-size: 13.5px; font-weight: 700; padding: 13px 26px; border-radius: 4px; white-space: nowrap; }
+  @media (max-width: 620px) { .cb { padding: 20px 20px; gap: 18px; } .cb-cta { width: 100%; text-align: center; } }
   .cb-cta:hover { background: var(--brand-hover); color: #fff; }
   .cb.footer .cb-cta { background: var(--accent); }
   .cb.footer .cb-cta:hover { filter: brightness(1.08); }

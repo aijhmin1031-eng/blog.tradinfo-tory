@@ -210,6 +210,11 @@ const isActive = (n: (typeof navItems)[number]) =>
     </main>
 
     <footer class="footer">
+      {footerNewsletter && (
+        <div class="wrap footer-collab">
+          <Collab source="footer" />
+        </div>
+      )}
       <div class="wrap footer-in">
         <div class="footer-brand">
           <div class="footer-logo">
@@ -231,7 +236,7 @@ const isActive = (n: (typeof navItems)[number]) =>
             <div class="footer-col-title">도토리경제</div>
             <a href={url('/about/')}>소개</a>
             <a href={url('/board/')}>도토리 광장</a>
-            <a href={url('/contact/')}>문의</a>
+            <a href={url('/contact/')}>함께 일하기</a>
             <a href={url('/privacy/')}>개인정보처리방침</a>
             <a href={url('/rss.xml')}>RSS</a>
           </div>
@@ -241,7 +246,6 @@ const isActive = (n: (typeof navItems)[number]) =>
           ECOS, 관세청 수출입무역통계, 미 연준 FRED, UN Comtrade. 데이터는 발표 기관 사정에 따라
           정정될 수 있습니다.
         </div>
-        {footerNewsletter && <Collab source="footer" />}
       </div>
     </footer>
 
@@ -490,5 +494,6 @@ const isActive = (n: (typeof navItems)[number]) =>
     color: var(--dark-band-sub);
     line-height: 1.75;
   }
+  .footer-collab { padding-top: 34px; padding-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.14); margin-bottom: 30px; }
   .topbar-work { color: var(--accent) !important; font-weight: 700; }
 </style>
