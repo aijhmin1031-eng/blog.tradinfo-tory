@@ -19,7 +19,7 @@
 | Actions Secrets | ECOS·FRED·DART·DATA_GO_KR(+Comtrade·관세청GW·USCensus 예비) 등록·실호출 검증 완료 |
 | 검색 등록 | Google(사이트맵 API 제출 확인) · 네이버(소유확인+사이트맵+RSS) 완료 |
 | 브랜치 | `claude/secret-repo-age-master-setup-10hta5` — 푸시 시 자동 배포 |
-| 배포 | GitHub Pages(정본) + **Vercel 병행**(base '/', noindex — 도메인 연결 시 정본 승격 예정) |
+| 배포 | GitHub Pages(정본) + **Vercel 병행 가동**(https://tradetory.vercel.app, 푸시마다 자동, noindex — 도메인 연결 시 정본 승격) |
 | Supabase | 프로젝트 **tradetory**(서울, 무료) — 뉴스레터 구독(`subscribe` 함수+푸터 폼) · 조회수(`bump_view` RPC+기사 칩) · 갈림길 채점 아카이브(`galimgil-archive` 함수+`/galimgil/`) |
 
 ## 새 AI 부트스트랩 (처음 이어받는 세션은 이 순서로)
@@ -41,13 +41,10 @@
 
 ## 미결 사항 (다음 세션이 볼 것)
 
-0. **[소유주 대기] Vercel git 연결** — 코드 준비(base 분기·noindex)는 완료·푸시됨.
-   8/23 진단: GitHub App은 전체 repo 승인 상태(소유주 확인)인데도 `repo_no_access` 400 지속 →
-   원인은 **Vercel 계정의 GitHub Login Connection이 repo 쓰기 권한 계정(aijhmin1031-eng)이 아님**.
-   해결(소유주): vercel.com → Account Settings → Authentication에서 GitHub을 aijhmin1031-eng로 연결
-   (또는 연결된 계정을 repo Collaborator(write)로 추가). 완료 통보 후
-   `create_git_project`(팀 `team_2TuSMGLV14FFgLlL7okddMHE`, 프로젝트명 tradetory) 재시도.
-   MCP 인라인 배포는 이미지 28MB라 비실용(시도 후 판단). 도메인 구매는 별도 건 — 소유주 통보 대기.
+0. ~~Vercel git 연결~~ **완료(8/23)**: 원인은 Vercel의 GitHub Login Connection이 다른 계정(jhmin1031-hub)이었던 것.
+   소유주가 aijhmin1031-eng로 재연결 → 프로젝트 **tradetory**(`prj_9A0tD0k8WJilj3BL9wtF3QbKakqb`, 팀 `team_2TuSMGLV14FFgLlL7okddMHE`) 연결,
+   프로덕션 브랜치 = 기본 브랜치. 푸시마다 자동 배포. 주소: https://tradetory.vercel.app (사본은 도메인 연결 전까지 noindex).
+   도메인 구매는 별도 건 — 소유주 통보 대기, 연결 시 noindex 제거·site 교체·Vercel 정본 승격(astro.config 주석 참조).
 1. **[소유주 결정 대기] 커스텀 도메인** — 애드센스 신청의 선행 조건.
    3렌즈 심사로 **torinomics.com** 확정 추천($11.25/년, Vercel 구매 가능 확인, 2위 torireport.com).
    tradetory.com은 제3자 선점(파킹, 2027-04 만료 — 백오더 후보). 소유주는 "트래픽 늘면 구매" 입장 →
