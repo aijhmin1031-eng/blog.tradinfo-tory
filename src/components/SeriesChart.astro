@@ -1,0 +1,125 @@
+---
+// LineChart의 실데이터 판. 기사에 values 배열을 손으로 박아 넣으면 그날 그림으로
+// 굳어 버린다 — 매일 새벽 파이프라인이 data/series/<id>.json 을 갱신해도 기사는 그대로다.
+// 이 컴포넌트는 series id만 받아 빌드 시점에 그 파일을 읽으므로, 다음 빌드마다
+// (매일 아침 자동 배포마다) 과거 기사의 차트까지 함께 최신화된다.
+//
+// 표기 포인트(marks)는 인덱스가 아니라 날짜(YYYYMMDD)로 지정한다 — 데이터가 매일
+// 늘어나며 인덱스가 밀려도 "7월 16일 인상"이라는 서사는 그대로 그 날짜를 가리킨다.
+import LineChart from './LineChart.astro';
+
+interface SeriesPoint {
+  d: string; // YYYYMMDD
+  v: number;
+}
+interface SeriesFile {
+  id: string;
+  name: string;
+  unit: string;
+  cycle: 'D' | 'M';
+  points: SeriesPoint[];
+  updatedAt?: string;
+}
+
+interface Props {
+  series: string; // data/series/<series>.json 의 id
+  title: string; // 결론형 제목
+  source: string;
+  /** 표시할 최근 구간 길이(포인트 개수). 생략하면 보유한 전체 구간 */
+  window?: number;
+  color?: 'down' | 'up' | 'accent';
+  height?: number;
+  unit?: string; // 생략하면 시리즈 파일의 unit을 그대로 쓴다
+  valueSuffix?: string;
+  /** 몇 포인트마다 x축 라벨을 찍을지. 생략하면 좌우 끝만 */
+  xLabelEvery?: number;
+  /** 날짜(YYYYMMDD) 기준 표기 포인트. 해당 날짜가 window 밖이면 조용히 무시한다 */
+  marks?: { date: string; label?: string; dx?: number; dy?: number }[];
+  /** 끝점에 마지막 값을 자동으로 라벨링할지 */
+  endLabelAuto?: boolean;
+}
+
+const {
+  series,
+  title,
+  source,
+  window,
+  color = 'down',
+  height = 250,
+  unit,
+  valueSuffix = '',
+  xLabelEvery,
+  marks = [],
+  endLabelAuto = true,
+} = Astro.props;
+
+let file: SeriesFile;
+try {
+  file = (await import(`../../data/series/${series}.json`)).default as unknown as SeriesFile;
+} catch {
+  throw new Error(
+    `SeriesChart: data/series/${series}.json 을 찾을 수 없다. data/sources.json 의 id와 맞는지 확인할 것.`
+  );
+}
+
+const all = file.points ?? [];
+const points = window ? all.slice(-window) : all;
+if (points.length < 2) {
+  throw new Error(`SeriesChart: ${series} 시리즈에 그릴 만한 값이 없다(${points.length}개).`);
+}
+
+const values = points.map((p) => p.v);
+
+// 값의 크기에 맞춰 눈금 소수점 자리를 정한다. 100 이상이면 정수, 10 미만이면 소수 둘째 자리까지.
+const niceRound = (v: number) => {
+  const digits = Math.abs(v) >= 100 ? 0 : Math.abs(v) >= 10 ? 1 : 2;
+  const f = 10 ** digits;
+  return Math.round(v * f) / f;
+};
+const vMin = niceRound(Math.min(...values));
+const vMax = niceRound(Math.max(...values));
+const yTicks = vMin === vMax ? [vMin] : [vMin, vMax];
+
+const fmtDateLabel = (d: string) => `${Number(d.slice(4, 6))}.${Number(d.slice(6, 8))}`;
+
+const xLabels: { idx: number; text: string }[] = [];
+if (xLabelEvery && xLabelEvery > 0) {
+  for (let i = 0; i < points.length; i += xLabelEvery) xLabels.push({ idx: i, text: fmtDateLabel(points[i].d) });
+  const lastIdx = points.length - 1;
+  if (xLabels[xLabels.length - 1]?.idx !== lastIdx) xLabels.push({ idx: lastIdx, text: fmtDateLabel(points[lastIdx].d) });
+} else {
+  xLabels.push({ idx: 0, text: fmtDateLabel(points[0].d) });
+  xLabels.push({ idx: points.length - 1, text: fmtDateLabel(points[points.length - 1].d) });
+}
+
+const dateIndex = new Map(points.map((p, i) => [p.d, i]));
+const resolvedMarks = marks
+  .map((m) => {
+    const idx = dateIndex.get(m.date);
+    return idx === undefined ? null : { idx, label: m.label, dx: m.dx, dy: m.dy };
+  })
+  .filter((m): m is { idx: number; label?: string; dx?: number; dy?: number } => m !== null);
+
+const first = points[0].d;
+const last = points[points.length - 1].d;
+const rangeLabel = `${fmtDateLabel(first)}~${fmtDateLabel(last)}`;
+const unitLabel = unit ?? `${file.unit} (${file.cycle === 'D' ? '일별' : '월별'}, ${rangeLabel})`;
+
+const endLabel = endLabelAuto
+  ? `${values[values.length - 1].toLocaleString('ko-KR')}${valueSuffix}`
+  : '';
+---
+
+<LineChart
+  title={title}
+  unit={unitLabel}
+  values={values}
+  xLabels={xLabels}
+  yTicks={yTicks}
+  source={source}
+  color={color}
+  height={height}
+  marks={resolvedMarks}
+  valueSuffix={valueSuffix}
+  endLabel={endLabel}
+/>

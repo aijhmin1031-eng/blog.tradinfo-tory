@@ -17,10 +17,12 @@ const ym = (d) => ymd(d).slice(0, 6);
 async function fetchEcos(def) {
   const end = new Date();
   const start = new Date(end.getTime() * 1); // copy
-  if (def.cycle === 'M') start.setMonth(start.getMonth() - 26);
-  else start.setDate(start.getDate() - 70);
+  // 조회 기간을 늘려도 "1/200"(응답 200행 상한)에 잘려 실제로는 최근 200행만 왔었다.
+  // 실사용 사례에서 1000행까지 문제없이 쓰이는 것을 확인해 페이지 크기도 함께 늘린다.
+  if (def.cycle === 'M') start.setFullYear(start.getFullYear() - 10); // 월간 120개월
+  else start.setFullYear(start.getFullYear() - 5); // 일간 약 1,825일
   const fmt = def.cycle === 'M' ? ym : ymd;
-  const url = `https://ecos.bok.or.kr/api/StatisticSearch/${ECOS}/json/kr/1/200/${def.stat}/${def.cycle}/${fmt(start)}/${fmt(end)}/${def.item}`;
+  const url = `https://ecos.bok.or.kr/api/StatisticSearch/${ECOS}/json/kr/1/3000/${def.stat}/${def.cycle}/${fmt(start)}/${fmt(end)}/${def.item}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`ECOS ${def.id} HTTP ${res.status}`);
   const rows = (await res.json())?.StatisticSearch?.row;
@@ -31,7 +33,9 @@ async function fetchEcos(def) {
 }
 
 async function fetchFred(def) {
-  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${def.fred}&api_key=${FRED}&file_type=json&sort_order=desc&limit=60`;
+    // 60개로 자르면 매일 쌓여도 늘 60일 근처에 머문다(accumulate가 과거치를 안 지우는 것과 무관하게,
+  // 애초에 그만큼만 받아 오니까). 5년치를 한 번에 요청해 다음 실행부터 깊이가 단번에 늘어나게 한다.
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${def.fred}&api_key=${FRED}&file_type=json&sort_order=desc&limit=1825`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`FRED ${def.id} HTTP ${res.status}`);
   const obs = (await res.json())?.observations;
@@ -86,9 +90,20 @@ async function main() {
 
   const acc = {};
   for (const def of defs) {
-    const fresh = def.source === 'FRED' ? await fetchFred(def) : await fetchEcos(def);
-    acc[def.id] = await accumulate(def, fresh);
-    console.log(`[collect] ${def.id}: ${acc[def.id].points.length}개 누적, 최신 ${lastV(acc[def.id]).d}`);
+    // 시리즈 하나가 실패해도(API 순간 오류 등) 나머지 수집·기존에 쌓인 값은 지켜야 한다.
+    // 실패한 시리즈는 직전에 저장된 파일을 그대로 읽어 그 자리를 메운다.
+    try {
+      const fresh = def.source === 'FRED' ? await fetchFred(def) : await fetchEcos(def);
+      acc[def.id] = await accumulate(def, fresh);
+      console.log(`[collect] ${def.id}: ${acc[def.id].points.length}개 누적, 최신 ${lastV(acc[def.id]).d}`);
+    } catch (e) {
+      console.error(`[collect] ${def.id} 실패, 기존 값 유지: ${e.message}`);
+      try {
+        acc[def.id] = JSON.parse(await readFile(new URL(`${def.id}.json`, SERIES_DIR), 'utf8'));
+      } catch {
+        acc[def.id] = { id: def.id, name: def.name, unit: def.unit, cycle: def.cycle, points: [] };
+      }
+    }
   }
 
   // 파생: 한·미 금리차 (공통 날짜)
