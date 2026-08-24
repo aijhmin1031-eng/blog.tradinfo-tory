@@ -4,7 +4,7 @@ import StatTiles from '../components/StatTiles.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished } from '../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished, todayIn, TZ_KST } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import { EPISODES } from '../data/story';
 
@@ -12,9 +12,12 @@ const all = (await getCollection('posts', ({ data }) => !data.draft && isPublish
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 // 머리기사는 언제나 최신이어야 한다. featured 플래그는 '오늘 올린 글을 위로 올리는' 편집 장치이므로
-// 이틀이 지나면 자동으로 효력을 잃는다. 플래그를 지우는 것을 잊어도 1면이 낡지 않게 하는 안전장치다.
-const FEATURED_TTL_MS = 2 * 86400 * 1000;
-const pinned = all.find((p) => p.data.featured && p.data.pubDate.valueOf() >= Date.now() - FEATURED_TTL_MS);
+// KST 기준 그날 하루만 효력이 있다. 플래그를 지우는 것을 잊어도 1면이 낡지 않게 하는 안전장치다.
+// 예전에는 48시간 TTL이었는데, pubDate가 UTC 자정으로 파싱돼 만료 시각이 KST 오전 9시가 되는 바람에
+// 06:50 아침 빌드는 늘 만료 전이었다 — 어제 글이 오늘 1면에 그대로 남는 문제가 있었다.
+// 발행 게이트(isPublished)와 같은 'KST 날짜 문자열 비교' 방식으로 맞춰 하루 단위로 정확히 끊는다.
+const todayKST = todayIn(TZ_KST);
+const pinned = all.find((p) => p.data.featured && p.data.pubDate.toISOString().slice(0, 10) === todayKST);
 const featured = pinned ?? all[0];
 const rest = all.filter((p) => p.id !== featured?.id);
 
