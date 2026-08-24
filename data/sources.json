@@ -89,13 +89,13 @@
     },
     {
       "id": "gold",
-      "name": "국제 금값(런던)",
+      "name": "국제 금값",
       "unit": "달러/온스",
       "frac": 2,
       "source": "FRED",
-      "fred": "GOLDAMGBD228NLBM",
-      "cycle": "D",
-      "license": "St. Louis Fed FRED (LBMA)"
+      "fred": "PGOLDUSDM",
+      "cycle": "M",
+      "license": "St. Louis Fed FRED (IMF)"
     },
     {
       "id": "natgas",
