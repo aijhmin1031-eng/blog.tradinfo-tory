@@ -19,10 +19,11 @@ async function fetchEcos(def) {
   const start = new Date(end.getTime() * 1); // copy
   // 조회 기간을 늘려도 "1/200"(응답 200행 상한)에 잘려 실제로는 최근 200행만 왔었다.
   // 실사용 사례에서 1000행까지 문제없이 쓰이는 것을 확인해 페이지 크기도 함께 늘린다.
-  if (def.cycle === 'M') start.setFullYear(start.getFullYear() - 10); // 월간 120개월
-  else start.setFullYear(start.getFullYear() - 5); // 일간 약 1,825일
+  // 조회 상한은 일간·월간 모두 10년으로 통일. 일간 10년(~3,650일)을 담으려면
+  // 페이지 크기도 그만큼 넉넉히 잡아야 해서 4000으로 올린다(월간은 120개월로 여유 있음).
+  start.setFullYear(start.getFullYear() - 10);
   const fmt = def.cycle === 'M' ? ym : ymd;
-  const url = `https://ecos.bok.or.kr/api/StatisticSearch/${ECOS}/json/kr/1/3000/${def.stat}/${def.cycle}/${fmt(start)}/${fmt(end)}/${def.item}`;
+  const url = `https://ecos.bok.or.kr/api/StatisticSearch/${ECOS}/json/kr/1/4000/${def.stat}/${def.cycle}/${fmt(start)}/${fmt(end)}/${def.item}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`ECOS ${def.id} HTTP ${res.status}`);
   const rows = (await res.json())?.StatisticSearch?.row;
@@ -33,9 +34,10 @@ async function fetchEcos(def) {
 }
 
 async function fetchFred(def) {
-    // 60개로 자르면 매일 쌓여도 늘 60일 근처에 머문다(accumulate가 과거치를 안 지우는 것과 무관하게,
-  // 애초에 그만큼만 받아 오니까). 5년치를 한 번에 요청해 다음 실행부터 깊이가 단번에 늘어나게 한다.
-  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${def.fred}&api_key=${FRED}&file_type=json&sort_order=desc&limit=1825`;
+  // 60개로 자르면 매일 쌓여도 늘 60일 근처에 머문다(accumulate가 과거치를 안 지우는 것과 무관하게,
+  // 애초에 그만큼만 받아 오니까). 조회 상한은 ECOS와 맞춰 10년 — 일별 10년(~3,650일)을
+  // 여유 있게 담도록 4000행을 요청해 다음 실행부터 깊이가 단번에 늘어나게 한다.
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${def.fred}&api_key=${FRED}&file_type=json&sort_order=desc&limit=4000`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`FRED ${def.id} HTTP ${res.status}`);
   const obs = (await res.json())?.observations;
