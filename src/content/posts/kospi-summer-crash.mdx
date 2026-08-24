@@ -31,7 +31,7 @@ chart:
   source: '자료: 한국거래소(금융위 시세정보) · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -41,25 +41,18 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="-38.6%" label="코스피 고점 대비 저점 낙폭" sub="6/22 9,114.55 → 7/30 5,593.56 · 8/21 6,912.95 회복" tone="down" />
 
-<LineChart
+<SeriesChart
+  series="kospi"
+  window={48}
   title="코스피…고점 9,115, 저점 5,594, 그리고 되돌림"
-  unit="pt (일별 종가, 6/15~8/21)"
-  values={[8546, 8727, 8864, 9064, 9052, 9115, 8204, 8471, 8930, 8411, 8395, 8476, 8303, 7648, 8088, 8051, 7656, 7247, 7292, 7476, 6807, 6857, 7284, 6821, 6516, 6748, 6798, 7097, 6691, 6756, 6024, 5663, 5594, 6595, 6257, 6359, 6598, 6296, 6259, 6300, 6346, 6579, 6813, 6978, 6870, 6471, 6853, 6913]}
-  yTicks={[6000, 7500, 9000]}
-  xLabels={[
-    { idx: 0, text: '6.15' },
-    { idx: 22, text: '7.15' },
-    { idx: 32, text: '7.30' },
-    { idx: 47, text: '8.21' },
-  ]}
-  endLabel="6,913"
-  marks={[
-    { idx: 5, label: '9,115' },
-    { idx: 32, label: '5,594', dy: 4 },
-  ]}
-  valueSuffix="pt"
   color="down"
-  source="자료: 한국거래소(금융위 시세정보) · 도토리경제 가공"
+  valueSuffix="pt"
+  xLabelEvery={16}
+  marks={[
+    { date: '20260622', label: '9,115' },
+    { date: '20260730', label: '5,594', dy: 4 },
+  ]}
+  source="한국거래소(금융위 시세정보)"
 />
 
 ## 세 개의 구간

@@ -32,7 +32,7 @@ chart:
   source: '자료: 미 연준 FRED DCOILWTICO · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -42,26 +42,19 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="+28%" label="열흘 만의 유가 스파이크 폭" sub="7/10 배럴당 72.45달러 → 7/23 93.08달러" tone="up" />
 
-<LineChart
+<SeriesChart
+  series="wti"
+  window={30}
   title="WTI…열흘 새 +28% 스파이크, 그리고 80달러대 안착"
-  unit="달러/배럴 (일별 종가)"
-  values={[74.56, 73.15, 72.45, 79.2, 80.44, 80.73, 80.03, 83.43, 84.38, 86.04, 87.66, 93.08, 91.74, 84.25, 80.91, 86.08, 85.15, 86.16, 81.96, 77.33, 76.78, 78.88, 79.77, 83.76, 84.77, 84.97, 82.77, 83.99, 86.04, 86.48]}
-  yTicks={[75, 85]}
-  xLabels={[
-    { idx: 0, text: '7.8' },
-    { idx: 11, text: '7.23' },
-    { idx: 20, text: '8.5' },
-    { idx: 29, text: '8.18' },
-  ]}
-  endLabel="86.48"
-  marks={[
-    { idx: 2, label: '72.45' },
-    { idx: 11, label: '93.08' },
-    { idx: 20, label: '76.78', dy: 4 },
-  ]}
-  valueSuffix="달러"
   color="up"
-  source="자료: 미 연준 FRED DCOILWTICO · 도토리경제 가공"
+  valueSuffix="달러"
+  xLabelEvery={10}
+  marks={[
+    { date: '20260710', label: '72.45' },
+    { date: '20260723', label: '93.08' },
+    { date: '20260805', label: '76.78', dy: 4 },
+  ]}
+  source="미 연준 FRED DCOILWTICO"
 />
 
 곡선은 세 토막이다. 7월 10일 72.45달러의 저점 → 열흘 만에 93.08달러(+28%) →

@@ -31,7 +31,7 @@ chart:
   source: '자료: 관세청 수출입무역통계 · HS 8542 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -61,23 +61,18 @@ AI 데이터센터 투자의 최종 수요는 분명 미국이다. 그런데 한
 
 ## 가장 가파른 선, 對중국 3.7배
 
-<LineChart
+<SeriesChart
+  series="trade_hs8542_CN"
+  field="exp"
+  scale={1e-8}
+  window={13}
   title="對중국 반도체 수출, 1년 만에 36억에서 134억 달러로"
   unit="억 달러 (HS 8542 對중국 · 통관 기준)"
-  values={[36.0, 36.7, 37.5, 40.5, 45.6, 51.2, 59.8, 64.3, 82.2, 95.9, 113.7, 115.8, 134.2]}
-  yTicks={[40, 80, 120]}
-  xLabels={[
-    { idx: 0, text: "'25.7" },
-    { idx: 6, text: "'26.1" },
-    { idx: 12, text: "'26.7" },
-  ]}
-  endLabel="134.2억"
-  marks={[
-    { idx: 0, label: '36.0억' },
-  ]}
-  valueSuffix="억"
   color="up"
-  source="자료: 관세청 수출입무역통계 · HS 8542 · 도토리경제 가공"
+  valueSuffix="억"
+  xLabelEvery={6}
+  marks={[{ date: '202507', label: '36.0억' }]}
+  source="관세청 수출입무역통계 · HS 8542"
 />
 
 전체 반도체 수출이 1년 새 2.7배가 되는 동안 對중국 수출은 36.0억에서 134.2억 달러로

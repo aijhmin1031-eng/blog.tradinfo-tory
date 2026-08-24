@@ -30,7 +30,7 @@ chart:
   source: '자료: 한국은행 ECOS 731Y001 · 매매기준율 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -40,24 +40,18 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="-7.3%" label="원/100엔 환율의 한 달 반 하락 폭" sub="7/7 945.41원 → 8/21 876.43원" tone="down" />
 
-<LineChart
+<SeriesChart
+  series="jpy100"
+  window={32}
   title="원/100엔…한 달 반 만에 945원에서 876원으로"
-  unit="원/100엔 (매매기준율)"
-  values={[945.41, 941.04, 928.85, 926.55, 930.08, 926.52, 919.83, 918.36, 913.27, 912, 904.11, 907.83, 896.82, 895.81, 895.01, 894.79, 887.92, 902.13, 910.66, 908.88, 905.16, 903.72, 895.51, 899.45, 888.56, 888.4, 887.84, 887.33, 888.02, 884.31, 886.45, 876.43]}
-  yTicks={[880, 910, 940]}
-  xLabels={[
-    { idx: 0, text: '7.7' },
-    { idx: 16, text: '7.29' },
-    { idx: 31, text: '8.21' },
-  ]}
-  endLabel="876.43원"
-  marks={[
-    { idx: 0, label: '945.41원' },
-    { idx: 18, label: '910.66원' },
-  ]}
-  valueSuffix="원"
   color="down"
-  source="자료: 한국은행 ECOS 731Y001 · 매매기준율 · 도토리경제 가공"
+  valueSuffix="원"
+  xLabelEvery={16}
+  marks={[
+    { date: '20260707', label: '945.41원' },
+    { date: '20260803', label: '910.66원' },
+  ]}
+  source="한국은행 ECOS 731Y001 · 매매기준율"
 />
 
 7월 말 887원대까지 내렸다가 910원선으로 되튀었고, 8월 들어 다시 내려 876원에 닿았다.

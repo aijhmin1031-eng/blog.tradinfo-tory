@@ -32,7 +32,7 @@ chart:
   source: '자료: 금융위원회 주식시세정보 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -43,24 +43,21 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="-39.5%" label="SK하이닉스 고점 대비 저점 낙폭" sub="7/9 218.6만 원 → 7/30 132.2만 원 · 8/20 169.1만 원 회복" tone="down" />
 
-<LineChart
+<SeriesChart
+  series="stk_000660"
+  field="v"
+  scale={1e-4}
+  window={30}
   title="SK하이닉스 종가…고점, 급락, 그리고 되돌림"
-  unit="만 원 (일별 종가, 7/8~8/20)"
-  values={[207.6, 218.6, 218.0, 184.5, 191.3, 208.2, 184.2, 176.4, 183.6, 183.0, 191.9, 175.9, 181.6, 155.0, 140.1, 132.2, 171.8, 156.7, 157.7, 166.8, 149.5, 142.2, 142.0, 142.5, 150.4, 159.3, 164.5, 166.2, 150.0, 169.1]}
-  yTicks={[150, 180, 210]}
-  xLabels={[
-    { idx: 0, text: '7.8' },
-    { idx: 15, text: '7.30' },
-    { idx: 29, text: '8.20' },
-  ]}
-  endLabel="169.1"
-  marks={[
-    { idx: 1, label: '218.6' },
-    { idx: 15, label: '132.2', dy: 4 },
-  ]}
-  valueSuffix="만 원"
+  unit="만 원 (일별 종가)"
   color="down"
-  source="자료: 금융위원회 주식시세정보 · 도토리경제 가공"
+  valueSuffix="만 원"
+  xLabelEvery={15}
+  marks={[
+    { date: '20260709', label: '218.6' },
+    { date: '20260730', label: '132.2', dy: 4 },
+  ]}
+  source="금융위원회 주식시세정보"
 />
 
 ## 궤적 복기, 세 번의 급변

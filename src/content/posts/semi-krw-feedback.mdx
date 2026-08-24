@@ -33,32 +33,25 @@ chart:
   source: '자료: 한국은행 ECOS 매매기준율 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
 도토리경제의 두 단골 차트, 원/달러 환율과 반도체 흑자를 오늘은 한 화면에
 겹쳐 놓는다. 두 곡선은 서로의 원인이자 결과다.
 
-<LineChart
+<SeriesChart
+  series="usdkrw"
+  window={48}
   title="원/달러 환율…고점 1,554원에서 1,393원까지"
-  unit="원 (매매기준율, 일별 6/15~8/21)"
-  values={[1520.4, 1510, 1513.5, 1512.8, 1523.4, 1535, 1535.7, 1537.2, 1538.3, 1545.3, 1544.2, 1541.5, 1548.4, 1554.4, 1554.1, 1539.7, 1531.8, 1526.6, 1509.9, 1504.2, 1507.1, 1504.9, 1492.2, 1488.8, 1484.3, 1482, 1475.6, 1480.9, 1469.4, 1466.3, 1465.4, 1466.2, 1450.1, 1441.1, 1433.6, 1429.9, 1428.2, 1424.8, 1418.8, 1420.1, 1415.3, 1415, 1415, 1414.9, 1415.2, 1411, 1402.5, 1393]}
-  yTicks={[1420, 1480, 1540]}
-  xLabels={[
-    { idx: 0, text: '6.15' },
-    { idx: 13, text: '7.2' },
-    { idx: 30, text: '7.28' },
-    { idx: 47, text: '8.21' },
-  ]}
-  endLabel="1,393"
-  marks={[
-    { idx: 13, label: '1,554' },
-    { idx: 47, label: '1,393', dx: -6, dy: 4 },
-  ]}
-  valueSuffix="원"
   color="down"
-  source="자료: 한국은행 ECOS 매매기준율 · 도토리경제 가공"
+  valueSuffix="원"
+  xLabelEvery={16}
+  marks={[
+    { date: '20260702', label: '1,554' },
+    { date: '20260821', label: '1,393', dx: -6, dy: 4 },
+  ]}
+  source="한국은행 ECOS 매매기준율"
 />
 
 ## 겹쳐 읽기, 두 곡선의 동행

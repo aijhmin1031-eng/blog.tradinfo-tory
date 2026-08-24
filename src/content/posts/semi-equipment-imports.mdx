@@ -32,7 +32,7 @@ chart:
   source: '자료: 관세청 수출입무역통계 · HS 8486 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -42,24 +42,21 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="25.4억 달러" label="반도체 제조 장비 월 수입 (2026.7)" sub="1년 전 16.3억 달러에서 +56%, 같은 달 장비 수출(10.6억)의 2.4배" tone="up" />
 
-<LineChart
+<SeriesChart
+  series="trade_hs8486"
+  field="imp"
+  scale={1e-8}
+  window={13}
   title="반도체 장비 월 수입, 1년 만에 16억에서 25억 달러대로"
   unit="억 달러 (HS 8486 수입 · 통관 기준)"
-  values={[16.3, 11.8, 22.8, 16.9, 18.3, 22.3, 24.2, 25.6, 29.3, 25.1, 25.6, 27.1, 25.4]}
-  yTicks={[15, 20, 25]}
-  xLabels={[
-    { idx: 0, text: "'25.7" },
-    { idx: 6, text: "'26.1" },
-    { idx: 12, text: "'26.7" },
-  ]}
-  endLabel="25.4억"
-  marks={[
-    { idx: 0, label: '16.3억' },
-    { idx: 8, label: '29.3억' },
-  ]}
-  valueSuffix="억"
   color="up"
-  source="자료: 관세청 수출입무역통계 · HS 8486 · 도토리경제 가공"
+  valueSuffix="억"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '16.3억' },
+    { date: '202603', label: '29.3억' },
+  ]}
+  source="관세청 수출입무역통계 · HS 8486"
 />
 
 '25년 하반기 10억대 중반에서 출렁이던 월 수입이 '26년 들어 층을 올려 3월 29.3억

@@ -32,7 +32,7 @@ chart:
   source: '자료: 관세청 품목별 국가별 수출입실적(HS 8542) · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
@@ -40,24 +40,21 @@ import Term from '../../components/Term.astro';
 확인했다. 오늘은 그 지도를 한 겹 더 벗긴다. 같은 중화권 안에서도 홍콩과 대만은
 **전혀 다른 성격의 항구**다.
 
-<LineChart
+<SeriesChart
+  series="trade_hs8542_HK"
+  field="exp"
+  scale={1e-8}
+  window={13}
   title="對홍콩 반도체 수출…1년 만에 2.9배"
   unit="억 달러 (HS 8542 對홍콩 수출, 월별)"
-  values={[15.0, 17.3, 21.6, 15.9, 20.4, 28.8, 25.8, 32.3, 52.1, 35.6, 43.2, 61.1, 43.7]}
-  yTicks={[20, 40, 60]}
-  xLabels={[
-    { idx: 0, text: '25.7' },
-    { idx: 6, text: '26.1' },
-    { idx: 12, text: '26.7' },
-  ]}
-  endLabel="43.7"
-  marks={[
-    { idx: 0, label: '15.0' },
-    { idx: 11, label: '61.1' },
-  ]}
-  valueSuffix="억 달러"
   color="up"
-  source="자료: 관세청 품목별 국가별 수출입실적(HS 8542) · 도토리경제 가공"
+  valueSuffix="억 달러"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '15.0' },
+    { date: '202606', label: '61.1' },
+  ]}
+  source="관세청 품목별 국가별 수출입실적(HS 8542)"
 />
 
 ## 홍콩, 일방통행의 중계 항구

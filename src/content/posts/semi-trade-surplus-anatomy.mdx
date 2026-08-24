@@ -32,7 +32,7 @@ chart:
   source: '자료: 관세청 품목별 수출입실적(HS 8542) · 도토리경제 계산'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -43,24 +43,21 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="243.4억 달러" label="반도체 월간 무역흑자 (2026년 7월)" sub="1년 전 69.2억 달러 → 3.5배 · 관세청 HS 8542 통관 기준" tone="up" />
 
-<LineChart
+<SeriesChart
+  series="trade_hs8542"
+  field="bal"
+  scale={1e-8}
+  window={13}
   title="반도체 무역흑자…13개월 만에 3.5배"
   unit="억 달러 (HS 8542 수출-수입, 월별)"
-  values={[69.2, 74.3, 85.5, 79.0, 88.5, 104.9, 102.7, 138.0, 176.9, 176.5, 217.5, 247.4, 243.4]}
-  yTicks={[100, 160, 220]}
-  xLabels={[
-    { idx: 0, text: '25.7' },
-    { idx: 6, text: '26.1' },
-    { idx: 12, text: '26.7' },
-  ]}
-  endLabel="243.4"
-  marks={[
-    { idx: 0, label: '69.2' },
-    { idx: 11, label: '247.4' },
-  ]}
-  valueSuffix="억 달러"
   color="up"
-  source="자료: 관세청 품목별 수출입실적(HS 8542) · 도토리경제 계산"
+  valueSuffix="억 달러"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '69.2' },
+    { date: '202606', label: '247.4' },
+  ]}
+  source="관세청 품목별 수출입실적(HS 8542) · 도토리경제 계산"
 />
 
 ## 흑자가 3.5배가 된 산수

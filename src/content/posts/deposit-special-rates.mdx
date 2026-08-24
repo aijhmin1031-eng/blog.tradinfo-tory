@@ -31,7 +31,7 @@ chart:
   source: '자료: 한국은행 ECOS 121Y002 · 가중평균금리(신규취급액) · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 import KeyStat from '../../components/KeyStat.astro';
@@ -42,25 +42,17 @@ import KeyStat from '../../components/KeyStat.astro';
 딱지가 붙은 상품들은 그보다 더 높은 금리를 내걸고 있다. 기준금리가 그대로인데 예금금리는
 왜 오르는 걸까.
 
-<LineChart
+<SeriesChart
+  series="deposit1y"
+  window={12}
   title="예금 평균금리, 1년 만에 2.5%에서 3.02%로"
   unit="% (예금은행 순수저축성예금, 신규취급 기준)"
-  values={[2.5, 2.48, 2.52, 2.56, 2.78, 2.89, 2.77, 2.8, 2.79, 2.87, 2.88, 3.02]}
-  yTicks={[2.5, 2.75, 3.0]}
-  xLabels={[
-    { idx: 0, text: "'25.7" },
-    { idx: 3, text: "'25.10" },
-    { idx: 6, text: "'26.1" },
-    { idx: 9, text: "'26.4" },
-    { idx: 11, text: "'26.6" },
-  ]}
-  endLabel="3.02%"
-  marks={[
-    { idx: 0, label: '2.50%' },
-    { idx: 5, label: '2.89%' },
-  ]}
   valueSuffix="%"
-  source="자료: 한국은행 ECOS 121Y002 · 가중평균금리(신규취급액) · 도토리경제 가공"
+  marks={[
+    { date: '202507', label: '2.50%' },
+    { date: '202512', label: '2.89%' },
+  ]}
+  source="한국은행 ECOS 121Y002 · 가중평균금리(신규취급액)"
 />
 
 ## 예금금리를 밀어 올리는 두 개의 힘

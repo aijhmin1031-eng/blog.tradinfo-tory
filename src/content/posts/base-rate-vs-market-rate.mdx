@@ -24,7 +24,7 @@ chart:
   source: '자료: 한국은행 ECOS 817Y002 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 import KeyStat from '../../components/KeyStat.astro';
@@ -47,17 +47,11 @@ import KeyStat from '../../components/KeyStat.astro';
 즉 기준금리는 "지금의 정책"이고, 장기 시장금리는 "미래에 대한 시장의 투표"다.
 같은 방향으로 움직일 이유가 없을 때는 얼마든지 따로 논다.
 
-<LineChart
+<SeriesChart
+  series="ktb10y"
+  window={20}
   title="국고채 10년물, 4.4% 안팎에서 고공 횡보 중"
-  unit="%"
-  values={[4.447, 4.333, 4.289, 4.257, 4.311, 4.261, 4.264, 4.26, 4.15, 4.195, 4.208, 4.239, 4.301, 4.294, 4.298, 4.313, 4.382, 4.337, 4.323, 4.376]}
-  yTicks={[4.15, 4.3, 4.45]}
-  xLabels={[
-    { idx: 0, text: '7.24' },
-    { idx: 19, text: '8.21' },
-  ]}
-  endLabel="4.38%"
-  source="자료: 한국은행 ECOS 817Y002 · 도토리경제 가공"
+  source="한국은행 ECOS 817Y002"
 />
 
 ## 간격이 벌어지면 무슨 일이 생기나

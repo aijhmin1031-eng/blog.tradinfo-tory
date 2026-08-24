@@ -35,7 +35,7 @@ chart:
   source: '자료: 관세청 수출입무역통계 · HS 8542 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -45,26 +45,21 @@ HS 8542)의 월 수출액을 13개월 늘어놓으면, 지금 벌어지는 일�
 
 <KeyStat value="2.7배" label="반도체 월 수출의 1년 성장 배율" sub="'25.7월 122.9억 달러 → '26.7월 327.2억 달러" tone="up" />
 
-<LineChart
+<SeriesChart
+  series="trade_hs8542"
+  field="exp"
+  scale={1e-8}
+  window={13}
   title="반도체 월 수출, 1년 만에 122.9억에서 327.2억 달러로"
   unit="억 달러 (HS 8542 · 통관 기준)"
-  values={[122.9, 126.2, 136.2, 131.8, 139.5, 167.3, 164.0, 194.5, 249.0, 252.4, 294.3, 335.6, 327.2]}
-  yTicks={[150, 250, 350]}
-  xLabels={[
-    { idx: 0, text: "'25.7" },
-    { idx: 3, text: "'25.10" },
-    { idx: 6, text: "'26.1" },
-    { idx: 9, text: "'26.4" },
-    { idx: 12, text: "'26.7" },
-  ]}
-  endLabel="327.2억"
-  marks={[
-    { idx: 0, label: '122.9억' },
-    { idx: 11, label: '335.6억', dx: -34, dy: 4 },
-  ]}
-  valueSuffix="억"
   color="up"
-  source="자료: 관세청 수출입무역통계 · HS 8542 · 도토리경제 가공"
+  valueSuffix="억"
+  xLabelEvery={4}
+  marks={[
+    { date: '202507', label: '122.9억' },
+    { date: '202606', label: '335.6억', dx: -34, dy: 4 },
+  ]}
+  source="관세청 수출입무역통계 · HS 8542"
 />
 
 곡선의 모양을 뜯어보면 세 개의 구간이 보인다.

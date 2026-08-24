@@ -32,31 +32,28 @@ chart:
   source: '자료: 관세청 품목별 수출입실적(HS 8486) · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
 특집 첫 주, 반도체 장비 수입 25억 달러를 "미래 공급의 예고편"으로 읽었다. 오늘은
 같은 통계의 반대 열이다. 한국은 장비를 사기만 하는 나라가 아니다.
 
-<LineChart
+<SeriesChart
+  series="trade_hs8486"
+  field="exp"
+  scale={1e-8}
+  window={13}
   title="반도체 장비 수출…월 7억 달러대에서 10억 달러대로"
   unit="억 달러 (HS 8486 수출, 월별 통관 기준)"
-  values={[9.5, 6.9, 7.4, 7.0, 6.8, 8.8, 6.5, 7.0, 9.2, 9.4, 8.4, 11.6, 10.6]}
-  yTicks={[7, 9, 11]}
-  xLabels={[
-    { idx: 0, text: '25.7' },
-    { idx: 6, text: '26.1' },
-    { idx: 12, text: '26.7' },
-  ]}
-  endLabel="10.6"
-  marks={[
-    { idx: 6, label: '6.5', dy: 4 },
-    { idx: 11, label: '11.6' },
-  ]}
-  valueSuffix="억 달러"
   color="up"
-  source="자료: 관세청 품목별 수출입실적(HS 8486) · 도토리경제 가공"
+  valueSuffix="억 달러"
+  xLabelEvery={6}
+  marks={[
+    { date: '202601', label: '6.5', dy: 4 },
+    { date: '202606', label: '11.6' },
+  ]}
+  source="관세청 품목별 수출입실적(HS 8486)"
 />
 
 ## 곡선 읽기, 바닥을 높여 온 13개월

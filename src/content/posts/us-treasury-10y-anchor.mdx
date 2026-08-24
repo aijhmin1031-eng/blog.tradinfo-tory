@@ -31,32 +31,25 @@ chart:
   source: '자료: 미 연준 FRED DGS10 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
 도토리경제 상단 티커에는 한국 지표들 사이에 낯선 손님이 하나 끼어 있다. "미 10Y".
 왜 한국 경제 블로그가 미국 국채 금리를 매일 실어 나르는지, 오늘 그 이유를 정리한다.
 
-<LineChart
+<SeriesChart
+  series="us10y"
+  window={58}
   title="미 국채 10년 금리…저점 4.38%에서 4.75%까지"
-  unit="% (일별, 5/29~8/20)"
-  values={[4.45, 4.47, 4.46, 4.49, 4.47, 4.55, 4.56, 4.53, 4.55, 4.45, 4.48, 4.47, 4.43, 4.49, 4.46, 4.51, 4.5, 4.41, 4.4, 4.38, 4.38, 4.44, 4.48, 4.49, 4.48, 4.55, 4.56, 4.54, 4.56, 4.62, 4.58, 4.55, 4.57, 4.55, 4.6, 4.63, 4.67, 4.71, 4.69, 4.65, 4.61, 4.67, 4.68, 4.75, 4.7, 4.63, 4.63, 4.69, 4.65, 4.72, 4.7, 4.68, 4.63, 4.68, 4.72, 4.71, 4.65, 4.69]}
-  yTicks={[4.4, 4.55, 4.7]}
-  xLabels={[
-    { idx: 0, text: '5.29' },
-    { idx: 19, text: '6.26' },
-    { idx: 43, text: '7.31' },
-    { idx: 57, text: '8.20' },
-  ]}
-  endLabel="4.69"
-  marks={[
-    { idx: 19, label: '4.38', dy: 4 },
-    { idx: 43, label: '4.75' },
-  ]}
-  valueSuffix="%"
   color="up"
-  source="자료: 미 연준 FRED DGS10 · 도토리경제 가공"
+  valueSuffix="%"
+  xLabelEvery={19}
+  marks={[
+    { date: '20260626', label: '4.38', dy: 4 },
+    { date: '20260731', label: '4.75' },
+  ]}
+  source="미 연준 FRED DGS10"
 />
 
 ## 왜 "닻"인가

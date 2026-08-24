@@ -30,7 +30,7 @@ chart:
   source: '자료: 한국은행 ECOS 가중평균 수신금리 · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -40,24 +40,18 @@ import Term from '../../components/Term.astro';
 
 <KeyStat value="3.02%" label="정기예금(1년) 평균 금리 (2026년 6월)" sub="저점 2.48%(2025.8) → 열 달 반등 · 17개월 만의 3%대" tone="up" />
 
-<LineChart
+<SeriesChart
+  series="deposit1y"
+  window={25}
   title="정기예금 평균 금리…저점 2.48%에서 3.02%로"
   unit="% (1년 만기 신규취급 가중평균, 월별)"
-  values={[3.5, 3.41, 3.36, 3.41, 3.37, 3.36, 3.22, 3.08, 2.97, 2.83, 2.71, 2.64, 2.54, 2.5, 2.48, 2.52, 2.56, 2.78, 2.89, 2.77, 2.8, 2.79, 2.87, 2.88, 3.02]}
-  yTicks={[2.6, 3.0, 3.4]}
-  xLabels={[
-    { idx: 0, text: '24.6' },
-    { idx: 14, text: '25.8' },
-    { idx: 24, text: '26.6' },
-  ]}
-  endLabel="3.02"
-  marks={[
-    { idx: 0, label: '3.50' },
-    { idx: 14, label: '2.48', dy: 4 },
-  ]}
-  valueSuffix="%"
   color="up"
-  source="자료: 한국은행 ECOS 가중평균 수신금리 · 도토리경제 가공"
+  valueSuffix="%"
+  marks={[
+    { date: '202406', label: '3.50' },
+    { date: '202508', label: '2.48', dy: 4 },
+  ]}
+  source="한국은행 ECOS 가중평균 수신금리"
 />
 
 ## 곡선의 세 구간

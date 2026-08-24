@@ -9,8 +9,11 @@
 import LineChart from './LineChart.astro';
 
 interface SeriesPoint {
-  d: string; // YYYYMMDD
-  v: number;
+  d: string; // YYYYMMDD 또는 월별 YYYYMM
+  v?: number; // 지표류(환율·금리·주가 등)
+  exp?: number; // 무역통계류(관세청): 수출액
+  imp?: number; // 무역통계류: 수입액
+  bal?: number; // 무역통계류: 무역수지(exp-imp, 파이프라인이 미리 계산해 둔 값)
 }
 interface SeriesFile {
   id: string;
@@ -37,6 +40,10 @@ interface Props {
   marks?: { date: string; label?: string; dx?: number; dy?: number }[];
   /** 끝점에 마지막 값을 자동으로 라벨링할지 */
   endLabelAuto?: boolean;
+  /** 무역통계류(trade_*)에서 어느 값을 그릴지. 일반 지표류는 기본값 'v' 그대로 둔다 */
+  field?: 'v' | 'exp' | 'imp' | 'bal';
+  /** 원시 값에 곱할 배수. 예: 관세청 USD 원값을 억 달러로 보이려면 1e-8, 원 단위 주가를 만원으로 보이려면 1e-4 */
+  scale?: number;
 }
 
 const {
@@ -51,6 +58,8 @@ const {
   xLabelEvery,
   marks = [],
   endLabelAuto = true,
+  field = 'v',
+  scale = 1,
 } = Astro.props;
 
 let file: SeriesFile;
@@ -68,7 +77,11 @@ if (points.length < 2) {
   throw new Error(`SeriesChart: ${series} 시리즈에 그릴 만한 값이 없다(${points.length}개).`);
 }
 
-const values = points.map((p) => p.v);
+const raw = points.map((p) => p[field]);
+if (raw.some((x) => x === undefined)) {
+  throw new Error(`SeriesChart: ${series} 시리즈에 필드 '${field}'가 없는 포인트가 있다.`);
+}
+const values = (raw as number[]).map((v) => v * scale);
 
 // 값의 크기에 맞춰 눈금 소수점 자리를 정한다. 100 이상이면 정수, 10 미만이면 소수 둘째 자리까지.
 const niceRound = (v: number) => {
@@ -80,7 +93,8 @@ const vMin = niceRound(Math.min(...values));
 const vMax = niceRound(Math.max(...values));
 const yTicks = vMin === vMax ? [vMin] : [vMin, vMax];
 
-const fmtDateLabel = (d: string) => `${Number(d.slice(4, 6))}.${Number(d.slice(6, 8))}`;
+const fmtDateLabel = (d: string) =>
+  d.length === 6 ? `${d.slice(0, 4)}.${Number(d.slice(4, 6))}` : `${Number(d.slice(4, 6))}.${Number(d.slice(6, 8))}`;
 
 const xLabels: { idx: number; text: string }[] = [];
 if (xLabelEvery && xLabelEvery > 0) {

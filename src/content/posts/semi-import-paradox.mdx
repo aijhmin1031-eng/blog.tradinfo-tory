@@ -32,7 +32,7 @@ chart:
   source: '자료: 관세청 품목별 수출입실적(HS 8542) · 도토리경제 가공'
 ---
 
-import LineChart from '../../components/LineChart.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
@@ -40,24 +40,21 @@ import Term from '../../components/Term.astro';
 이다. 반도체를 세계에서 가장 잘 파는 나라가 왜 한 달에 84억 달러어치의 반도체를
 사 올까. 이 물음의 답에 한국 반도체 산업의 구조가 담겨 있다.
 
-<LineChart
+<SeriesChart
+  series="trade_hs8542"
+  field="imp"
+  scale={1e-8}
+  window={13}
   title="반도체 수입액…수출과 같은 방향으로 +56%"
   unit="억 달러 (HS 8542 수입, 월별 통관 기준)"
-  values={[53.7, 51.9, 50.8, 52.8, 51.0, 62.4, 61.3, 56.5, 72.2, 75.9, 76.8, 88.2, 83.8]}
-  yTicks={[55, 70, 85]}
-  xLabels={[
-    { idx: 0, text: '25.7' },
-    { idx: 6, text: '26.1' },
-    { idx: 12, text: '26.7' },
-  ]}
-  endLabel="83.8"
-  marks={[
-    { idx: 0, label: '53.7' },
-    { idx: 11, label: '88.2' },
-  ]}
-  valueSuffix="억 달러"
   color="up"
-  source="자료: 관세청 품목별 수출입실적(HS 8542) · 도토리경제 가공"
+  valueSuffix="억 달러"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '53.7' },
+    { date: '202606', label: '88.2' },
+  ]}
+  source="관세청 품목별 수출입실적(HS 8542)"
 />
 
 ## 반도체는 한 종류가 아니다
