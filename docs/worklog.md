@@ -19,7 +19,7 @@
 | Actions Secrets | ECOS·FRED·DART·DATA_GO_KR(+Comtrade·관세청GW·USCensus 예비) 등록·실호출 검증 완료 |
 | 검색 등록 | **구글·네이버 모두 새 도메인 기준 완료**. 구글=도메인 속성 `dotoriecon.com`(Cloudflare 연동 TXT 자동 등록, 사이트맵 2건 성공·이미지 58건 인식) · 네이버=HTML 파일 소유확인 + 사이트맵 2건·RSS·수집요청. 구 GH Pages 속성은 신호 이전 관찰용으로 유지 |
 | 정보 구조 | 상단 3슬롯: 오늘의 도토리 · **도토리 숲**(기사 전체, `/forest/`) · **도토리 창고**(도구). 카테고리·특집·**토리 이야기**는 숲 아래, 그림함·사전·지표는 창고 아래. `/about/`은 정체성·철칙·숲의 언어만 남기고 카툰은 `/story/`로 이관 |
-| 브랜치 | `claude/secret-repo-age-master-setup-10hta5` — 푸시 시 자동 배포 |
+| 브랜치 | `main` (2026-08-24 `claude/secret-repo-age-master-setup-10hta5`에서 개명 — GitHub 기본 브랜치·Vercel 프로덕션 브랜치 동시 변경, 옛 브랜치 삭제) — 푸시 시 자동 배포 |
 | 배포 | **정본 = https://dotoriecon.com (Vercel)**. GitHub Pages는 같은 내용을 서브경로로 계속 띄우는 미러이며 canonical을 정본 도메인으로 내보내 색인을 한곳에 모은다. noindex는 해제됨 |
 | 그림함 | **무료 이미지 58장**(1탄 18 · 2탄 16 · **3탄 사무·업무 도구 16** · 소소 특별판 8) — **전부 투명 PNG 1600px**. 낱장 페이지 58개 + 이미지 사이트맵. ZIP 배포 폐지 |
 | 도메인 | **dotoriecon.com** (Cloudflare Registrar, 2026-08-24 취득, ~2027-08-24, 자동갱신 $10.46/yr). DNS=Cloudflare(프록시 끔). apex CNAME→Vercel, 구글 소유확인 TXT, Email Routing MX 3 + SPF + DKIM |
@@ -65,6 +65,18 @@
 7. 애드센스 신청은 도메인 연결 후: ads.txt 배치 → 신청 → 앵커 광고 슬롯(하단은 비워둠) 순.
 
 ## 일지
+
+### 2026-08-24 (기준 브랜치 정리 — main으로 개명)
+
+- **작업 계정 이관 후 브랜치 정리**: 소유주가 다른 Claude Code 계정(한도 소진)에서 이 팀프로 계정으로 같은 repo 이어받음.
+  기준 브랜치명이 옛 세션이 만든 `claude/secret-repo-age-master-setup-10hta5`로 굳어 있어 `main`으로 개명.
+- **순서(양쪽 동시 정리)**: ① 로컬 `git branch -m main` ② `git push -u origin main` ③ GitHub 기본 브랜치 `main`(`gh api PATCH default_branch`)
+  ④ **Vercel 프로덕션 브랜치 `main`** — REST API로는 불가(공식 미지원, `PATCH /v9/projects`·`link` 엔드포인트 모두 productionBranch 필드 없음).
+  대시보드 `Settings → Environments → Production → Branch Tracking`에서 수동 변경이 유일한 지원 방법. 소유주가 직접 변경, API로 `productionBranch=main` 검증 완료.
+  ⑤ 옛 브랜치 삭제(main과 커밋 동일 `c3895e6` 확인 후) ⑥ 이 일지 갱신.
+- **영향 없음 확인**: `deploy.yml`은 `branches: [main, 'claude/**']`라 main도 이미 트리거 대상 → 자동 발행 파이프라인 무손상.
+  도메인 `dotoriecon.com`·사이트맵·RSS 주소 불변 → 구글/네이버 검색 등록 재작업 불필요. Auto-assign Custom Production Domains=Enabled라 다음 프로덕션 배포에 도메인 자동 재부착.
+- **운영 메모**: Vercel 프로덕션 브랜치는 앞으로도 대시보드에서만 변경 가능(REST API·CLI 불가). 토큰은 secret repo `master.env.age`의 `VERCEL_TOKEN`(팀 `team_2TuSMGLV14FFgLlL7okddMHE`).
 
 ### 2026-08-24 (시의성 특집 「배당이냐 자사주냐」 + 추석 시즌 기획 착수)
 
