@@ -20,7 +20,7 @@
 | 검색 등록 | **구글·네이버 모두 새 도메인 기준 완료**. 구글=도메인 속성 `dotoriecon.com`(Cloudflare 연동 TXT 자동 등록, 사이트맵 2건 성공·이미지 58건 인식) · 네이버=HTML 파일 소유확인 + 사이트맵 2건·RSS·수집요청. 구 GH Pages 속성은 신호 이전 관찰용으로 유지 |
 | 정보 구조 | 상단 3슬롯: 오늘의 도토리 · **도토리 숲**(기사 전체, `/forest/`) · **도토리 창고**(도구). 카테고리·특집·**토리 이야기**는 숲 아래, 그림함·사전·지표는 창고 아래. `/about/`은 정체성·철칙·숲의 언어만 남기고 카툰은 `/story/`로 이관 |
 | 브랜치 | `main` (2026-08-24 `claude/secret-repo-age-master-setup-10hta5`에서 개명 — GitHub 기본 브랜치·Vercel 프로덕션 브랜치 동시 변경, 옛 브랜치 삭제) — 푸시 시 자동 배포 |
-| 배포 | **정본 = https://dotoriecon.com (Vercel)**. GitHub Pages는 같은 내용을 서브경로로 계속 띄우는 미러이며 canonical을 정본 도메인으로 내보내 색인을 한곳에 모은다. noindex는 해제됨 |
+| 배포 | **정본 = https://dotoriecon.com (Vercel, 정상)**. GitHub Pages 미러는 8/24 브랜치 개명 이후 배포 실패 중(환경 배포 브랜치 정책, 대시보드 수정 필요 — 미결 6번). canonical은 정본 도메인, noindex 해제됨 |
 | 그림함 | **무료 이미지 58장**(1탄 18 · 2탄 16 · **3탄 사무·업무 도구 16** · 소소 특별판 8) — **전부 투명 PNG 1600px**. 낱장 페이지 58개 + 이미지 사이트맵. ZIP 배포 폐지 |
 | 도메인 | **dotoriecon.com** (Cloudflare Registrar, 2026-08-24 취득, ~2027-08-24, 자동갱신 $10.46/yr). DNS=Cloudflare(프록시 끔). apex CNAME→Vercel, 구글 소유확인 TXT, Email Routing MX 3 + SPF + DKIM |
 | 메일 | **contact@dotoriecon.com → dotori.workroom@gmail.com** (Cloudflare Email Routing, 무료 전달). catch-all=drop(스팸 차단), subaddressing 켬(`contact+태그@`). **수신 테스트 확인 후 사이트 표기 교체 예정** |
@@ -65,30 +65,56 @@
 4. 구글 소유확인이 DNS TXT **한 가지 방법뿐**이다 — 그 레코드가 실수로 지워지면 Search Console 속성이 통째로 풀린다.
    설정 → 소유권 인증에서 HTML 파일 방식을 추가해 두는 편이 안전(소유주 승인 후 진행).
 5. `www.dotoriecon.com` 연결(선택) — Vercel에 추가하면 www로 들어온 방문자도 apex로 리다이렉트.
+6. **[신규 발견, 8/24] GitHub Pages 배포가 브랜치 개명 이후 8연속 실패** — repo Settings → Environments →
+   `github-pages` → Deployment branches and tags에서 옛 브랜치명 대신 `main`을 추가해야 한다(REST API·MCP
+   도구로는 조회·수정 불가, 대시보드 전용). **급하지 않음**: 정본 Vercel·데이터 파이프라인 커밋백은 이 워크플로와
+   무관하게 정상 동작 확인됨(자세한 진단은 아래 일지). 깨진 건 서브경로 미러뿐.
 
 **[파이프라인·데이터]**
-6. **[진행 중 확인]** 8/24에 조회 상한을 10년으로 올리고 원자재 3종(금·천연가스·구리)을 등록했지만,
+7. **[진행 중 확인]** 8/24에 조회 상한을 10년으로 올리고 원자재 3종(금·천연가스·구리)을 등록했지만,
    API 키가 로컬에 없어 실행 검증을 못 했다. 8/25 06:50 KST 자동 실행(또는 그 전 수동 workflow_dispatch)
    결과를 반드시 확인할 것 — `data/series/gold.json` 등이 생겼는지, 기존 시리즈 길이가 실제로 늘었는지.
    **참고**: 이 확인을 위해 8/24 03:32(UTC)에 세션 `session_01PWmsm1cjo2YE59iBLcDAxE`로 발화하는
    1회성 체크(`trig_01J5w1o2nnvJU4CTdzi6KTLU`, 8/24 22:30 UTC 발화)를 걸어 뒀다 — **그 결과 보고는 저 특정 세션에만
    도착한다.** 다른 세션이 이어받았다면 그 세션이 이 항목을 놓쳤을 수 있으니 직접 재확인할 것.
-7. `semi-export-unit-value.mdx`(수출액÷수출중량)의 차트만 아직 하드코딩 — 원천인 **수출 중량(KG) 데이터를
+8. `semi-export-unit-value.mdx`(수출액÷수출중량)의 차트만 아직 하드코딩 — 원천인 **수출 중량(KG) 데이터를
    `trade.mjs`가 수집 안 함**. 중량 필드를 추가 수집하기 전엔 `SeriesChart`로 못 옮긴다.
-8. 관세청 10일 단위 잠정치(품목별·국가별, `data.go.kr` 15157901/15157909) — 무역 데이터를 월 1회에서
+9. 관세청 10일 단위 잠정치(품목별·국가별, `data.go.kr` 15157901/15157909) — 무역 데이터를 월 1회에서
    한 달 세 번으로 늘릴 수 있는 후보. 활용신청 필요(키는 기존 `DATA_GO_KR_KEY` 그대로 씀). 8/24 조사 항목 참조.
-9. KOSIS 지표정보(자동승인) — 물가·고용 등 ECOS·FRED와 안 겹치는 새 카테고리. 8/24 조사 항목 참조.
+10. KOSIS 지표정보(자동승인) — 물가·고용 등 ECOS·FRED와 안 겹치는 새 카테고리. 8/24 조사 항목 참조.
 
 **[콘텐츠]**
-10. 추석(9/25) 시즌 기획 5편 중 **2편 완료**(명절 선물 직구 9/2, 면세 한도 800달러 9/24), **3편 남음**
+11. 추석(9/25) 시즌 기획 5편 중 **2편 완료**(명절 선물 직구 9/2, 면세 한도 800달러 9/24), **3편 남음**
     (환전 언제 어디서·해외 카드결제 환율 시점·연휴 뒤 카드값) — 히어로 이미지 3장은 이미 생성돼
     `public/images/hero/`에 있음(`chuseok-currency-exchange`·`overseas-card-fx-timing`·`post-holiday-card-statement`).
     본문만 쓰면 된다.
-11. 예약 재고가 9/27에 끝난다 — 상시 운영 Routine이 3일치 미만이면 자동 보충하지만, 첫 실행이 실제로
+12. 예약 재고가 9/27에 끝난다 — 상시 운영 Routine이 3일치 미만이면 자동 보충하지만, 첫 실행이 실제로
     이 일을 하는지 8/25 첫 실행 결과로 확인할 것.
-12. 다음 특집 후보(환율·2차전지)는 `topics-standard.md` 개설 점검표 통과가 선행.
+13. 다음 특집 후보(환율·2차전지)는 `topics-standard.md` 개설 점검표 통과가 선행.
 
 ## 일지
+
+### 2026-08-24 (GitHub Pages 배포 실패 발견 — 브랜치 개명 이후 8연속, 정본 Vercel은 무영향 확인)
+
+- **발견 경위**: 새 세션이 이어받으며 워크플로 실행 이력을 훑다가, 기준 브랜치를 `main`으로 개명한 커밋
+  (run #87, 8/24 01:32 UTC)부터 지금(run #92)까지 **push 트리거 배포가 8회 연속 전부 실패**한 것을 발견했다.
+  개명 이전(run #63~86)은 전부 성공 — 개명이 경계선이다.
+- **진단**: `build` job(빌드·데이터 커밋백)은 매번 성공. 실패는 뒤이은 `deploy` job(환경 `github-pages`에서
+  `actions/deploy-pages@v4` 실행) 뿐이고, 매번 **스텝 하나도 못 돌고 2초 만에 즉시 실패**한다 — GitHub Pages
+  `github-pages` 환경의 **배포 브랜치 정책(Deployment branches and tags)이 옛 브랜치명에 고정돼 있어 새
+  기본 브랜치 `main`을 거부**하는 전형적 증상과 일치한다. 기본 브랜치를 바꿔도 환경의 배포 브랜치 정책은
+  자동으로 따라가지 않는다 — Vercel 프로덕션 브랜치가 API로 못 바뀌었던 것과 같은 종류의 함정이 GitHub
+  쪽에도 있었다.
+- **API·MCP로 수정 불가**: 배포 브랜치 정책 REST 엔드포인트는 있지만 이 세션의 GitHub MCP 도구 목록엔
+  없다. `rerun_failed_jobs`도 403(권한 부족)으로 재시도조차 안 됨. **대시보드 전용**: repo Settings →
+  Environments → `github-pages` → Deployment branches and tags에서 옛 브랜치 대신 `main`을 추가(또는
+  제한 해제)해야 한다. 소유주 조치 필요 — 미결 사항 6번에 등재.
+- **영향 범위 확인(안심 근거)**: 정본 Vercel(`dotoriecon.com`)은 이 워크플로와 무관하게 자체 GitHub
+  연동으로 계속 정상 배포되고 있음을 확인했다 — `curl -I`의 `last-modified`가 최신 커밋(11:21 UTC)
+  이후인 11:47 UTC. **콘텐츠·데이터 파이프라인 커밋백·정본 사이트는 전부 무영향**, 깨진 것은 GitHub
+  Pages 서브경로 미러뿐이다(`build` job 안의 "데이터 커밋백" 스텝이 `deploy` job보다 먼저 끝나 항상
+  성공하므로 파이프라인 산출물도 영향 없음). 8/25 06:50 KST 자동 실행도 같은 구조라 데이터 수집·기사
+  자동 발행·정본 배포는 정상 진행될 것으로 예상 — 급한 문제는 아니다.
 
 ### 2026-08-24 (인수인계 정비 — 죽은 Routine 발견·재건, 일지 전면 갱신)
 
