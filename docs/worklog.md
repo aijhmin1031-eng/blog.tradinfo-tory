@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 22편)**
-      - 큐 Tier A 19편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 26편)**
+      - 큐 Tier A 23편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -191,11 +191,13 @@
         **`trade-payment-three-ways`** · **`cofix-explained`** ·
         `incoterms-2020-guide` · `duty-free-allowance-800` ·
         **`overseas-direct-purchase-tax`** · **`forwarder-vs-customs-broker`** ·
-        **`invoice-packing-list`** · **`semi-topic-reading-guide`**
+        `invoice-packing-list` · `semi-topic-reading-guide` ·
+        **`semi-eight-processes`** · **`antidumping-duty-basics`** ·
+        **`wafer-300mm-economics`** · **`customs-valuation-basics`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 67편**(Tier A 36 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 63편**(Tier A 32 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `semi-eight-processes`(847자)와 `antidumping-duty-basics`(850자)다.
+      다음 두 편은 `fx-deposit-basics`(864자)와 `cpi-how-to-read`(865자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -228,6 +230,34 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 20~23편, 계정A)
+
+- `antidumping-duty-basics` 850 → **1,509자**. WTO 반덤핑협정 원문에서 기사에 없던
+  **문턱과 시계**를 확인해 넣었다. 덤핑마진 **2% 미만**·수입물량 **3% 미만**이면
+  조사 종결(제5조 8항), 조사는 **1년 이내·최대 18개월**(제5조 10항), 잠정조치는
+  개시 **60일** 이후(제7조 3항), 그리고 **가격약속**(제8조)이라는 제3의 길.
+  우리 숫자는 「동종물품」 쟁점에 붙였다. HS 8542 하나의 kg당 단가가 1년 만에
+  7,230 → 19,479달러로 2.7배가 됐으니, **같은 코드 안에서도 평균 가격이 이만큼
+  움직인다**는 것이 「같은 물건」 묶기가 최대 쟁점인 이유의 실증이다.
+- `customs-valuation-basics` 859 → **1,450자**(9/11 예약). WTO 관세평가협정 제1조·
+  제8조를 원문에서 확인. **거래가격이 인정되려면 처분·사용 제한이 없어야 한다**는
+  조건이 기사에 빠져 있어 보탰다. 데이터는 억지로 붙이지 않고 규모만 얹었다
+  (7월 4개국 수입 336.6억 달러가 전부 이 규칙으로 값이 매겨진다).
+- `semi-eight-processes` 847 → **1,308자**(9/6 예약). 「파는 칸과 사 오는 칸」 대조.
+  칩(HS 8542)은 **+243.4억 달러** 흑자인데 그 공정을 돌리는 장비(HS 8486)는
+  **−14.8억 달러** 적자다. 공정을 수행하는 능력과 도구를 만드는 능력이 다르다는
+  것이 통계 두 줄로 드러난다.
+- `wafer-300mm-economics` 850 → **1,457자**(9/8 예약). 「크면 유리하다」를 기하학으로
+  쟀다. 지름 1.5배면 면적은 **2.25배**(200mm 31,416mm² → 300mm 70,686mm²).
+  그리고 **원판을 못 키운 산업이 대신 키운 것**이 값이라는 연결을 우리 단가 데이터로
+  지었다(중량은 1.2% 줄고 kg당 단가는 2.7배).
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 3편 pubDate 원복.
+- **메모**: `customs-valuation-basics`는 Tier A로 분류돼 있으나 우리 계열이 직접
+  닿지 않아 **2·3번(실무 지점 + 진짜 출처) 위주**로 처리했다. 규칙대로 데이터를
+  억지로 붙이지 않았다. 남은 Tier A에도 이런 것이 몇 편 더 있을 것이다.
+- 큐: Tier A **23/55**, 총 **23/86**, 진행중 표시 없음.
+  다음 두 편은 `fx-deposit-basics`(864자)·`cpi-how-to-read`(865자).
 
 ### 2026-08-25 (보강 16~19편, 계정A)
 
