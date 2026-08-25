@@ -273,3 +273,7 @@ img { max-width: 100%; height: auto; }
   background-size: 18px 18px;
   background-position: 0 0;
 }
+
+/* 모바일 메뉴 시트가 열려 있는 동안에는 떠 있는 인사 위젯을 숨긴다.
+   위젯이 메뉴 항목 위에 겹쳐 글자를 가렸다(2026-08-25). */
+body.nav-menu-open #tori-greet { display: none !important; }
