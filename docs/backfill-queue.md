@@ -66,10 +66,10 @@
 | [x] | 포워더와 관세사…무역의 두 조력자는 무엇이 다른가 | 820 → **1,417자** | `forwarder-vs-customs-broker` · 8/25 A |
 | [x] | 인보이스와 패킹리스트…무역 서류의 기본 두 장 | 824 → **1,363자** | `invoice-packing-list` · 8/25 A |
 | [x] | 반도체·AI 특집 한 달의 지도…처음 온 독자를 위한 안내 | 836 → **1,417자** | `semi-topic-reading-guide` · 8/25 A |
-| [ ] | 모래에서 칩까지…반도체 8대 공정 지도 | 847자 | `semi-eight-processes` |
-| [ ] | 반덤핑관세…"너무 싸게 파는 것"이 문제가 되는 순간 | 850자 | `antidumping-duty-basics` |
-| [ ] | 반도체는 왜 원판에서 태어나나…웨이퍼 300mm의 경제학 | 850자 | `wafer-300mm-economics` |
-| [ ] | 세관은 물건값을 어떻게 정하나…관세평가의 여섯 계단 | 859자 | `customs-valuation-basics` |
+| [진행중·A] | 모래에서 칩까지…반도체 8대 공정 지도 | 847자 | `semi-eight-processes` |
+| [진행중·A] | 반덤핑관세…"너무 싸게 파는 것"이 문제가 되는 순간 | 850자 | `antidumping-duty-basics` |
+| [진행중·A] | 반도체는 왜 원판에서 태어나나…웨이퍼 300mm의 경제학 | 850자 | `wafer-300mm-economics` |
+| [진행중·A] | 세관은 물건값을 어떻게 정하나…관세평가의 여섯 계단 | 859자 | `customs-valuation-basics` |
 | [ ] | 외화예금 첫걸음…달러 통장에 돈을 두는 이유 | 864자 | `fx-deposit-basics` |
 | [ ] | 물가지수 읽는 법…"2% 올랐다"는 문장의 해부 | 865자 | `cpi-how-to-read` |
 | [ ] | 무역사기의 전형 다섯 가지…수법은 진화해도 뼈대는 같다 | 871자 | `trade-fraud-patterns` |
