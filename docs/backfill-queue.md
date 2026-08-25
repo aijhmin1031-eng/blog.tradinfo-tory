@@ -90,10 +90,10 @@
 | [x] | 클레임이 걸렸다…무역 분쟁이 법정 대신 중재로 가는 이유 | 995 → **1,506자** | `trade-claim-arbitration` · 8/25 A |
 | [x] | 조 단위 화물의 이사…반도체 물류는 왜 초정밀 산업인가 | 1004 → **1,495자** | `semi-precision-logistics` · 8/25 A |
 | [x] | 30원짜리 칩이 세운 자동차 공장…차량용 반도체의 교훈 | 1013 → **1,562자** | `car-chip-shortage-lesson` · 8/25 A |
-| [ ] | 환율을 정하는 세 가지 방식…시장, 못, 그리고 그 사이 | 1014자 | `fx-regime-menu` |
-| [ ] | 보조금의 시대…각국은 왜 반도체 공장에 국고를 쏟나 | 1032자 | `chips-subsidy-race` |
-| [ ] | 공장 없이 버는 반도체…설계자산(IP)과 로열티의 경제 | 1039자 | `chip-ip-royalty` |
-| [ ] | 해상운임 읽는 법…FCL·LCL과 할증료의 세계 | 1224자 | `ocean-freight-explained` |
+| [진행중·A] | 환율을 정하는 세 가지 방식…시장, 못, 그리고 그 사이 | 1014자 | `fx-regime-menu` |
+| [진행중·A] | 보조금의 시대…각국은 왜 반도체 공장에 국고를 쏟나 | 1032자 | `chips-subsidy-race` |
+| [진행중·A] | 공장 없이 버는 반도체…설계자산(IP)과 로열티의 경제 | 1039자 | `chip-ip-royalty` |
+| [진행중·A] | 해상운임 읽는 법…FCL·LCL과 할증료의 세계 | 1224자 | `ocean-freight-explained` |
 | [ ] | 명절 선물을 직구로…관세보다 먼저 계산할 것은 달력이다 | 1254자 | `chuseok-gift-direct-purchase` |
 | [ ] | 수입 관세, 이렇게 계산된다…과세가격부터 부가세까지 | 1398자 | `import-duty-calculation` |
 | [ ] | 처음부터 끝까지…수출 절차 한눈에 보기 | 1470자 | `export-process-a-to-z` |
