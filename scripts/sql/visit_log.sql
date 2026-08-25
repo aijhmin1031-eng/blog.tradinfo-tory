@@ -40,7 +40,9 @@ begin
   if p_path is null or p_path !~ '^/([a-z0-9._-]+/)*$' or length(p_path) > 200 then
     return;
   end if;
-  if p_visitor is null or p_visitor !~ '^[a-z0-9]{16}$' then
+  -- 브라우저가 실제로 만드는 형식(crypto 난수 → 16진수 16자)만 받는다.
+  -- 손으로 넣은 임의 문자열은 거부돼, 검증하다 통계를 더럽힐 일이 없다.
+  if p_visitor is null or p_visitor !~ '^[0-9a-f]{16}$' then
     return;
   end if;
 
