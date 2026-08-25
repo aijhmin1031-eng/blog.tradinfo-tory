@@ -182,19 +182,20 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 18편)**
-      - 큐 Tier A 15편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 22편)**
+      - 큐 Tier A 19편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
         `bond-price-vs-yield` · `duty-drawback-basics` ·
         **`trade-payment-three-ways`** · **`cofix-explained`** ·
-        **`incoterms-2020-guide`** · **`duty-free-allowance-800`**
+        `incoterms-2020-guide` · `duty-free-allowance-800` ·
+        **`overseas-direct-purchase-tax`** · **`forwarder-vs-customs-broker`** ·
+        **`invoice-packing-list`** · **`semi-topic-reading-guide`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 71편**(Tier A 40 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 67편**(Tier A 36 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `overseas-direct-purchase-tax`(817자)와
-      `forwarder-vs-customs-broker`(820자)다.
+      다음 두 편은 `semi-eight-processes`(847자)와 `antidumping-duty-basics`(850자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -227,6 +228,34 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 16~19편, 계정A)
+
+- `overseas-direct-purchase-tax` 817 → **1,392자**. 「200달러 특례는 어디서 왔는가」
+  각도. 미국발만 200달러인 것은 **한·미 FTA 조항**이고, 그 협정의 크기를 창고
+  숫자로 보였다(2026년 7월 대미 수출 174.7억·수입 89.7억·흑자 **85.0억 달러**로
+  중국 53.8억·베트남 64.3억을 웃도는 최대 흑자 상대). 실무 지점에는 **문턱은
+  달러·고지서는 원화**(환율 12.6% 폭), **직배송 경로가 기준을 정한다**,
+  **부가세는 관세 위에 붙는다**를 새로 넣었다.
+- `forwarder-vs-customs-broker` 820 → **1,417자**(9/6 예약). 「우리가 매일 읽는 무역
+  통계도 이 두 사람의 산물」이라는 연결. 관세사법 원문에서 **직무에 자율심사·환급청구
+  대리·이의신청/심사청구/심판청구 대리가 포함**된다는 것을 확인해, 「신고서 대행」이라는
+  통념을 깼다. 물류정책기본법에서 국제물류주선업 등록 요건(**자본금 3억 원 이상**,
+  법인이 아니면 자산평가액 6억 원 이상, 3년마다 등록기준 신고)도 확인해 넣었다.
+- `invoice-packing-list` 824 → **1,363자**(9/13 예약). 「패킹리스트의 중량 한 줄이
+  나라 통계가 된다」. 2026년 7월 반도체 수출 327.2억 달러·중량 **1,679,933kg**,
+  둘을 나눈 kg당 19,479달러가 곧 우리 단가 기사의 출발점이다. 서류의 정확성이
+  회사를 넘어 산업을 읽는 눈까지 좌우한다는 연결이 생겼다.
+- `semi-topic-reading-guide` 836 → **1,417자**(9/26 예약). 이 기사는 다른 기사를
+  스무 편 가까이 언급하면서 **링크가 하나도 없었다.** 발행된 8편에 링크를 채웠고
+  (미발행분은 게이트가 404로 잡으므로 남겨 뒀다), 「이 층이 지금 보고 있는 숫자」
+  표를 넣었다(반도체 수출 327.2억·수입 83.8억·중화권 216.9억으로 **수출의 66.3%**·
+  장비 수입 25.4억). **중화권을 한 덩어리로 읽으면 안 되는 이유**도 실측으로 붙였다.
+  중국은 134.2 대 35.5로 한쪽으로 기울고, 대만은 39.0 대 33.2로 거의 균형이며,
+  홍콩은 43.7 대 0.3으로 사실상 한 방향이다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 3편 pubDate 원복.
+- 큐: Tier A **19/55**, 총 **19/86**, 진행중 표시 없음.
+  다음 두 편은 `semi-eight-processes`(847자)·`antidumping-duty-basics`(850자).
 
 ### 2026-08-25 (보강 12~15편 + **9/24 빌드를 깨뜨릴 뻔한 결함 발견·수리**, 계정A)
 
