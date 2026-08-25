@@ -5,7 +5,7 @@ import Base from '../../layouts/Base.astro';
 import LineChart from '../../components/LineChart.astro';
 import Delta from '../../components/Delta.astro';
 import { getCollection } from 'astro:content';
-import { url, heroFor, fmtDate, CATEGORIES, isPublished } from '../../lib/site';
+import { url, heroFor, fmtDate, CATEGORIES, isPublished, readingMinutesOf } from '../../lib/site';
 import { GLOSSARY } from '../../lib/glossary';
 import { PICTOGRAMS } from '../../lib/pictograms';
 import { TOPICS } from '../../lib/topics';
@@ -262,7 +262,7 @@ const timeline = [
               </span>
               <span class="tp-post-title serif">{p.data.title}</span>
               <span class="tp-post-desc">{p.data.description}</span>
-              <span class="tp-post-meta mono">{fmtDate(p.data.pubDate)} · {p.data.readingMinutes}분 읽기</span>
+              <span class="tp-post-meta mono">{fmtDate(p.data.pubDate)} · {readingMinutesOf(p.body ?? '')}분 읽기</span>
             </div>
           </a>
         ))

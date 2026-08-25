@@ -4,7 +4,7 @@ import StatTiles from '../components/StatTiles.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished, todayIn, TZ_KST } from '../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished, todayIn, TZ_KST, readingMinutesOf } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import { EPISODES } from '../data/story';
 
@@ -74,7 +74,7 @@ const jsonLd = {
           <div class="hero-byline">
             <span class="byline-name">토리</span>
             <span class="sep" />
-            <span>{featured.data.readingMinutes}분 읽기</span>
+            <span>{readingMinutesOf(featured.body ?? '')}분 읽기</span>
             <span class="sep" />
             <time datetime={featured.data.pubDate.toISOString()}>
               {fmtDate(featured.data.pubDate)}

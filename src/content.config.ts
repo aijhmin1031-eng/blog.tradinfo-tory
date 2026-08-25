@@ -8,7 +8,6 @@ const posts = defineCollection({
     description: z.string(),
     category: z.enum(['money', 'tariff', 'trade', 'basics']),
     pubDate: z.coerce.date(),
-    readingMinutes: z.number().default(5),
     featured: z.boolean().default(false),
     draft: z.boolean().default(false),
     hero: z.string().optional(), // 대표 이미지 경로. 없으면 카테고리 배너 자동 사용

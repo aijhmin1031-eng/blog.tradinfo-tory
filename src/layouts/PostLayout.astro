@@ -2,7 +2,7 @@
 import Base from './Base.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import ToriNote from '../components/ToriNote.astro';
-import { CATEGORIES, url, fmtDate, heroFor, SITE } from '../lib/site';
+import { CATEGORIES, url, fmtDate, heroFor, SITE, readingMinutesOf } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
 import CommentThread from '../components/CommentThread.astro';
@@ -18,8 +18,8 @@ interface Props {
   older?: CollectionEntry<'posts'>;
 }
 const { post, related, newer, older } = Astro.props;
-const { title, description, category, pubDate, readingMinutes, place, three, toriNote, dataAsOf, hero } =
-  post.data;
+const { title, description, category, pubDate, place, three, toriNote, dataAsOf, hero } = post.data;
+const readingMinutes = readingMinutesOf(post.body ?? '');
 // 조회수: 배포 주소(GitHub Pages·Vercel)와 무관한 논리 경로로 집계한다
 const viewPath = `/posts/${(post as { slug?: string; id: string }).slug ?? post.id}/`;
 const cat = CATEGORIES[category];
@@ -227,6 +227,26 @@ const crumbsLd = {
     }
   </script>
 </Base>
+
+<style is:global>
+  /* 자료 각주 — 기사 끝에서 출처·표본·한계를 밝히는 자리.
+     숫자를 쓴 기사는 독자가 원자료로 되짚어 갈 수 있어야 한다. */
+  .prose .src-note {
+    margin-top: 34px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--hair);
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .prose .src-note a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .prose .src-note a:hover { color: var(--accent); }
+  .prose .src-note strong { color: var(--body-ink); font-weight: 600; }
+</style>
 
 <style>
   .progress {

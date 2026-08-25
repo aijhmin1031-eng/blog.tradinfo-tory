@@ -71,6 +71,15 @@ export const shortDateIn = (tz: string, now: Date = new Date()) => {
 // 매일 아침 KST 06:50 파이프라인 빌드가 그날 일자 기사를 자동으로 발행하는 구조.
 export const isPublished = (pubDate: Date) => pubDate.toISOString().slice(0, 10) <= todayIn(TZ_KST);
 
+// 읽기 시간은 손으로 적지 않는다. 예전에는 프런트매터에 직접 써 넣었는데,
+// 표기 평균 6.5분에 실제 분량은 1.7분이라 처음 온 독자가 가장 먼저 만나는 것이 과장이었다.
+// 본문에서 실측해 계산한다 — 세는 것은 한글 글자수뿐이다.
+// JSX 태그·속성명·import 는 전부 로마자라 자동으로 빠지고,
+// KeyStat·PointCards 같은 컴포넌트 안의 한국어 문구는 독자가 실제로 읽으므로 그대로 잡힌다.
+const KO_CHARS_PER_MIN = 500; // 경제 해설은 숫자가 섞여 느리게 읽힌다. 넉넉히(=독자에게 유리하게) 잡는다.
+export const readingMinutesOf = (body: string) =>
+  Math.max(1, Math.round((body.match(/[가-힣]/g)?.length ?? 0) / KO_CHARS_PER_MIN));
+
 // 기사 pubDate 는 프런트매터의 'YYYY-MM-DD' 가 UTC 자정으로 파싱된 값이다.
 // 지역 게터를 쓰면 실행 시간대에 따라 하루가 밀리므로 UTC 게터로 고정해 읽는다.
 export const fmtDate = (d: Date) =>
