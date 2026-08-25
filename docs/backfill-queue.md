@@ -119,10 +119,10 @@
 | [x] | 후공정 전문회사 OSAT…칩의 마무리를 대신하는 산업 | 862 → **1,195자** | `osat-backend-world` · 8/25 A |
 | [x] | 환전 수수료의 해부…"우대율 90%"는 무엇의 90%인가 | 866 → **1,395자** | `exchange-fee-anatomy` · 8/25 A |
 | [x] | AI 모델은 왜 메모리를 먹나…파라미터의 산수 | 873 → **1,334자** | `ai-model-memory-math` · 8/25 A |
-| [ ] | 바다 위의 분업…컨테이너선·벌크선·탱커는 다른 장사를 한다 | 881자 | `cargo-ship-types` |
-| [ ] | 선하증권(B/L)…물건보다 이 종이가 먼저다 | 882자 | `bill-of-lading-basics` |
-| [ ] | HBM…메모리를 옆으로 늘리지 않고 위로 쌓은 이유 | 894자 | `hbm-explained` |
-| [ ] | 클린룸…먼지 한 톨과 싸우는 공장 | 895자 | `cleanroom-dust-war` |
+| [진행중·A] | 바다 위의 분업…컨테이너선·벌크선·탱커는 다른 장사를 한다 | 881자 | `cargo-ship-types` |
+| [진행중·A] | 선하증권(B/L)…물건보다 이 종이가 먼저다 | 882자 | `bill-of-lading-basics` |
+| [진행중·A] | HBM…메모리를 옆으로 늘리지 않고 위로 쌓은 이유 | 894자 | `hbm-explained` |
+| [진행중·A] | 클린룸…먼지 한 톨과 싸우는 공장 | 895자 | `cleanroom-dust-war` |
 | [ ] | HBM 삼국지…소수만 남은 시장의 경쟁 문법 | 915자 | `hbm-rivals-structure` |
 | [ ] | 다 만드는 회사, 만들어만 주는 회사…IDM과 파운드리의 경제학 | 919자 | `foundry-vs-idm` |
 | [ ] | Made in의 법칙…원산지 표시는 어떻게 정해지나 | 922자 | `origin-marking-rules` |
