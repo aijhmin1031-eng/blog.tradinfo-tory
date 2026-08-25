@@ -65,7 +65,10 @@
   curl -s "$SB/rest/v1/rpc/visit_referrers" -X POST -H "apikey: $K" -H "Authorization: Bearer $K" \
        -H "Content-Type: application/json" -d '{"p_days":7}'
   ```
-  **`direct`·`internal` 을 뺀 나머지가 외부 유입**이다. 일지에 «순 방문자 N명 / 외부 유입 M명»으로 남긴다.
+  **`direct`·`internal` 을 뺀 나머지가 외부 유입**이다.
+  **보고문 첫 줄에 «어제 방문자 N명(외부 M명)»을 적는다** — 소유주는 폰 푸시 알림으로 이 보고를 받는데,
+  푸시에는 앞부분만 보인다. 맨 아래에 묻으면 세션을 열어야만 숫자를 볼 수 있어 보고의 의미가 없다.
+  일지에도 같은 문장을 남긴다.
   `PGRST202`(함수 없음)가 나오면 **아직 소유주가 SQL을 안 돌린 것** — 보고에 그 사실만 한 줄 적고 넘어간다.
   숫자 해석은 `docs/analytics.md` 「주의할 것」을 따른다 — **한두 명 변화로 추세를 말하지 않는다.**
 - **8/24 재건 경위**: 원래 이 Routine(`trig_01VEz4rE8ebKzUvXQU7WhRYt`)은 특정 세션에 바인딩돼 있었다.
