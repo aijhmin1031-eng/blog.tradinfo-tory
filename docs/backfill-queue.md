@@ -123,10 +123,10 @@
 | [x] | 선하증권(B/L)…물건보다 이 종이가 먼저다 | 882 → **1,142자** | `bill-of-lading-basics` · 8/25 A |
 | [x] | HBM…메모리를 옆으로 늘리지 않고 위로 쌓은 이유 | 894 → **1,289자** | `hbm-explained` · 8/25 A |
 | [x] | 클린룸…먼지 한 톨과 싸우는 공장 | 895 → **1,214자** | `cleanroom-dust-war` · 8/25 A |
-| [ ] | HBM 삼국지…소수만 남은 시장의 경쟁 문법 | 915자 | `hbm-rivals-structure` |
-| [ ] | 다 만드는 회사, 만들어만 주는 회사…IDM과 파운드리의 경제학 | 919자 | `foundry-vs-idm` |
-| [ ] | Made in의 법칙…원산지 표시는 어떻게 정해지나 | 922자 | `origin-marking-rules` |
-| [ ] | 트랜지스터…손톱 위의 수백억 개 스위치 | 923자 | `transistor-tiny-switch` |
+| [진행중·A] | HBM 삼국지…소수만 남은 시장의 경쟁 문법 | 915자 | `hbm-rivals-structure` |
+| [진행중·A] | 다 만드는 회사, 만들어만 주는 회사…IDM과 파운드리의 경제학 | 919자 | `foundry-vs-idm` |
+| [진행중·A] | Made in의 법칙…원산지 표시는 어떻게 정해지나 | 922자 | `origin-marking-rules` |
+| [진행중·A] | 트랜지스터…손톱 위의 수백억 개 스위치 | 923자 | `transistor-tiny-switch` |
 | [ ] | AEO…세관이 믿는 회사가 되면 국경이 빨라진다 | 926자 | `aeo-trusted-trader` |
 | [ ] | 외환보유액…나라의 비상금은 왜, 얼마나 쌓아 두나 | 938자 | `forex-reserves-explained` |
 | [ ] | AI의 전기 청구서…데이터센터가 전력망의 문제가 된 이유 | 943자 | `datacenter-power-bill` |
