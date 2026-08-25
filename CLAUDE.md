@@ -52,7 +52,8 @@
   캐릭터 디테일 명세 v2는 `docs/worldview.md` 참조(2026-08-22 고도화 — 레퍼런스 교체됨, 이전 URL은 `tori-char/url_p1_v1_backup.txt`).
   생성물은 반드시 눈으로 검수(깨진 글자·색 규약 위반은 재생성). 기사 대표 이미지는 `public/images/hero/{slug}.jpg` + frontmatter `hero`.
 - Astro 함정: 인라인 컴포넌트는 템플릿 앞뒤 공백이 텍스트로 새어나온다(Term.astro 참고 — `</span><style>` 붙여 쓰기). JSX 속성 안의 스프레드·복잡식은 컴파일 오류를 낼 수 있으니 frontmatter에서 사전 계산.
-- 기사 발행 체크: ① 수치 출처 대조 ② `<Term>` 칩(그 용어를 설명하는 기사 자체에는 넣지 않기, 비유적 사용 제외) ③ PointCards 1개 ④ hero 이미지 ⑤ 특집 소속이면 `topics`+`topicRole` 태그 ⑥ 빌드·스크린샷.
+- 기사 발행 체크: ① 수치 출처 대조 ② `<Term>` 칩(그 용어를 설명하는 기사 자체에는 넣지 않기, 비유적 사용 제외 / **사전에 없는 용어를 쓰면 그 기사 발행일 아침 빌드가 통째로 실패한다**) ③ PointCards 1개 ④ hero 이미지 ⑤ 특집 소속이면 `topics`+`topicRole` 태그 ⑥ 빌드·스크린샷.
+- **게이트는 신규 기사에도 필수다**(2026-08-26 소유주 지적으로 명문화). 쓰기 전 `node scripts/check-quality.mjs --linkable`로 링크 대상을 고르고, 커밋 전 `node scripts/check-quality.mjs <슬러그>`를 통과시킨다. **내부 링크 0개 경고를 무시하지 말 것** — 이 구멍으로 데이터 기사 14편이 링크 없이 남았다(큐 Tier C). 상세는 `docs/operations.md` 「4. 품질 기준」.
 - 커밋: 한국어 제목, 본문에 요점. 푸시하면 자동 배포(2~3분).
 
 ## 검색·수익화 상태
