@@ -131,10 +131,10 @@
 | [x] | 외환보유액…나라의 비상금은 왜, 얼마나 쌓아 두나 | 938 → **1,434자** | `forex-reserves-explained` · 8/25 A |
 | [x] | AI의 전기 청구서…데이터센터가 전력망의 문제가 된 이유 | 943 → **1,426자** | `datacenter-power-bill` · 8/25 A |
 | [x] | 무어의 법칙…관찰 하나가 60년의 로드맵이 된 이야기 | 943 → **1,447자** | `moores-law-60years` · 8/25 A |
-| [ ] | 해외송금은 어떻게 도착하나…SWIFT라는 고속도로 | 943자 | `swift-money-highway` |
-| [ ] | 2019년 여름의 교훈…소재 세 가지가 멈춰 세울 뻔한 것 | 944자 | `semi-materials-lesson-2019` |
-| [ ] | AI 칩 삼형제…GPU·NPU·ASIC은 무엇이 다른가 | 950자 | `gpu-npu-asic` |
-| [ ] | D램과 낸드…메모리 두 형제의 서로 다른 사업 | 955자 | `dram-vs-nand` |
+| [진행중·A] | 해외송금은 어떻게 도착하나…SWIFT라는 고속도로 | 943자 | `swift-money-highway` |
+| [진행중·A] | 2019년 여름의 교훈…소재 세 가지가 멈춰 세울 뻔한 것 | 944자 | `semi-materials-lesson-2019` |
+| [진행중·A] | AI 칩 삼형제…GPU·NPU·ASIC은 무엇이 다른가 | 950자 | `gpu-npu-asic` |
+| [진행중·A] | D램과 낸드…메모리 두 형제의 서로 다른 사업 | 955자 | `dram-vs-nand` |
 | [ ] | 슈퍼사이클은 어떻게 시작되고 어떻게 끝나는가 | 973자 | `semiconductor-cycle-reading` |
 | [ ] | 토리의 갈림길 #1…6,900선의 코스피, 두 갈래 길 | 993자 | `tori-galimgil-01` |
 | [ ] | 온디바이스 AI…클라우드를 떠난 AI가 메모리에 거는 부담 | 996자 | `ondevice-ai-memory` |
