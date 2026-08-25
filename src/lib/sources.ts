@@ -27,9 +27,11 @@ export const SOURCE: Record<string, Source> = {
     url: 'https://fred.stlouisfed.org/',
   },
   customs: {
+    // 파이프라인이 실제로 호출하는 공공데이터포털 오픈API 페이지를 가리킨다.
+    // (관세청 무역통계 포털 주소를 추측해 넣지 않는다 — 확인한 주소만 쓴다는 규칙.)
     org: '관세청',
-    name: '수출입무역통계 (품목별·국가별)',
-    url: 'https://unipass.customs.go.kr/ets/',
+    name: '품목별·국가별 수출입실적 오픈API',
+    url: 'https://www.data.go.kr/data/15100475/openapi.do',
   },
   krxPrice: {
     org: '금융위원회',
