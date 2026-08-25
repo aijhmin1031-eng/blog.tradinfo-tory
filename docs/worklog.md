@@ -55,6 +55,19 @@
   처리한 줄은 `[x]`+날짜, 일지 한 줄. 재고가 3일치 미만이면 큐는 건드리지 말고 ④(신규)가 우선.
   Tier A 55편 약 4주, 전체 86편 6~7주. **이 일과는 저장소(이 문단)에 적혀 있어, Routine 프롬프트를
   못 고쳐도 발화 세션이 저장소를 읽고 그대로 수행한다** — 아래 경위 참조.
+- **⑦-2 방문자 보고 일과 (2026-08-25 신설)**: 보고할 때 **방문자 수를 함께 적는다.**
+  소유주가 대시보드를 직접 안 봐도 되게 하는 것이 목적이다.
+  ```bash
+  SB=https://tfksqpxfpniavvnwfjiu.supabase.co
+  K=<src/lib/supabase.ts 의 SUPABASE_ANON_KEY>
+  curl -s "$SB/rest/v1/rpc/visit_summary"   -X POST -H "apikey: $K" -H "Authorization: Bearer $K" \
+       -H "Content-Type: application/json" -d '{"p_days":7}'
+  curl -s "$SB/rest/v1/rpc/visit_referrers" -X POST -H "apikey: $K" -H "Authorization: Bearer $K" \
+       -H "Content-Type: application/json" -d '{"p_days":7}'
+  ```
+  **`direct`·`internal` 을 뺀 나머지가 외부 유입**이다. 일지에 «순 방문자 N명 / 외부 유입 M명»으로 남긴다.
+  `PGRST202`(함수 없음)가 나오면 **아직 소유주가 SQL을 안 돌린 것** — 보고에 그 사실만 한 줄 적고 넘어간다.
+  숫자 해석은 `docs/analytics.md` 「주의할 것」을 따른다 — **한두 명 변화로 추세를 말하지 않는다.**
 - **8/24 재건 경위**: 원래 이 Routine(`trig_01VEz4rE8ebKzUvXQU7WhRYt`)은 특정 세션에 바인딩돼 있었다.
   소유주가 다른 Claude Code 계정(한도 소진)에서 이 팀프로 계정으로 이관하면서 그 세션·Routine이 접근 불가능한
   고아 상태가 됐고, **8/22~8/24 사이 실행이 안 됐을 가능성이 있다**(확인 안 됨 — 이 계정에서 list_triggers에

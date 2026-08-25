@@ -59,9 +59,12 @@ Vercel·구글은 남의 대시보드다. 우리 원자료로도 갖고 있어�
 
 ### 최초 1회 적용
 
-1. https://supabase.com/dashboard → 프로젝트 **tradetory**
-2. 왼쪽 **SQL Editor** → **New query**
-3. `scripts/sql/visit_log.sql` 내용을 **전부 복사해 붙여넣고 Run**
+**딱 두 번 누르면 된다.**
+
+1. SQL 원문 열기 → https://raw.githubusercontent.com/aijhmin1031-eng/blog.tradinfo-tory/main/scripts/sql/visit_log.sql
+   (전체 선택·복사)
+2. SQL 편집기 바로 열기 → https://supabase.com/dashboard/project/tfksqpxfpniavvnwfjiu/sql/new
+   (붙여넣고 **Run**)
 
 이걸로 `visit_log` 테이블과 함수 3개(`log_visit`·`visit_summary`·`visit_referrers`)가 생긴다.
 클라이언트 코드는 이미 나가 있어서, **SQL만 돌리면 그 시점부터 자동으로 쌓인다.**
@@ -86,6 +89,11 @@ select * from visit_referrers(14);
 ```
 
 ---
+
+## 이후에는 Claude가 대신 본다
+
+SQL만 돌아가면 **매일 아침 Routine이 방문자 수를 읽어 일지와 보고에 적는다**
+(worklog 「상시 운영」 ⑦-2). 대시보드를 직접 열지 않아도 된다.
 
 ## 지금 상태 (2026-08-25 기준)
 
