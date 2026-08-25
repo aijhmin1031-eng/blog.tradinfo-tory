@@ -33,7 +33,7 @@
   산출: `data/series/*.json`(장기 축적, git이 이력) + `src/data/*.json`(화면 바인딩) — CI가 커밋백
 - 배포는 이중: GitHub Pages(정본) + Vercel 병행(`astro.config.mjs`가 VERCEL env로 base 분기, Vercel 사본은 도메인 연결 전까지 noindex)
 - Supabase 프로젝트 `tradetory`(서울, 무료 티어): 뉴스레터 구독·조회수·갈림길 채점 아카이브. 클라이언트 설정은 `src/lib/supabase.ts`(anon 키는 공개용 설계, 쓰기는 RPC·엣지 함수만). 갈림길 채점 기록은 `galimgil_scores` 테이블(절차는 worklog 8/23 일지)
-- 세계관: `docs/worldview.md` · 운영 절차: `docs/operations.md` · 특집 기준: `docs/topics-standard.md`
+- 세계관: `docs/worldview.md` · 운영 절차: `docs/operations.md` · 특집 기준: `docs/topics-standard.md` · 품질 체계: `docs/quality.md` · **유입: `docs/traffic.md`**
 
 ## 시크릿 (값을 절대 출력·커밋하지 말 것)
 
