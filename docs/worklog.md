@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 38편)**
-      - 큐 Tier A 35편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 42편)**
+      - 큐 Tier A 39편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -199,11 +199,13 @@
         **`nominal-vs-real-rate`** · **`parallel-import-explained`** ·
         `ata-carnet-passport` · `ai-semiconductor-map` ·
         **`intermediary-trade-types`** · **`euv-lithography-intro`** ·
-        **`customs-appeal-steps`** · **`korea-semi-map`**
+        `customs-appeal-steps` · `korea-semi-map` ·
+        **`freight-index-reading`** · **`tariff-who-pays`** ·
+        **`inflation-two-faces`** · **`fx-hedge-basics`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 51편**(Tier A 20 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 47편**(Tier A 16 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `freight-index-reading`(932자)와 `tariff-who-pays`(935자)다.
+      다음 두 편은 `export-control-grammar`(986자)와 `trade-claim-arbitration`(995자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -216,7 +218,7 @@
     | 재탕 | PointCards 겹침 | 현재 분량 | 슬러그 |
     |---:|---:|---:|---|
     | 2 | 0% | 767자 | `base-rate-275` |
-    | 1 | **24%** | 983자 | `fx-hedge-basics` |
+    | ~~1~~ **처리 8/25** | ~~24%~~ | 983 → 1,646자 | `fx-hedge-basics` |
     | 0 | **26%** | 1,663자 | `exchange-rate-quotes` |
     | 0 | **26%** | 1,958자 | `letter-of-credit-basics` |
     | 1 | 3% | 866자 | `exchange-fee-anatomy` |
@@ -236,6 +238,36 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 36~39편, 계정A)
+
+- `fx-hedge-basics` 983 → **1,646자**. **PointCards 겹침 24%(미결 19번 2위) 해소** —
+  카드 셋이 본문 ①②③(선물환·옵션·환변동보험)을 그대로 복사하고 있어, 「헤지는 이익이
+  아니라 분산을 산다」·「먼저 셀 것은 순노출」·「단순 구조를 벗어나면 멈출 것」이라는
+  새 각도로 갈아 끼웠다. 데이터는 3개월 구간 2,401개 분포다.
+  **원화 강세(수출자에 불리) 구간이 38.9%, 그때 평균 −2.98%, 전체 표준편차 3.85%.**
+  약세 구간이 61%로 더 많다는 점까지 적고, 그럼에도 **관리 대상은 기댓값이 아니라
+  표준편차**라는 것이 헤지의 논리라고 정리했다.
+- `inflation-two-faces` 975 → **1,476자**(9/9 예약). 「밀어 올리는 힘은 두 겹」.
+  창고의 두 계열을 곱해 **원화 환산 유가**를 새로 만들었다. 2025년 8월 90,965원 →
+  2026년 8월 **122,386원**. 달러 기준 상승률은 32.7%인데 원화로 치른 값은 **34.5%**다.
+  비용인상 압력을 달러 원자재값만으로 판정하면 방향을 놓친다는 결론이 실측으로 선다.
+- `tariff-who-pays` 935 → **1,440자**. 기사가 「실증 연구들이 다수」라고 뭉뚱그리던
+  자리를 **아미티·레딩·와인스틴(NBER, 2019)** 원문 확인으로 바꿨다. 2018년 관세가
+  수입품 국내 가격에 **사실상 그대로 전가**됐고, 미국 실질소득은 **월 14억 달러**
+  감소한 것으로 추정된다. 우리 데이터로는 반도체 단가가 2.7배 오르는 동안 중량이
+  1.2%만 줄었다는 사실을 「대체 가능성이 낮다」는 신호로 읽되, **제품 구성 변화가
+  섞여 있어 증명은 아니라는 단서**를 함께 달았다.
+  - 이 기사는 원래 「오늘의 결론」이 아니라 「한국 기업에 주는 함의」로 끝나고 있었다.
+    끝맺음 규칙에 맞춰 「실무에서 틀리기 쉬운 지점」으로 교체했다.
+- `freight-index-reading` 932 → **1,556자**(9/29 예약). 「지수와 실제 지불액은 다른
+  모집단」이라는 방법론 각도. 운임지수는 **스팟 표본**의 가중평균인데, 우리 관세청
+  통계는 **CIF 기준이라 실제로 치른 운임이 이미 포함**돼 있다(7월 4개국 수입 336.6억
+  달러). 지수와 체감이 어긋나는 사연 대부분이 이 시차에 있다는 설명이 가능해졌다.
+  운임이 곧 과세가격의 일부라는 연결도 실무 지점에 넣었다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 2편 pubDate 원복.
+- 큐: Tier A **39/55**, 총 **39/86**, 진행중 표시 없음.
+  다음 두 편은 `export-control-grammar`(986자)·`trade-claim-arbitration`(995자).
 
 ### 2026-08-25 (보강 32~35편, 계정A)
 
