@@ -45,8 +45,8 @@
 | [x] | 할당관세…관세율에 달아 두는 임시 밸브 | 735 → **1,723자** | `quota-tariff-explained` · 8/25 A |
 | [x] | 같은 무게, 2.7배 가격…반도체 수출 단가의 마법 | 737 → **1,573자** | `semi-export-unit-value` · 8/25 A |
 | [x] | 무역수지와 경상수지…같은 날 다른 숫자가 나오는 이유 | 748 → **1,600자** | `trade-balance-vs-current-account` · 8/25 A |
-| [진행중·A] | 수입 화물은 어떻게 내 손에 오나…통관의 다섯 관문 | 754자 | `import-clearance-steps` |
-| [진행중·A] | 매월 1일 아침, 반도체 통계를 읽는 세 가지 체크포인트 | 769자 | `semi-monthly-checklist` |
+| [x] | 수입 화물은 어떻게 내 손에 오나…통관의 다섯 관문 | 754 → **1,526자** | `import-clearance-steps` · 8/25 A |
+| [x] | 매월 1일 아침, 반도체 통계를 읽는 세 가지 체크포인트 | 769 → **1,607자** | `semi-monthly-checklist` · 8/25 A |
 | [ ] | 금리가 오르면 채권값은 왜 내리나…국고채 10년으로 푸는 역관계 | 780자 | `bond-price-vs-yield` |
 | [ ] | 관세 환급…신청하지 않으면 돌려받지 못하는 돈 | 783자 | `duty-drawback-basics` |
 | [ ] | 무역대금 결제의 세 가지 길…송금·추심·신용장 총정리 | 787자 | `trade-payment-three-ways` |
