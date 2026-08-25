@@ -74,10 +74,10 @@
 | [x] | 물가지수 읽는 법…"2% 올랐다"는 문장의 해부 | 865 → **1,487자** | `cpi-how-to-read` · 8/25 A |
 | [x] | 무역사기의 전형 다섯 가지…수법은 진화해도 뼈대는 같다 | 871 → **1,561자** | `trade-fraud-patterns` · 8/25 A |
 | [x] | 환율은 누가 정하나…서울 외환시장의 하루 | 876 → **1,340자** | `seoul-fx-market-day` · 8/25 A |
-| [ ] | 금리 3%에 물가 4%면 손해다…명목과 실질의 산수 | 888자 | `nominal-vs-real-rate` |
-| [ ] | 병행수입…같은 정품이 두 가격인 이유 | 892자 | `parallel-import-explained` |
-| [ ] | 까르네…전시회 장비가 관세 없이 국경을 넘는 방법 | 904자 | `ata-carnet-passport` |
-| [ ] | AI 반도체 지도…팹리스·파운드리·HBM, 뉴스가 읽히는 최소 용어 | 915자 | `ai-semiconductor-map` |
+| [진행중·A] | 금리 3%에 물가 4%면 손해다…명목과 실질의 산수 | 888자 | `nominal-vs-real-rate` |
+| [진행중·A] | 병행수입…같은 정품이 두 가격인 이유 | 892자 | `parallel-import-explained` |
+| [진행중·A] | 까르네…전시회 장비가 관세 없이 국경을 넘는 방법 | 904자 | `ata-carnet-passport` |
+| [진행중·A] | AI 반도체 지도…팹리스·파운드리·HBM, 뉴스가 읽히는 최소 용어 | 915자 | `ai-semiconductor-map` |
 | [ ] | 중계무역·중개무역·가공무역…이름은 닮았지만 돈의 길이 다르다 | 923자 | `intermediary-trade-types` |
 | [ ] | 반도체는 빛으로 그린다…노광, 공정의 왕좌 | 924자 | `euv-lithography-intro` |
 | [ ] | 세관의 처분에 동의할 수 없을 때…관세 불복의 사다리 | 927자 | `customs-appeal-steps` |
