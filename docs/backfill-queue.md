@@ -115,10 +115,10 @@
 | [x] | 배로 보낼까 비행기로 보낼까…운송 수단 선택의 산수 | 749 → **1,061자** | `air-vs-sea-freight` · 8/25 A |
 | [x] | 보세구역…세금이 잠시 멈추는 땅 | 796 → **1,091자** | `bonded-area-basics` · 8/25 A |
 | [x] | D/P와 D/A…신용장 없이 거래하는 법, 추심결제 | 829 → **1,121자** | `dp-da-collection-basics` · 8/25 A |
-| [ ] | 예금자보호 1억 원 시대…무엇이 보호되고 무엇이 아닌가 | 833자 | `deposit-insurance-100m` |
-| [ ] | 후공정 전문회사 OSAT…칩의 마무리를 대신하는 산업 | 862자 | `osat-backend-world` |
-| [ ] | 환전 수수료의 해부…"우대율 90%"는 무엇의 90%인가 | 866자 | `exchange-fee-anatomy` |
-| [ ] | AI 모델은 왜 메모리를 먹나…파라미터의 산수 | 873자 | `ai-model-memory-math` |
+| [진행중·A] | 예금자보호 1억 원 시대…무엇이 보호되고 무엇이 아닌가 | 833자 | `deposit-insurance-100m` |
+| [진행중·A] | 후공정 전문회사 OSAT…칩의 마무리를 대신하는 산업 | 862자 | `osat-backend-world` |
+| [진행중·A] | 환전 수수료의 해부…"우대율 90%"는 무엇의 90%인가 | 866자 | `exchange-fee-anatomy` |
+| [진행중·A] | AI 모델은 왜 메모리를 먹나…파라미터의 산수 | 873자 | `ai-model-memory-math` |
 | [ ] | 바다 위의 분업…컨테이너선·벌크선·탱커는 다른 장사를 한다 | 881자 | `cargo-ship-types` |
 | [ ] | 선하증권(B/L)…물건보다 이 종이가 먼저다 | 882자 | `bill-of-lading-basics` |
 | [ ] | HBM…메모리를 옆으로 늘리지 않고 위로 쌓은 이유 | 894자 | `hbm-explained` |
