@@ -127,10 +127,10 @@
 | [x] | 다 만드는 회사, 만들어만 주는 회사…IDM과 파운드리의 경제학 | 919 → **1,353자** | `foundry-vs-idm` · 8/25 A |
 | [x] | Made in의 법칙…원산지 표시는 어떻게 정해지나 | 922 → **1,303자** | `origin-marking-rules` · 8/25 A |
 | [x] | 트랜지스터…손톱 위의 수백억 개 스위치 | 923 → **1,304자** | `transistor-tiny-switch` · 8/25 A |
-| [ ] | AEO…세관이 믿는 회사가 되면 국경이 빨라진다 | 926자 | `aeo-trusted-trader` |
-| [ ] | 외환보유액…나라의 비상금은 왜, 얼마나 쌓아 두나 | 938자 | `forex-reserves-explained` |
-| [ ] | AI의 전기 청구서…데이터센터가 전력망의 문제가 된 이유 | 943자 | `datacenter-power-bill` |
-| [ ] | 무어의 법칙…관찰 하나가 60년의 로드맵이 된 이야기 | 943자 | `moores-law-60years` |
+| [진행중·A] | AEO…세관이 믿는 회사가 되면 국경이 빨라진다 | 926자 | `aeo-trusted-trader` |
+| [진행중·A] | 외환보유액…나라의 비상금은 왜, 얼마나 쌓아 두나 | 938자 | `forex-reserves-explained` |
+| [진행중·A] | AI의 전기 청구서…데이터센터가 전력망의 문제가 된 이유 | 943자 | `datacenter-power-bill` |
+| [진행중·A] | 무어의 법칙…관찰 하나가 60년의 로드맵이 된 이야기 | 943자 | `moores-law-60years` |
 | [ ] | 해외송금은 어떻게 도착하나…SWIFT라는 고속도로 | 943자 | `swift-money-highway` |
 | [ ] | 2019년 여름의 교훈…소재 세 가지가 멈춰 세울 뻔한 것 | 944자 | `semi-materials-lesson-2019` |
 | [ ] | AI 칩 삼형제…GPU·NPU·ASIC은 무엇이 다른가 | 950자 | `gpu-npu-asic` |
