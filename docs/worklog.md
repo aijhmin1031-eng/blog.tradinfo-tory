@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 34편)**
-      - 큐 Tier A 31편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 38편)**
+      - 큐 Tier A 35편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -197,11 +197,13 @@
         **`fx-deposit-basics`** · **`cpi-how-to-read`** ·
         `trade-fraud-patterns` · `seoul-fx-market-day` ·
         **`nominal-vs-real-rate`** · **`parallel-import-explained`** ·
-        **`ata-carnet-passport`** · **`ai-semiconductor-map`**
+        `ata-carnet-passport` · `ai-semiconductor-map` ·
+        **`intermediary-trade-types`** · **`euv-lithography-intro`** ·
+        **`customs-appeal-steps`** · **`korea-semi-map`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 55편**(Tier A 24 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 51편**(Tier A 20 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `intermediary-trade-types`(923자)와 `euv-lithography-intro`(924자)다.
+      다음 두 편은 `freight-index-reading`(932자)와 `tariff-who-pays`(935자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -234,6 +236,36 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 32~35편, 계정A)
+
+- `intermediary-trade-types` 923 → **1,591자**(9/9 예약). 「통계에 남는 흔적」 각도.
+  반도체 對홍콩은 수출 **43.7억 달러 대 수입 0.3억 달러**로 100배가 넘는 비대칭인데,
+  이것이 홍콩이 최종 소비지가 아니라 중계 지점이라는 통계적 그림자다. 베트남은
+  99.3 대 35.0으로 양방향인데 상당 부분이 가공무역의 왕복이다.
+  **단서도 달았다**: 통계는 물건이 지나간 길만 기록하고 소유권은 기록하지 않으므로,
+  중개무역처럼 우리가 물건을 만지지 않는 거래는 애초에 통관 통계에 잡히지 않는다.
+- `euv-lithography-intro` 924 → **1,547자**(9/4 예약). ASML 원문에서 **EUV 13.5nm 대
+  DUV 193nm**를 확인해 **14.3배**라는 나눗셈을 세웠고, 그 파장이 너무 짧아
+  **유리 렌즈를 통과하지 못해 반사경만 써야 하고 광학계가 진공에 들어가야 한다**는
+  이유까지 넣었다. 「더 좋은 램프를 끼운 기계」가 아니라 광학 원리가 바뀐 장비라는
+  것이 새 내용이다. 장비 무역 적자 14.8억 달러로 마무리를 이었다.
+- `customs-appeal-steps` 927 → **1,355자**(9/22 예약). 기사가 「단계별로 법정 기한이
+  정해져 있다」고만 적고 **숫자를 비워 두었던 자리**를 관세청 원문으로 채웠다.
+  조사 결과 통지 뒤 **30일**(과세전적부심사), 납부고지서 뒤 **90일**(이의신청·
+  심사청구·심판청구). 그리고 **창구가 하나가 아니라는 점**(이의신청을 건너뛸 수
+  있고 심사청구·심판청구 중 고를 수 있다)을 보태, 「반드시 이 순서」라는 오해를 풀었다.
+- `korea-semi-map` 929 → **1,425자**(9/16 예약). 「이 좁은 땅에서 나오는 무게」.
+  2026년 7월 반도체 수출은 327.2억 달러인데 중량은 **1,679,933kg**, 한 달에 1,680톤
+  남짓이다. **부피로는 작고 값으로는 거대한** 이 비율이 반도체 공장이 항구가 아니라
+  물·전기·사람 쪽으로 끌려갈 수 있었던 이유라는 연결을 지었다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 4편 pubDate 원복.
+- **게이트가 실제로 막아 준 것**: `euv-lithography-intro`(9/4)에서 `semi-eight-processes`
+  (9/6)로 링크를 걸었더니 **죽은 링크로 잡혔다.** 게이트는 대상의 pubDate가 이 기사보다
+  늦고 오늘 기준으로도 미발행일 때만 잡는다(과거 공백은 무시). 예약 기사끼리 링크할
+  때는 **발행 순서**를 봐야 한다는 뜻이다.
+- 큐: Tier A **35/55**, 총 **35/86**, 진행중 표시 없음.
+  다음 두 편은 `freight-index-reading`(932자)·`tariff-who-pays`(935자).
 
 ### 2026-08-25 (보강 28~31편, 계정A)
 
