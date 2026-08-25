@@ -41,8 +41,8 @@
 | [x] | 반도체를 빼면, 중국에는 적자다…對中 무역의 민낯 | 708 → **1,391자** | `semi-china-deficit-truth` · 8/25 |
 | [x] | FOB와 CIF…견적서의 세 글자가 바꾸는 것들 | 710 → **1,441자** | `fob-vs-cif` · 8/25 견본 |
 | [x] | 달러인덱스(DXY)…환율 기사의 숨은 주어 | 717 → **1,444자** | `dollar-index-explained` · 8/25 |
-| [진행중·A] | HS코드 완전 기초…10자리 숫자가 관세율을 결정한다 | 728자 | `hs-code-basics` |
-| [진행중·A] | 할당관세…관세율에 달아 두는 임시 밸브 | 735자 | `quota-tariff-explained` |
+| [x] | HS코드 완전 기초…10자리 숫자가 관세율을 결정한다 | 728 → **1,752자** | `hs-code-basics` · 8/25 A |
+| [x] | 할당관세…관세율에 달아 두는 임시 밸브 | 735 → **1,723자** | `quota-tariff-explained` · 8/25 A |
 | [ ] | 같은 무게, 2.7배 가격…반도체 수출 단가의 마법 | 737자 | `semi-export-unit-value` |
 | [ ] | 무역수지와 경상수지…같은 날 다른 숫자가 나오는 이유 | 748자 | `trade-balance-vs-current-account` |
 | [ ] | 수입 화물은 어떻게 내 손에 오나…통관의 다섯 관문 | 754자 | `import-clearance-steps` |
