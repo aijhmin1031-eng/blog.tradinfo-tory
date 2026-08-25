@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 54편)**
-      - 큐 Tier A 51편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 58편) — Tier A 전량 완료**
+      - 큐 Tier A **55편 전부**(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -207,11 +207,14 @@
         **`fx-regime-menu`** · **`chips-subsidy-race`** ·
         `chip-ip-royalty` · `ocean-freight-explained` ·
         **`chuseok-gift-direct-purchase`** · **`import-duty-calculation`** ·
-        **`export-process-a-to-z`** · **`fta-origin-certificate`**
+        `export-process-a-to-z` · `fta-origin-certificate` ·
+        **`trade-insurance-basics`** · **`import-price-and-inflation`** ·
+        **`exchange-rate-quotes`** · **`tariff-types-explained`**
+        (이하 생략 — Tier A 55편 전량)
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 35편**(Tier A 4 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 31편 = Tier B 전부.** Tier A는 끝났다. 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `trade-insurance-basics`(1594자)와 `import-price-and-inflation`(1596자)다.
+      다음은 Tier B 위에서부터 `container-teu-cbm`(619자)·`air-vs-sea-freight`(749자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -225,7 +228,7 @@
     |---:|---:|---:|---|
     | 2 | 0% | 767자 | `base-rate-275` |
     | ~~1~~ **처리 8/25** | ~~24%~~ | 983 → 1,646자 | `fx-hedge-basics` |
-    | 0 | **26%** | 1,663자 | `exchange-rate-quotes` |
+    | 0 | ~~26%~~ **처리 8/25** | 1,663 → 2,175자 | `exchange-rate-quotes` |
     | 0 | **26%** | 1,958자 | `letter-of-credit-basics` |
     | 1 | 3% | 866자 | `exchange-fee-anatomy` |
     | ~~1~~ **처리 8/25** | 1% | 888 → 1,476자 | `nominal-vs-real-rate` |
@@ -244,6 +247,30 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 52~55편 — **Tier A 55편 전부 완료**, 계정A)
+
+- `trade-insurance-basics` 1594 → **2,089자**. 「보험을 들기 전에 하라는 것이 따로 있다」.
+  KOTRA·경찰청·무역보험공사 매뉴얼이 못박은 순서(**거래 전 조사 → 결제 구조에 안전장치**)를
+  넣고, **신용조사가 보험 인수 한도를 함께 정하는 절차**라 청약이 곧 거래 판단 도구가
+  된다는 각도를 세웠다. 부보율이 100%가 아니라는 점도 실무 지점에 넣었다.
+- `import-price-and-inflation` 1596 → **1,989자**. 사슬의 첫 칸은 환율과 유가를 따로가
+  아니라 **곱해서** 봐야 한다는 것. 원화 환산 배럴값 90,965원 → **122,386원**(달러
+  32.7% 대 원화 **34.5%**). **오를 때 빠르고 내릴 때 느린 비대칭**도 함께 적었다.
+- `exchange-rate-quotes` 1663 → **2,175자**. **PointCards 겹침 26%(미결 19번 3위) 해소** —
+  본문 요약이던 카드 셋을 「비용은 두 번 든다」·「기다리는 값과 깎는 값」·「지폐를 만지면
+  비싸진다」로 교체했다. 데이터는 **하루 평균 4.57원·중앙값 3.50원**이다.
+  **기다림으로 얻는 폭과 우대율로 확정하는 폭은 같은 저울에 올릴 성질이 아니라는 것**이
+  이 기사의 새 결론이다.
+- `tariff-types-explained` 1760 → **2,193자**. 「무역구제 조치에는 시계가 달려 있다」.
+  WTO 반덤핑협정의 기한(조사 1년·최대 18개월, 잠정조치 60일 이후, 덤핑마진 2% 문턱)을
+  표로 넣어, **최종 판정 전에 이미 관세가 붙어 있을 수 있다**는 함의를 세웠다.
+  반덤핑·상계관세는 세율표가 아니라 **개별 조사 결과로 특정 국가·회사에 붙는다**는
+  점도 실무 지점에 넣었다.
+
+**Tier A 55편이 전부 끝났다.** 이 세션에서만 46편을 처리했고(8/25 이전 완료 9편 포함
+55편), 전부 `check-quality` 통과·빌드 통과다. 다음은 Tier B 31편이며, 규칙대로
+**2·3번(실무 지점 + 진짜 출처)만** 적용해 데이터를 억지로 붙이지 않는다.
 
 ### 2026-08-25 (보강 48~51편, 계정A — 이미 긴 기사들은 출처·끝맺음 위주로)
 
