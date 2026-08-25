@@ -122,9 +122,9 @@ Routine 알림 설정은 `push: true · email: false`.
 - **Vercel Analytics: 코드 배포됨.** `/_vercel/insights/script.js` 가 HTTP 200 으로 실제
   분석 코드를 서빙하고 수집 엔드포인트도 200 — **이미 켜져 있을 가능성이 높다.**
   대시보드 Analytics 탭을 열어 숫자가 보이는지 확인하면 된다.
-- **Supabase `visit_log`: 8/25 소유주가 SQL 실행 완료.** 함수 3개 동작 확인
-  (기록 → 집계 → 유입 도메인 `google.com` 파싱까지 실측 확인).
-  **단, 홈 `/` 거부 버그가 있어 패치 1회 필요**(위 절 참조).
+- **Supabase `visit_log`: 가동 중 (8/25 SQL 3개 전부 적용 완료).** 실측 검증 끝 —
+  홈·기사 경로 기록 · 유입 도메인 파싱(`google.com`·`search.naver.com`) · 손으로 넣은
+  가짜값 거부까지 확인. **현재 방문 기록 0건**(색인 전이라 정상).
 - 검색 색인: 아직 안 잡힘 → 검색 유입 0이 정상
 
 ## 숫자를 볼 때 주의할 것
