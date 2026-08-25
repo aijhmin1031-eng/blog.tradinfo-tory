@@ -62,10 +62,10 @@
 | [x] | 코픽스…내 대출 금리를 정하는 낯선 이름 | 803 → **1,428자** | `cofix-explained` · 8/25 A |
 | [x] | 인코텀즈 2020 총정리…11가지 조건, 한 가지 질문 | 805 → **1,345자** | `incoterms-2020-guide` · 8/25 A |
 | [x] | 면세 한도 800달러…술·담배·향수는 따로 계산한다 | 806 → **1,434자** | `duty-free-allowance-800` · 8/25 A |
-| [ ] | 해외직구…150달러의 경계선, 넘으면 무슨 일이 생기나 | 817자 | `overseas-direct-purchase-tax` |
-| [ ] | 포워더와 관세사…무역의 두 조력자는 무엇이 다른가 | 820자 | `forwarder-vs-customs-broker` |
-| [ ] | 인보이스와 패킹리스트…무역 서류의 기본 두 장 | 824자 | `invoice-packing-list` |
-| [ ] | 반도체·AI 특집 한 달의 지도…처음 온 독자를 위한 안내 | 836자 | `semi-topic-reading-guide` |
+| [진행중·A] | 해외직구…150달러의 경계선, 넘으면 무슨 일이 생기나 | 817자 | `overseas-direct-purchase-tax` |
+| [진행중·A] | 포워더와 관세사…무역의 두 조력자는 무엇이 다른가 | 820자 | `forwarder-vs-customs-broker` |
+| [진행중·A] | 인보이스와 패킹리스트…무역 서류의 기본 두 장 | 824자 | `invoice-packing-list` |
+| [진행중·A] | 반도체·AI 특집 한 달의 지도…처음 온 독자를 위한 안내 | 836자 | `semi-topic-reading-guide` |
 | [ ] | 모래에서 칩까지…반도체 8대 공정 지도 | 847자 | `semi-eight-processes` |
 | [ ] | 반덤핑관세…"너무 싸게 파는 것"이 문제가 되는 순간 | 850자 | `antidumping-duty-basics` |
 | [ ] | 반도체는 왜 원판에서 태어나나…웨이퍼 300mm의 경제학 | 850자 | `wafer-300mm-economics` |
