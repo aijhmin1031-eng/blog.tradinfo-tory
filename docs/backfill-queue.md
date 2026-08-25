@@ -1,0 +1,119 @@
+# 보강 큐 — 설명 기사 86편
+
+「보강 계획」(2026-08-25)의 실행 목록. 상세는 [계획서](https://claude.ai/code/artifact/7dd6a179-b54c-43e4-8b29-7159d55c2ef1),
+집필 기준은 `operations.md`의 「기사 집필 기준」 절.
+
+## 규칙
+
+- **매일 아침 Routine이 위에서부터 2편씩** 꺼내 처리한다(예약 재고가 3일치 이상일 때만).
+  재고가 모자라면 신규 집필이 우선 — 보강은 유휴 시간에만.
+- 처리한 줄은 `[x]`로 바꾸고 **처리 날짜를 적는다**. 일지에도 한 줄 남긴다.
+- **보강 3종 세트**(계획서 기준):
+  1. **우리 숫자 한 조각** — 창고(`data/series/`)에서 그 주제에 닿는 실측치
+  2. **「실무에서 틀리기 쉬운 지점」** — 「오늘의 결론」을 걷어내고 교체
+  3. **진짜 출처** — 원문을 확인해 `sources` 배열에 넣는다
+  Tier B는 **2·3번만** 붙인다(데이터를 억지로 붙이지 않는다).
+- **커밋 전 `node scripts/check-quality.mjs <슬러그>` 통과 필수.**
+  분량만 늘고 새 사실·새 출처가 없으면 물타기로 보고 되돌린다.
+
+## 순서 원칙
+
+얇은 것부터다. 같은 노력으로 가장 크게 나아지고, 검색 유입이 큰 상식 기사가 대체로 얇다.
+
+## Tier A — 우리 데이터가 바로 닿는 주제 (55편)
+
+| | 기사 | 현재 | 슬러그 |
+|---|---|---:|---|
+| [ ] | 반도체를 빼면, 중국에는 적자다…對中 무역의 민낯 | 708자 | `semi-china-deficit-truth` |
+| [ ] | FOB와 CIF…견적서의 세 글자가 바꾸는 것들 | 710자 | `fob-vs-cif` |
+| [ ] | 달러인덱스(DXY)…환율 기사의 숨은 주어 | 717자 | `dollar-index-explained` |
+| [ ] | HS코드 완전 기초…10자리 숫자가 관세율을 결정한다 | 728자 | `hs-code-basics` |
+| [ ] | 할당관세…관세율에 달아 두는 임시 밸브 | 735자 | `quota-tariff-explained` |
+| [ ] | 같은 무게, 2.7배 가격…반도체 수출 단가의 마법 | 737자 | `semi-export-unit-value` |
+| [ ] | 무역수지와 경상수지…같은 날 다른 숫자가 나오는 이유 | 748자 | `trade-balance-vs-current-account` |
+| [ ] | 수입 화물은 어떻게 내 손에 오나…통관의 다섯 관문 | 754자 | `import-clearance-steps` |
+| [ ] | 매월 1일 아침, 반도체 통계를 읽는 세 가지 체크포인트 | 769자 | `semi-monthly-checklist` |
+| [ ] | 금리가 오르면 채권값은 왜 내리나…국고채 10년으로 푸는 역관계 | 780자 | `bond-price-vs-yield` |
+| [ ] | 관세 환급…신청하지 않으면 돌려받지 못하는 돈 | 783자 | `duty-drawback-basics` |
+| [ ] | 무역대금 결제의 세 가지 길…송금·추심·신용장 총정리 | 787자 | `trade-payment-three-ways` |
+| [ ] | 코픽스…내 대출 금리를 정하는 낯선 이름 | 803자 | `cofix-explained` |
+| [ ] | 인코텀즈 2020 총정리…11가지 조건, 한 가지 질문 | 805자 | `incoterms-2020-guide` |
+| [ ] | 면세 한도 800달러…술·담배·향수는 따로 계산한다 | 806자 | `duty-free-allowance-800` |
+| [ ] | 해외직구…150달러의 경계선, 넘으면 무슨 일이 생기나 | 817자 | `overseas-direct-purchase-tax` |
+| [ ] | 포워더와 관세사…무역의 두 조력자는 무엇이 다른가 | 820자 | `forwarder-vs-customs-broker` |
+| [ ] | 인보이스와 패킹리스트…무역 서류의 기본 두 장 | 824자 | `invoice-packing-list` |
+| [ ] | 반도체·AI 특집 한 달의 지도…처음 온 독자를 위한 안내 | 836자 | `semi-topic-reading-guide` |
+| [ ] | 모래에서 칩까지…반도체 8대 공정 지도 | 847자 | `semi-eight-processes` |
+| [ ] | 반덤핑관세…"너무 싸게 파는 것"이 문제가 되는 순간 | 850자 | `antidumping-duty-basics` |
+| [ ] | 반도체는 왜 원판에서 태어나나…웨이퍼 300mm의 경제학 | 850자 | `wafer-300mm-economics` |
+| [ ] | 세관은 물건값을 어떻게 정하나…관세평가의 여섯 계단 | 859자 | `customs-valuation-basics` |
+| [ ] | 외화예금 첫걸음…달러 통장에 돈을 두는 이유 | 864자 | `fx-deposit-basics` |
+| [ ] | 물가지수 읽는 법…"2% 올랐다"는 문장의 해부 | 865자 | `cpi-how-to-read` |
+| [ ] | 무역사기의 전형 다섯 가지…수법은 진화해도 뼈대는 같다 | 871자 | `trade-fraud-patterns` |
+| [ ] | 환율은 누가 정하나…서울 외환시장의 하루 | 876자 | `seoul-fx-market-day` |
+| [ ] | 금리 3%에 물가 4%면 손해다…명목과 실질의 산수 | 888자 | `nominal-vs-real-rate` |
+| [ ] | 병행수입…같은 정품이 두 가격인 이유 | 892자 | `parallel-import-explained` |
+| [ ] | 까르네…전시회 장비가 관세 없이 국경을 넘는 방법 | 904자 | `ata-carnet-passport` |
+| [ ] | AI 반도체 지도…팹리스·파운드리·HBM, 뉴스가 읽히는 최소 용어 | 915자 | `ai-semiconductor-map` |
+| [ ] | 중계무역·중개무역·가공무역…이름은 닮았지만 돈의 길이 다르다 | 923자 | `intermediary-trade-types` |
+| [ ] | 반도체는 빛으로 그린다…노광, 공정의 왕좌 | 924자 | `euv-lithography-intro` |
+| [ ] | 세관의 처분에 동의할 수 없을 때…관세 불복의 사다리 | 927자 | `customs-appeal-steps` |
+| [ ] | 한국 반도체 지도…기흥에서 용인까지, 클러스터의 지리학 | 929자 | `korea-semi-map` |
+| [ ] | 운임지수 읽는 법…뱃삯의 온도계는 어떻게 만들어지나 | 932자 | `freight-index-reading` |
+| [ ] | 관세는 정말 상대국이 내는 걸까…관세 부담의 경제학 | 935자 | `tariff-who-pays` |
+| [ ] | 인플레이션의 두 얼굴…끌려서 오르는 물가, 밀려서 오르는 물가 | 975자 | `inflation-two-faces` |
+| [ ] | 환헤지 첫걸음…선물환과 옵션, 중소 수출기업은 무엇이 맞나 | 983자 | `fx-hedge-basics` |
+| [ ] | 반도체 수출통제의 문법…뉴스를 구조로 읽는 법 | 986자 | `export-control-grammar` |
+| [ ] | 클레임이 걸렸다…무역 분쟁이 법정 대신 중재로 가는 이유 | 995자 | `trade-claim-arbitration` |
+| [ ] | 조 단위 화물의 이사…반도체 물류는 왜 초정밀 산업인가 | 1004자 | `semi-precision-logistics` |
+| [ ] | 30원짜리 칩이 세운 자동차 공장…차량용 반도체의 교훈 | 1013자 | `car-chip-shortage-lesson` |
+| [ ] | 환율을 정하는 세 가지 방식…시장, 못, 그리고 그 사이 | 1014자 | `fx-regime-menu` |
+| [ ] | 보조금의 시대…각국은 왜 반도체 공장에 국고를 쏟나 | 1032자 | `chips-subsidy-race` |
+| [ ] | 공장 없이 버는 반도체…설계자산(IP)과 로열티의 경제 | 1039자 | `chip-ip-royalty` |
+| [ ] | 해상운임 읽는 법…FCL·LCL과 할증료의 세계 | 1224자 | `ocean-freight-explained` |
+| [ ] | 명절 선물을 직구로…관세보다 먼저 계산할 것은 달력이다 | 1254자 | `chuseok-gift-direct-purchase` |
+| [ ] | 수입 관세, 이렇게 계산된다…과세가격부터 부가세까지 | 1398자 | `import-duty-calculation` |
+| [ ] | 처음부터 끝까지…수출 절차 한눈에 보기 | 1470자 | `export-process-a-to-z` |
+| [ ] | FTA 원산지증명서…관세를 0으로 만드는 서류 한 장 | 1479자 | `fta-origin-certificate` |
+| [ ] | 무역보험 기초…물건은 보냈는데 돈을 못 받는다면 | 1594자 | `trade-insurance-basics` |
+| [ ] | 수입물가는 어떻게 우리 물가가 되나…환율·유가에서 장바구니까지 | 1596자 | `import-price-and-inflation` |
+| [ ] | 매매기준율·전신환·현찰…은행 환율이 여러 개인 이유 | 1663자 | `exchange-rate-quotes` |
+| [ ] | 관세의 종류…기본관세부터 반덤핑관세까지 | 1760자 | `tariff-types-explained` |
+
+## Tier B — 데이터 연결이 약한 실무·기술 주제 (31편)
+
+3종 세트 중 **2·3번만** 적용한다.
+
+| | 기사 | 현재 | 슬러그 |
+|---|---|---:|---|
+| [ ] | 컨테이너…20피트 상자가 만든 세계, TEU와 CBM 읽는 법 | 619자 | `container-teu-cbm` |
+| [ ] | 배로 보낼까 비행기로 보낼까…운송 수단 선택의 산수 | 749자 | `air-vs-sea-freight` |
+| [ ] | 보세구역…세금이 잠시 멈추는 땅 | 796자 | `bonded-area-basics` |
+| [ ] | D/P와 D/A…신용장 없이 거래하는 법, 추심결제 | 829자 | `dp-da-collection-basics` |
+| [ ] | 예금자보호 1억 원 시대…무엇이 보호되고 무엇이 아닌가 | 833자 | `deposit-insurance-100m` |
+| [ ] | 후공정 전문회사 OSAT…칩의 마무리를 대신하는 산업 | 862자 | `osat-backend-world` |
+| [ ] | 환전 수수료의 해부…"우대율 90%"는 무엇의 90%인가 | 866자 | `exchange-fee-anatomy` |
+| [ ] | AI 모델은 왜 메모리를 먹나…파라미터의 산수 | 873자 | `ai-model-memory-math` |
+| [ ] | 바다 위의 분업…컨테이너선·벌크선·탱커는 다른 장사를 한다 | 881자 | `cargo-ship-types` |
+| [ ] | 선하증권(B/L)…물건보다 이 종이가 먼저다 | 882자 | `bill-of-lading-basics` |
+| [ ] | HBM…메모리를 옆으로 늘리지 않고 위로 쌓은 이유 | 894자 | `hbm-explained` |
+| [ ] | 클린룸…먼지 한 톨과 싸우는 공장 | 895자 | `cleanroom-dust-war` |
+| [ ] | HBM 삼국지…소수만 남은 시장의 경쟁 문법 | 915자 | `hbm-rivals-structure` |
+| [ ] | 다 만드는 회사, 만들어만 주는 회사…IDM과 파운드리의 경제학 | 919자 | `foundry-vs-idm` |
+| [ ] | Made in의 법칙…원산지 표시는 어떻게 정해지나 | 922자 | `origin-marking-rules` |
+| [ ] | 트랜지스터…손톱 위의 수백억 개 스위치 | 923자 | `transistor-tiny-switch` |
+| [ ] | AEO…세관이 믿는 회사가 되면 국경이 빨라진다 | 926자 | `aeo-trusted-trader` |
+| [ ] | 외환보유액…나라의 비상금은 왜, 얼마나 쌓아 두나 | 938자 | `forex-reserves-explained` |
+| [ ] | AI의 전기 청구서…데이터센터가 전력망의 문제가 된 이유 | 943자 | `datacenter-power-bill` |
+| [ ] | 무어의 법칙…관찰 하나가 60년의 로드맵이 된 이야기 | 943자 | `moores-law-60years` |
+| [ ] | 해외송금은 어떻게 도착하나…SWIFT라는 고속도로 | 943자 | `swift-money-highway` |
+| [ ] | 2019년 여름의 교훈…소재 세 가지가 멈춰 세울 뻔한 것 | 944자 | `semi-materials-lesson-2019` |
+| [ ] | AI 칩 삼형제…GPU·NPU·ASIC은 무엇이 다른가 | 950자 | `gpu-npu-asic` |
+| [ ] | D램과 낸드…메모리 두 형제의 서로 다른 사업 | 955자 | `dram-vs-nand` |
+| [ ] | 슈퍼사이클은 어떻게 시작되고 어떻게 끝나는가 | 973자 | `semiconductor-cycle-reading` |
+| [ ] | 토리의 갈림길 #1…6,900선의 코스피, 두 갈래 길 | 993자 | `tori-galimgil-01` |
+| [ ] | 온디바이스 AI…클라우드를 떠난 AI가 메모리에 거는 부담 | 996자 | `ondevice-ai-memory` |
+| [ ] | 메모리 강국의 빈칸…한국 팹리스는 왜 얇은가 | 1020자 | `korea-fabless-gap` |
+| [ ] | D램 치킨게임…산업이 셋만 남을 때까지 벌어진 일 | 1065자 | `dram-chicken-game` |
+| [ ] | 배당이냐 자사주냐…삼성전자와 SK하이닉스가 고른 쪽 | 1875자 | `shareholder-return-two-roads` |
+| [ ] | 신용장(L/C) 기초…서로 못 믿는 두 나라가 거래하는 법 | 1958자 | `letter-of-credit-basics` |
