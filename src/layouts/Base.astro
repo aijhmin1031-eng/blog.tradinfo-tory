@@ -5,6 +5,7 @@ import Collab from '../components/Collab.astro';
 import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
 import { SITE, CATEGORIES, url, fmtDate, dateLineIn, shortDateIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 
 interface Props {
   title?: string;
@@ -41,6 +42,8 @@ const canonicalPath = (basePath && Astro.url.pathname.startsWith(basePath)
   ? Astro.url.pathname.slice(basePath.length)
   : Astro.url.pathname) || '/';
 const canonical = new URL(canonicalPath, CANONICAL_ORIGIN).href;
+// 정본(Vercel) 빌드에서만 켜는 것들 — GitHub Pages 미러에는 없는 엔드포인트다.
+const onVercel = !!process.env.VERCEL;
 
 // 내비게이션은 7슬롯 고정, 특집·창고는 드롭다운(데스크톱)이 증가분을 흡수한다.
 // 새 특집은 lib/topics.ts에만 추가하면 된다.
@@ -127,6 +130,57 @@ const isActive = (n: (typeof navItems)[number]) =>
         } catch (e) {}
       })();
     </script>
+    {
+      /* Vercel Web Analytics — 순 방문자·유입 경로(referrer)·국가·기기를 잡는다.
+         자체 집계(bump_view)는 페이지 조회 수만 세고 방문자를 구분하지 못해
+         "실제 외부 방문자가 있는가"에 답하지 못했다. 이 스크립트가 그 자리를 메운다.
+         쿠키를 쓰지 않고 개인 식별자도 남기지 않는다.
+         정본에서만 넣는다 — GH Pages 미러에는 이 엔드포인트가 없어 404가 날 뿐이다.
+         **Vercel 대시보드에서 Analytics 를 켜야 실제 수집이 시작된다.** */
+      onVercel && <script defer src="/_vercel/insights/script.js"></script>
+    }
+    {
+      /* 방문 기록 — 기사뿐 아니라 모든 페이지에서 한 번씩.
+         남기는 것은 '그날치 난수 + 경로 + 유입 도메인' 뿐이다(scripts/sql/visit_log.sql 참조).
+         자정이 지나면 난수가 새로 만들어져 같은 사람을 이틀 이상 추적할 수 없다.
+         RPC 가 아직 없으면(SQL 미적용) 조용히 실패하고 아무것도 깨지지 않는다. */
+      onVercel && (
+        <script define:vars={{ sbUrl: SUPABASE_URL, sbKey: SUPABASE_ANON_KEY }}>
+          {`(function () {
+            try {
+              if (navigator.webdriver) return;
+              var h = location.hostname;
+              if (h === 'localhost' || h === '127.0.0.1') return;
+
+              // 방문자 구분값은 '그날 하루'만 산다. 날짜가 바뀌면 새로 만들어진다.
+              var day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
+              var key = 'dv:' + day;
+              var id = null;
+              try { id = localStorage.getItem(key); } catch (e) {}
+              if (!id) {
+                var b = new Uint8Array(8);
+                crypto.getRandomValues(b);
+                id = Array.from(b, function (x) { return x.toString(16).padStart(2, '0'); }).join('');
+                try {
+                  localStorage.setItem(key, id);
+                  // 지난 날짜 값은 지운다 — 오래 남겨 둘 이유가 없다.
+                  Object.keys(localStorage).forEach(function (k2) {
+                    if (k2.indexOf('dv:') === 0 && k2 !== key) localStorage.removeItem(k2);
+                  });
+                } catch (e) {}
+              }
+
+              fetch(sbUrl + '/rest/v1/rpc/log_visit', {
+                method: 'POST',
+                headers: { apikey: sbKey, Authorization: 'Bearer ' + sbKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ p_path: location.pathname, p_visitor: id, p_ref: document.referrer || '' }),
+                keepalive: true,
+              }).catch(function () {});
+            } catch (e) {}
+          })();`}
+        </script>
+      )
+    }
     <slot name="head" />
   </head>
   <body>
