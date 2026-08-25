@@ -1,17 +1,17 @@
 {
-  "asOf": "2026-08-24",
+  "asOf": "2026-08-25",
   "note": "ECOS·FRED 자동 수집 — data/series/ 에 장기 축적",
   "ticker": [
     {
       "label": "USD/KRW",
-      "value": "1,383.60",
-      "delta": "0.67%",
+      "value": "1,380.60",
+      "delta": "0.22%",
       "dir": "down"
     },
     {
       "label": "JPY100",
-      "value": "870.44",
-      "delta": "0.68%",
+      "value": "867.95",
+      "delta": "0.29%",
       "dir": "down"
     },
     {
@@ -22,19 +22,19 @@
     },
     {
       "label": "KOSPI",
-      "value": "6,696.96",
-      "delta": "3.12%",
-      "dir": "down"
-    },
-    {
-      "label": "美 10Y",
-      "value": "4.74%",
-      "delta": "5bp",
+      "value": "6,742.74",
+      "delta": "0.68%",
       "dir": "up"
     },
     {
+      "label": "美 10Y",
+      "value": "4.70%",
+      "delta": "4bp",
+      "dir": "down"
+    },
+    {
       "label": "국고채 10Y",
-      "value": "4.34%",
+      "value": "4.32%",
       "delta": "",
       "dir": "up"
     }
@@ -42,60 +42,60 @@
   "tiles": [
     {
       "label": "원/달러 환율",
-      "value": "1,383.60",
-      "delta": "0.67%",
+      "value": "1,380.60",
+      "delta": "0.22%",
       "dir": "down",
       "spark": [
         4,
         4,
         4,
         4,
-        4,
         7,
-        13,
-        19,
+        12,
+        18,
+        24,
         26
       ],
       "sparkHi": "1,415",
-      "sparkLo": "1,384"
+      "sparkLo": "1,381"
     },
     {
       "label": "한·미 금리차 (10Y)",
-      "value": "-0.36%p",
+      "value": "-0.37%p",
       "delta": "1bp",
-      "dir": "up",
-      "spark": [
-        26,
-        16,
-        14,
-        7,
-        12,
-        7,
-        4,
-        12,
-        10
-      ],
-      "sparkHi": "-0.31",
-      "sparkLo": "-0.48"
-    },
-    {
-      "label": "KOSPI",
-      "value": "6,696.96",
-      "delta": "3.12%",
       "dir": "down",
       "spark": [
         26,
-        18,
-        10,
+        24,
+        9,
+        19,
+        9,
         4,
-        8,
-        22,
-        8,
-        6,
+        19,
+        16,
+        19
+      ],
+      "sparkHi": "-0.31",
+      "sparkLo": "-0.40"
+    },
+    {
+      "label": "KOSPI",
+      "value": "6,742.74",
+      "delta": "0.68%",
+      "dir": "up",
+      "spark": [
+        21,
+        11,
+        4,
+        9,
+        26,
+        9,
+        7,
+        16,
         14
       ],
       "sparkHi": "6,978",
-      "sparkLo": "6,346"
+      "sparkLo": "6,471"
     }
   ]
 }
