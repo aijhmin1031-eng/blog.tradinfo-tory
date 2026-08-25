@@ -31,5 +31,38 @@
    "emDashViolations": 0,
    "longParaArticles": 0
   }
+ },
+ {
+  "date": "2026-08-26",
+  "articles": 107,
+  "depth": {
+   "meanChars": 1408,
+   "medianChars": 1436,
+   "pctOver1500": 31.8,
+   "pctOver1300": 76.6
+  },
+  "evidence": {
+   "pctWithSources": 100,
+   "pctWithSourceUrl": 100,
+   "pctWithVerification": 3.7
+  },
+  "repetition": {
+   "leadRepeatArticles": 5,
+   "pcOverlapArticles": 0,
+   "meanPcOverlap": 1.3
+  },
+  "connection": {
+   "meanInternalLinks": 1.3,
+   "pctNoInternalLink": 13.1,
+   "pctUsingLiveData": 24.3,
+   "seriesUsed": 13,
+   "seriesTotal": 25
+  },
+  "form": {
+   "oldEndingLeft": 0,
+   "noEnding": 0,
+   "emDashViolations": 0,
+   "longParaArticles": 0
+  }
  }
 ]
