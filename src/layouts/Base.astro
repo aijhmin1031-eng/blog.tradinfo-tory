@@ -190,7 +190,12 @@ const isActive = (n: (typeof navItems)[number]) =>
           navItems.map((n) =>
             n.children ? (
               <div class="nav-group">
-                <a href={n.href} class:list={['nav-item', 'nav-parent', { active: isActive(n) }]}>
+                <a
+                  href={n.href}
+                  class:list={['nav-item', 'nav-parent', { active: isActive(n) }]}
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
                   {n.name}<span class="nav-caret" aria-hidden="true">▾</span>
                 </a>
                 <div class="nav-panel" role="menu">
@@ -215,6 +220,7 @@ const isActive = (n: (typeof navItems)[number]) =>
         }
       </div>
     </nav>
+    <div class="nav-backdrop" aria-hidden="true"></div>
 
     <Ticker />
 
@@ -265,6 +271,54 @@ const isActive = (n: (typeof navItems)[number]) =>
     </footer>
 
     <script>
+      // 모바일 내비 드롭다운, hover 가 없으므로 탭으로 열고 닫는다.
+      // (데스크톱은 CSS hover 그대로 두고, 여기서는 좁은 화면일 때만 개입한다.)
+      (() => {
+        const mq = matchMedia('(max-width: 859.98px)');
+        const nav = document.querySelector('.nav');
+        const backdrop = document.querySelector('.nav-backdrop');
+        const groups = [...document.querySelectorAll('.nav-group')];
+        const closeAll = () => {
+          groups.forEach((g) => {
+            g.classList.remove('open');
+            g.querySelector('.nav-parent')?.setAttribute('aria-expanded', 'false');
+          });
+          backdrop?.classList.remove('show');
+        };
+        const placeBelowNav = (panel) => {
+          if (nav) panel.style.top = nav.getBoundingClientRect().bottom + 'px';
+        };
+        groups.forEach((group) => {
+          const parent = group.querySelector('.nav-parent');
+          const panel = group.querySelector('.nav-panel');
+          parent?.addEventListener('click', (e) => {
+            if (!mq.matches) return; // 데스크톱: 링크 이동 + hover 드롭다운 그대로
+            e.preventDefault();
+            const wasOpen = group.classList.contains('open');
+            closeAll();
+            if (!wasOpen) {
+              group.classList.add('open');
+              parent.setAttribute('aria-expanded', 'true');
+              placeBelowNav(panel);
+              backdrop?.classList.add('show');
+            }
+          });
+        });
+        backdrop?.addEventListener('click', closeAll);
+        // 화면이 데스크톱 폭으로 커지면 모바일 열림 상태를 정리한다.
+        addEventListener('resize', () => {
+          if (!mq.matches) closeAll();
+        });
+        // 스크롤하면 고정 패널 위치가 어긋나므로 닫는다.
+        addEventListener('scroll', () => {
+          if (document.querySelector('.nav-group.open')) closeAll();
+        }, { passive: true });
+        // ESC 로 닫기(키보드 접근성)
+        addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeAll();
+        });
+      })();
+
       // 테마 토글
       document.getElementById('theme-toggle')?.addEventListener('click', () => {
         const root = document.documentElement;
@@ -465,10 +519,48 @@ const isActive = (n: (typeof navItems)[number]) =>
       word-break: keep-all;
     }
   }
-  /* 모바일: 드롭다운 없이 부모 링크만, 특집은 /topics/ 인덱스로 이동 */
+  /* 모바일: hover 가 없으므로 부모를 탭하면 펼쳐지는 드롭다운(데스크톱과 같은 항목).
+     .nav-in 이 overflow-x:auto 라 세로로 잘리므로, 패널은 position:fixed 로 그 밖으로 꺼낸다
+     (top 은 JS 가 내비 바로 아래로 맞춘다). */
   @media (max-width: 859.98px) {
-    .nav-panel { display: none !important; }
+    .nav-caret { display: inline; transition: rotate 0.15s ease; }
+    .nav-group.open > .nav-parent .nav-caret { rotate: 180deg; }
+    .nav-panel {
+      display: none;
+      position: fixed;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 2px solid var(--ink);
+      border-bottom: 1px solid var(--hair);
+      box-shadow: 0 14px 30px rgba(16, 20, 28, 0.16);
+      padding: 4px 0;
+      max-height: 72vh;
+      overflow-y: auto;
+      z-index: 60;
+    }
+    .nav-group.open .nav-panel { display: block; }
+    .nav-sub {
+      display: block;
+      padding: 13px 20px;
+      text-decoration: none;
+      border-bottom: 1px solid var(--hair);
+    }
+    .nav-sub:last-child { border-bottom: none; }
+    .nav-sub-name { display: block; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+    .nav-sub.active .nav-sub-name { color: var(--accent); }
+    .nav-sub-desc { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; word-break: keep-all; }
   }
+  /* 열린 드롭다운 뒤 어둑한 배경(모바일 전용). nav(z-50) 아래, 본문 위에 깐다 */
+  .nav-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 20, 28, 0.28);
+    z-index: 40;
+  }
+  .nav-backdrop.show { display: block; }
+  @media (min-width: 860px) { .nav-backdrop { display: none !important; } }
   .nav-item {
     padding: 15px 22px;
     font-size: 14.5px;
