@@ -332,20 +332,16 @@ const isActive = (n: (typeof navItems)[number]) =>
         const nav = document.querySelector('.nav');
         const backdrop = document.querySelector('.nav-backdrop');
         const groups = [...document.querySelectorAll('.nav-group')];
+        let openScrollY = 0;
         const closeAll = () => {
           groups.forEach((g) => {
             g.classList.remove('open');
             g.querySelector('.nav-parent')?.setAttribute('aria-expanded', 'false');
           });
           backdrop?.classList.remove('show');
-          document.body.classList.remove('nav-open');
-        };
-        const placeBelowNav = (panel) => {
-          if (nav) panel.style.top = nav.getBoundingClientRect().bottom + 'px';
         };
         groups.forEach((group) => {
           const parent = group.querySelector('.nav-parent');
-          const panel = group.querySelector('.nav-panel');
           parent?.addEventListener('click', (e) => {
             if (!mq.matches) return; // 데스크톱: 링크 이동 + hover 드롭다운 그대로
             e.preventDefault();
@@ -354,9 +350,8 @@ const isActive = (n: (typeof navItems)[number]) =>
             if (!wasOpen) {
               group.classList.add('open');
               parent.setAttribute('aria-expanded', 'true');
-              placeBelowNav(panel);
               backdrop?.classList.add('show');
-              document.body.classList.add('nav-open'); // 뒤 본문 스크롤 잠금
+              openScrollY = window.scrollY;
             }
           });
         });
@@ -365,6 +360,11 @@ const isActive = (n: (typeof navItems)[number]) =>
         addEventListener('resize', () => {
           if (!mq.matches) closeAll();
         });
+        // 스크롤하면 닫는다. 탭 순간의 미세한 스크롤로 즉시 닫히지 않게 60px 문턱을 둔다.
+        addEventListener('scroll', () => {
+          if (!document.querySelector('.nav-group.open')) return;
+          if (Math.abs(window.scrollY - openScrollY) > 60) closeAll();
+        }, { passive: true });
         // ESC 로 닫기(키보드 접근성)
         addEventListener('keydown', (e) => {
           if (e.key === 'Escape') closeAll();
@@ -572,14 +572,21 @@ const isActive = (n: (typeof navItems)[number]) =>
     }
   }
   /* 모바일: hover 가 없으므로 부모를 탭하면 펼쳐지는 드롭다운(데스크톱과 같은 항목).
-     .nav-in 이 overflow-x:auto 라 세로로 잘리므로, 패널은 position:fixed 로 그 밖으로 꺼낸다
-     (top 은 JS 가 내비 바로 아래로 맞춘다). */
+     주의(2026-08-25 수리): 처음에는 position:fixed + body 스크롤 잠금으로 만들었는데,
+     모바일 브라우저에서 body{overflow:hidden} 이 스크롤을 못 막는 경우가 있어
+     **본문만 스크롤되고 패널이 화면에 붙어 떠 있는** 문제가 생겼다.
+     그래서 패널을 sticky 인 .nav 에 absolute 로 붙인다. .nav-in 의 overflow-x:auto 클리핑은
+     .nav-group 을 static 으로 두어 피한다(그러면 패널의 컨테이닝 블록이 .nav 가 되고,
+     클리핑하는 .nav-in 이 그 하위라서 잘리지 않는다). */
   @media (max-width: 859.98px) {
     .nav-caret { display: inline; transition: rotate 0.15s ease; }
     .nav-group.open > .nav-parent .nav-caret { rotate: 180deg; }
+    /* 패널의 기준을 .nav 로 올린다(클리핑 회피) */
+    .nav-group { position: static; }
     .nav-panel {
       display: none;
-      position: fixed;
+      position: absolute;
+      top: 100%;
       left: 0;
       right: 0;
       background: var(--surface);
@@ -632,8 +639,8 @@ const isActive = (n: (typeof navItems)[number]) =>
     /* 손가락 탭 영역을 넉넉히(≈48px 높이) */
     .nav-item { padding: 15px 16px; font-size: 13.5px; }
   }
-  /* 모바일 드롭다운이 열려 있는 동안 뒤 본문 스크롤을 잠근다(고정 패널이 어긋나지 않게) */
-  body.nav-open { overflow: hidden; }
+  /* (스크롤 잠금은 폐지했다. 모바일에서 body{overflow:hidden} 이 안 먹는 브라우저가 있어
+     패널이 화면에 붙어 떠 있는 버그를 만들었다. 지금은 스크롤하면 닫히도록 JS 가 처리한다.) */
 
   .footer { background: var(--dark-band); color: var(--dark-band-ink); margin-top: 72px; }
   .footer-in {
