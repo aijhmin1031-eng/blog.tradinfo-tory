@@ -155,7 +155,9 @@ const breadcrumb = {
 </Base>
 
 <style>
-  .it-wrap { padding: 32px 0 56px; }
+  /* 좌우 패딩은 .wrap(0 24px / 모바일 0 18px)에서 오게 두고, 위아래만 준다.
+     단축 padding 으로 좌우를 0으로 덮으면 모바일에서 콘텐츠가 화면 끝에 붙는다. */
+  .it-wrap { padding-top: 32px; padding-bottom: 56px; }
   .it-crumb { font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
   .it-crumb a { color: var(--muted); }
   .it-crumb a:hover { color: var(--accent); }

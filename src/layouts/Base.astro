@@ -284,6 +284,7 @@ const isActive = (n: (typeof navItems)[number]) =>
             g.querySelector('.nav-parent')?.setAttribute('aria-expanded', 'false');
           });
           backdrop?.classList.remove('show');
+          document.body.classList.remove('nav-open');
         };
         const placeBelowNav = (panel) => {
           if (nav) panel.style.top = nav.getBoundingClientRect().bottom + 'px';
@@ -301,6 +302,7 @@ const isActive = (n: (typeof navItems)[number]) =>
               parent.setAttribute('aria-expanded', 'true');
               placeBelowNav(panel);
               backdrop?.classList.add('show');
+              document.body.classList.add('nav-open'); // 뒤 본문 스크롤 잠금
             }
           });
         });
@@ -309,10 +311,6 @@ const isActive = (n: (typeof navItems)[number]) =>
         addEventListener('resize', () => {
           if (!mq.matches) closeAll();
         });
-        // 스크롤하면 고정 패널 위치가 어긋나므로 닫는다.
-        addEventListener('scroll', () => {
-          if (document.querySelector('.nav-group.open')) closeAll();
-        }, { passive: true });
         // ESC 로 닫기(키보드 접근성)
         addEventListener('keydown', (e) => {
           if (e.key === 'Escape') closeAll();
@@ -577,8 +575,11 @@ const isActive = (n: (typeof navItems)[number]) =>
   }
   @media (max-width: 720px) {
     .nav-in { justify-content: flex-start; }
-    .nav-item { padding: 13px 15px; font-size: 13.5px; }
+    /* 손가락 탭 영역을 넉넉히(≈48px 높이) */
+    .nav-item { padding: 15px 16px; font-size: 13.5px; }
   }
+  /* 모바일 드롭다운이 열려 있는 동안 뒤 본문 스크롤을 잠근다(고정 패널이 어긋나지 않게) */
+  body.nav-open { overflow: hidden; }
 
   .footer { background: var(--dark-band); color: var(--dark-band-ink); margin-top: 72px; }
   .footer-in {
