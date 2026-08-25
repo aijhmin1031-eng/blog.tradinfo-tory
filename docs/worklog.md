@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 30편)**
-      - 큐 Tier A 27편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 34편)**
+      - 큐 Tier A 31편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -195,11 +195,13 @@
         **`semi-eight-processes`** · **`antidumping-duty-basics`** ·
         `wafer-300mm-economics` · `customs-valuation-basics` ·
         **`fx-deposit-basics`** · **`cpi-how-to-read`** ·
-        **`trade-fraud-patterns`** · **`seoul-fx-market-day`**
+        `trade-fraud-patterns` · `seoul-fx-market-day` ·
+        **`nominal-vs-real-rate`** · **`parallel-import-explained`** ·
+        **`ata-carnet-passport`** · **`ai-semiconductor-map`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 59편**(Tier A 28 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 55편**(Tier A 24 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `nominal-vs-real-rate`(888자)와 `parallel-import-explained`(892자)다.
+      다음 두 편은 `intermediary-trade-types`(923자)와 `euv-lithography-intro`(924자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -216,7 +218,7 @@
     | 0 | **26%** | 1,663자 | `exchange-rate-quotes` |
     | 0 | **26%** | 1,958자 | `letter-of-credit-basics` |
     | 1 | 3% | 866자 | `exchange-fee-anatomy` |
-    | 1 | 1% | 888자 | `nominal-vs-real-rate` |
+    | ~~1~~ **처리 8/25** | 1% | 888 → 1,476자 | `nominal-vs-real-rate` |
     | ~~1~~ **처리 8/25** | 0% | 865 → 1,487자 | `cpi-how-to-read` |
     | 1 | 0% | 815자 | `deposit-rate-back-to-3` |
     | 1 | 0% | 737자 | `semi-export-unit-value` |
@@ -232,6 +234,36 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 28~31편, 계정A)
+
+- `nominal-vs-real-rate` 888 → **1,476자**(9/18 예약). **도입부 재탕 제거**(미결 19번
+  대상) — 「예금 3%대 복귀를 다뤘을 때」로 열던 첫 문단을 「이자는 붙었는데 장바구니
+  값이 더 올랐다면」이라는 장면으로 바꿨다. 우리 숫자는 **명목금리의 10년 폭**이다.
+  정기예금 평균금리는 **0.80%**(2020-08)에서 **4.29%**(2022-11) 사이, 중앙값 1.82%,
+  현재 3.02%. 다만 「명목이 높은 해는 물가도 높았다」는 점을 못박아, 표만으로 판단하지
+  않도록 했다.
+- `parallel-import-explained` 892 → **1,477자**(9/8 예약). 「두 가격의 간격을 벌리고
+  좁히는 것은 환율」이라는 각도. 병행수입은 소량을 자주 들여와 환율이 **다음 입고분에
+  바로 실리는** 반면, 공식 수입가는 본사와 합의된 정책 가격이라 늦게 움직인다.
+  그래서 「병행수입은 원래 얼마쯤 싸다」는 감각이 해마다 어긋난다.
+  관세청 원문에서 **관세법 제235조 신고 심사 때 병행수입 허용 여부를 함께 판단**한다는
+  것도 확인해 넣었다.
+  - **자체 교정**: 이 기사 출처에 처음 붙인 관세청 URL이 실은 관세환급 페이지 주소였다.
+    지식재산권 보호 페이지로 바로잡았다. **주소를 기억으로 적지 말 것**(규칙에 이미
+    있는 「그럴듯한 주소를 지어 넣는 것은 무출처보다 나쁘다」의 실제 사례).
+- `ata-carnet-passport` 904 → **1,475자**(9/19 예약). 대한상공회의소 원문에서
+  **유효기간은 발급일부터 최장 1년**(일부 협약국 1년 연장), 그리고 **농산물·식료품·
+  위험물품·소모품 등 부패 우려 물품과 1회용품은 대상 제외**임을 확인해 넣었다.
+  「1년 안에 다녀오라」가 아니라 **1년 안에 모든 나라에서 나오라**는 뜻이라는 해석과,
+  기준이 첫 입국이 아니라 발급일이라는 점이 새 내용이다. 데이터는 억지로 붙이지 않았다.
+- `ai-semiconductor-map` 915 → **1,481자**. 「이 지도의 절반은 무역 통계에 보이지
+  않는다」. 설계(팹리스)는 국경을 넘지 않아 통계에 안 잡히고, 파운드리·메모리는
+  HS 8542로 함께, 장비는 HS 8486으로 따로 잡힌다. **가장 마진이 높은 칸이 가장 안
+  보인다**는 것이 수출액으로 부가가치를 재면 안 되는 이유다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 3편 pubDate 원복.
+- 큐: Tier A **31/55**, 총 **31/86**, 진행중 표시 없음.
+  다음 두 편은 `intermediary-trade-types`(923자)·`euv-lithography-intro`(924자).
 
 ### 2026-08-25 (보강 24~27편, 계정A)
 
