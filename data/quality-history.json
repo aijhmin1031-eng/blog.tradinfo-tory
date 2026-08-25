@@ -1,0 +1,35 @@
+[
+ {
+  "date": "2026-08-25",
+  "articles": 107,
+  "depth": {
+   "meanChars": 998,
+   "medianChars": 915,
+   "pctOver1500": 7.5,
+   "pctOver1300": 17.8
+  },
+  "evidence": {
+   "pctWithSources": 22.4,
+   "pctWithSourceUrl": 22.4,
+   "pctWithVerification": 2.8
+  },
+  "repetition": {
+   "leadRepeatArticles": 8,
+   "pcOverlapArticles": 3,
+   "meanPcOverlap": 1.6
+  },
+  "connection": {
+   "meanInternalLinks": 0.2,
+   "pctNoInternalLink": 88.8,
+   "pctUsingLiveData": 16.8,
+   "seriesUsed": 13,
+   "seriesTotal": 25
+  },
+  "form": {
+   "oldEndingLeft": 80,
+   "noEnding": 83,
+   "emDashViolations": 0,
+   "longParaArticles": 0
+  }
+ }
+]

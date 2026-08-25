@@ -9,9 +9,14 @@
 // 사용법:
 //   node scripts/check-quality.mjs <슬러그> [<슬러그> ...]
 //   node scripts/check-quality.mjs --all        # 큐 전체(backfill-queue.md의 슬러그) 점검
+//   node scripts/check-quality.mjs --linkable   # 지금 링크 걸어도 되는 기사 목록(쓰기 전에 볼 것)
 // 종료코드 0=통과, 1=하나라도 실패.
+//
+// --linkable 이 있는 이유: 죽은 내부 링크는 "쓰고 나서" 걸리면 이미 늦다.
+// 아직 발행 안 된 기사로 링크를 걸어 두면 독자에게 404가 간다(2026-08-25 실제 발생).
+// 쓰기 전에 이 목록을 보고 그 안에서만 고르면 애초에 안 걸린다.
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -201,6 +206,26 @@ const args = process.argv.slice(2);
 if (args.length === 0) {
   console.error('사용법: node scripts/check-quality.mjs <슬러그> [...]  |  --all');
   process.exit(2);
+}
+
+// --linkable: 오늘 기준 이미 발행된 기사만 추려 준다. 내부 링크는 여기서만 고른다.
+if (args.includes('--linkable')) {
+  const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
+  const rows = [];
+  for (const f of readdirSync(POSTS)) {
+    if (!f.endsWith('.mdx')) continue;
+    const { front } = splitFront(readFileSync(join(POSTS, f), 'utf8'));
+    const pub = (front.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) || [])[1];
+    const draft = /^draft:\s*true/m.test(front);
+    if (!pub || draft || pub > todayKST) continue;
+    const title = (front.match(/^title:\s*'(.+?)'/m) || [])[1] ?? '';
+    rows.push({ slug: f.slice(0, -4), pub, title });
+  }
+  rows.sort((a, b) => (a.pub < b.pub ? 1 : -1));
+  console.log(`\n지금(${todayKST} KST) 링크 걸어도 되는 기사 ${rows.length}편 — 이 밖의 슬러그는 404가 된다.\n`);
+  for (const r of rows) console.log(`  ${r.pub}  /posts/${r.slug}/  ${r.title.slice(0, 40)}`);
+  console.log('');
+  process.exit(0);
 }
 
 let slugs = args;

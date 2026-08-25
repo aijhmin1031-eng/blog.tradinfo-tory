@@ -9,7 +9,10 @@
     "preview": "astro preview",
     "fetch-data": "node scripts/pipeline/collect.mjs",
     "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/corp.mjs && node scripts/pipeline/trade.mjs && node scripts/pipeline/brief.mjs",
-    "check-quality": "node scripts/check-quality.mjs"
+    "check-quality": "node scripts/check-quality.mjs",
+    "quality": "node scripts/quality-metrics.mjs --trend",
+    "quality:save": "node scripts/quality-metrics.mjs --trend --save",
+    "linkable": "node scripts/check-quality.mjs --linkable"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
