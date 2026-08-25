@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 42편)**
-      - 큐 Tier A 39편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 46편)**
+      - 큐 Tier A 43편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -201,11 +201,13 @@
         **`intermediary-trade-types`** · **`euv-lithography-intro`** ·
         `customs-appeal-steps` · `korea-semi-map` ·
         **`freight-index-reading`** · **`tariff-who-pays`** ·
-        **`inflation-two-faces`** · **`fx-hedge-basics`**
+        `inflation-two-faces` · `fx-hedge-basics` ·
+        **`export-control-grammar`** · **`trade-claim-arbitration`** ·
+        **`semi-precision-logistics`** · **`car-chip-shortage-lesson`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 47편**(Tier A 16 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 43편**(Tier A 12 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `export-control-grammar`(986자)와 `trade-claim-arbitration`(995자)다.
+      다음 두 편은 `fx-regime-menu`(1014자)와 `chips-subsidy-race`(1032자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -238,6 +240,33 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 40~43편, 계정A)
+
+- `semi-precision-logistics` 1004 → **1,495자**(9/22 예약). 창고의 두 계열을 나란히
+  놓아 **무게당 가치**를 만들었다. 반도체 kg당 **19,479달러**, 구리 kg당 **13.54달러**,
+  약 **1,438배**다(서로 다른 시장이라 규모 감각용이라는 단서를 달았다). 항공 운임이
+  화물값에 비하면 반올림 오차인 구간이 존재한다는 것이 「비싼 운송이 합리적」인 이유다.
+- `car-chip-shortage-lesson` 1013 → **1,562자**(9/25 예약). 「통계에서는 잘 보이지 않는
+  칩」이라는 각도. kg당 단가가 2.7배로 오르는 동안 **평균이 올라갈수록 싼 칩은 뒤에
+  묻힌다.** 2021년에 라인을 세운 것은 금액 통계에서 존재감이 거의 없던 저가 제어칩이었다.
+  **금액으로 산업을 읽으면 가장 위험한 부품이 가장 안 보인다**는 것이 이 사건의 통계적 교훈.
+- `export-control-grammar` 986 → **1,545자**(9/17 예약). 「우리에게는 통제가 두 방향에서
+  온다」. 나가는 쪽은 對중국 반도체 수출 **134.2억 달러**, 들어오는 쪽은 제조장비
+  **순수입 −14.8억 달러**다. 팔 길이 막히는 것과 만들 도구를 못 사는 것은 다른 사건이며,
+  같은 「반도체 규제」 제목 아래 정반대 성격의 조치가 들어 있다는 분류 기준을 세웠다.
+- `trade-claim-arbitration` 995 → **1,506자**(9/27 예약). 중재를 고르는 진짜 이유를
+  UNCITRAL 원문으로 뒷받침했다. 뉴욕협약 당사국 **172개국**이고, 당사국끼리는 상대국
+  법원이 중재판정을 원칙적으로 승인·집행한다. **법원 판결에는 이만큼 넓은 국제 약속이
+  없다**는 대비가 「이기는 것」과 「받아 내는 것」의 간격을 설명한다. 단심이라 항소가
+  없다는 성질도 실무 지점에 넣었다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 4편 pubDate 원복.
+- **주의로 남기는 것**: 이 묶음에서 `dataAsOf`와 `pubDate`가 서로 다른 날짜인 기사가
+  여럿이라, 프런트매터 치환을 `dataAsOf: '<pubDate>'`로 잡았다가 sources가 안 들어가
+  게이트에 두 번 걸렸다. **프런트매터를 스크립트로 고칠 때는 키를 정규식으로 잡을 것**
+  (`^dataAsOf: '[^']+'$`), 값으로 잡지 말 것.
+- 큐: Tier A **43/55**, 총 **43/86**, 진행중 표시 없음.
+  다음 두 편은 `fx-regime-menu`(1014자)·`chips-subsidy-race`(1032자).
 
 ### 2026-08-25 (보강 36~39편, 계정A)
 
