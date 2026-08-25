@@ -399,9 +399,19 @@ const jsonLd = {
   }
   .row-date { font-size: 11px; color: var(--muted); }
   @media (max-width: 640px) {
-    .row { grid-template-columns: 96px 1fr; }
-    .row-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: flex-start; }
-    .row-thumb { width: 96px; }
+    /* 작은 썸네일(16:9=54px)이 긴 본문 옆 세로 가운데에 떠서 위아래 여백이 크게 보이던 문제.
+       이미지를 키우고(4:3) 제목 위쪽에 맞춰 정렬하고, 설명은 3줄로 줄여 행 높이를 낮춘다. */
+    .row { grid-template-columns: 116px 1fr; gap: 14px; align-items: start; }
+    .row-thumb { width: 116px; aspect-ratio: 4 / 3; }
+    .row-body { grid-column: 2; }
+    .row-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: flex-start; margin-top: 10px; }
+    .row-dek {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-top: 5px;
+    }
   }
 
   #tori-greet {
