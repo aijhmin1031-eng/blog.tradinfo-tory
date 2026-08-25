@@ -98,10 +98,10 @@
 | [x] | 수입 관세, 이렇게 계산된다…과세가격부터 부가세까지 | 1398 → **1,815자** | `import-duty-calculation` · 8/25 A |
 | [x] | 처음부터 끝까지…수출 절차 한눈에 보기 | 1470 → **1,902자** | `export-process-a-to-z` · 8/25 A |
 | [x] | FTA 원산지증명서…관세를 0으로 만드는 서류 한 장 | 1479 → **1,957자** | `fta-origin-certificate` · 8/25 A |
-| [ ] | 무역보험 기초…물건은 보냈는데 돈을 못 받는다면 | 1594자 | `trade-insurance-basics` |
-| [ ] | 수입물가는 어떻게 우리 물가가 되나…환율·유가에서 장바구니까지 | 1596자 | `import-price-and-inflation` |
-| [ ] | 매매기준율·전신환·현찰…은행 환율이 여러 개인 이유 | 1663자 | `exchange-rate-quotes` |
-| [ ] | 관세의 종류…기본관세부터 반덤핑관세까지 | 1760자 | `tariff-types-explained` |
+| [진행중·A] | 무역보험 기초…물건은 보냈는데 돈을 못 받는다면 | 1594자 | `trade-insurance-basics` |
+| [진행중·A] | 수입물가는 어떻게 우리 물가가 되나…환율·유가에서 장바구니까지 | 1596자 | `import-price-and-inflation` |
+| [진행중·A] | 매매기준율·전신환·현찰…은행 환율이 여러 개인 이유 | 1663자 | `exchange-rate-quotes` |
+| [진행중·A] | 관세의 종류…기본관세부터 반덤핑관세까지 | 1760자 | `tariff-types-explained` |
 
 ## Tier B — 데이터 연결이 약한 실무·기술 주제 (31편)
 
