@@ -110,10 +110,10 @@
 
 | | 기사 | 현재 | 슬러그 |
 |---|---|---:|---|
-| [ ] | 컨테이너…20피트 상자가 만든 세계, TEU와 CBM 읽는 법 | 619자 | `container-teu-cbm` |
-| [ ] | 배로 보낼까 비행기로 보낼까…운송 수단 선택의 산수 | 749자 | `air-vs-sea-freight` |
-| [ ] | 보세구역…세금이 잠시 멈추는 땅 | 796자 | `bonded-area-basics` |
-| [ ] | D/P와 D/A…신용장 없이 거래하는 법, 추심결제 | 829자 | `dp-da-collection-basics` |
+| [진행중·A] | 컨테이너…20피트 상자가 만든 세계, TEU와 CBM 읽는 법 | 619자 | `container-teu-cbm` |
+| [진행중·A] | 배로 보낼까 비행기로 보낼까…운송 수단 선택의 산수 | 749자 | `air-vs-sea-freight` |
+| [진행중·A] | 보세구역…세금이 잠시 멈추는 땅 | 796자 | `bonded-area-basics` |
+| [진행중·A] | D/P와 D/A…신용장 없이 거래하는 법, 추심결제 | 829자 | `dp-da-collection-basics` |
 | [ ] | 예금자보호 1억 원 시대…무엇이 보호되고 무엇이 아닌가 | 833자 | `deposit-insurance-100m` |
 | [ ] | 후공정 전문회사 OSAT…칩의 마무리를 대신하는 산업 | 862자 | `osat-backend-world` |
 | [ ] | 환전 수수료의 해부…"우대율 90%"는 무엇의 90%인가 | 866자 | `exchange-fee-anatomy` |
