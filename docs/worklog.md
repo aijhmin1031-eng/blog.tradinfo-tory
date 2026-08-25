@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 46편)**
-      - 큐 Tier A 43편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 50편)**
+      - 큐 Tier A 47편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -203,11 +203,13 @@
         **`freight-index-reading`** · **`tariff-who-pays`** ·
         `inflation-two-faces` · `fx-hedge-basics` ·
         **`export-control-grammar`** · **`trade-claim-arbitration`** ·
-        **`semi-precision-logistics`** · **`car-chip-shortage-lesson`**
+        `semi-precision-logistics` · `car-chip-shortage-lesson` ·
+        **`fx-regime-menu`** · **`chips-subsidy-race`** ·
+        **`chip-ip-royalty`** · **`ocean-freight-explained`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 43편**(Tier A 12 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 39편**(Tier A 8 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `fx-regime-menu`(1014자)와 `chips-subsidy-race`(1032자)다.
+      다음 두 편은 `chuseok-gift-direct-purchase`(1254자)와 `import-duty-calculation`(1398자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -240,6 +242,28 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 44~47편, 계정A)
+
+- `fx-regime-menu` 1014 → **1,552자**(9/30 예약). 「같은 제도 아래에서도 통화쌍마다
+  다르다」. 창고의 두 계열을 같은 방식으로 재니 **원/엔의 일간 평균 변동이 0.535%로
+  원/달러 0.363%보다 1.5배쯤 크다.** 원인은 제도가 아니라 계산 방식이다. 원/엔은
+  원/달러와 달러/엔을 엮어 산출하는 **재정환율**이라 두 움직임이 겹친다. 「환율이
+  안정적이다」는 말이 통화쌍을 밝혀야 성립한다는 결론이 실측으로 섰다.
+- `chips-subsidy-race` 1032 → **1,596자**(9/23 예약). 「보조금이 사려는 것은 결국
+  장비」. 칩으로는 243.4억 달러 흑자를 내는 나라도 **장비는 순수입(−14.8억 달러)**이다.
+  그래서 보조금 경쟁이 격해질수록 장비 공급자의 협상력이 올라간다. WTO 보조금 협정
+  원문도 확인해, 지금의 지원이 **상계관세의 근거로 되돌아올 수 있다**는 경로를 넣었다.
+- `chip-ip-royalty` 1039 → **1,553자**(9/21 예약). 「로열티는 통계에서 사라지지만
+  관세에서 다시 나타난다」. WTO 관세평가협정 **제8조**가 수입품에 결부된 로열티·
+  라이선스료를 **과세가격 가산 요소**로 규정한다. 무형의 값이 유형의 세금으로 환산되는
+  지점이며, 그래서 IP 계약서는 기술 문서이자 세무 문서라는 연결이 생겼다.
+- `ocean-freight-explained` 1224 → **1,687자**. 유류할증료의 뿌리를 유가 실측으로
+  받쳤다(1년 **+32.7%**). 그리고 **운임이 오르면 과세가격이 오른다**는 연결(수입은
+  CIF 기준, 7월 4개국 336.6억 달러)로 「운임 협상은 세액 관리」라는 실무 결론을 세웠다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 3편 pubDate 원복.
+- 큐: Tier A **47/55**, 총 **47/86**, 진행중 표시 없음. **Tier A는 8편 남았다.**
+  다음 두 편은 `chuseok-gift-direct-purchase`(1254자)·`import-duty-calculation`(1398자).
 
 ### 2026-08-25 (보강 40~43편, 계정A)
 
