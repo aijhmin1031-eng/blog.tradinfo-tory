@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 26편)**
-      - 큐 Tier A 23편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 30편)**
+      - 큐 Tier A 27편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -193,11 +193,13 @@
         **`overseas-direct-purchase-tax`** · **`forwarder-vs-customs-broker`** ·
         `invoice-packing-list` · `semi-topic-reading-guide` ·
         **`semi-eight-processes`** · **`antidumping-duty-basics`** ·
-        **`wafer-300mm-economics`** · **`customs-valuation-basics`**
+        `wafer-300mm-economics` · `customs-valuation-basics` ·
+        **`fx-deposit-basics`** · **`cpi-how-to-read`** ·
+        **`trade-fraud-patterns`** · **`seoul-fx-market-day`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 63편**(Tier A 32 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 59편**(Tier A 28 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `fx-deposit-basics`(864자)와 `cpi-how-to-read`(865자)다.
+      다음 두 편은 `nominal-vs-real-rate`(888자)와 `parallel-import-explained`(892자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -215,7 +217,7 @@
     | 0 | **26%** | 1,958자 | `letter-of-credit-basics` |
     | 1 | 3% | 866자 | `exchange-fee-anatomy` |
     | 1 | 1% | 888자 | `nominal-vs-real-rate` |
-    | 1 | 0% | 865자 | `cpi-how-to-read` |
+    | ~~1~~ **처리 8/25** | 0% | 865 → 1,487자 | `cpi-how-to-read` |
     | 1 | 0% | 815자 | `deposit-rate-back-to-3` |
     | 1 | 0% | 737자 | `semi-export-unit-value` |
     | 1 | 0% | 1,501자 | `krw-1400-three-signals` (잔여 1개, 게이트 통과 상태라 손대지 않아도 됨) |
@@ -230,6 +232,38 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 24~27편, 계정A)
+
+- `fx-deposit-basics` 864 → **1,340자**. 「금리차보다 환율이 일곱 배」라는 대조.
+  미 국채 10년 4.74% 대 우리 정기예금 3.02%로 금리차는 **1.72%포인트**인데, 지난 1년
+  환율은 **12.6%** 움직였다. 달러 통장 손익을 정하는 것은 사실상 환율 하나이고
+  금리는 그 위에 얹히는 얇은 층이라는 결론이 숫자로 선다. 환차익은 비과세지만
+  **이자는 과세**라는 점, 환전 스프레드가 양방향 두 번이라는 점도 실무 지점에 넣었다.
+- `seoul-fx-market-day` 876 → **1,340자**(8/26 예약). 「이 무대에서 하루에 얼마가
+  움직이나」. 10년치 종가 2,460건으로 일간 변동폭을 계산: 평균 **4.57원**, 중앙값
+  3.50원, 상위 5% **13.00원**, 최대 **42.30원**(2020-03-20, 1,237.8 → 1,280.1).
+  최근 1년 평균은 6.09원으로 10년 평균보다 큰 국면이다. **보통의 하루는 3~5원**이라는
+  기준선이 생겼다(하루치 등락으로 추세를 말하지 말라는 근거).
+- `cpi-how-to-read` 865 → **1,487자**(9/10 예약). **도입부 재탕 제거**(미결 19번
+  대상이었다) — 「2%대」로 열던 첫 문단을 장바구니 장면으로 바꿨다. 우리 숫자는
+  「평균이 감추는 것」에 붙였다. 지난 1년 WTI **+32.7%**, 구리 **+38.6%**,
+  천연가스 **+2.2%**로 같은 원자재끼리 **편차가 36%포인트**다. 이렇게 제각각인 것을
+  눌러 평균 낸 한 줄이 물가 상승률이라는 설명이 실물로 선다.
+- `trade-fraud-patterns` 871 → **1,561자**(8/27 예약). **KOTRA 매뉴얼 PDF를 직접 열어**
+  실제 통계를 넣었다(24-074, 경찰청·무역보험공사 협업). 2023년 접수 **118건**,
+  유형별로 서류위조 29·선적불량 25·결제사기 20·이메일사기 17·금품사기 15·기타 10·
+  불법체류 2건. 접수는 2020년 160건에서 줄어드는 추세지만 매뉴얼 스스로 **실제
+  발생은 더 많을 것으로 추정**한다고 적어 두었다.
+  - **기사가 놓친 유형을 찾았다**: KOTRA 분류의 **불법체류**(바이어로 위장해 비자
+    초청장을 받아 입국 후 잠적)는 우리 「다섯 전형」 어디에도 없었다. 돈을 받기 전에는
+    손해가 없다는 계산이 깨지는 자리라 실무 지점 첫 항목으로 세웠다.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 3편 pubDate 원복.
+- **도구 메모**: 이 컨테이너에는 `pdftotext`가 없고 `pypdf`는 설치돼도
+  `cryptography` 충돌로 처음엔 죽는다. `pip install --force-reinstall cffi cryptography`
+  뒤에는 `pypdf`로 PDF 본문을 읽을 수 있다. 원문 PDF가 출처인 기사에서 쓸 수 있다.
+- 큐: Tier A **27/55**, 총 **27/86**, 진행중 표시 없음.
+  다음 두 편은 `nominal-vs-real-rate`(888자)·`parallel-import-explained`(892자).
 
 ### 2026-08-25 (보강 20~23편, 계정A)
 
