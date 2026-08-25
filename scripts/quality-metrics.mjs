@@ -26,6 +26,24 @@ const SERIES = join(ROOT, 'data/series');
 const HISTORY = join(ROOT, 'data/quality-history.json');
 
 const koChars = (s) => (s.match(/[가-힣]/g)?.length ?? 0);
+
+// ── 검정 판정 (scripts/audit.mjs 와 같은 기준을 쓴다. 한쪽만 고치지 말 것) ──────
+//   2026-08-26 정의 변경: 이전에는 「## 검정」이라는 **제목 글자**만 셌다.
+//   그래서 제목을 「정말 동행하는가, 재 보았다」로 단 기사는 상관계수·대조군을 다 싣고도
+//   0으로 잡혔다. 제목이 아니라 **반증을 시도한 흔적**을 센다.
+//   → 이 줄 위아래의 「검정」 수치는 8/26 이전 스냅샷과 직접 비교하지 말 것.
+const CLAIM = /때문|이유는|덕분|탓에|영향으로|동행|따라 움직|이끌|주도|비례|반대로 움직|닮았|같은 방향/;
+const VERIFY = /상관계수|상관 |회귀|대조군|반증|결정계수|R²|베타|표본|유의|공통 추세|추세를 걷어|검정/;
+const NEEDS_VERIFY = (front, body) => {
+  const usesOurData = /<SeriesChart|<SeriesContext|<LineChart|<Spark/.test(body) || /^chart:/m.test(front);
+  if (!usesOurData) return false;
+  const prose = body
+    .replace(/<PointCards[\s\S]*?\]\}\s*\/>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\n/g, ' ');
+  // 수치로 한 주장이라야 수치로 검정할 수 있다 → 주장 어휘와 숫자가 같은 문장에 있을 때만.
+  return prose.split(/(?<=[.。])\s+/).some((x) => CLAIM.test(x) && /\d/.test(x));
+};
 const todayKST = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
 
 function splitFront(raw) {
@@ -101,7 +119,8 @@ function measure() {
       oldEnding: /오늘의 결론/.test(body),
       emDash: (raw.match(/—/g) ?? []).length,
       internalLinks: (body.match(/\]\((\/posts\/|\/story\/|\/topics\/)/g) ?? []).length,
-      hasVerification: /^##\s*검정/m.test(body),
+      hasVerification: VERIFY.test(body),
+      needsVerification: NEEDS_VERIFY(front, body),
       usesLiveData: /<SeriesChart|<SeriesContext/.test(body),
       longParas: paras.filter((p) => koChars(p) > 350).length,
       leadRepeat, pcOverlap,
@@ -140,6 +159,13 @@ function measure() {
       pctWithSources: pct(live.filter((a) => a.sources > 0).length),
       pctWithSourceUrl: pct(live.filter((a) => a.sourceUrls > 0).length),
       pctWithVerification: pct(live.filter((a) => a.hasVerification).length),
+      // 가장 중요한 칸. 분모가 전체가 아니라 **검정이 필요한 기사**다.
+      // 해설 기사에까지 상관계수를 요구하면 지표가 물타기를 부추긴다.
+      claimArticles: live.filter((a) => a.needsVerification).length,
+      pctClaimsVerified: (() => {
+        const need = live.filter((a) => a.needsVerification);
+        return need.length ? Math.round((need.filter((a) => a.hasVerification).length / need.length) * 1000) / 10 : 100;
+      })(),
     },
     repetition: {
       leadRepeatArticles: live.filter((a) => a.leadRepeat >= 1).length,
@@ -171,7 +197,11 @@ const FMT = [
   ['근거', [
     ['출처 보유', (m) => `${m.evidence.pctWithSources}%`, 'up'],
     ['확인 URL 보유', (m) => `${m.evidence.pctWithSourceUrl}%`, 'up'],
-    ['「검정」 절 보유', (m) => `${m.evidence.pctWithVerification}%`, 'up'],
+    ['검정 흔적 보유(전체)', (m) => `${m.evidence.pctWithVerification}%`, 'up'],
+    // 4번째 원소는 증감 계산용 숫자 getter. 값 문자열에 다른 숫자가 섞이면
+    // 문자열에서 숫자를 긁는 기본 방식이 엉뚱한 값을 만든다(예: "37.5% (8편 중)" → 37.58).
+    ['★ 주장 기사 중 검정', (m) => `${m.evidence.pctClaimsVerified}% (${m.evidence.claimArticles}편)`, 'up',
+      (m) => m.evidence.pctClaimsVerified],
   ]],
   ['반복', [
     ['도입부 재탕 기사', (m) => `${m.repetition.leadRepeatArticles}편`, 'down'],
@@ -204,12 +234,13 @@ if (existsSync(HISTORY)) {
 console.log(`\n도토리경제 품질 지표 · ${m.date} · 기사 ${m.articles}편\n`);
 for (const [group, rows] of FMT) {
   console.log(`  [${group}]`);
-  for (const [label, get, dir] of rows) {
+  for (const [label, get, dir, num] of rows) {
     let delta = '';
     if (args.includes('--trend') && prev) {
       try {
-        const a = get(m).replace(/[^0-9.]/g, '');
-        const b = get(prev).replace(/[^0-9.]/g, '');
+        const a = num ? num(m) : get(m).replace(/[^0-9.]/g, '');
+        const b = num ? num(prev) : get(prev).replace(/[^0-9.]/g, '');
+        if (b === undefined || b === null || b === '') throw new Error('이전 스냅샷에 없던 지표');
         const d = Number(a) - Number(b);
         if (Number.isFinite(d) && d !== 0) {
           const good = dir === 'up' ? d > 0 : d < 0;

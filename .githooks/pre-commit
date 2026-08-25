@@ -1,0 +1,39 @@
+#!/bin/sh
+# 커밋 차단 훅 — 문서로만 적어 둔 규칙은 안 읽히면 그만이라, 실행되는 자리로 옮긴다.
+#
+# 켜는 법(저장소마다 한 번):
+#   git config core.hooksPath .githooks
+# 끄는 법:
+#   git config --unset core.hooksPath
+# 이번 한 번만 건너뛰기:
+#   git commit --no-verify
+#
+# 무엇을 막나 (staged 된 기사에 대해서만, 빠르게):
+#   ① check-quality  형식 게이트(출처·끝맺음·긴 대시·죽은 링크·문단)
+#   ② audit --strict 내용 감사(수치로 주장하는데 검정이 없는가 등)
+# 예약분 전수 점검(precheck)은 커밋마다 돌리기엔 무거우므로 아침 점검에서 돈다.
+
+set -e
+
+SLUGS=$(git diff --cached --name-only --diff-filter=ACM \
+        | sed -n 's#^src/content/posts/\(.*\)\.mdx$#\1#p')
+
+[ -z "$SLUGS" ] && exit 0
+
+echo "기사 $(echo "$SLUGS" | wc -l | tr -d ' ')편이 staged 됐다. 게이트를 돌린다."
+
+if ! node scripts/check-quality.mjs $SLUGS; then
+  echo ""
+  echo "✗ 형식 게이트 실패. 고치고 다시 커밋할 것."
+  echo "  (정말 넘겨야 하면 git commit --no-verify)"
+  exit 1
+fi
+
+if ! node scripts/audit.mjs --strict $SLUGS; then
+  echo ""
+  echo "✗ 내용 감사 실패. 특히 「검정 없음」은 수치로 한 주장에 근거가 빠졌다는 뜻이다."
+  echo "  (판정이 틀렸다고 판단되면 git commit --no-verify)"
+  exit 1
+fi
+
+echo "✓ 통과."

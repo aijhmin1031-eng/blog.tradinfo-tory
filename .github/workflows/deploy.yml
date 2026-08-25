@@ -18,6 +18,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # 품질 점검 — 배포를 막지 않는다(별도 job, needs 없음).
+  # 살아 있는 사이트에서 게이트가 배포를 막으면, 기사 한 편의 흠 때문에 사이트 전체가 멎는다.
+  # 대신 커밋마다 빨갛게 남겨서 **발행일 아침이 아니라 쓴 날** 결함이 보이게 한다.
+  quality:
+    name: 품질 점검
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - name: 형식 게이트 (전수)
+        run: node scripts/check-quality.mjs --all
+
+      - name: 예약분 사전 점검 (발행일 빌드 사고 예방)
+        run: npm run precheck
+
+      - name: 내용 감사 (주장에 검정이 붙어 있는가)
+        # 빨간불은 「검정 없음·출처 없음」에만 켠다. 얇음·재탕은 목록에 뜨되 막지 않는다.
+        # 경고가 상시로 켜져 있으면 아무도 안 본다.
+        run: npm run audit -- --fail-on=90
+
   build:
     runs-on: ubuntu-latest
     steps:
