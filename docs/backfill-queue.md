@@ -135,10 +135,10 @@
 | [x] | 2019년 여름의 교훈…소재 세 가지가 멈춰 세울 뻔한 것 | 944 → **1,364자** | `semi-materials-lesson-2019` · 8/25 A |
 | [x] | AI 칩 삼형제…GPU·NPU·ASIC은 무엇이 다른가 | 950 → **1,405자** | `gpu-npu-asic` · 8/25 A |
 | [x] | D램과 낸드…메모리 두 형제의 서로 다른 사업 | 955 → **1,448자** | `dram-vs-nand` · 8/25 A |
-| [ ] | 슈퍼사이클은 어떻게 시작되고 어떻게 끝나는가 | 973자 | `semiconductor-cycle-reading` |
-| [ ] | 토리의 갈림길 #1…6,900선의 코스피, 두 갈래 길 | 993자 | `tori-galimgil-01` |
-| [ ] | 온디바이스 AI…클라우드를 떠난 AI가 메모리에 거는 부담 | 996자 | `ondevice-ai-memory` |
-| [ ] | 메모리 강국의 빈칸…한국 팹리스는 왜 얇은가 | 1020자 | `korea-fabless-gap` |
+| [진행중·A] | 슈퍼사이클은 어떻게 시작되고 어떻게 끝나는가 | 973자 | `semiconductor-cycle-reading` |
+| [진행중·A] | 토리의 갈림길 #1…6,900선의 코스피, 두 갈래 길 | 993자 | `tori-galimgil-01` |
+| [진행중·A] | 온디바이스 AI…클라우드를 떠난 AI가 메모리에 거는 부담 | 996자 | `ondevice-ai-memory` |
+| [진행중·A] | 메모리 강국의 빈칸…한국 팹리스는 왜 얇은가 | 1020자 | `korea-fabless-gap` |
 | [ ] | D램 치킨게임…산업이 셋만 남을 때까지 벌어진 일 | 1065자 | `dram-chicken-game` |
 | [ ] | 배당이냐 자사주냐…삼성전자와 SK하이닉스가 고른 쪽 | 1875자 | `shareholder-return-two-roads` |
 | [ ] | 신용장(L/C) 기초…서로 못 믿는 두 나라가 거래하는 법 | 1958자 | `letter-of-credit-basics` |
