@@ -35,7 +35,9 @@ set search_path = public
 as $$
 begin
   -- 경로·방문자값 형식 검증. 형식이 어긋나면 조용히 무시한다.
-  if p_path is null or p_path !~ '^/[a-z0-9/_.-]*/$' or length(p_path) > 200 then
+  -- 주의: 홈('/')도 반드시 통과해야 한다. 첫 판(2026-08-25)은 '^/[a-z0-9/_.-]*/$' 였는데
+  -- 슬래시를 두 개 요구하는 바람에 **가장 많이 보는 홈이 통째로 거부됐다.**
+  if p_path is null or p_path !~ '^/([a-z0-9._-]+/)*$' or length(p_path) > 200 then
     return;
   end if;
   if p_visitor is null or p_visitor !~ '^[a-z0-9]{16}$' then
