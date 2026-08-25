@@ -29,6 +29,18 @@ chart:
   valueSuffix: '만 원'
   color: down
   source: '자료: 금융위원회 주식시세정보 · 도토리경제 가공'
+sources:
+  - org: '금융위원회'
+    name: '주식시세정보 오픈API'
+    url: 'https://www.data.go.kr/data/15094808/openapi.do'
+    note: '종가 기준 · SK하이닉스·삼성전자·현대차·POSCO홀딩스·HMM'
+  - org: '한국은행'
+    name: 'ECOS 경제통계시스템'
+    url: 'https://ecos.bok.or.kr/'
+    note: '코스피 지수'
+  - org: '도토리경제'
+    name: '자체 회귀 분석'
+    note: '2026-07-08~08-20 일간 등락률 29개 관측치 · 표본이 작아 계수는 구간에 따라 달라진다'
 ---
 
 import SeriesChart from '../../components/SeriesChart.astro';
@@ -63,8 +75,8 @@ import Term from '../../components/Term.astro';
 
 곡선에는 세 번의 급한 굽이가 있다. **첫째, 7월 말의 급락.** 7월 9일 218.6만 원의
 고점을 찍은 주가는 7월 30일 132.2만 원까지 3주 만에 39.5% 밀렸다. **둘째, 7월 31일의
-극적 반등.** 하루 만에 132.2만 원에서 171.8만 원으로, 가격제한폭(30%)에 근접한
-+29.9%를 되돌렸다. **셋째, 8월 19~20일의 재현.** 8월 19일 150.0만 원으로 밀렸던
+극적 반등.** 하루 만에 132.2만 원에서 171.8만 원으로 <strong>+30.0%</strong>,
+가격제한폭에 막힌 상한가로 마감했다. **셋째, 8월 19~20일의 재현.** 8월 19일 150.0만 원으로 밀렸던
 주가가 이튿날 169.1만 원으로 +12.7% 뛰었고, 같은 날 코스피도 6,471에서 6,852로
 +5.9% 반등했다. 개별 종목이 아니라 시장 전체가 함께 출렁인 날이다.
 
@@ -132,10 +144,3 @@ import Term from '../../components/Term.astro';
   시작했다는 뜻이다. 실적 개선이 주가의 성격까지 바꾸는지는 여기서 드러난다.
 - **코스피의 진정 여부.** 하루 평균 4.2%는 정상적인 시장이 아니다. 지수 변동성이
   가라앉기 전까지 개별 종목 차트에서 읽어낼 수 있는 것은 많지 않다.
-
-<p class="src-note">
-  주가는 금융위원회 <a href="https://www.data.go.kr/data/15094808/openapi.do" target="_blank" rel="noopener">주식시세정보 오픈API</a>,
-  코스피 지수는 한국은행 <a href="https://ecos.bok.or.kr/" target="_blank" rel="noopener">ECOS</a>에서 매일 자동 수집한 값이다.
-  회귀는 2026-07-08~08-20 일간 등락률 <strong>29개 관측치</strong> 기준으로, 표본이 작아 계수는 구간에 따라 달라질 수 있다.
-  <strong>투자 판단의 근거로 삼기에 적합한 분석이 아니다.</strong>
-</p>

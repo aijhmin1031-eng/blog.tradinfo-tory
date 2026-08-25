@@ -1,0 +1,208 @@
+---
+// 10년 맥락 띠 — "지금 이 숫자가 역사적으로 어디쯤인가"를 한 줄로 보여준다.
+//
+// 왜 필요했나: 8/25 진단에서 우리가 10년치(2,461~3,864개)를 쌓아 두고
+// 차트로는 최대 58개(약 2%)만 보여주고 있다는 게 드러났다.
+// "환율 1,400원"은 그 자체로는 아무 말도 하지 않는다. "10년 중 상위 3%"라야 말이 된다.
+// 서사용 차트(SeriesChart)는 그대로 두고, 그 옆에 장기 좌표만 얹는 역할이다.
+import { sourceForSeries } from '../lib/sources';
+
+interface SeriesPoint { d: string; v?: number; exp?: number; imp?: number; bal?: number }
+interface SeriesFile { id: string; name: string; unit: string; cycle: 'D' | 'M'; points: SeriesPoint[] }
+
+interface Props {
+  series: string;
+  /** 몇 년치를 기준으로 볼 것인가. 기본 10년 — 보유 데이터를 최대한 쓴다 */
+  years?: number;
+  field?: 'v' | 'exp' | 'imp' | 'bal';
+  scale?: number;
+  unit?: string;
+  /** 값이 높을수록 '비싸다/높다'가 아닌 경우(예: 원화 강세) 문구를 뒤집는다 */
+  label?: string;
+}
+const { series, years = 10, field = 'v', scale = 1, unit, label } = Astro.props;
+
+let file: SeriesFile;
+try {
+  file = (await import(`../../data/series/${series}.json`)).default as unknown as SeriesFile;
+} catch {
+  throw new Error(`SeriesContext: data/series/${series}.json 을 찾을 수 없다.`);
+}
+
+// 기준 구간을 잘라낸다. 일간이면 날짜(YYYYMMDD), 월간이면 YYYYMM 로 비교한다.
+const cutoff = new Date();
+cutoff.setFullYear(cutoff.getFullYear() - years);
+const y = cutoff.getFullYear();
+const m = String(cutoff.getMonth() + 1).padStart(2, '0');
+const dd = String(cutoff.getDate()).padStart(2, '0');
+const bound = file.cycle === 'M' ? `${y}${m}` : `${y}${m}${dd}`;
+
+const pts = (file.points ?? []).filter((p) => p.d >= bound && p[field] !== undefined);
+if (pts.length < 12) {
+  throw new Error(`SeriesContext: ${series} 에 ${years}년 맥락을 말할 만한 값이 없다(${pts.length}개).`);
+}
+
+const vals = pts.map((p) => (p[field] as number) * scale);
+const cur = vals[vals.length - 1];
+const min = Math.min(...vals);
+const max = Math.max(...vals);
+const sorted = [...vals].sort((a, b) => a - b);
+const median = sorted[Math.floor(sorted.length / 2)];
+
+// 백분위: 현재값보다 낮은 관측치의 비율. 100이면 기간 내 최고치.
+const pct = Math.round((vals.filter((v) => v < cur).length / vals.length) * 100);
+const posLeft = max === min ? 50 : ((cur - min) / (max - min)) * 100;
+const medLeft = max === min ? 50 : ((median - min) / (max - min)) * 100;
+
+const digits = Math.abs(cur) >= 1000 ? 0 : Math.abs(cur) >= 100 ? 1 : 2;
+const fmt = (v: number) => v.toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+const u = unit ?? file.unit ?? '';
+const first = pts[0].d;
+const span = `${first.slice(0, 4)}년 ${Number(first.slice(4, 6))}월부터`;
+
+// 사람이 읽는 한 줄.
+// "가장 높다"는 정말로 최고치일 때만 쓴다 — 백분위 99%와 최고치는 다르다.
+// (미 국채 10년이 4.74%로 상위 1%지만 10년 최고는 4.98%인 것처럼.)
+const verdict =
+  cur >= max ? `${years}년 사이 가장 높다`
+  : cur <= min ? `${years}년 사이 가장 낮다`
+  : pct >= 50 ? `${years}년 중 상위 ${Math.max(1, 100 - pct)}%`
+  : `${years}년 중 하위 ${Math.max(1, pct)}%`;
+
+const tone = pct >= 90 ? 'hi' : pct <= 10 ? 'lo' : 'mid';
+const src = sourceForSeries(series);
+---
+
+<figure class="sctx" data-tone={tone}>
+  <figcaption class="sctx-head">
+    <span class="sctx-name">{label ?? file.name}</span>
+    <span class="sctx-verdict">{verdict}</span>
+  </figcaption>
+
+  <div class="sctx-cur">
+    <span class="sctx-val">{fmt(cur)}</span>
+    <span class="sctx-unit">{u}</span>
+  </div>
+
+  <div class="sctx-bar" role="img" aria-label={`${years}년 범위 ${fmt(min)}~${fmt(max)} 가운데 현재 ${fmt(cur)}, ${verdict}`}>
+    <div class="sctx-track"></div>
+    <div class="sctx-med" style={`left:${medLeft}%`}><span>중앙값 {fmt(median)}</span></div>
+    <div class="sctx-dot" style={`left:${posLeft}%`}></div>
+  </div>
+
+  <div class="sctx-ends">
+    <span>최저 {fmt(min)}</span>
+    <span class="sctx-span">{span} {vals.length.toLocaleString('ko-KR')}개 관측</span>
+    <span>최고 {fmt(max)}</span>
+  </div>
+
+  {src && (
+    <p class="sctx-src">
+      자료: {src.url ? <a href={src.url} target="_blank" rel="noopener noreferrer">{src.org} {src.name}</a> : `${src.org} ${src.name}`}
+    </p>
+  )}
+</figure>
+
+<style>
+  .sctx {
+    max-width: var(--measure);
+    margin: 30px auto;
+    padding: 18px 20px 14px;
+    border: 1px solid var(--hair);
+    border-radius: 3px;
+    background: var(--grid-b);
+  }
+  .sctx-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .sctx-name { font-size: 0.9rem; font-weight: 600; color: var(--sub); }
+  .sctx-verdict {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 8px;
+    border-radius: 2px;
+    border: 1px solid var(--hair);
+    color: var(--muted);
+  }
+  .sctx[data-tone='hi'] .sctx-verdict { color: var(--up); border-color: var(--up); }
+  .sctx[data-tone='lo'] .sctx-verdict { color: var(--down); border-color: var(--down); }
+
+  .sctx-cur { display: flex; align-items: baseline; gap: 5px; margin-bottom: 14px; }
+  .sctx-val {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .sctx-unit { font-size: 0.85rem; color: var(--muted); }
+
+  .sctx-bar { position: relative; height: 22px; margin: 0 4px; }
+  .sctx-track {
+    position: absolute;
+    top: 9px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--grid-a), var(--hair));
+  }
+  .sctx-med { position: absolute; top: 3px; transform: translateX(-50%); }
+  .sctx-med::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 16px;
+    margin: 0 auto;
+    background: var(--muted);
+    opacity: 0.55;
+  }
+  .sctx-med span {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.68rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .sctx-dot {
+    position: absolute;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 2px solid var(--grid-b);
+    box-shadow: 0 0 0 1px var(--ink);
+  }
+  .sctx[data-tone='hi'] .sctx-dot { background: var(--up); box-shadow: 0 0 0 1px var(--up); }
+  .sctx[data-tone='lo'] .sctx-dot { background: var(--down); box-shadow: 0 0 0 1px var(--down); }
+
+  .sctx-ends {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .sctx-span { text-align: center; }
+  .sctx-src { margin: 10px 0 0; font-size: 0.72rem; color: var(--muted); }
+  .sctx-src a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+  .sctx-src a:hover { color: var(--brand); }
+
+  @media (max-width: 520px) {
+    .sctx-ends { font-size: 0.68rem; }
+    .sctx-span { display: none; }
+  }
+</style>

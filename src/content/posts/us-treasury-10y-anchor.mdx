@@ -28,9 +28,14 @@ chart:
   valueSuffix: '%'
   color: up
   source: '자료: 미 연준 FRED DGS10 · 도토리경제 가공'
+sources:
+  - org: '미국 세인트루이스 연은'
+    name: 'FRED 미 국채 10년 금리'
+    url: 'https://fred.stlouisfed.org/series/DGS10'
 ---
 
 import SeriesChart from '../../components/SeriesChart.astro';
+import SeriesContext from '../../components/SeriesContext.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
@@ -50,6 +55,8 @@ import Term from '../../components/Term.astro';
   ]}
   source="미 연준 FRED DGS10"
 />
+
+<SeriesContext series="us10y" label="미 국채 10년 금리" />
 
 ## 왜 "닻"인가
 
@@ -79,8 +86,13 @@ import Term from '../../components/Term.astro';
   { icon: 'coin', title: '읽는 요령', desc: '티커의 미 10Y가 크게 움직인 날은 다음 날 국내 금리·환율 기사를 함께 볼 것, 파도는 하루 시차로 도착하는 경우가 많다.' },
 ]} />
 
-## 오늘의 결론
+## 다음에 확인할 것
 
 미 국채 10년 4.69%는 미국의 숫자이자 세계의 기준선이다. 한국의 금리·환율·주가를
 읽는 일은 결국 이 닻과의 거리를 재는 일이기도 하다. 도토리경제 티커에 "미 10Y"가
 상주하는 이유다.
+
+- **10년 범위에서의 위치.** 4.74%는 10년 중 상위 1% 구간이다. 중앙값 2.83%와의
+  거리가 지금 이 닻이 얼마나 무거운지를 말해 준다.
+- **한국 국고채 10년과의 격차.** 닻과의 거리가 벌어지면 환율과 자본 흐름에
+  먼저 나타난다. 두 곡선을 같이 놓고 보는 것이 이 지표를 쓰는 이유다.

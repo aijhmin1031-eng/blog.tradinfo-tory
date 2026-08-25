@@ -28,9 +28,14 @@ chart:
     - { idx: 16, label: '1,450.1원' }
   valueSuffix: '원'
   source: '자료: 한국은행 ECOS 731Y001 · 매매기준율 · 도토리경제 가공'
+sources:
+  - org: '한국은행'
+    name: 'ECOS 경제통계시스템'
+    url: 'https://ecos.bok.or.kr/'
 ---
 
 import SeriesChart from '../../components/SeriesChart.astro';
+import SeriesContext from '../../components/SeriesContext.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -52,6 +57,8 @@ import Term from '../../components/Term.astro';
   ]}
   source="한국은행 ECOS 731Y001 · 매매기준율"
 />
+
+<SeriesContext series="usdkrw" label="원/달러 환율" />
 
 이 움직임을 어떻게 읽어야 할까. 토리가 주워 온 숫자 세 개를 순서대로 본다.
 

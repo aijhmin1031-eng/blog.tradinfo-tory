@@ -21,6 +21,18 @@ const posts = defineCollection({
       .optional(),
     toriNote: z.string().optional(),
     dataAsOf: z.string().optional(),
+    // 이 기사가 실제로 쓴 원자료. 기사 끝 「자료」 블록과 구조화 데이터 citation 을 여기서 만든다.
+    // 없는 출처를 지어 넣지 말 것 — 비어 있으면 자료 블록과 citation 둘 다 생략된다(lib/sources.ts).
+    sources: z
+      .array(
+        z.object({
+          org: z.string(), // 발표 기관: 한국은행, 관세청 …
+          name: z.string(), // 통계·서비스 이름
+          url: z.string().optional(),
+          note: z.string().optional(), // 조회 구간·표본 등 이 기사에서의 사용 조건
+        })
+      )
+      .optional(),
     topics: z.array(z.string()).optional(), // 소속 특집 key 목록 (lib/topics.ts)
     topicRole: z.enum(['입문', '데이터', '심층']).optional(), // 특집 내 역할 라벨
     chart: z

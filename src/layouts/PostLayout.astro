@@ -3,6 +3,7 @@ import Base from './Base.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import ToriNote from '../components/ToriNote.astro';
 import { CATEGORIES, url, fmtDate, heroFor, SITE, readingMinutesOf } from '../lib/site';
+import { dedupeSources } from '../lib/sources';
 import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
 import CommentThread from '../components/CommentThread.astro';
@@ -19,6 +20,8 @@ interface Props {
 }
 const { post, related, newer, older } = Astro.props;
 const { title, description, category, pubDate, place, three, toriNote, dataAsOf, hero } = post.data;
+// 기사가 실제로 쓴 원자료. 없으면 자료 블록도 citation 도 만들지 않는다 — 지어내지 않기 위해서다.
+const sources = dedupeSources(post.data.sources ?? []);
 const readingMinutes = readingMinutesOf(post.body ?? '');
 // 조회수: 배포 주소(GitHub Pages·Vercel)와 무관한 논리 경로로 집계한다
 const viewPath = `/posts/${(post as { slug?: string; id: string }).slug ?? post.id}/`;
@@ -58,7 +61,10 @@ const jsonLd = {
   publisher: publisherLd,
   mainEntityOfPage: { '@type': 'WebPage', '@id': abs(url(viewPath)) },
   isAccessibleForFree: true,
-  citation: '한국은행 ECOS, 관세청 수출입무역통계, 미 연준 FRED, 금융감독원 DART',
+  // citation 은 이 기사가 실제로 인용한 것만 적는다. 전에는 104편 전부 같은 문자열이 박혀 있었다.
+  ...(sources.length
+    ? { citation: sources.map((s) => `${s.org} ${s.name}`).join(', ') }
+    : {}),
 };
 
 const crumbsLd = {
@@ -132,6 +138,31 @@ const crumbsLd = {
     <div class="prose">
       <slot />
     </div>
+
+    {
+      sources.length > 0 && (
+        <section class="sources" aria-labelledby="sources-h">
+          <h2 id="sources-h" class="sources-h">자료</h2>
+          <ul class="sources-list">
+            {sources.map((s) => (
+              <li>
+                <span class="src-org">{s.org}</span>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a>
+                ) : (
+                  <span>{s.name}</span>
+                )}
+                {s.note && <span class="src-note-inline">{s.note}</span>}
+              </li>
+            ))}
+          </ul>
+          <p class="sources-foot">
+            수치는 발표 기관 원자료를 파이프라인이 매일 자동 수집한 값이다.
+            기관 사정으로 사후 정정될 수 있으며, <strong>투자 자문이 아니다.</strong>
+          </p>
+        </section>
+      )
+    }
 
     {
       postTopics.map((t) => (
@@ -249,6 +280,65 @@ const crumbsLd = {
 </style>
 
 <style>
+  /* 「자료」 블록 — 기사가 쓴 원자료로 독자가 되짚어 갈 수 있는 자리.
+     본문 뒤, 특집 배너 앞. 눈에 띄되 본문을 방해하지 않는 무게로. */
+  .sources {
+    max-width: var(--measure);
+    margin: 44px auto 0;
+    padding: 18px 20px;
+    border: 1px solid var(--hair);
+    border-radius: 3px;
+    background: var(--grid-b);
+  }
+  .sources-h {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .sources-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .sources-list li {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--sub);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .src-org {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--muted);
+    border: 1px solid var(--hair);
+    background: var(--grid-b);
+    border-radius: 2px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+  .sources-list a {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .sources-list a:hover { color: var(--brand-hover); }
+  .src-note-inline { font-size: 0.82rem; color: var(--muted); }
+  .sources-foot {
+    margin: 12px 0 0;
+    font-size: 0.8rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .sources-foot strong { color: var(--sub); font-weight: 600; }
+
   .progress {
     position: fixed;
     top: 0;

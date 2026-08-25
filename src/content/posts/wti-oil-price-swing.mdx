@@ -29,9 +29,14 @@ chart:
   valueSuffix: '달러'
   color: up
   source: '자료: 미 연준 FRED DCOILWTICO · 도토리경제 가공'
+sources:
+  - org: '미국 세인트루이스 연은'
+    name: 'FRED WTI 유가'
+    url: 'https://fred.stlouisfed.org/series/DCOILWTICO'
 ---
 
 import SeriesChart from '../../components/SeriesChart.astro';
+import SeriesContext from '../../components/SeriesContext.astro';
 import KeyStat from '../../components/KeyStat.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
@@ -56,6 +61,8 @@ import Term from '../../components/Term.astro';
   source="미 연준 FRED DCOILWTICO"
 />
 
+<SeriesContext series="wti" label="WTI 유가" />
+
 곡선은 세 토막이다. 7월 10일 72.45달러의 저점 → 열흘 만에 93.08달러(+28%) →
 8월 5일 76.78달러까지 되밀림 → 이후 80달러대 중반 안착. 스파이크는 지나갔지만,
 자리는 출발점보다 십수 달러 위다.
@@ -74,9 +81,14 @@ import Term from '../../components/Term.astro';
 원화로 치른 값의 상승 폭은 그보다 작다. <Term t="채산성" />과 물가를 읽을 때
 유가 차트와 환율 차트를 겹쳐 봐야 하는 이유다.
 
-## 오늘의 결론
+## 다음에 확인할 것
 
 스파이크의 높이보다 중요한 것은 안착한 자리다. WTI는 요동 끝에 출발점보다 높은
 80달러대 중반에 자리를 잡았고, 그 청구서는 시차를 두고 수입물가와 무역수지로
 날아온다. 다음 확인 지점은 9월 초의 수입물가지수, 도토리경제 도토리 창고의 WTI
 지표와 함께 추적한다.
+
+- **9월 초 수입물가지수.** 유가의 청구서는 시차를 두고 여기로 날아온다.
+  86달러대가 유지된 기간만큼 반영된다.
+- **80달러선.** 10년 범위로 보면 86.48달러는 상위 11% 구간이다. 이 자리에서
+  더 오르는지 80달러 아래로 내려앉는지가 다음 국면을 가른다.

@@ -26,9 +26,14 @@ chart:
   valueSuffix: '%'
   color: up
   source: '자료: 한국은행 ECOS · 도토리경제 가공'
+sources:
+  - org: '한국은행'
+    name: 'ECOS 경제통계시스템'
+    url: 'https://ecos.bok.or.kr/'
 ---
 
 import SeriesChart from '../../components/SeriesChart.astro';
+import SeriesContext from '../../components/SeriesContext.astro';
 import PointCards from '../../components/PointCards.astro';
 import Term from '../../components/Term.astro';
 
@@ -44,6 +49,8 @@ import Term from '../../components/Term.astro';
   marks={[{ date: '20260716', label: '2.75로 인상', dy: -2 }]}
   source="한국은행 ECOS"
 />
+
+<SeriesContext series="baserate" label="한국은행 기준금리" />
 
 ## 계단 하나가 트는 네 개의 물길
 
@@ -72,8 +79,14 @@ import Term from '../../components/Term.astro';
   { icon: 'coin', title: '나의 체크포인트', desc: '변동금리 대출자는 다음 코픽스 공시일과 내 금리 변동 주기를, 예금자는 특판 금리의 재등장을 확인할 때다.' },
 ]} />
 
-## 오늘의 결론
+## 다음에 확인할 것
 
 7월 16일의 25bp는 발표 당일로 끝난 뉴스가 아니라, 지금도 채권 → 예금 → 대출 →
 환율의 순서로 도착하고 있는 우편물이다. 도토리경제 도토리 창고의 기준금리·국고채
 칸에서 그 배달 경로를 매일 추적할 수 있다.
+
+확인할 지점은 셋이다.
+- **국고채 10년**과 기준금리(2.75%)의 간격. 이 격차가 벌어지면 시장은 다음 인상을,
+  좁혀지면 인하를 먼저 반영하고 있다는 뜻이다.
+- **정기예금 평균금리**(6월 3.02%). 7월 인상분이 여기 도착하는 데는 보통 한두 달이 걸린다.
+- **금통위 일정.** 다음 회의 전후로 이 우편물의 다음 구간이 결정된다.
