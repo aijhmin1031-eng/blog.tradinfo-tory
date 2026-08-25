@@ -182,8 +182,8 @@
     - **목록**: `docs/backfill-queue.md` (Tier A 55 + Tier B 31 = 86편, 얇은 것부터).
     - **기준 분량은 「1,500자 내외」**(소유주 확정 8/25). 하한선이 아니다. 미달해도 새 사실이
       충분하면 통과, 넘겨도 같은 말을 늘렸으면 실패. 판단 순서는 ①새 사실 ②읽기 편함 ③분량.
-    - **완료(8/25 기준 50편)**
-      - 큐 Tier A 47편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
+    - **완료(8/25 기준 54편)**
+      - 큐 Tier A 51편(계정A): `semi-china-deficit-truth` · `fob-vs-cif`(견본) ·
         `dollar-index-explained` · `hs-code-basics` · `quota-tariff-explained` ·
         `semi-export-unit-value` · `trade-balance-vs-current-account` ·
         `import-clearance-steps` · `semi-monthly-checklist` ·
@@ -205,11 +205,13 @@
         **`export-control-grammar`** · **`trade-claim-arbitration`** ·
         `semi-precision-logistics` · `car-chip-shortage-lesson` ·
         **`fx-regime-menu`** · **`chips-subsidy-race`** ·
-        **`chip-ip-royalty`** · **`ocean-freight-explained`**
+        `chip-ip-royalty` · `ocean-freight-explained` ·
+        **`chuseok-gift-direct-purchase`** · **`import-duty-calculation`** ·
+        **`export-process-a-to-z`** · **`fta-origin-certificate`**
       - 큐 외 3편(계정B): `krw-1400-three-signals` · `base-rate-vs-market-rate` · `deposit-special-rates`
-    - **남은 것: 큐 39편**(Tier A 8 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
+    - **남은 것: 큐 35편**(Tier A 4 · Tier B 31). 큐 머리의 「진행 현황」 절이 최신 집계다.
     - **지금 `[진행중·*]` 표시는 없다.** 아무도 잡고 있지 않으니 위에서부터 집으면 된다.
-      다음 두 편은 `chuseok-gift-direct-purchase`(1254자)와 `import-duty-calculation`(1398자)다.
+      다음 두 편은 `trade-insurance-basics`(1594자)와 `import-price-and-inflation`(1596자)다.
     - **8/25에 얻은 방법 하나**: 「데이터가 안 닿는 주제」로 보여도 **제도의 계산식을 뜯으면
       닿는 계열이 나온다.** 간이정액환급이 원화 환산 수출금액 기준이라는 사실 하나로
       `usdkrw`가 관세 기사에 붙었다. Tier B를 잡을 때 먼저 해 볼 것.
@@ -242,6 +244,37 @@
       보고 쓴 2편은 한 번에 통과했다.
 
 ## 일지
+
+### 2026-08-25 (보강 48~51편, 계정A — 이미 긴 기사들은 출처·끝맺음 위주로)
+
+이 묶음부터는 원본이 1,254~1,479자로 이미 길다. **분량을 더 늘리는 것이 목표가 아니므로**
+「오늘의 결론」 교체와 **검증된 출처 확보**에 집중했다. 그런데도 새 사실이 붙으면서
+1,800~1,950자가 됐다.
+
+- `chuseok-gift-direct-purchase` 1254 → **1,804자**(9/2 예약). **이번 묶음 최대 수확.**
+  관세청 특송물품 통관 원문에서 **목록통관 배제 12개 항목에 식품·주류·담배·건강기능식품이
+  들어 있다**는 것을 확인했다. **명절 선물로 가장 많이 고르는 품목이 정확히 배제 대상**이라,
+  「한도를 지켰는데도 늦는」 경로가 설명된다. 금액 구간도 세 칸(150달러 이하 목록통관 /
+  2,000달러 이하 간이신고 / 초과는 일반신고)으로 정리해 넣었다.
+- `import-duty-calculation` 1398 → **1,815자**. 관세청 원문에서 **신고수리 후 15일 이내
+  납부**와 수입신고 8단계를 확인해 「계산이 끝나도 달력이 남는다」는 절을 붙였다.
+  WTO 관세평가협정 제1조·제8조도 출처로 세웠다.
+- `export-process-a-to-z` 1470 → **1,902자**. 마지막 단계인 환급에 **5년**이라는 시계가
+  붙어 있고, **기한이 길다는 것은 잊어버릴 시간도 길다**는 것이 새 각도다. 결제조건에는
+  UCP 600·URC 522라는 준거 규칙 확인 항목을 넣었다.
+- `fta-origin-certificate` 1479 → **1,957자**. 기사가 「정해진 기간 동안 보관」이라고만
+  적고 **숫자를 비워 두었던 자리**를 FTA 특례법으로 채웠다. 수출자·생산자는 **5년**,
+  **체약상대국이 중국이면 3년**, 수입자는 협정관세 신청일 다음 날부터 **5년**.
+  **협정마다 기간이 다르다**는 사실 자체가 실무의 함정이라는 점을 실무 지점 2번으로 세웠다.
+- **게이트가 또 막아 줬다**: `fta-origin-certificate`(8/18 발행)에서
+  `customs-appeal-steps`(9/22 예약)로 링크를 걸었다가 죽은 링크로 잡혔다. **이미 발행된
+  기사에서 예약 기사로 링크하면 반드시 걸린다.** 발행 순서를 먼저 볼 것.
+- **다른 기사에 반영할 것(메모)**: 특송 원문에서 확인한 **간이수입신고 2,000달러 상한**은
+  `overseas-direct-purchase-tax`에도 넣으면 좋다(그 기사는 150/200달러까지만 다룬다).
+  다음 세션이 그 기사를 다시 열 때 함께 처리할 것.
+- 검증: 네 편 모두 `check-quality` 통과, `npm run build` 통과, 예약 1편 pubDate 원복.
+- 큐: Tier A **51/55**, 총 **51/86**. **Tier A는 4편 남았다.**
+  다음 두 편은 `trade-insurance-basics`(1594자)·`import-price-and-inflation`(1596자).
 
 ### 2026-08-25 (보강 44~47편, 계정A)
 
