@@ -94,10 +94,10 @@
 | [x] | 보조금의 시대…각국은 왜 반도체 공장에 국고를 쏟나 | 1032 → **1,596자** | `chips-subsidy-race` · 8/25 A |
 | [x] | 공장 없이 버는 반도체…설계자산(IP)과 로열티의 경제 | 1039 → **1,553자** | `chip-ip-royalty` · 8/25 A |
 | [x] | 해상운임 읽는 법…FCL·LCL과 할증료의 세계 | 1224 → **1,687자** | `ocean-freight-explained` · 8/25 A |
-| [ ] | 명절 선물을 직구로…관세보다 먼저 계산할 것은 달력이다 | 1254자 | `chuseok-gift-direct-purchase` |
-| [ ] | 수입 관세, 이렇게 계산된다…과세가격부터 부가세까지 | 1398자 | `import-duty-calculation` |
-| [ ] | 처음부터 끝까지…수출 절차 한눈에 보기 | 1470자 | `export-process-a-to-z` |
-| [ ] | FTA 원산지증명서…관세를 0으로 만드는 서류 한 장 | 1479자 | `fta-origin-certificate` |
+| [진행중·A] | 명절 선물을 직구로…관세보다 먼저 계산할 것은 달력이다 | 1254자 | `chuseok-gift-direct-purchase` |
+| [진행중·A] | 수입 관세, 이렇게 계산된다…과세가격부터 부가세까지 | 1398자 | `import-duty-calculation` |
+| [진행중·A] | 처음부터 끝까지…수출 절차 한눈에 보기 | 1470자 | `export-process-a-to-z` |
+| [진행중·A] | FTA 원산지증명서…관세를 0으로 만드는 서류 한 장 | 1479자 | `fta-origin-certificate` |
 | [ ] | 무역보험 기초…물건은 보냈는데 돈을 못 받는다면 | 1594자 | `trade-insurance-basics` |
 | [ ] | 수입물가는 어떻게 우리 물가가 되나…환율·유가에서 장바구니까지 | 1596자 | `import-price-and-inflation` |
 | [ ] | 매매기준율·전신환·현찰…은행 환율이 여러 개인 이유 | 1663자 | `exchange-rate-quotes` |
