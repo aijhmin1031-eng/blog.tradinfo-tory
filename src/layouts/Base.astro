@@ -618,6 +618,15 @@ const isActive = (n: (typeof navItems)[number]) =>
   @media (max-width: 859.98px) {
     .nav-caret { display: inline; transition: rotate 0.16s ease; }
     .nav-parent.open .nav-caret { rotate: 180deg; }
+    /* 강조의 주인을 하나로. 메뉴를 열면 방금 누른 그 메뉴가 강조되고,
+       현재 페이지 밑줄(예: 홈에서 '오늘의 도토리')은 잠시 물러난다.
+       그렇지 않으면 숲·창고를 눌렀는데 강조는 오늘의 도토리에 남아 헷갈린다. */
+    .nav-parent.open { color: var(--ink); font-weight: 700; box-shadow: inset 0 -3px 0 var(--accent); }
+    body.nav-menu-open .nav-item.active:not(.open) {
+      box-shadow: none;
+      color: var(--sub);
+      font-weight: 500;
+    }
     .nav-panel { display: none !important; } /* 모바일에서는 데스크톱 패널을 쓰지 않는다 */
 
     .nav-sheet {
@@ -709,7 +718,11 @@ const isActive = (n: (typeof navItems)[number]) =>
     white-space: nowrap;
     transition: box-shadow 0.15s ease, color 0.15s ease;
   }
-  .nav-item:hover { color: var(--ink); box-shadow: inset 0 -2px 0 var(--hair); }
+  /* hover 는 마우스가 있는 기기에서만. 모바일에서는 탭한 뒤 hover 가 눌러붙어
+     엉뚱한 항목이 강조돼 보인다(2026-08-25 소유주 제보). */
+  @media (hover: hover) {
+    .nav-item:hover { color: var(--ink); box-shadow: inset 0 -2px 0 var(--hair); }
+  }
   .nav-item.active {
     color: var(--ink);
     font-weight: 700;
