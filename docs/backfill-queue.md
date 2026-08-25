@@ -139,6 +139,6 @@
 | [x] | 토리의 갈림길 #1…6,900선의 코스피, 두 갈래 길 | 993 → **1,218자** | `tori-galimgil-01` · 8/25 A |
 | [x] | 온디바이스 AI…클라우드를 떠난 AI가 메모리에 거는 부담 | 996 → **1,460자** | `ondevice-ai-memory` · 8/25 A |
 | [x] | 메모리 강국의 빈칸…한국 팹리스는 왜 얇은가 | 1020 → **1,493자** | `korea-fabless-gap` · 8/25 A |
-| [ ] | D램 치킨게임…산업이 셋만 남을 때까지 벌어진 일 | 1065자 | `dram-chicken-game` |
-| [ ] | 배당이냐 자사주냐…삼성전자와 SK하이닉스가 고른 쪽 | 1875자 | `shareholder-return-two-roads` |
-| [ ] | 신용장(L/C) 기초…서로 못 믿는 두 나라가 거래하는 법 | 1958자 | `letter-of-credit-basics` |
+| [진행중·A] | D램 치킨게임…산업이 셋만 남을 때까지 벌어진 일 | 1065자 | `dram-chicken-game` |
+| [진행중·A] | 배당이냐 자사주냐…삼성전자와 SK하이닉스가 고른 쪽 | 1875자 | `shareholder-return-two-roads` |
+| [진행중·A] | 신용장(L/C) 기초…서로 못 믿는 두 나라가 거래하는 법 | 1958자 | `letter-of-credit-basics` |
