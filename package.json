@@ -12,7 +12,8 @@
     "check-quality": "node scripts/check-quality.mjs",
     "quality": "node scripts/quality-metrics.mjs --trend",
     "quality:save": "node scripts/quality-metrics.mjs --trend --save",
-    "linkable": "node scripts/check-quality.mjs --linkable"
+    "linkable": "node scripts/check-quality.mjs --linkable",
+    "precheck": "node scripts/precheck-scheduled.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
