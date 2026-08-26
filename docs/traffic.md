@@ -199,9 +199,45 @@ https://dotoriecon.com/category/basics/
 - 웹 페이지 수집 — 허브 8건·기사 10건 **요청 완료(8/26)**
 - **RSS `rss.xml` — 제출 완료(8/24 06:28:47).** 기사 40편을 담고 있고 새 글이 자동으로 실린다.
 
-> **네이버는 8/24에 사이트맵·RSS 를 전부 받고도 기사를 색인하지 않았다.**
-> 제출이 부족해서가 아니라 **새 외부 사이트에 대한 네이버의 웹문서 수집이 느린 것**이다.
-> **더 밀지 말고 시간을 줄 것.** 8/26 수집 요청 10건이 마지막 조치다.
+### 네이버 대조군 실험 (2026-08-26 진행 중)
+
+**8/26 수집 요청 뒤 기사 `fob-vs-cif` 가 네이버에 떴다.** 아침에는 안 떴다.
+**다만 원인이 둘로 갈린다**: ①같은 날 IndexNow 168건 제출(기사 40편 전부) ②수집 요청 10편.
+
+작업 순서 덕에 **대조군이 우연히 생겼다.**
+
+| | 편수 | 받은 것 |
+|---|---|---|
+| 처치군 | 10편 | IndexNow + 수집 요청 |
+| **대조군** | **30편** | **IndexNow 만** |
+
+**★ 30편을 손으로 넣지 말 것.** 넣으면 대조군이 사라지고, **매일 새 기사마다 손으로
+넣어야 하는지 영영 모르게 된다.**
+
+**판정법**: 하루쯤 뒤 대조군에서 한 편을 네이버에 제목으로 검색한다.
+예: 「같은 무게, 2.7배 가격…반도체 수출 단가의 마법」(`semi-export-unit-value`).
+
+- **뜨면** → 사이트맵·RSS·IndexNow 로 자동 수집된다. 손댈 필요 없다.
+- **안 뜨면** → 수집 요청이 필요하다. 나머지 30편을 넣고, **매일 발행분도 손으로 넣어야
+  하므로 상시 운영에 절차를 추가**한다.
+
+**대조군 30편** (2026-08-26 전부 HTTP 200 확인, 우선순위 순)
+
+```
+ocean-freight-explained · container-teu-cbm · bonded-area-basics · tariff-types-explained
+antidumping-duty-basics · trade-insurance-basics · fx-hedge-basics · exchange-rate-quotes
+trade-balance-vs-current-account · tariff-who-pays · overseas-direct-purchase-tax
+deposit-insurance-100m · cofix-explained · fx-deposit-basics · deposit-special-rates
+dollar-index-explained · import-price-and-inflation · base-rate-vs-market-rate
+hbm-explained · ai-semiconductor-map · krw-1400-three-signals · semi-equipment-imports
+semi-export-by-country · semiconductor-export-engine · semi-export-unit-value
+shareholder-return-two-roads · tori-galimgil-01 · memory-stocks-summer
+semi-import-paradox · seoul-fx-market-day
+```
+
+주소는 `https://dotoriecon.com/posts/<슬러그>/` 형식이다.
+**목록을 소유주에게 줄 때는 반드시 실제 HTTP 200 을 확인하고 줄 것**
+(앞서 404 인 `/category/` 가 네이버에 제출된 일이 있다).
 한국 검색 트래픽에서 네이버 몫이 크고, 신규 도메인은 구글보다 네이버가 빠를 때가 있다.
 
 ## 색인 알림 — 자동화되는 절반 (IndexNow, 2026-08-26 신설)
@@ -258,7 +294,7 @@ node scripts/indexnow.mjs --print-curl  # 이 컨테이너용(node fetch 가 프
 - **소제목을 성실히 다는 편집 규칙이 값을 했다.** 계속 유지할 것.
   (반대로 「## 오늘의 결론」 같은 상투적 소제목은 이 자리에서도 손해다.)
 
-*어느 엔진 화면인지는 미확인. 형식은 구글에 가깝다. 다음 세션이 확인할 것.*
+*2026-08-26 확인: **네이버 화면**이다. 네이버도 소제목을 섹션 칩으로 노출한다.*
 
 ## 아직 손대지 않은 것
 
