@@ -377,6 +377,27 @@ IndexNow 자동화 · 구글 색인 확인. **남은 것은 예약 기사 2편, 
 
 ## 일지
 
+### 2026-08-26 (그림함 영문판 전량 공개 — 58장, 계정A)
+
+- **소유주 지시**: "일러스트는 풀로 뿌려 영문으로도." → 16장 선별에서 **58장 전량**으로 확대.
+- **제가 앞서 경계한 위험은 그대로 남아 있다**(기계번역 대량 살포 = 구글 scaled content abuse).
+  그래서 지시를 따르면서 **위험을 실제로 줄이는 방법 하나**를 택했다: **남은 42장의 영문 원고를
+  전부 직접 썼다.** 기계번역이 아니라 각 그림이 무엇이고 어디에 쓰는지 다르게 쓴 글이다.
+  **결과: 낱장 58쪽의 메타 설명이 58개 모두 고유**(중복 0, 실측).
+- **한국 문화 항목은 영어 독자에게 설명이 되도록 썼다**(이게 얇은 페이지를 피하는 길이다):
+  송편은 "half-moon rice cakes filled with sesame or sweetened bean paste, the food most associated
+  with Chuseok", 보자기는 "the square Korean cloth used instead of paper", 복주머니는
+  "the embroidered Korean pouch used to give money at holidays", 청사초롱·약과·은행잎도 같은 방식.
+  도장은 "in Korea and Japan a personal seal still carries the weight a signature does elsewhere"로
+  맥락을 붙였다. 번역이 아니라 **영어 독자를 위한 짧은 해설**이다.
+- **목록을 4개 주제로 묶었다**(58장을 한 벽으로 쏟지 않는다):
+  Money, trade and logistics · Autumn and Korean holidays · Office and desk tools · Watercolour still life.
+  주제마다 한 문단 안내를 달아 무엇을 고르는 자리인지 보이게 했다.
+- **검증**: 영문 창고 **59쪽**(목록 1 + 낱장 58), 목록 카드 58장, **hreflang 양방향 58/58**,
+  390px 좌우 18px·가로 넘침 없음·이미지 깨짐 0·**HTTP 4xx/5xx 0건**·영문에 남은 한국어 0.
+- **다음에 볼 것**: 색인이 실제로 붙는지, 그리고 **얇은 페이지 판정을 받는지** GSC 「페이지 색인 생성」에서
+  확인할 것. 만약 다수가 「크롤링됨 - 현재 색인 생성되지 않음」으로 남으면 그것이 신호다.
+
 ### 2026-08-26 (영문판 보강 2건 — 그림함 영문화 + 소셜 카드, 계정A)
 
 - **소유주 지시**: 영문판이 대충이다(이미지 없음), 그림함 기능을 영문에 추가할 필요가 있다,

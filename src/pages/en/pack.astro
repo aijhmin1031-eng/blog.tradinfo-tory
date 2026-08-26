@@ -6,7 +6,16 @@ import Pic from '../../components/Pic.astro';
 import Base from '../../layouts/Base.astro';
 import { getImage } from 'astro:assets';
 import { metaByPath } from '../../lib/images';
-import { EN_ITEMS, thumbOf } from '../../data/pack';
+import { PACKS, EN_ITEMS, thumbOf } from '../../data/pack';
+
+// 58장을 한 벽으로 쏟지 않는다. 팩(주제)별로 묶어 고르게 한다.
+const groups = PACKS.map((pack) => ({ pack, items: pack.items.filter((i) => i.en) })).filter((g) => g.items.length > 0);
+const EN_TITLES: Record<string, { title: string; note: string }> = {
+  vol1: { title: 'Money, trade and logistics', note: 'Charts, cargo, currency and the instruments of trade. The set this publication draws on most.' },
+  vol2: { title: 'Autumn and Korean holidays', note: 'Chuseok, the Korean harvest festival, and the autumn objects around it. Several are specific to Korea and are explained on their own pages.' },
+  vol3: { title: 'Office and desk tools', note: 'Laptops, calendars, folders and the rest of the working desk. Blank screens and empty boards leave room for your own text.' },
+  soso: { title: 'Watercolour still life', note: 'Softer, hand-painted pieces: coffee, desserts and small objects. Drawn by a guest illustrator, released on the same terms.' },
+};
 
 const _og = metaByPath('semiconductor.png') ?? metaByPath('semiconductor-export-engine.jpg');
 const ogImage = _og ? (await getImage({ src: _og, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
@@ -29,9 +38,10 @@ const description =
       <p class="ep-kicker">Free to use · attribution required</p>
       <h1>Free finance and trade illustrations</h1>
       <p class="ep-intro">
-        {EN_ITEMS.length} illustrations on money, trade and logistics, drawn for this publication and
-        released for anyone to reuse. Every file is a transparent PNG at 1600 × 1600 pixels, so it sits
-        on any background without a white box behind it.
+        {EN_ITEMS.length} illustrations, drawn for this publication and released for anyone to reuse:
+        finance and trade, the working desk, autumn and Korean holidays, and a set of watercolour still
+        lifes. Every file is a transparent PNG at 1600 × 1600 pixels, so it sits on any background
+        without a white box behind it.
       </p>
       <p class="ep-licence">
         <strong>Licence.</strong> Free for personal and commercial use, including blogs, slide decks,
@@ -41,25 +51,26 @@ const description =
       </p>
     </header>
 
-    <ul class="ep-grid">
-      {
-        EN_ITEMS.map(({ pack, item }) => (
-          <li class="ep-cell">
-            <a href={`/en/pack/${item.slug}/`}>
-              <span class="ep-thumb alpha-grid">
-                <Pic path={thumbOf(pack, item)} alt={`${item.en!.name} illustration, free PNG`} width={400} height={400} />
-              </span>
-              <span class="ep-name">{item.en!.name}</span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-
-    <p class="ep-more">
-      The Korean edition carries the full set of 58 files, including seasonal and office subjects:
-      <a href="/pack/">see the complete collection</a>.
-    </p>
+    {
+      groups.map(({ pack, items }) => (
+        <section class="ep-group">
+          <h2>{EN_TITLES[pack.key]?.title ?? pack.title}</h2>
+          <p class="ep-group-note">{EN_TITLES[pack.key]?.note}</p>
+          <ul class="ep-grid">
+            {items.map((item) => (
+              <li class="ep-cell">
+                <a href={`/en/pack/${item.slug}/`}>
+                  <span class="ep-thumb alpha-grid">
+                    <Pic path={thumbOf(pack, item)} alt={`${item.en!.name} illustration, free PNG`} width={400} height={400} />
+                  </span>
+                  <span class="ep-name">{item.en!.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
   </div>
 </Base>
 
@@ -70,6 +81,9 @@ const description =
   .ep-head h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 900; color: var(--ink); margin: 8px 0 0; }
   .ep-intro { font-size: 16px; line-height: 1.75; color: var(--sub); margin-top: 14px; }
   .ep-licence { font-size: 14px; line-height: 1.8; color: var(--sub); margin-top: 16px; padding: 14px 16px; border: 1px solid var(--hair); border-radius: 10px; }
+  .ep-group { margin-top: 40px; }
+  .ep-group h2 { font-size: 19px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 9px; }
+  .ep-group-note { font-size: 13.5px; color: var(--muted); line-height: 1.8; margin-top: 10px; max-width: var(--w-prose); }
   .ep-grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px; padding: 0; margin: 32px 0 0; }
   .ep-cell a { display: block; text-decoration: none; }
   .ep-thumb { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; padding: 10px; box-sizing: border-box; }
