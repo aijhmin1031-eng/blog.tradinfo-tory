@@ -119,8 +119,34 @@ for (const file of files) {
   const paras = prose.split('\n\n').map((p) => p.trim()).filter((p) => p && !/^(import\s|#|\||-)/.test(p));
   const topText = [...(front.match(/^\s+(?:what|why|next):\s*(.+)$/gm) ?? []), ...(body.match(/<KeyStat[^>]*>/g) ?? [])].join(' ');
   const topNums = numsOf(topText);
+  // 2026-08-26 규칙을 좁혔다 — 두괄식 리드(아래 ⑤)를 강제하면서 이 판정과 정면으로 부딪혔다.
+  //   첫 문단이 요약 카드의 수치를 **하나** 되풀이하는 것은 이제 규칙이 시키는 일이다.
+  //   진짜 재탕은 「수치도 문장도 그대로 옮긴 것」이므로, 수치 2개 이상 + 표현까지 겹칠 때만 센다.
+  //   (미결 22번: 위양성은 슬러그 예외가 아니라 판정 규칙을 좁혀서 없앤다.)
   const lead = [...numsOf(paras[0] ?? '')].filter((n) => topNums.has(n) && !isNoise(n, title));
-  if (lead.length) issues.push({ w: 30, tag: '도입부 재탕', msg: `요점3줄·KeyStat 의 수치를 첫 문단이 되풀이한다(${lead.join(', ')})` });
+  const leadOv = (() => {
+    const T = shingles(topText.replace(/<[^>]+>/g, ' ')), L = shingles(paras[0] ?? '');
+    return L.size > 8 ? [...L].filter((x) => T.has(x)).length / L.size : 0;
+  })();
+  if (lead.length >= 2 && leadOv >= 0.2) {
+    issues.push({ w: 30, tag: '도입부 재탕', msg: `요점3줄의 수치(${lead.join(', ')})와 표현을 첫 문단이 그대로 옮겼다(겹침 ${(leadOv * 100).toFixed(0)}%)` });
+  }
+
+  // ⑤ 인용 가능성 3종 (2026-08-26 소유주 지시) — 게이트는 신규만 막고, 기존 107편의
+  //   순서는 여기가 정한다. 90 미만이라 CI 빨간불은 켜지 않는다(--fail-on=90).
+  //   왜 보는가: 구글 스니펫·LLM 은 요약 카드가 아니라 **첫 문단과 소제목**을 집어 간다.
+  const realNums = (t) => [...numsOf(t)].filter((n) => !isNoise(n, title));
+  const leadPara = (paras[0] ?? '').replace(/<[^>]+>/g, ' ');
+  if (leadPara && !realNums(leadPara).length) {
+    issues.push({ w: 55, tag: '리드 비두괄식', msg: '첫 문단에 결론 수치가 없다 — 검색엔진·LLM 이 집어 가는 자리다' });
+  }
+  const h2s = body.match(/^##\s+.+$/gm) ?? [];
+  if (h2s.length && !h2s.some((h) => realNums(h).length)) {
+    issues.push({ w: 50, tag: '소제목 무수치', msg: `소제목 ${h2s.length}개 중 발견을 수치로 말하는 것이 없다 — 하나만 수치형으로` });
+  }
+  if (!/^\s*\|[\s:|-]+\|\s*$/m.test(body)) {
+    issues.push({ w: 45, tag: '표 없음', msg: '나열·대조가 줄글에 묻혀 있다 — 인용은 표에서 나온다' });
+  }
 
   const pcDesc = ((body.match(/<PointCards[\s\S]*?\]\}\s*\/>/g) ?? []).join(' ').match(/desc:\s*'([^']*)'/g) ?? []).join(' ');
   const P = shingles(pcDesc), B = shingles(prose);

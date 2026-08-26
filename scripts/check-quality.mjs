@@ -6,6 +6,11 @@
 // "분량만 늘고 새 사실·새 출처가 없는가"를 git 원본과 대 보고 막는다.
 // 기준 원문은 docs/operations.md 「통과 기준(물타기 게이트)」 절.
 //
+// 2026-08-26 추가 — 인용 가능성 3종(소유주 지시): 두괄식 리드 · 수치형 핵심 소제목 · 표.
+//   남이 우리를 인용하려면 들어 올릴 수 있는 한 문장이 있어야 한다. 구글 스니펫과 LLM 은
+//   요약 카드(ThreeLines)가 아니라 본문 첫 문단과 소제목을 집어 간다.
+//   **신규 기사는 실패, 기존 기사는 경고**다(이유는 아래 해당 절 주석).
+//
 // 사용법:
 //   node scripts/check-quality.mjs <슬러그> [<슬러그> ...]
 //   node scripts/check-quality.mjs --all        # 큐 전체(backfill-queue.md의 슬러그) 점검
@@ -183,12 +188,99 @@ function check(slug) {
     warns.push(`문단이 ${p.c}자로 길다 ("${p.head}…") — 내용이 바뀌는 지점에서 문단을 나눌 것(빈 줄).`);
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  // 인용 가능성 3종 (2026-08-26 소유주 지시 — 두괄식·수치형 소제목·표)
+  //
+  // 왜 게이트에 넣나: 우리 병목은 품질이 아니라 노출이다(docs/traffic.md).
+  // 남이 우리를 인용하려면 **들어 올릴 수 있는 한 문장**이 있어야 하고,
+  // 구글 스니펫·LLM 은 요약 카드가 아니라 **본문 첫 문단과 소제목**을 집어 간다.
+  // 실측(2026-08-26): 리드에 수치 36% · 수치형 소제목 7% · 표 0편이 33편.
+  //
+  // 왜 신규만 실패인가: 기존 107편을 한꺼번에 빨갛게 켜면 빨간불이 상시가 되고,
+  // 상시가 된 경고는 안 보게 된다(audit.mjs 의 --fail-on 주석과 같은 이유).
+  // 기존분은 audit 이 우선순위를 매겨 감사 일과가 순서대로 처리한다.
+  const isNew = baseRaw === null;
+  const level = (m) => (isNew ? fails : warns).push(m);
+
+  // 숫자 중 「내용이 아닌 것」을 뺀다: 연도·HS 코드·제목에 든 숫자(버전명·주제어).
+  // audit.mjs 의 isNoise 와 같은 규칙 — 인코텀즈 2020, HS 8542 를 발견 수치로 세면 안 된다.
+  const myTitle = (front.match(/^title:\s*'(.*)'/m) || [])[1] ?? '';
+  const realNums = (t) =>
+    (t.match(/-?\d[\d,]*\.?\d*/g) || [])
+      .map((n) => n.replace(/,/g, ''))
+      .filter((n) => !/^(19|20)\d{2}$/.test(n) && !/^8\d{3}$/.test(n) && !myTitle.replace(/,/g, '').includes(n));
+
+  // 본문의 첫 「산문」 문단 — import·JSX·소제목·표·목록은 건너뛴다.
+  let leadPara = '';
+  for (const block of body.split(/\n\s*\n/)) {
+    const t = block.trim();
+    if (!t || /^(import\s|[<#|>])/.test(t) || /^[-*]\s/.test(t)) continue;
+    leadPara = t.replace(/<[^>]+>/g, '');
+    break;
+  }
+
+  // ⑦ 두괄식 리드 — 첫 문단이 이 기사의 결론 수치로 열려야 한다.
+  if (!leadPara) {
+    level('본문에 산문 리드 문단이 없다 — 첫 문단은 결론 수치를 담은 줄글로 연다.');
+  } else if (realNums(leadPara).length === 0) {
+    level(
+      `두괄식 아님 — 첫 문단에 결론 수치가 없다 ("${leadPara.replace(/\s+/g, ' ').slice(0, 28)}…"). ` +
+      '독자는 요약 카드를 보지만 검색엔진·LLM 은 첫 문단을 집어 간다. 결론을 먼저 쓸 것.'
+    );
+  } else {
+    // 수치가 있어도 기준시점이 없으면 인용해 갈 수가 없다(언제 숫자인지 모르므로).
+    const hasWhen = /^dataAsOf:/m.test(front) || /\d{4}년|\d{1,2}월|분기|기준/.test(leadPara);
+    if (!hasWhen) {
+      warns.push('리드에 수치는 있으나 기준시점이 없다 — dataAsOf 를 넣거나 첫 문단에 「2026년 7월 기준」처럼 시점을 적을 것.');
+    }
+  }
+
+  // ⑧ 핵심 발견 소제목은 수치형 — 소제목 전체를 바꾸라는 뜻이 아니다.
+  // 발견을 담은 소제목 **하나**에 숫자를 넣는다(소유주 결정 2026-08-26).
+  const h2s = body.match(/^##\s+.+$/gm) || [];
+  if (h2s.length === 0) {
+    warns.push('소제목(##)이 없다 — 독자가 어디쯤인지 알 수 없다(operations.md 「흐름」).');
+  } else if (!h2s.some((h) => realNums(h).length > 0)) {
+    level(
+      `핵심 발견 소제목이 수치형이 아니다 — 소제목 ${h2s.length}개 중 숫자를 담은 것이 하나도 없다. ` +
+      '발견을 담은 소제목 하나만 「홍콩, 수출 43.7억 대 수입 0.3억」처럼 수치형으로 바꿀 것(나머지는 지금 톤 유지).'
+    );
+  }
+
+  // ⑨ 표 — 비교 축이 둘 이상인 표가 최소 하나. 장식용 2행 표는 만들지 않는다.
+  const UNIT = /%|％|달러|원|억|조|배|bp|포인트|톤|TEU|CBM|배럴|온스|R²|건|명|kg|KG|만/;
+  const tables = [];
+  {
+    const lines = body.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (!/^\s*\|.*\|\s*$/.test(lines[i])) continue;
+      if (!/^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1] ?? '')) continue;
+      const cols = lines[i].split('|').filter((c) => c.trim()).length;
+      let r = i + 2;
+      while (/^\s*\|.*\|\s*$/.test(lines[r] ?? '')) r++;
+      tables.push({ cols, rows: r - i - 2, text: lines.slice(i, r).join('\n') });
+      i = r;
+    }
+  }
+  if (tables.length === 0) {
+    level('표가 없다 — 세 항목 이상의 나열·대조는 줄글이 아니라 표로(operations.md 「문단·줄바꿈 원칙」). 인용도 표에서 나온다.');
+  } else {
+    for (const t of tables) {
+      if (t.cols < 2 || t.rows < 2) {
+        warns.push(`장식용 표 의심 — ${t.cols}열 ${t.rows}행. 비교 축이 둘 이상일 때만 표로 만들 것(아니면 줄글이 낫다).`);
+      } else if (realNums(t.text).length && !UNIT.test(t.text)) {
+        // 숫자가 든 표에만 묻는다. 개념을 대조하는 표(FOB 대 CIF 같은)에 단위는 없는 것이 맞다.
+        warns.push('표에 단위가 없다 — 「43.7억 달러」처럼 단위를 붙여야 그 표만 떼어 인용할 수 있다.');
+      }
+    }
+  }
+
   return {
     slug,
     ok: fails.length === 0,
     fails,
     warns,
-    info: { chars, mins, sources, sourceUrls, baseChars, baseSources, internalLinks },
+    info: { chars, mins, sources, sourceUrls, baseChars, baseSources, internalLinks, isNew, tables: tables.length, h2: h2s.length },
   };
 }
 
@@ -241,7 +333,8 @@ for (const slug of slugs) {
   const { info } = r;
   const head = r.ok ? '\x1b[32m통과\x1b[0m' : '\x1b[31m실패\x1b[0m';
   const size = info.chars != null
-    ? ` ${info.chars}자·${info.mins}분·출처 ${info.sources}건·링크 ${info.internalLinks}개` +
+    ? ` ${info.chars}자·${info.mins}분·출처 ${info.sources}건·링크 ${info.internalLinks}개·표 ${info.tables}개` +
+      (info.isNew ? ' \x1b[33m[신규]\x1b[0m' : '') +
       (info.baseChars != null ? ` (원본 ${info.baseChars}자·출처 ${info.baseSources}건)` : '')
     : '';
   console.log(`\n[${head}] ${slug}${size}`);

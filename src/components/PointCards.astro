@@ -26,28 +26,34 @@ const paths: Record<string, string> = {
 };
 ---
 
-<div class="points">
+<ul class="points">
   {
     items.map((it, i) => (
-      <div class="point-card">
+      <li class="point-card">
         <div class="pc-top">
           <span class="pc-icon" set:html={`<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">${paths[it.icon ?? 'acorn'] ?? PICTOGRAMS[it.icon ?? ''] ?? paths.acorn}</svg>`} />
           <span class="pc-no mono">{String(i + 1).padStart(2, '0')}</span>
         </div>
-        <div class="pc-title">{it.title}</div>
-        <div class="pc-desc">{it.desc}</div>
-      </div>
+        <h3 class="pc-title">{it.title}</h3>
+        <p class="pc-desc">{it.desc}</p>
+      </li>
     ))
   }
-</div>
+</ul>
 
 <style>
+  /* 조판은 그대로 카드지만 마크업은 목록이다 — 2026-08-26.
+     기계(구글 스니펫·LLM)는 <div> 더미를 목록으로 읽지 못한다. 107편 전부가
+     요점 카드를 갖고 있는데도 인용 대상이 되지 못하던 이유가 여기였다.
+     list-style·padding 을 지워 보이는 모습은 이전과 같게 유지한다. */
   .points {
     max-width: 900px;
     margin: 32px auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 16px;
+    list-style: none;
+    padding: 0;
   }
   .point-card {
     background: var(--surface);
@@ -60,6 +66,6 @@ const paths: Record<string, string> = {
   .pc-top { display: flex; justify-content: space-between; align-items: center; }
   .pc-icon { color: var(--accent); display: inline-flex; }
   .pc-no { font-size: 12px; color: var(--muted); }
-  .pc-title { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--ink); }
-  .pc-desc { font-size: 13.5px; color: var(--sub); line-height: 1.7; }
+  .pc-title { font-family: var(--font-serif); font-size: 16px; font-weight: 700; color: var(--ink); margin: 0; line-height: 1.45; }
+  .pc-desc { font-size: 13.5px; color: var(--sub); line-height: 1.7; margin: 0; }
 </style>
