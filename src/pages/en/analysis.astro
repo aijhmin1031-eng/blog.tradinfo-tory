@@ -1,4 +1,6 @@
 ---
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
 import Base from '../../layouts/Base.astro';
 import Pic from '../../components/Pic.astro';
 import { getCollection } from 'astro:content';
@@ -9,9 +11,14 @@ const posts = (await getCollection('postsEn', ({ data }) => !data.draft && isPub
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const t = T.en;
 const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+// 소셜 카드. 네 쪽이 전부 같은 기본 이미지를 쓰고 있었다(2026-08-26 수리).
+// 링크 썸네일이 클릭률을 좌우하는데 영문 허브가 서로 구분되지 않았다.
+const _ogMeta = metaByPath('ai-semiconductor-map.jpg');
+const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
+
 ---
 
-<Base
+<Base ogImage={ogImage}
   title="Analysis"
   description="Analysis of Korean trade, currency and semiconductor data from Dotori Economy, built on primary customs and central-bank records."
   lang="en"

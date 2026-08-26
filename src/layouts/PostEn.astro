@@ -9,6 +9,8 @@
  *
  * 캐릭터는 절충안이다(소유주 결정): **데이터는 무기명**, Tori's Note 만 서명 칼럼으로 남긴다.
  */
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../lib/images';
 import Base from './Base.astro';
 import Pic from '../components/Pic.astro';
 import { T } from '../lib/i18n';
@@ -22,6 +24,10 @@ interface Props {
 }
 const { post, body } = Astro.props;
 const { title, description, pubDate, hero, three, toriNote, dataAsOf, sources = [], translationOf } = post.data;
+
+// 소셜 카드는 기사 대표 이미지로. OG 는 호환성 때문에 JPEG 로 뽑는다(2026-08-26).
+const _ogMeta = metaByPath(hero);
+const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
 const t = T.en;
 
 // 영문은 한글과 읽기 속도가 다르다. readingMinutesOf 는 한글 글자수만 세므로 영문에서 0분이 된다.
@@ -33,7 +39,7 @@ const dateText = pubDate.toLocaleDateString('en-US', { year: 'numeric', month: '
 const isoDate = pubDate.toISOString().slice(0, 10);
 ---
 
-<Base
+<Base ogImage={ogImage}
   title={title}
   description={description}
   lang="en"

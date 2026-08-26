@@ -64,6 +64,8 @@ type Dict = {
   readingTime: (m: number) => string;
   published: string;
   updated: string;
+  /** 영문 내비: 무료 그림 */
+  navPack: string;
   /** 차트 단위 라벨 접두사 */
   unitLabel: string;
   /** 테마 토글 접근성 라벨 */
@@ -98,6 +100,7 @@ export const T: Record<Lang, Dict> = {
     readingTime: (m) => `${m}분`,
     published: '발행',
     updated: '갱신',
+    navPack: '그림함',
     unitLabel: '단위',
     themeToggle: '화면 테마 전환',
     themeToggleTitle: '라이트/다크 전환',
@@ -128,6 +131,7 @@ export const T: Record<Lang, Dict> = {
     readingTime: (m) => `${m} min read`,
     published: 'Published',
     updated: 'Updated',
+    navPack: 'Free Illustrations',
     unitLabel: 'Unit',
     themeToggle: 'Switch colour theme',
     themeToggleTitle: 'Light / dark',

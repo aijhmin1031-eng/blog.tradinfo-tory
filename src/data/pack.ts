@@ -14,6 +14,11 @@ export type PackItem = {
   desc: string;
   /** 검색어 변형(동의어·영문·용도) */
   keywords: string[];
+  /**
+   * 영문판(/en/pack/) 원고. **있는 항목만** 영문 페이지가 생긴다(2026-08-26 신설).
+   * 기계번역으로 전량을 뿌리면 구글 scaled content abuse 에 걸린다 — 골라서 직접 쓴다.
+   */
+  en?: { name: string; desc: string; keywords: string[] };
 };
 
 export type Pack = {
@@ -40,22 +45,22 @@ export type Pack = {
 };
 
 const p1: PackItem[] = [
-  { slug: 'coin-acorn', name: '도토리와 금화', desc: '도토리 한 알 옆에 금화가 쌓여 있는 그림입니다. 저축과 자산, 작은 돈이 모이는 이야기를 다루는 글의 대표 이미지로 쓰기 좋습니다.', keywords: ['도토리', '금화', '동전', '저축', '자산', 'acorn coin'] },
-  { slug: 'chart-up', name: '상승 차트', desc: '붉은 화살표가 오른쪽 위로 향하는 상승 차트입니다. 주가와 지수, 수출 실적이 오른 소식을 전할 때 씁니다. 색은 한국 금융 관례대로 상승을 빨강으로 그렸습니다.', keywords: ['상승', '차트', '그래프', '주가', '증가', '우상향', 'chart up'] },
-  { slug: 'chart-down', name: '하락 차트', desc: '파란 화살표가 아래로 꺾이는 하락 차트입니다. 지수 하락, 수출 감소, 가격 조정 같은 내용에 맞춥니다. 하락은 파랑으로 그렸습니다.', keywords: ['하락', '차트', '그래프', '주가', '감소', '폭락', 'chart down'] },
-  { slug: 'piggy-bank', name: '저금통', desc: '동전이 들어가는 돼지 저금통입니다. 적금과 예금, 가계 저축을 다루는 글이나 재테크 자료의 삽화로 씁니다.', keywords: ['저금통', '돼지저금통', '적금', '예금', '저축', 'piggy bank'] },
-  { slug: 'banknotes', name: '지폐 다발', desc: '띠지로 묶인 지폐 다발과 동전입니다. 현금, 통화량, 급여, 자금 조달을 이야기할 때 쓰는 그림입니다.', keywords: ['지폐', '현금', '돈', '통화', '자금', 'cash money'] },
-  { slug: 'gold-bars', name: '금괴', desc: '쌓여 있는 금괴 그림입니다. 금값과 안전자산, 실물 투자, 외환보유액을 다루는 글에 어울립니다.', keywords: ['금괴', '금', '골드바', '안전자산', '금값', 'gold bar'] },
-  { slug: 'cargo-ship', name: '컨테이너선', desc: '컨테이너를 실은 화물선이 바다를 지나는 그림입니다. 수출입과 해상운임, 물류 흐름을 설명하는 자료에 씁니다.', keywords: ['컨테이너선', '화물선', '해운', '수출입', '물류', '무역', 'cargo ship'] },
-  { slug: 'harbor-crane', name: '항만 크레인', desc: '컨테이너를 들어 올리는 항만 갠트리 크레인입니다. 항만 물동량과 통관, 하역 작업을 다루는 글의 대표 이미지로 좋습니다.', keywords: ['항만', '크레인', '부두', '컨테이너', '물동량', 'harbor crane'] },
-  { slug: 'globe-routes', name: '무역 항로', desc: '지구본 위로 항로가 이어진 그림입니다. 국가 간 교역, 공급망, 글로벌 시장을 설명할 때 씁니다.', keywords: ['무역', '항로', '지구본', '글로벌', '공급망', '수출', 'trade route'] },
-  { slug: 'ledger-pen', name: '장부와 만년필', desc: '펼친 장부 위에 만년필이 놓인 그림입니다. 회계와 결산, 기록과 공시를 이야기하는 글에 맞습니다.', keywords: ['장부', '회계', '결산', '만년필', '기록', '재무', 'ledger'] },
-  { slug: 'abacus', name: '주판', desc: '알이 가지런한 주판입니다. 셈과 계산, 옛 상거래와 부기를 소재로 하는 글에 씁니다.', keywords: ['주판', '계산', '셈', '부기', '회계', 'abacus'] },
-  { slug: 'bank-building', name: '은행', desc: '기둥이 늘어선 은행 건물입니다. 기준금리와 통화정책, 예금과 대출을 다루는 글의 삽화로 씁니다.', keywords: ['은행', '중앙은행', '금리', '대출', '예금', '금융', 'bank'] },
-  { slug: 'exchange', name: '환전', desc: '두 통화가 화살표로 맞바뀌는 환전 그림입니다. 환율과 외환시장, 해외 결제를 설명할 때 씁니다.', keywords: ['환전', '환율', '외환', '달러', '통화', 'currency exchange'] },
-  { slug: 'semiconductor', name: '반도체 칩', desc: '회로가 뻗어 나가는 반도체 칩입니다. 반도체 수출과 공정, 기술 산업을 다루는 글에 씁니다.', keywords: ['반도체', '칩', 'IT', '수출', '기술', '전자', 'semiconductor chip'] },
-  { slug: 'scale', name: '저울', desc: '양팔 저울이 균형을 맞춘 그림입니다. 무역수지와 균형, 비교와 판단을 이야기하는 자료에 맞습니다.', keywords: ['저울', '균형', '무역수지', '비교', '공정', 'balance scale'] },
-  { slug: 'lighthouse', name: '등대', desc: '바다를 비추는 등대입니다. 지표와 방향, 전망과 신호를 은유하는 글의 대표 이미지로 씁니다.', keywords: ['등대', '바다', '지표', '전망', '항로', 'lighthouse'] },
+  { slug: 'coin-acorn', name: '도토리와 금화', desc: '도토리 한 알 옆에 금화가 쌓여 있는 그림입니다. 저축과 자산, 작은 돈이 모이는 이야기를 다루는 글의 대표 이미지로 쓰기 좋습니다.', keywords: ['도토리', '금화', '동전', '저축', '자산', 'acorn coin'], en: { name: "Acorn and gold coins", desc: "An acorn beside a small stack of gold coins. Suited to pieces on saving, compounding, and how small amounts accumulate over time.", keywords: ["acorn", "gold coin", "savings", "money illustration", "finance icon"] } },
+  { slug: 'chart-up', name: '상승 차트', desc: '붉은 화살표가 오른쪽 위로 향하는 상승 차트입니다. 주가와 지수, 수출 실적이 오른 소식을 전할 때 씁니다. 색은 한국 금융 관례대로 상승을 빨강으로 그렸습니다.', keywords: ['상승', '차트', '그래프', '주가', '증가', '우상향', 'chart up'], en: { name: "Rising chart", desc: "A red arrow climbing to the right across a bar chart. Use it for gains in share prices, indices or export figures. The colour follows Korean market convention, where red marks a rise.", keywords: ["rising chart", "uptrend", "growth arrow", "stock chart", "finance illustration"] } },
+  { slug: 'chart-down', name: '하락 차트', desc: '파란 화살표가 아래로 꺾이는 하락 차트입니다. 지수 하락, 수출 감소, 가격 조정 같은 내용에 맞춥니다. 하락은 파랑으로 그렸습니다.', keywords: ['하락', '차트', '그래프', '주가', '감소', '폭락', 'chart down'], en: { name: "Falling chart", desc: "A blue arrow bending downward. For index declines, falling exports and price corrections; in Korean market convention blue marks a fall.", keywords: ["falling chart", "downtrend", "decline arrow", "market correction"] } },
+  { slug: 'piggy-bank', name: '저금통', desc: '동전이 들어가는 돼지 저금통입니다. 적금과 예금, 가계 저축을 다루는 글이나 재테크 자료의 삽화로 씁니다.', keywords: ['저금통', '돼지저금통', '적금', '예금', '저축', 'piggy bank'], en: { name: "Piggy bank", desc: "A piggy bank taking a coin. For household saving, deposit products and personal finance explainers.", keywords: ["piggy bank", "savings", "deposit", "personal finance"] } },
+  { slug: 'banknotes', name: '지폐 다발', desc: '띠지로 묶인 지폐 다발과 동전입니다. 현금, 통화량, 급여, 자금 조달을 이야기할 때 쓰는 그림입니다.', keywords: ['지폐', '현금', '돈', '통화', '자금', 'cash money'], en: { name: "Banknotes and coins", desc: "A banded bundle of notes with loose coins beside it. For cash, money supply, payroll and funding.", keywords: ["banknotes", "cash", "currency", "money supply"] } },
+  { slug: 'gold-bars', name: '금괴', desc: '쌓여 있는 금괴 그림입니다. 금값과 안전자산, 실물 투자, 외환보유액을 다루는 글에 어울립니다.', keywords: ['금괴', '금', '골드바', '안전자산', '금값', 'gold bar'], en: { name: "Gold bars", desc: "Stacked gold bars. For gold prices, safe-haven demand, physical assets and foreign exchange reserves.", keywords: ["gold bar", "bullion", "safe haven", "reserves"] } },
+  { slug: 'cargo-ship', name: '컨테이너선', desc: '컨테이너를 실은 화물선이 바다를 지나는 그림입니다. 수출입과 해상운임, 물류 흐름을 설명하는 자료에 씁니다.', keywords: ['컨테이너선', '화물선', '해운', '수출입', '물류', '무역', 'cargo ship'], en: { name: "Container ship", desc: "A container ship under way at sea. For exports and imports, ocean freight rates and supply-chain flow.", keywords: ["container ship", "cargo ship", "shipping", "ocean freight", "trade"] } },
+  { slug: 'harbor-crane', name: '항만 크레인', desc: '컨테이너를 들어 올리는 항만 갠트리 크레인입니다. 항만 물동량과 통관, 하역 작업을 다루는 글의 대표 이미지로 좋습니다.', keywords: ['항만', '크레인', '부두', '컨테이너', '물동량', 'harbor crane'], en: { name: "Port gantry crane", desc: "A gantry crane lifting a container. For port throughput, customs clearance and terminal handling.", keywords: ["gantry crane", "port", "harbour", "container terminal", "logistics"] } },
+  { slug: 'globe-routes', name: '무역 항로', desc: '지구본 위로 항로가 이어진 그림입니다. 국가 간 교역, 공급망, 글로벌 시장을 설명할 때 씁니다.', keywords: ['무역', '항로', '지구본', '글로벌', '공급망', '수출', 'trade route'], en: { name: "Trade routes", desc: "Shipping lanes drawn across a globe. For cross-border trade, supply chains and global markets.", keywords: ["trade route", "globe", "supply chain", "global trade", "export"] } },
+  { slug: 'ledger-pen', name: '장부와 만년필', desc: '펼친 장부 위에 만년필이 놓인 그림입니다. 회계와 결산, 기록과 공시를 이야기하는 글에 맞습니다.', keywords: ['장부', '회계', '결산', '만년필', '기록', '재무', 'ledger'], en: { name: "Ledger and fountain pen", desc: "An open ledger with a fountain pen resting across it. For accounting, closing the books, record-keeping and disclosure.", keywords: ["ledger", "accounting", "bookkeeping", "audit", "finance"] } },
+  { slug: 'abacus', name: '주판', desc: '알이 가지런한 주판입니다. 셈과 계산, 옛 상거래와 부기를 소재로 하는 글에 씁니다.', keywords: ['주판', '계산', '셈', '부기', '회계', 'abacus'], en: { name: "Abacus", desc: "An abacus with its beads in line. For arithmetic, bookkeeping and the older side of commerce.", keywords: ["abacus", "calculation", "bookkeeping", "arithmetic"] } },
+  { slug: 'bank-building', name: '은행', desc: '기둥이 늘어선 은행 건물입니다. 기준금리와 통화정책, 예금과 대출을 다루는 글의 삽화로 씁니다.', keywords: ['은행', '중앙은행', '금리', '대출', '예금', '금융', 'bank'], en: { name: "Bank", desc: "A colonnaded bank building. For policy rates, monetary policy, deposits and lending.", keywords: ["bank", "central bank", "interest rate", "monetary policy"] } },
+  { slug: 'exchange', name: '환전', desc: '두 통화가 화살표로 맞바뀌는 환전 그림입니다. 환율과 외환시장, 해외 결제를 설명할 때 씁니다.', keywords: ['환전', '환율', '외환', '달러', '통화', 'currency exchange'], en: { name: "Currency exchange", desc: "Two currencies swapping along facing arrows. For exchange rates, foreign exchange markets and cross-border payment.", keywords: ["currency exchange", "foreign exchange", "exchange rate", "forex"] } },
+  { slug: 'semiconductor', name: '반도체 칩', desc: '회로가 뻗어 나가는 반도체 칩입니다. 반도체 수출과 공정, 기술 산업을 다루는 글에 씁니다.', keywords: ['반도체', '칩', 'IT', '수출', '기술', '전자', 'semiconductor chip'], en: { name: "Semiconductor chip", desc: "A chip with circuit traces running outward. For semiconductor exports, fabrication and the technology industry.", keywords: ["semiconductor", "chip", "microchip", "technology", "export"] } },
+  { slug: 'scale', name: '저울', desc: '양팔 저울이 균형을 맞춘 그림입니다. 무역수지와 균형, 비교와 판단을 이야기하는 자료에 맞습니다.', keywords: ['저울', '균형', '무역수지', '비교', '공정', 'balance scale'], en: { name: "Balance scale", desc: "A two-pan balance at rest. For trade balance, equilibrium, and comparisons that need a fair reading.", keywords: ["balance scale", "trade balance", "comparison", "equilibrium"] } },
+  { slug: 'lighthouse', name: '등대', desc: '바다를 비추는 등대입니다. 지표와 방향, 전망과 신호를 은유하는 글의 대표 이미지로 씁니다.', keywords: ['등대', '바다', '지표', '전망', '항로', 'lighthouse'], en: { name: "Lighthouse", desc: "A lighthouse throwing light across water. For indicators, direction and forward-looking signals.", keywords: ["lighthouse", "indicator", "guidance", "outlook"] } },
   { slug: 'tori-treasure', name: '도토리를 안은 토리', desc: '도토리경제의 마스코트 다람쥐 토리가 도토리를 안고 있는 그림입니다. 자산을 모으는 이야기나 블로그 소개에 씁니다.', keywords: ['토리', '다람쥐', '캐릭터', '마스코트', '도토리', 'squirrel'] },
   { slug: 'tori-reading', name: '공부하는 토리', desc: '책과 자료를 앞에 둔 다람쥐 토리입니다. 공부와 조사, 입문 안내를 다루는 글에 어울립니다.', keywords: ['토리', '다람쥐', '공부', '독서', '캐릭터', 'study squirrel'] },
 ];
@@ -184,3 +189,10 @@ export const ALL_ITEMS = PACKS.flatMap((pack) => pack.items.map((item) => ({ pac
 export const fileOf = (pack: Pack, item: PackItem) => `${pack.dir}/${item.slug}.${pack.format}`;
 export const thumbOf = (pack: Pack, item: PackItem) =>
   pack.thumb ? pack.thumb(item.slug) : fileOf(pack, item);
+
+/**
+ * 영문판에 싣는 항목만 골라 낸다(2026-08-26).
+ * `en` 원고가 있는 것만 페이지가 생긴다 — 기계번역으로 전량을 뿌리면
+ * 얇은 중복 페이지가 되어 구글 scaled content abuse 에 걸린다.
+ */
+export const EN_ITEMS = ALL_ITEMS.filter(({ item }) => !!item.en);

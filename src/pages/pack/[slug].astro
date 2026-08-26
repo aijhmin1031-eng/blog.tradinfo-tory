@@ -35,6 +35,8 @@ const desc =
   `출처를 표기하면 블로그와 SNS, 상업적 용도로도 쓸 수 있습니다.`;
 
 const others = pack.items.filter((i) => i.slug !== item.slug).slice(0, 6);
+// 영문 원고가 있는 항목만 hreflang 짝을 낸다(짝이 없으면 구글이 무시할 뿐 아니라 중복으로 경쟁한다).
+const altPath = item.en ? `/pack/${item.slug}/` : undefined;
 
 const imageLd = {
   '@context': 'https://schema.org',
@@ -65,7 +67,7 @@ const breadcrumb = {
 };
 ---
 
-<Base
+<Base altPath={altPath}
   title={`${item.name} 무료 이미지 · 상업적 이용 가능`}
   description={desc}
   ogImage={file}

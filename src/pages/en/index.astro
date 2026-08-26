@@ -4,6 +4,8 @@
  * 「데이터 데스크」라 기사 목록이 아니라 **트래커 수치가 먼저** 온다.
  * 외국 독자가 이 사이트에 오는 이유는 서사가 아니라 원자료이기 때문이다.
  */
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
 import Base from '../../layouts/Base.astro';
 import Pic from '../../components/Pic.astro';
 import { getCollection } from 'astro:content';
@@ -24,9 +26,14 @@ const monthName = (d: string) =>
 const posts = (await getCollection('postsEn', ({ data }) => !data.draft && isPublished(data.pubDate)))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+// 소셜 카드. 네 쪽이 전부 같은 기본 이미지를 쓰고 있었다(2026-08-26 수리).
+// 링크 썸네일이 클릭률을 좌우하는데 영문 허브가 서로 구분되지 않았다.
+const _ogMeta = metaByPath('semiconductor-export-engine.jpg');
+const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
+
 ---
 
-<Base
+<Base ogImage={ogImage}
   title={null}
   description="Korean customs, currency and interest-rate data with independent analysis. Semiconductor exports by destination, drawn monthly from Korea Customs Service records and updated every morning."
   lang="en"
@@ -48,6 +55,25 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
         <span class="eh-cta-num mono">${bn(last.exp ?? 0)}bn in {monthName(last.d)}</span>
       </a>
     </section>
+
+    <section class="eh-block">
+      <h2>Free illustrations, attribution only</h2>
+      <p>
+        The illustrations used across this site are released for anyone to reuse: transparent PNGs on
+        finance, trade and logistics, free for commercial work provided Dotori Economy is credited with
+        a link. <a href="/en/pack/">Browse the collection</a>.
+      </p>
+    </section>
+
+    <figure class="eh-figure">
+      <Pic
+        path="semiconductor-export-engine.jpg"
+        alt="Illustration: Korean chip exports leaving port"
+        width={1200}
+        height={675}
+        eager
+      />
+    </figure>
 
     <section class="eh-block">
       <h2>Why the destination column misleads</h2>
@@ -95,6 +121,8 @@ const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month:
 </Base>
 
 <style>
+  .eh-figure { margin: 26px 0 0; }
+  .eh-figure :global(img) { display: block; width: 100%; height: auto; border: 1px solid var(--hair); }
   .eh { max-width: var(--w-prose); margin: 0 auto; padding: 8px 18px 40px; /* 좌우 여백: .wrap 을 쓰지 않으므로 직접 준다(2026-08-26) */ }
   .eh-lede { border-bottom: 2px solid var(--ink); padding-bottom: 26px; margin-bottom: 8px; }
   .eh-kicker { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 8px; }

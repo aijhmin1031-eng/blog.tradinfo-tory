@@ -1,0 +1,169 @@
+---
+// 영문 그림함 낱장. 그림 한 장마다 독립 주소를 두어 검색에 걸리게 하고,
+// 구글 이미지의 라이선스 표시를 위해 ImageObject 구조화 데이터를 싣는다.
+// **원본은 public/ 에 그대로 둔다**(내려받기 대상). 화면용 미리보기만 최적화한다.
+import Pic from '../../../components/Pic.astro';
+import Base from '../../../layouts/Base.astro';
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../../lib/images';
+import { url } from '../../../lib/site';
+import { EN_ITEMS, fileOf, thumbOf } from '../../../data/pack';
+import type { Pack, PackItem } from '../../../data/pack';
+
+export function getStaticPaths() {
+  return EN_ITEMS.map(({ pack, item }) => ({ params: { slug: item.slug }, props: { pack, item } }));
+}
+
+type Props = { pack: Pack; item: PackItem };
+const { pack, item } = Astro.props;
+const en = item.en!;
+
+const file = url(fileOf(pack, item));
+const thumbMeta = metaByPath(thumbOf(pack, item));
+const preview = thumbMeta ? (await getImage({ src: thumbMeta, width: 600, height: 600 })).src : file;
+const ogMeta = thumbMeta;
+const ogImage = ogMeta ? (await getImage({ src: ogMeta, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
+
+const abs = (path: string) => new URL(path, Astro.site).href;
+const pageUrl = abs(url(`/en/pack/${item.slug}/`));
+const description = `${en.name}: a free transparent PNG illustration. ${en.desc} Free for commercial use with attribution to Dotori Economy.`;
+
+const others = EN_ITEMS.filter(({ item: i }) => i.slug !== item.slug).slice(0, 6);
+
+const imageLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ImageObject',
+  name: `${en.name} illustration`,
+  description: en.desc,
+  contentUrl: abs(file),
+  thumbnailUrl: abs(preview),
+  encodingFormat: 'image/png',
+  license: pageUrl,
+  acquireLicensePage: pageUrl,
+  creditText: 'Dotori Economy',
+  copyrightNotice: 'Dotori Economy',
+  creator: { '@type': 'Organization', name: 'Dotori Economy', url: abs(url('/en/')) },
+  keywords: en.keywords.join(', '),
+  inLanguage: 'en',
+  isAccessibleForFree: true,
+};
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Dotori Economy', item: abs(url('/en/')) },
+    { '@type': 'ListItem', position: 2, name: 'Free illustrations', item: abs(url('/en/pack/')) },
+    { '@type': 'ListItem', position: 3, name: `${en.name} illustration`, item: pageUrl },
+  ],
+};
+---
+
+<Base
+  title={`${en.name} illustration · free PNG`}
+  description={description}
+  ogImage={ogImage}
+  lang="en"
+  activeNav="pack"
+  altPath={`/pack/${item.slug}/`}
+  compact
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(imageLd)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />
+  </Fragment>
+
+  <div class="ei">
+    <nav class="ei-crumb" aria-label="Breadcrumb">
+      <a href="/en/pack/">Free illustrations</a>
+      <span aria-hidden="true">·</span>
+      <span>{en.name}</span>
+    </nav>
+
+    <div class="ei-top">
+      <div class="ei-stage alpha-grid">
+        <img src={preview} alt={`${en.name}, free transparent PNG illustration`} width="600" height="600" />
+      </div>
+
+      <div class="ei-info">
+        <h1>{en.name}</h1>
+        <p class="ei-desc">{en.desc}</p>
+
+        <dl class="ei-spec">
+          <div><dt>Format</dt><dd class="mono">Transparent PNG</dd></div>
+          <div><dt>Size</dt><dd class="mono">1600 × 1600 px</dd></div>
+          <div><dt>Background</dt><dd>None. Sits on any colour without a white box</dd></div>
+          <div><dt>Licence</dt><dd>Commercial use permitted with attribution. Reselling the file is not</dd></div>
+        </dl>
+
+        <a class="ei-dl" href={file} download>Download this illustration</a>
+
+        <p class="ei-hint">
+          Please credit <strong>Dotori Economy</strong> and link back to this page. That link is what
+          keeps the collection growing, and it is the only thing asked in return.
+        </p>
+
+        <ul class="ei-keys">{en.keywords.map((k) => <li>{k}</li>)}</ul>
+      </div>
+    </div>
+
+    <section class="ei-use">
+      <h2>Where it works</h2>
+      <ul>
+        <li>Lead image and inline art for a blog post or newsletter</li>
+        <li>Background element in a card or social graphic</li>
+        <li>Icons and cover art in reports and slide decks</li>
+        <li>Transparent background means it drops straight onto a coloured slide</li>
+      </ul>
+    </section>
+
+    <section class="ei-more">
+      <h2>More from the set</h2>
+      <div class="ei-grid">
+        {
+          others.map(({ pack: op, item: oi }) => (
+            <a class="ei-card" href={`/en/pack/${oi.slug}/`}>
+              <span class="ei-thumb alpha-grid">
+                <Pic path={thumbOf(op, oi)} alt={`${oi.en!.name} illustration, free PNG`} width={200} height={200} />
+              </span>
+              <span>{oi.en!.name}</span>
+            </a>
+          ))
+        }
+      </div>
+      <p class="ei-all"><a href="/en/pack/">See all free illustrations</a></p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .ei { max-width: var(--w-page); margin: 0 auto; padding: 8px 18px 48px; }
+  .ei-crumb { font-size: 12px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .ei-crumb a { color: var(--muted); }
+  .ei-crumb a:hover { color: var(--accent); }
+  .ei-top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 34px; margin-top: 18px; align-items: start; }
+  @media (max-width: 780px) { .ei-top { grid-template-columns: 1fr; gap: 22px; } }
+  .ei-stage { border: 1px solid var(--hair); border-radius: 16px; display: grid; place-items: center; padding: 22px; }
+  .ei-stage img { width: 100%; height: auto; display: block; }
+  .ei-info h1 { font-size: clamp(24px, 3.4vw, 34px); font-weight: 900; color: var(--ink); }
+  .ei-desc { font-size: 15px; color: var(--sub); line-height: 1.85; margin-top: 12px; }
+  .ei-spec { margin: 20px 0 0; border-top: 1px solid var(--hair); }
+  .ei-spec > div { display: grid; grid-template-columns: 104px 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--hair); }
+  .ei-spec dt { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .ei-spec dd { font-size: 13px; color: var(--ink); margin: 0; }
+  .ei-dl { display: inline-block; margin-top: 20px; background: var(--brand); color: #fff; font-size: 14px; font-weight: 700; padding: 12px 26px; border-radius: 4px; }
+  .ei-dl:hover { background: var(--brand-hover); color: #fff; }
+  .ei-hint { font-size: 12.5px; color: var(--muted); line-height: 1.85; margin-top: 12px; }
+  .ei-keys { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 0; margin: 18px 0 0; }
+  .ei-keys li { font-size: 11px; color: var(--muted); border: 1px solid var(--hair); border-radius: 999px; padding: 3px 10px; }
+  .ei-use, .ei-more { margin-top: 44px; }
+  .ei-use h2, .ei-more h2 { font-size: 18px; font-weight: 900; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; }
+  .ei-use ul { margin: 14px 0 0; padding-left: 18px; }
+  .ei-use li { font-size: 14.5px; color: var(--sub); line-height: 1.9; }
+  .ei-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 16px; margin-top: 16px; }
+  .ei-card { display: block; text-align: center; font-size: 12.5px; font-weight: 700; color: var(--ink); text-decoration: none; }
+  .ei-thumb { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; padding: 8px; box-sizing: border-box; margin-bottom: 7px; }
+  .ei-thumb :global(img) { width: 100%; height: 100%; object-fit: contain; }
+  .ei-card:hover .ei-thumb { border-color: var(--accent); }
+  .ei-all { font-size: 14px; margin-top: 20px; }
+</style>

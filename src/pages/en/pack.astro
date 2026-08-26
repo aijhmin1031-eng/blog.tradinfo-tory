@@ -1,0 +1,81 @@
+---
+// 영문 그림함 목록. 영문판 최대의 유입·링크 획득 장치다(2026-08-26 개설).
+// 이유: 우리 최대 병목이 「외부 링크 0개」인데, 이 그림들은 **출처 표기를 조건으로** 상업적
+// 이용을 허용한다. 즉 쓰이는 만큼 링크가 생긴다. 그림은 번역이 필요 없어 영문화 비용도 낮다.
+import Pic from '../../components/Pic.astro';
+import Base from '../../layouts/Base.astro';
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
+import { EN_ITEMS, thumbOf } from '../../data/pack';
+
+const _og = metaByPath('semiconductor.png') ?? metaByPath('semiconductor-export-engine.jpg');
+const ogImage = _og ? (await getImage({ src: _og, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
+
+const title = 'Free finance and trade illustrations';
+const description =
+  `${EN_ITEMS.length} transparent PNG illustrations on finance, trade and logistics, free for commercial use with attribution. Drawn for Dotori Economy and released for anyone to reuse.`;
+---
+
+<Base
+  ogImage={ogImage}
+  title={title}
+  description={description}
+  lang="en"
+  activeNav="pack"
+  altPath="/pack/"
+>
+  <div class="ep">
+    <header class="ep-head">
+      <p class="ep-kicker">Free to use · attribution required</p>
+      <h1>Free finance and trade illustrations</h1>
+      <p class="ep-intro">
+        {EN_ITEMS.length} illustrations on money, trade and logistics, drawn for this publication and
+        released for anyone to reuse. Every file is a transparent PNG at 1600 × 1600 pixels, so it sits
+        on any background without a white box behind it.
+      </p>
+      <p class="ep-licence">
+        <strong>Licence.</strong> Free for personal and commercial use, including blogs, slide decks,
+        reports and social posts. The one condition is attribution: credit
+        <strong>Dotori Economy</strong> and link back to the page you took the file from. Reselling the
+        files themselves, as files, is not permitted.
+      </p>
+    </header>
+
+    <ul class="ep-grid">
+      {
+        EN_ITEMS.map(({ pack, item }) => (
+          <li class="ep-cell">
+            <a href={`/en/pack/${item.slug}/`}>
+              <span class="ep-thumb alpha-grid">
+                <Pic path={thumbOf(pack, item)} alt={`${item.en!.name} illustration, free PNG`} width={400} height={400} />
+              </span>
+              <span class="ep-name">{item.en!.name}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="ep-more">
+      The Korean edition carries the full set of 58 files, including seasonal and office subjects:
+      <a href="/pack/">see the complete collection</a>.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .ep { max-width: var(--w-page); margin: 0 auto; padding: 8px 18px 48px; }
+  .ep-head { max-width: var(--w-prose); }
+  .ep-kicker { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+  .ep-head h1 { font-size: clamp(26px, 4vw, 38px); font-weight: 900; color: var(--ink); margin: 8px 0 0; }
+  .ep-intro { font-size: 16px; line-height: 1.75; color: var(--sub); margin-top: 14px; }
+  .ep-licence { font-size: 14px; line-height: 1.8; color: var(--sub); margin-top: 16px; padding: 14px 16px; border: 1px solid var(--hair); border-radius: 10px; }
+  .ep-grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px; padding: 0; margin: 32px 0 0; }
+  .ep-cell a { display: block; text-decoration: none; }
+  .ep-thumb { display: grid; place-items: center; aspect-ratio: 1; border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; padding: 10px; box-sizing: border-box; }
+  .ep-thumb :global(img) { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ep-cell a:hover .ep-thumb { border-color: var(--accent); }
+  .ep-name { display: block; font-size: 13.5px; font-weight: 700; color: var(--ink); margin-top: 8px; }
+  .ep-cell a:hover .ep-name { color: var(--accent); }
+  .ep-more { font-size: 14px; color: var(--sub); margin-top: 34px; }
+</style>

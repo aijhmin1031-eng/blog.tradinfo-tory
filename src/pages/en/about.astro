@@ -1,8 +1,16 @@
 ---
+import Pic from '../../components/Pic.astro';
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
 import Base from '../../layouts/Base.astro';
+// 소셜 카드. 네 쪽이 전부 같은 기본 이미지를 쓰고 있었다(2026-08-26 수리).
+// 링크 썸네일이 클릭률을 좌우하는데 영문 허브가 서로 구분되지 않았다.
+const _ogMeta = metaByPath('korea-semi-map.jpg');
+const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
+
 ---
 
-<Base
+<Base ogImage={ogImage}
   title="About"
   description="Dotori Economy publishes Korean trade, currency and interest-rate data with independent analysis. Sources, methods and editorial standards for the English edition."
   lang="en"
@@ -10,7 +18,8 @@ import Base from '../../layouts/Base.astro';
   altPath="/about/"
 >
   <div class="ea">
-    <header>
+    <header class="ea-head">
+      <Pic path="tori.jpg" alt="Tori, the squirrel analyst who writes Dotori Economy" width={104} height={104} class="ea-portrait" />
       <h1>About Dotori Economy</h1>
       <p class="ea-standfirst">
         A daily record of Korean trade and macroeconomic data, published from the primary sources
@@ -85,6 +94,7 @@ import Base from '../../layouts/Base.astro';
 </Base>
 
 <style>
+  .ea-head :global(.ea-portrait) { display: block; border-radius: 50%; border: 1px solid var(--hair); margin-bottom: 14px; }
   .ea { max-width: var(--w-prose); margin: 0 auto; padding: 8px 18px 40px; /* 좌우 여백: .wrap 을 쓰지 않으므로 직접 준다(2026-08-26) */ }
   .ea header { border-bottom: 2px solid var(--ink); padding-bottom: 18px; margin-bottom: 8px; }
   .ea h1 { font-family: var(--font-serif); font-size: 36px; margin: 0 0 12px; color: var(--ink); }

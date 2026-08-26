@@ -10,6 +10,8 @@
  * 이 페이지는 손으로 갱신하지 않는다. data/series/*.json 을 빌드 시점에 읽으므로
  * 매일 06:50 파이프라인이 돌면 다음 빌드에서 저절로 최신이 된다.
  */
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
 import Base from '../../layouts/Base.astro';
 import SeriesChart from '../../components/SeriesChart.astro';
 import { T } from '../../lib/i18n';
@@ -83,9 +85,14 @@ const title = 'Korea Semiconductor Export Tracker';
 const description = `Monthly Korean exports of integrated circuits (HS 8542) by destination, drawn from Korea Customs Service records. ${asOf}: $${bn(last.exp ?? 0)} billion, ${
   totalYoy === null ? 'no year-earlier comparison available' : `${signed(totalYoy)} year on year`
 }.`;
+// 소셜 카드. 네 쪽이 전부 같은 기본 이미지를 쓰고 있었다(2026-08-26 수리).
+// 링크 썸네일이 클릭률을 좌우하는데 영문 허브가 서로 구분되지 않았다.
+const _ogMeta = metaByPath('semi-export-by-country.jpg');
+const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 675, format: 'jpeg' })).src : undefined;
+
 ---
 
-<Base title={title} description={description} lang="en" activeNav="tracker" compact={false}>
+<Base ogImage={ogImage} title={title} description={description} lang="en" activeNav="tracker" compact={false}>
   <article class="tracker">
     <header class="tk-head">
       <p class="tk-kicker">Data tracker · Updated daily</p>
