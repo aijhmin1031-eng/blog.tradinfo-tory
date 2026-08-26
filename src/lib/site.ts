@@ -62,6 +62,16 @@ export const dateLineIn = (tz: string, now: Date = new Date()) => {
   return `${y}년 ${Number(m)}월 ${Number(d)}일 ${KO_DAYS[wd] ?? wd}요일`;
 };
 
+/** 영문판 날짜 줄: Wednesday, 26 August 2026 (2026-08-26 신설 — 영문에 한국어 날짜가 찍히고 있었다) */
+export const dateLineEnIn = (tz: string, now: Date = new Date()) =>
+  new Intl.DateTimeFormat('en-GB', {
+    timeZone: tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  }).format(now);
+
+/** 영문판 참고 표시: NY 26 Aug */
+export const shortDateEnIn = (tz: string, now: Date = new Date()) =>
+  new Intl.DateTimeFormat('en-GB', { timeZone: tz, day: 'numeric', month: 'short' }).format(now);
+
 /** 참고 표시용: 8월 23일 (일) */
 export const shortDateIn = (tz: string, now: Date = new Date()) => {
   const { m, d, wd } = partsIn(tz, now);

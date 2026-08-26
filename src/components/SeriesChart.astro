@@ -33,6 +33,8 @@ interface Props {
   color?: 'down' | 'up' | 'accent';
   height?: number;
   unit?: string; // 생략하면 시리즈 파일의 unit을 그대로 쓴다
+  /** 'en' 이면 단위·주기 라벨을 영어로 낸다(영문판, 2026-08-26). */
+  lang?: 'ko' | 'en';
   valueSuffix?: string;
   /** 몇 포인트마다 x축 라벨을 찍을지. 생략하면 좌우 끝만 */
   xLabelEvery?: number;
@@ -54,6 +56,7 @@ const {
   color = 'down',
   height = 250,
   unit,
+  lang = 'ko',
   valueSuffix = '',
   xLabelEvery,
   marks = [],
@@ -117,7 +120,11 @@ const resolvedMarks = marks
 const first = points[0].d;
 const last = points[points.length - 1].d;
 const rangeLabel = `${fmtDateLabel(first)}~${fmtDateLabel(last)}`;
-const unitLabel = unit ?? `${file.unit} (${file.cycle === 'D' ? '일별' : '월별'}, ${rangeLabel})`;
+const unitLabel =
+  unit ??
+  (lang === 'en'
+    ? `${file.unit} (${file.cycle === 'D' ? 'daily' : 'monthly'}, ${rangeLabel})`
+    : `${file.unit} (${file.cycle === 'D' ? '일별' : '월별'}, ${rangeLabel})`);
 
 const endLabel = endLabelAuto
   ? `${values[values.length - 1].toLocaleString('ko-KR')}${valueSuffix}`
@@ -127,6 +134,7 @@ const endLabel = endLabelAuto
 <LineChart
   title={title}
   unit={unitLabel}
+  lang={lang}
   values={values}
   xLabels={xLabels}
   yTicks={yTicks}

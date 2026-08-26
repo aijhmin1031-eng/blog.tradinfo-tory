@@ -16,8 +16,11 @@ interface Props {
   // label 을 생략하면 해당 값에 valueSuffix 를 붙여 자동 표기, dy 로 라벨 위치 수동 보정.
   marks?: { idx: number; label?: string; dx?: number; dy?: number }[];
   valueSuffix?: string; // 마크 자동 라벨의 단위 접미사: '원', '%', '%p' 등
+  /** 'en' 이면 단위 라벨을 영어로 낸다(영문판 차트, 2026-08-26). */
+  lang?: 'ko' | 'en';
 }
 const {
+  lang = 'ko',
   title,
   unit = '',
   values,
@@ -70,7 +73,7 @@ const markPts = marks
 <figure class="chart card" data-chart>
   <figcaption class="chart-head">
     <span class="chart-title">{title}</span>
-    {unit && <span class="chart-unit mono">단위: {unit}</span>}
+    {unit && <span class="chart-unit mono">{lang === 'en' ? 'Unit' : '단위'}: {unit}</span>}
   </figcaption>
   <svg
     viewBox={`0 0 ${W} ${H}`}

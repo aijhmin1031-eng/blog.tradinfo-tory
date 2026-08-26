@@ -64,6 +64,11 @@ type Dict = {
   readingTime: (m: number) => string;
   published: string;
   updated: string;
+  /** 차트 단위 라벨 접두사 */
+  unitLabel: string;
+  /** 테마 토글 접근성 라벨 */
+  themeToggle: string;
+  themeToggleTitle: string;
   sources: string;
   relatedReading: string;
   threeTitle: string;
@@ -93,6 +98,9 @@ export const T: Record<Lang, Dict> = {
     readingTime: (m) => `${m}분`,
     published: '발행',
     updated: '갱신',
+    unitLabel: '단위',
+    themeToggle: '화면 테마 전환',
+    themeToggleTitle: '라이트/다크 전환',
     sources: '자료',
     relatedReading: '함께 읽기',
     threeTitle: '토리의 세 줄 요약',
@@ -120,6 +128,9 @@ export const T: Record<Lang, Dict> = {
     readingTime: (m) => `${m} min read`,
     published: 'Published',
     updated: 'Updated',
+    unitLabel: 'Unit',
+    themeToggle: 'Switch colour theme',
+    themeToggleTitle: 'Light / dark',
     sources: 'Sources',
     relatedReading: 'Related',
     threeTitle: 'The three lines',

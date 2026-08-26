@@ -4,7 +4,7 @@ import Ticker from '../components/Ticker.astro';
 import Collab from '../components/Collab.astro';
 import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
-import { SITE, CATEGORIES, url, fmtDate, dateLineIn, shortDateIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
+import { SITE, CATEGORIES, url, fmtDate, dateLineIn, shortDateIn, dateLineEnIn, shortDateEnIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import { T, HTML_LANG, OG_LOCALE, HREFLANG, localizedPath, type Lang } from '../lib/i18n';
 
@@ -46,8 +46,11 @@ const pageTitle = title ? `${title} | ${t.siteName}` : (isEn ? `${t.siteName} | 
 // 이 블로그의 기준 시간은 한국이다. 빌드가 UTC 서버에서 돌아 예전에는 하루가 밀려 나왔다.
 // 미 국채·달러 지표가 '어제 값'인 이유를 읽는 분이 알 수 있도록 뉴욕 날짜를 참고로 함께 적는다.
 const now = new Date();
-const dateLine = dateLineIn(TZ_KST, now);
-const etLine = shortDateIn(TZ_ET, now);
+// 날짜도 판을 따라간다. 영문 페이지에 한국어 날짜가 찍히고 있었다(2026-08-26 수리).
+// isEn 은 아래에서 정해지므로 여기서는 lang 을 직접 본다.
+const _isEnDate = lang === 'en';
+const dateLine = _isEnDate ? dateLineEnIn(TZ_KST, now) : dateLineIn(TZ_KST, now);
+const etLine = _isEnDate ? shortDateEnIn(TZ_ET, now) : shortDateIn(TZ_ET, now);
 const kstYear = todayIn(TZ_KST, now).slice(0, 4);
 // 정본 주소는 커스텀 도메인 한 곳이다. GitHub Pages 미러도 canonical은 이 도메인을 가리켜
 // 색인 신호가 둘로 갈리지 않게 한다(중복 페이지는 noindex가 아니라 canonical로 합치는 것이 권장 방식).
@@ -275,7 +278,12 @@ const isActive = (n: (typeof navItems)[number]) =>
         <div class="wrap topbar-in">
           <span class="topbar-date">
             {dateLine}
-            <span class="topbar-et" title="뉴욕 현지 날짜 · 미 증시와 국채 지표의 기준">뉴욕 {etLine}</span>
+            <span
+              class="topbar-et"
+              title={isEn
+                ? 'New York local date, the reference for US equity and Treasury figures'
+                : '뉴욕 현지 날짜 · 미 증시와 국채 지표의 기준'}
+            >{isEn ? 'NY ' : '뉴욕 '}{etLine}</span>
           </span>
           <span class="topbar-slogan">
             {isEn ? 'Updated every morning, 07:00 Korea time' : '매일 아침 7시, 새 도토리가 올라옵니다'}
@@ -293,7 +301,7 @@ const isActive = (n: (typeof navItems)[number]) =>
                 <path d="M11 11 L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
               </svg>
             </a>}
-            <button id="theme-toggle" aria-label="화면 테마 전환" title="라이트/다크 전환">
+            <button id="theme-toggle" aria-label={t.themeToggle} title={t.themeToggleTitle}>
               <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
                 <circle cx="8" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"
                 ></circle>
@@ -312,7 +320,7 @@ const isActive = (n: (typeof navItems)[number]) =>
         !compact ? (
           <div class="masthead wrap">
             <a href={url(isEn ? '/en/' : '/')} class="masthead-logo">
-              <Acorn size={36} />
+              <Acorn size={36} label={t.siteName} />
               <span class="masthead-name serif">{t.siteName}</span>
             </a>
             <div class="masthead-tagline">{isEn ? t.tagline : SITE.taglineSub}</div>
@@ -369,13 +377,15 @@ const isActive = (n: (typeof navItems)[number]) =>
         /* 모바일 전용 메뉴 시트. 데스크톱 드롭다운(.nav-panel)을 좁은 화면에 밀어 넣으면
            .nav-in 의 가로 스크롤 컨테이너에 갇혀 계속 문제가 났다. 그래서 시트를
            .nav-in 밖(.nav 직속)에 따로 두어 클리핑 자체를 없앤다. 데스크톱에서는 숨는다. */
-        navItems
+        nav
           .filter((n) => n.children)
           .map((n) => (
             <div class="nav-sheet" data-sheet={n.key}>
               <div class="nav-sheet-head">
                 <span class="nav-sheet-title">{n.name}</span>
-                <button class="nav-sheet-close" type="button" aria-label="메뉴 닫기">닫기 ✕</button>
+                <button class="nav-sheet-close" type="button" aria-label={isEn ? 'Close menu' : '메뉴 닫기'}>
+                  {isEn ? 'Close ✕' : '닫기 ✕'}
+                </button>
               </div>
               {n.children!.map((c) => (
                 <a href={c.href} class:list={['nav-sheet-item', { active: activeNav === c.key }]}>

@@ -118,6 +118,7 @@ const description = `Monthly Korean exports of integrated circuits (HS 8542) by 
     </section>
 
     <SeriesChart
+      lang="en"
       series="trade_hs8542"
       field="exp"
       scale={1e-9}
@@ -223,7 +224,7 @@ const description = `Monthly Korean exports of integrated circuits (HS 8542) by 
 </Base>
 
 <style>
-  .tracker { max-width: var(--w-prose); margin: 0 auto; padding: 8px 0 40px; }
+  .tracker { max-width: var(--w-prose); margin: 0 auto; padding: 8px 18px 40px; /* 좌우 여백: .wrap 을 쓰지 않으므로 직접 준다(2026-08-26) */ }
   .tk-head { border-bottom: 2px solid var(--ink); padding-bottom: 18px; margin-bottom: 26px; }
   .tk-kicker {
     font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
