@@ -12,7 +12,8 @@
 | `src/data/indicators.json` | 티커·지표 타일용 최신 스냅샷 | 파이프라인 자동 생성 |
 | `src/content/briefs/*.json` | **데일리 브리핑** — 규칙 기반 자동 생성 문서 | 파이프라인 자동. 날짜당 1건, 멱등 |
 | `src/content/posts/*.mdx` | **기사** — 반자동(초안 생성 후 검토·발행) | 사람이 최종 승인 |
-| `public/images/` | 캐릭터·카툰·OG 자산 | 수동 |
+| `src/assets/` | **화면에 쓰는 그림 정본**(hero·cat·story·poses·tori·packthumb) | 수동. 빌드가 리사이즈·WebP 처리 |
+| `public/images/` | **내려받기 대상만**(그림함 원본·og-default) | 수동. 최적화 안 됨 |
 | `docs/worldview.md` | 세계관·편집 원칙 | 수동 |
 
 ## 2. 매일 일어나는 일 (자동)

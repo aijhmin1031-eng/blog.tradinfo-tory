@@ -55,7 +55,14 @@
 - 이미지 생성: Pollo API(nano-banana-2), 캐릭터 일관성은 레퍼런스 이미지 URL 필수 — **정본은 repo `docs/character/`**(이미지+URL+복구 절차 README). 스크래치패드 사본은 세션과 함께 사라지므로 믿지 말 것.
   스타일 프롬프트: "Same flat vector cartoon style as the reference squirrel character (navy vest with brass buttons and golden acorn pin, gold-rimmed round glasses), clean thick outlines, flat solid colors, warm cream background… Strictly no text, no letters, no signboards, no numbers, no watermark."
   캐릭터 디테일 명세 v2는 `docs/worldview.md` 참조(2026-08-22 고도화 — 레퍼런스 교체됨, 이전 URL은 `tori-char/url_p1_v1_backup.txt`).
-  생성물은 반드시 눈으로 검수(깨진 글자·색 규약 위반은 재생성). 기사 대표 이미지는 `public/images/hero/{slug}.jpg` + frontmatter `hero`.
+  생성물은 반드시 눈으로 검수(깨진 글자·색 규약 위반은 재생성). 기사 대표 이미지는 **`src/assets/hero/{slug}.jpg`** + frontmatter `hero`(경로 문자열은 `/images/hero/{slug}.jpg` 로 그대로 적는다, 파일명으로 찾는다).
+- **이미지 ★ 정본은 `src/assets/` 다**(2026-08-26 전환). 그전에는 전부 `public/` 에 있어 Astro 최적화를
+  통째로 우회했고, 목록 카드가 160×90 자리에 1200px 원본을 받아 홈이 1.5MB였다(지금 235KB).
+  **화면에 쓰는 그림은 `<Pic>`**(`components/Pic.astro`, 리사이즈·WebP·2배 밀도), **경로 문자열이 필요하면
+  `getImage()`** 로 푼다(og:image·JSON-LD). 해석기는 `lib/images.ts`(파일명 → ImageMetadata glob 지도).
+  **`public/images/` 에 새 그림을 넣으면 최적화를 못 받는다** — 예외는 **그림함 원본**뿐이다(내려받기 대상).
+  이미지를 옮길 때는 **빌드 통과를 믿지 말고** 산출 HTML 의 이미지 URL이 실제 파일로 있는지 전수 확인할 것
+  (8/26 이동에서 8곳이 조용히 404 가 될 뻔했다).
 - **Astro 함정 ★ `<script>` 안은 원시 텍스트다**(2026-08-26 사고). `<script define:vars={...}>` 본문을 `{\`...\`}` 로 감싸면 중괄호가 표현식으로 평가되지 않고 **그대로 나간다.** 결과가 「블록 하나 + 템플릿 문자열 하나」라 문법 오류도 없이 조용히 아무 일도 안 한다. 이 구멍으로 **방문 기록이 8/25 도입 이후 한 건도 안 쌓였다.** 스크립트 안에는 날 JS 를 그대로 쓸 것. **브라우저 코드는 「배포된 HTML 을 열어 실제로 실행되는지」까지 확인**해야 한다(빌드 통과는 아무것도 보장하지 않는다). 로컬 빌드는 `onVercel` 이 꺼져 정본 전용 스크립트가 아예 안 나오므로 `VERCEL=1 npm run build` 로 확인한다.
 - Astro 함정: 인라인 컴포넌트는 템플릿 앞뒤 공백이 텍스트로 새어나온다(Term.astro 참고 — `</span><style>` 붙여 쓰기). JSX 속성 안의 스프레드·복잡식은 컴파일 오류를 낼 수 있으니 frontmatter에서 사전 계산.
 - 기사 발행 체크: ⓪ **인용 3종**(두괄식 리드·수치형 소제목 1개·표 1개 — 게이트가 신규엔 실패로 건다) ① 수치 출처 대조 ② `<Term>` 칩(그 용어를 설명하는 기사 자체에는 넣지 않기, 비유적 사용 제외 / **사전에 없는 용어를 쓰면 그 기사 발행일 아침 빌드가 통째로 실패한다**) ③ PointCards 1개 ④ hero 이미지 ⑤ 특집 소속이면 `topics`+`topicRole` 태그 ⑥ 빌드·스크린샷.
