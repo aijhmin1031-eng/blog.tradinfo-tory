@@ -15,6 +15,7 @@
     "quality:save": "node scripts/quality-metrics.mjs --trend --save",
     "linkable": "node scripts/check-quality.mjs --linkable",
     "precheck": "node scripts/precheck-scheduled.mjs",
+    "check-visit": "node scripts/check-visit-script.mjs",
     "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {

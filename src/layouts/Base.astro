@@ -158,30 +158,68 @@ const isActive = (n: (typeof navItems)[number]) =>
               var h = location.hostname;
               if (h === 'localhost' || h === '127.0.0.1') return;
 
+              // 봇 1차 거르기(2026-08-26 신설). 여기서 거르는 것은 쓸데없는 요청을 아끼기
+              // 위한 것일 뿐이고, 최종 판정은 서버 함수 log_visit 가 User-Agent 로 한다.
+              // 검색엔진 렌더러는 우리 JS 를 실제로 실행하므로 이 층이 없으면 '방문자'로 잡힌다.
+              var ua = (navigator.userAgent || '').toLowerCase();
+              if (!ua) return;
+              if (/[a-z]bot|bot\/|crawler|crawling|spider|slurp|yeti|scrapy|headless|phantom|lighthouse|inspectiontool|bingpreview|fetcher|archiver|facebookexternalhit|embedly|daumoa/.test(ua)) return;
+
               // 방문자 구분값은 '그날 하루'만 산다. 날짜가 바뀌면 새로 만들어진다.
               var day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
               var key = 'dv:' + day;
+
+              // 저장소를 실제로 쓸 수 있는지 먼저 확인한다(2026-08-26 보강).
+              // 시크릿 모드·저장소 차단 브라우저에서는 localStorage 가 던진다. 그때 값을
+              // 매번 새로 만들면 한 사람이 페이지마다 다른 방문자로 세어져 숫자가 부풀었다.
+              // sessionStorage 로라도 물러서면 최소한 그 방문 내내 한 사람으로 유지된다.
+              var store = null;
+              try { localStorage.setItem('dv:t', '1'); localStorage.removeItem('dv:t'); store = localStorage; } catch (e) {}
+              if (!store) {
+                try { sessionStorage.setItem('dv:t', '1'); sessionStorage.removeItem('dv:t'); store = sessionStorage; } catch (e) {}
+              }
+
               var id = null;
-              try { id = localStorage.getItem(key); } catch (e) {}
+              try { id = store && store.getItem(key); } catch (e) {}
               if (!id) {
                 var b = new Uint8Array(8);
                 crypto.getRandomValues(b);
                 id = Array.from(b, function (x) { return x.toString(16).padStart(2, '0'); }).join('');
                 try {
-                  localStorage.setItem(key, id);
-                  // 지난 날짜 값은 지운다 — 오래 남겨 둘 이유가 없다.
-                  Object.keys(localStorage).forEach(function (k2) {
-                    if (k2.indexOf('dv:') === 0 && k2 !== key) localStorage.removeItem(k2);
-                  });
+                  if (store) {
+                    store.setItem(key, id);
+                    // 지난 날짜 값은 지운다 — 오래 남겨 둘 이유가 없다.
+                    Object.keys(store).forEach(function (k2) {
+                      if (k2.indexOf('dv:') === 0 && k2 !== key) store.removeItem(k2);
+                    });
+                  }
                 } catch (e) {}
               }
 
-              fetch(sbUrl + '/rest/v1/rpc/log_visit', {
-                method: 'POST',
-                headers: { apikey: sbKey, Authorization: 'Bearer ' + sbKey, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ p_path: location.pathname, p_visitor: id, p_ref: document.referrer || '' }),
-                keepalive: true,
-              }).catch(function () {});
+              function send() {
+                fetch(sbUrl + '/rest/v1/rpc/log_visit', {
+                  method: 'POST',
+                  headers: { apikey: sbKey, Authorization: 'Bearer ' + sbKey, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ p_path: location.pathname, p_visitor: id, p_ref: document.referrer || '' }),
+                  keepalive: true,
+                }).catch(function () {});
+              }
+
+              // 사람이 실제로 화면을 본 순간에만 센다(2026-08-26 신설).
+              // 미리 렌더(prerender)와 링크 미리보기는 화면에 뜨지 않은 채 스크립트만 돈다.
+              // 다만 '지금 숨어 있다'고 버리지는 않는다 — 새 탭으로 연 사람도 숨은 상태로
+              // 시작하므로, 보이는 순간을 기다렸다가 보낸다.
+              if (document.prerendering) {
+                document.addEventListener('prerenderingchange', send, { once: true });
+              } else if (document.visibilityState === 'visible') {
+                send();
+              } else {
+                document.addEventListener('visibilitychange', function onVis() {
+                  if (document.visibilityState !== 'visible') return;
+                  document.removeEventListener('visibilitychange', onVis);
+                  send();
+                });
+              }
             } catch (e) {}
           })();
         </script>
