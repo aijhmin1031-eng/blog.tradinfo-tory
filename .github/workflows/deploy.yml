@@ -80,6 +80,37 @@ jobs:
         with:
           path: dist
 
+  # 색인 알림 — 네이버·Bing·Yandex 에 「바뀌었다」고 먼저 알린다(IndexNow).
+  # 구글은 이 프로토콜에 참여하지 않는다. 구글 쪽은 Search Console 에서 사람이 눌러야 한다.
+  # 배포가 끝나고 키 파일이 실제로 떠 있어야 제출이 통과하므로, 확인될 때까지 기다린다.
+  indexnow:
+    name: 색인 알림 (네이버·Bing)
+    needs: deploy
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # 색인 알림이 실패해도 그날 발행은 이미 끝났다. 배포를 실패로 물들이지 않는다.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 키 파일이 정본 도메인에 떠 있는지 확인
+        run: |
+          KEY=$(ls public/ | grep -E '^[0-9a-f]{8,128}\.txt$' | head -1)
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://dotoriecon.com/$KEY")
+            [ "$CODE" = "200" ] && echo "키 파일 확인: $KEY" && exit 0
+            echo "아직 안 떴다(HTTP $CODE). 30초 뒤 재확인 ($i/10)"
+            sleep 30
+          done
+          echo "키 파일이 5분 안에 뜨지 않았다. 이번 제출은 건너뛴다."
+          exit 1
+
+      - name: 오늘 발행분 제출
+        run: node scripts/indexnow.mjs
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
