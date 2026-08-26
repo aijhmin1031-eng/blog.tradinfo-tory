@@ -51,6 +51,7 @@
   스타일 프롬프트: "Same flat vector cartoon style as the reference squirrel character (navy vest with brass buttons and golden acorn pin, gold-rimmed round glasses), clean thick outlines, flat solid colors, warm cream background… Strictly no text, no letters, no signboards, no numbers, no watermark."
   캐릭터 디테일 명세 v2는 `docs/worldview.md` 참조(2026-08-22 고도화 — 레퍼런스 교체됨, 이전 URL은 `tori-char/url_p1_v1_backup.txt`).
   생성물은 반드시 눈으로 검수(깨진 글자·색 규약 위반은 재생성). 기사 대표 이미지는 `public/images/hero/{slug}.jpg` + frontmatter `hero`.
+- **Astro 함정 ★ `<script>` 안은 원시 텍스트다**(2026-08-26 사고). `<script define:vars={...}>` 본문을 `{\`...\`}` 로 감싸면 중괄호가 표현식으로 평가되지 않고 **그대로 나간다.** 결과가 「블록 하나 + 템플릿 문자열 하나」라 문법 오류도 없이 조용히 아무 일도 안 한다. 이 구멍으로 **방문 기록이 8/25 도입 이후 한 건도 안 쌓였다.** 스크립트 안에는 날 JS 를 그대로 쓸 것. **브라우저 코드는 「배포된 HTML 을 열어 실제로 실행되는지」까지 확인**해야 한다(빌드 통과는 아무것도 보장하지 않는다). 로컬 빌드는 `onVercel` 이 꺼져 정본 전용 스크립트가 아예 안 나오므로 `VERCEL=1 npm run build` 로 확인한다.
 - Astro 함정: 인라인 컴포넌트는 템플릿 앞뒤 공백이 텍스트로 새어나온다(Term.astro 참고 — `</span><style>` 붙여 쓰기). JSX 속성 안의 스프레드·복잡식은 컴파일 오류를 낼 수 있으니 frontmatter에서 사전 계산.
 - 기사 발행 체크: ① 수치 출처 대조 ② `<Term>` 칩(그 용어를 설명하는 기사 자체에는 넣지 않기, 비유적 사용 제외 / **사전에 없는 용어를 쓰면 그 기사 발행일 아침 빌드가 통째로 실패한다**) ③ PointCards 1개 ④ hero 이미지 ⑤ 특집 소속이면 `topics`+`topicRole` 태그 ⑥ 빌드·스크린샷.
 - **예약분은 `npm run precheck`로 미리 터뜨려 본다**(2026-08-26 신설). 예약 기사는 평소 빌드에서 빠져 **결함이 발행일 아침에야 터진다** — 사전에 없는 `<Term>` 하나가 그날 빌드를 통째로 죽인다. 아침 점검 때 한 줄 돌릴 것.

@@ -143,10 +143,16 @@ const isActive = (n: (typeof navItems)[number]) =>
       /* 방문 기록 — 기사뿐 아니라 모든 페이지에서 한 번씩.
          남기는 것은 '그날치 난수 + 경로 + 유입 도메인' 뿐이다(scripts/sql/visit_log.sql 참조).
          자정이 지나면 난수가 새로 만들어져 같은 사람을 이틀 이상 추적할 수 없다.
-         RPC 가 아직 없으면(SQL 미적용) 조용히 실패하고 아무것도 깨지지 않는다. */
+         RPC 가 아직 없으면(SQL 미적용) 조용히 실패하고 아무것도 깨지지 않는다.
+
+         ★ 2026-08-26 수리: 아래 본문을 {`...`} 로 감싸 두었었다. Astro 의 <script> 안은
+         **원시 텍스트**라 그 중괄호가 표현식으로 평가되지 않고 그대로 나간다. 결과가
+         「블록 하나 + 템플릿 문자열 하나」라 문법 오류도 없이 조용히 아무 일도 안 했고,
+         방문 기록이 8/25 도입 이후 한 건도 쌓이지 않았다. define:vars 스크립트 안에는
+         **날 JS 를 그대로 쓴다.** 같은 파일의 다른 스크립트들이 그렇게 되어 있다. */
       onVercel && (
         <script define:vars={{ sbUrl: SUPABASE_URL, sbKey: SUPABASE_ANON_KEY }}>
-          {`(function () {
+          (function () {
             try {
               if (navigator.webdriver) return;
               var h = location.hostname;
@@ -177,7 +183,7 @@ const isActive = (n: (typeof navItems)[number]) =>
                 keepalive: true,
               }).catch(function () {});
             } catch (e) {}
-          })();`}
+          })();
         </script>
       )
     }
