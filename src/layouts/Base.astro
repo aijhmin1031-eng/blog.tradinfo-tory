@@ -604,6 +604,15 @@ const isActive = (n: (typeof navItems)[number]) =>
   .topbar-slogan { display: none; }
   @media (min-width: 860px) { .topbar-slogan { display: inline; } }
   .topbar-actions { display: inline-flex; align-items: center; gap: 14px; }
+  /* 좁은 화면에서는 상단바가 두 줄로 깨졌다(언어 전환 버튼이 늘어난 뒤, 2026-08-26 제보).
+     덜 급한 것부터 접는다: 뉴욕 날짜 → 토리 이야기. 협업 문의·검색·언어·테마는 남긴다. */
+  @media (max-width: 560px) {
+    .topbar-et { display: none; }
+    .topbar-date { white-space: nowrap; font-size: 11.5px; }
+  }
+  @media (max-width: 430px) {
+    .topbar-actions a[href$="/story/"] { display: none; }
+  }
   .topbar-icon { display: inline-flex; color: var(--sub); }
   .topbar-icon:hover { color: var(--accent); }
   #theme-toggle {

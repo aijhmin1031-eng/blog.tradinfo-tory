@@ -396,8 +396,11 @@ const jsonLd = {
   @media (max-width: 640px) {
     /* 작은 썸네일(16:9=54px)이 긴 본문 옆 세로 가운데에 떠서 위아래 여백이 크게 보이던 문제.
        이미지를 키우고(4:3) 제목 위쪽에 맞춰 정렬하고, 설명은 3줄로 줄여 행 높이를 낮춘다. */
-    .row { grid-template-columns: 116px 1fr; gap: 14px; align-items: start; }
-    .row-thumb { width: 116px; aspect-ratio: 4 / 3; }
+    .row { grid-template-columns: 124px 1fr; gap: 14px; align-items: start; }
+    /* 원본 비율(16:9)을 지킨다. 4:3 으로 맞추면 흰 띠가 생긴다(2026-08-26). */
+    .row-thumb { width: 124px; aspect-ratio: 16 / 9; }
+    /* 목록에서 설명 세 줄은 제목을 밀어내기만 한다. 모바일은 제목·날짜만 둔다(소유주 지시). */
+    .row-dek { display: none; }
     .row-body { grid-column: 2; }
     .row-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: flex-start; margin-top: 10px; }
     .row-dek {
