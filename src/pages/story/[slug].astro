@@ -3,6 +3,8 @@
 // 조판은 StoryStrip이 전부 맡고, 이 파일은 머리말·다음 화 안내·구조화 데이터만 다룬다.
 import Base from '../../layouts/Base.astro';
 import StoryStrip from '../../components/StoryStrip.astro';
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
 import { getCollection } from 'astro:content';
 import { SITE, url, isPublished } from '../../lib/site';
 import { EPISODES } from '../../data/story';
@@ -30,6 +32,10 @@ const chapterRuns = (ep.chapters ?? []).map((ch) => {
   return { ...ch, offset };
 });
 
+// 카툰 표지도 최적화 대상이라 주소가 빌드 때 정해진다(2026-08-26).
+const coverMeta = metaByPath(`${ep.cover}.jpg`);
+const coverSrc = coverMeta ? (await getImage({ src: coverMeta, width: 880, height: 660 })).src : null;
+
 const ld = {
   '@context': 'https://schema.org',
   '@type': 'ComicStory',
@@ -37,7 +43,7 @@ const ld = {
   alternativeHeadline: ep.sub,
   description: ep.desc,
   url: new URL(url(`/story/${ep.slug}/`), Astro.site).href,
-  image: new URL(url(`/images/story/${ep.cover}.jpg`), Astro.site).href,
+  image: coverSrc ? new URL(coverSrc, Astro.site).href : undefined,
   inLanguage: 'ko-KR',
   isPartOf: {
     '@type': 'CreativeWorkSeries',

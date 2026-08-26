@@ -2,9 +2,10 @@
 // 도토리 숲 — 기사 전체 허브.
 // 상단 메뉴를 '숲(읽을거리)'과 '창고(도구)' 두 갈래로 정리하면서, 분야·특집·최신을
 // 한 화면에서 고르도록 만든 착지 페이지다. 카테고리 4개는 이 페이지 아래로 들어간다.
+import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, isPublished } from '../lib/site';
+import { CATEGORIES, url, fmtDate, isPublished } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import { EPISODES } from '../data/story';
 
@@ -54,12 +55,12 @@ const desc =
         latest.map((p) => (
           <a class="fo-card" href={url(`/posts/${p.id}/`)}>
             <div class="fo-thumb">
-              <img
-                src={heroFor(p.data.category, p.data.hero)}
+              <Pic
+                category={p.data.category}
+                hero={p.data.hero}
                 alt={`${p.data.title} 대표 이미지`}
-                width="400"
-                height="225"
-                loading="lazy"
+                width={400}
+                height={225}
               />
             </div>
             <div class:list={['kicker', CATEGORIES[p.data.category].cls]}>
@@ -110,7 +111,7 @@ const desc =
         topicBlocks.map((t) => (
           <a class="fo-topic" href={url(t.href)}>
             <div class="fo-topic-thumb">
-              <img src={url(t.image)} alt={`${t.name} 특집`} width="480" height="270" loading="lazy" />
+              <Pic path={t.image} alt={`${t.name} 특집`} width={480} height={270} />
             </div>
             <div class="fo-topic-body">
               <div class="fo-topic-name serif">{t.name} 특집 <span class="fo-count mono">{t.count}편</span></div>
@@ -139,13 +140,7 @@ const desc =
         storyEps.map((e) => (
           <a class="fo-story-card" href={url(`/story/${e.slug}/`)}>
             <div class="fo-story-thumb">
-              <img
-                src={url(`/images/story/${e.cover}.jpg`)}
-                alt={`${e.title} 대표 컷`}
-                width="360"
-                height="270"
-                loading="lazy"
-              />
+              <Pic path={`${e.cover}.jpg`} alt={`${e.title} 대표 컷`} width={360} height={270} />
             </div>
             <div class="fo-story-title">{e.title}</div>
             <div class="mono fo-date">{e.series} · {e.cuts}컷</div>

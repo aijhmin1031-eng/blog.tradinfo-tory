@@ -1,7 +1,8 @@
 ---
+import Pic from '../../components/Pic.astro';
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, isPublished, type CategoryKey } from '../../lib/site';
+import { CATEGORIES, url, fmtDate, isPublished, type CategoryKey } from '../../lib/site';
 
 export async function getStaticPaths() {
   return Object.keys(CATEGORIES).map((category) => ({ params: { category } }));
@@ -24,14 +25,14 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && isPubli
     {
       posts.length === 0 ? (
         <div class="empty">
-          <img src={url('/images/poses/pose-04.jpg')} alt="생각에 잠긴 토리" width="120" height="120" />
+          <Pic path="pose-04.jpg" alt="생각에 잠긴 토리" width={120} height={120} />
           <p>아직 이 창고에는 도토리가 없습니다. 새 기사가 준비되는 대로 이곳에 채워집니다.</p>
         </div>
       ) : (
         posts.map((p) => (
           <a class="row" href={url(`/posts/${p.id}/`)}>
             <div class="row-thumb">
-              <img src={heroFor(p.data.category, p.data.hero)} alt="" width="148" height="83" loading="lazy" />
+              <Pic category={p.data.category} hero={p.data.hero} width={148} height={83} />
             </div>
             <div>
               <div class="row-title serif">{p.data.title}</div>

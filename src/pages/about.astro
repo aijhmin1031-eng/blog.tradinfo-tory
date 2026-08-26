@@ -1,6 +1,7 @@
 ---
 // 「토리는 누구인가」. 원래 이 파일 하나에 카툰 65컷이 통째로 쌓여 있었다.
 // 컷은 src/data/story.ts와 /story/로 옮기고, 여기에는 정체성과 철칙만 남긴다.
+import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { SITE, url, isPublished } from '../lib/site';
@@ -55,13 +56,7 @@ const desc =
     <a class="ab-story-card" href={url('/story/')}>
       {lead && (
         <div class="ab-story-thumb">
-          <img
-            src={url(`/images/story/${lead.cover}.jpg`)}
-            alt="토리 이야기 대표 컷"
-            width="520"
-            height="390"
-            loading="lazy"
-          />
+          <Pic path={`${lead.cover}.jpg`} alt="토리 이야기 대표 컷" width={520} height={390} />
         </div>
       )}
       <div class="ab-story-body">

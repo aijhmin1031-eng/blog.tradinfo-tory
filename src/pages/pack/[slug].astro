@@ -1,9 +1,12 @@
 ---
 // 무료 이미지 낱장 페이지. 그림 한 장마다 독립 주소를 두어 검색에 걸리게 하고,
 // 구글 이미지의 라이선스 표시를 위해 ImageObject 구조화 데이터를 싣는다.
+import Pic from '../../components/Pic.astro';
 import Base from '../../layouts/Base.astro';
 import Collab from '../../components/Collab.astro';
 import { url } from '../../lib/site';
+import { getImage } from 'astro:assets';
+import { metaByPath } from '../../lib/images';
 import { PACKS, ALL_ITEMS, fileOf, thumbOf } from '../../data/pack';
 import type { Pack, PackItem } from '../../data/pack';
 
@@ -18,7 +21,11 @@ type Props = { pack: Pack; item: PackItem };
 const { pack, item } = Astro.props;
 
 const file = url(fileOf(pack, item));
-const preview = pack.format === 'png' ? url(thumbOf(pack, item)) : file;
+// 화면용 미리보기는 최적화된 썸네일을, 내려받기는 public 의 원본을 준다(2026-08-26).
+// 썸네일이 src/assets 로 옮겨져 URL 이 빌드 때 정해지므로 여기서 한 번 풀어 쓴다.
+const thumbMeta = metaByPath(thumbOf(pack, item));
+const thumbBuilt = thumbMeta ? await getImage({ src: thumbMeta, width: 600, height: 600 }) : null;
+const preview = thumbBuilt ? thumbBuilt.src : file;
 const abs = (path: string) => new URL(path, Astro.site).href;
 const pageUrl = abs(url(`/pack/${item.slug}/`));
 
@@ -35,7 +42,7 @@ const imageLd = {
   name: `${item.name} 무료 이미지`,
   description: item.desc,
   contentUrl: abs(file),
-  thumbnailUrl: abs(url(thumbOf(pack, item))),
+  thumbnailUrl: abs(preview),
   encodingFormat: pack.format === 'svg' ? 'image/svg+xml' : `image/${pack.format === 'jpg' ? 'jpeg' : 'png'}`,
   license: abs(url('/pack/')),
   acquireLicensePage: pageUrl,
@@ -133,7 +140,7 @@ const breadcrumb = {
         {others.map((o) => (
           <a class="it-card" href={url(`/pack/${o.slug}/`)}>
             <div class={`it-thumb${pack.transparent ? ' alpha alpha-grid' : ''}`}>
-              <img src={url(thumbOf(pack, o))} alt={`${o.name} 무료 이미지`} width="200" height="200" loading="lazy" />
+              <Pic path={thumbOf(pack, o)} alt={`${o.name} 무료 이미지`} width={200} height={200} />
             </div>
             <span>{o.name}</span>
           </a>

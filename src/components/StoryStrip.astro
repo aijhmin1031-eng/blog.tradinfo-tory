@@ -1,6 +1,7 @@
 ---
 // 카툰 스트립 한 덩어리. about.astro 한 파일에 흩어져 있던 컷 마크업과 말풍선·계절 효과
 // CSS를 여기로 모았다. /story/<slug>/ 낱장 페이지와 홈 미리보기가 같은 조판을 쓴다.
+import Pic from './Pic.astro';
 import { url } from '../lib/site';
 import type { Panel } from '../data/story';
 
@@ -22,12 +23,12 @@ const pad = (n: number) => String(n).padStart(2, '0');
     panels.map((p, i) => (
       <figure class:list={['panel', 'reveal', `act-${p.act}`]}>
         <div class="frame">
-          <img
-            src={url(`/images/story/${p.img}.jpg`)}
+          <Pic
+            path={`${p.img}.jpg`}
             alt={p.alt}
-            width="880"
-            height="660"
-            loading={eager && i < 2 ? 'eager' : 'lazy'}
+            width={880}
+            height={660}
+            eager={eager && i < 2}
           />
           <div class="fx" aria-hidden="true">
             <i /><i /><i /><i /><i /><i />

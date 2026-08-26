@@ -1,0 +1,42 @@
+---
+// 최적화된 그림 한 장. `<Image>` 를 감싸 리사이즈·WebP 변환을 걸어 준다.
+// 대표 이미지·카툰 컷·그림함 썸네일이 모두 이것을 쓴다.
+// 2026-08-26 신설 — 그전에는 목록 카드가 160px 자리에 1200px 원본을 그대로 불렀다.
+import { Image } from 'astro:assets';
+import { heroMeta, metaByPath } from '../lib/images';
+import type { CategoryKey } from '../lib/site';
+
+interface Props {
+  /** 기사에서 쓸 때 */
+  category?: CategoryKey;
+  hero?: string;
+  /** 카테고리 없이 경로만 있을 때(특집 등록부 등) */
+  path?: string;
+  alt?: string;
+  width: number;
+  height: number;
+  /** 첫 화면에 보이는 큰 이미지면 true (LCP 대상) */
+  eager?: boolean;
+  class?: string;
+}
+const { category, hero, path, alt = '', width, height, eager = false, class: cls } = Astro.props;
+const src = path ? metaByPath(path) : category ? heroMeta(category, hero) : undefined;
+// 작은 썸네일만 2배 밀도를 함께 뽑는다. 큰 이미지는 원본 폭이면 충분하다.
+const densities = width <= 480 ? [1, 2] : [1];
+---
+{
+  src && (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      densities={densities}
+      format="webp"
+      quality={78}
+      loading={eager ? 'eager' : 'lazy'}
+      fetchpriority={eager ? 'high' : undefined}
+      class={cls}
+    />
+  )
+}

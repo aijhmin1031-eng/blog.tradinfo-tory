@@ -1,10 +1,11 @@
 ---
+import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
 import StatTiles from '../components/StatTiles.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
-import { CATEGORIES, url, fmtDate, heroFor, SITE, isPublished, todayIn, TZ_KST, readingMinutesOf } from '../lib/site';
+import { CATEGORIES, url, fmtDate, SITE, isPublished, todayIn, TZ_KST, readingMinutesOf } from '../lib/site';
 import { TOPICS } from '../lib/topics';
 import { EPISODES } from '../data/story';
 
@@ -81,12 +82,13 @@ const jsonLd = {
             </time>
           </div>
           <a class="hero-image" href={url(`/posts/${featured.id}/`)}>
-            <img
-              src={heroFor(featured.data.category, featured.data.hero)}
+            <Pic
+              category={featured.data.category}
+              hero={featured.data.hero}
               alt={`${featured.data.title} 대표 이미지`}
-              width="1200"
-              height="675"
-              fetchpriority="high"
+              width={1200}
+              height={675}
+              eager
             />
           </a>
           {featured.data.chart && (
@@ -131,7 +133,7 @@ const jsonLd = {
         {weekPosts.map((p) => (
           <a class="row reveal" href={url(`/posts/${p.id}/`)}>
             <div class="row-thumb">
-              <img src={heroFor(p.data.category, p.data.hero)} alt="" width="160" height="90" loading="lazy" />
+              <Pic category={p.data.category} hero={p.data.hero} width={160} height={90} />
             </div>
             <div class="row-body">
               <div class="row-title serif">{p.data.title}</div>
@@ -164,7 +166,7 @@ const jsonLd = {
           {topicPosts.map((p) => (
             <a class="fband-card" href={url(`/posts/${p.id}/`)}>
               <div class="fband-thumb">
-                <img src={heroFor(p.data.category, p.data.hero)} alt="" width="320" height="180" loading="lazy" />
+                <Pic category={p.data.category} hero={p.data.hero} width={320} height={180} />
               </div>
               <div class="fband-card-title serif">{p.data.title}</div>
               <div class="fband-card-date mono">{fmtDate(p.data.pubDate)}</div>
@@ -204,7 +206,7 @@ const jsonLd = {
 
   <aside id="tori-greet" hidden aria-live="polite">
     <div class="tg-bubble">오늘 주운 도토리, 보고 가세요!</div>
-    <img src={url('/images/poses/pose-01.jpg')} alt="손을 흔드는 토리" width="88" height="88" />
+    <Pic path="pose-01.jpg" alt="손을 흔드는 토리" width={88} height={88} />
     <button id="tg-close" aria-label="인사 닫기">&times;</button>
   </aside>
 
@@ -257,13 +259,7 @@ const jsonLd = {
         storyEps.map((e) => (
           <a class="sb-card" href={url(`/story/${e.slug}/`)}>
             <div class="sb-thumb">
-              <img
-                src={url(`/images/story/${e.cover}.jpg`)}
-                alt={`${e.title} 대표 컷`}
-                width="360"
-                height="270"
-                loading="lazy"
-              />
+              <Pic path={`${e.cover}.jpg`} alt={`${e.title} 대표 컷`} width={360} height={270} />
             </div>
             <div class="sb-card-title">{e.title}</div>
             <div class="mono sb-meta">{e.series} · {e.cuts}컷</div>
@@ -274,13 +270,12 @@ const jsonLd = {
   </section>
 
   <section class="mascot wrap reveal">
-    <img
-      src={url('/images/tori/tori.jpg')}
+    <Pic
+      path="tori.jpg"
       alt="네이비 베스트를 입은 다람쥐 이코노미스트 토리"
       class="mascot-img tori-idle"
-      width="180"
-      height="180"
-      loading="lazy"
+      width={180}
+      height={180}
     />
     <div>
       <div class="mascot-quote serif">&ldquo;{SITE.tagline}&rdquo;</div>

@@ -1,5 +1,6 @@
 ---
 // 토리의 한 마디, 기사 맺음 코멘트 (감사 인사 포즈)
+import Pic from './Pic.astro';
 import { url } from '../lib/site';
 interface Props {
   text: string;
@@ -8,13 +9,7 @@ const { text } = Astro.props;
 ---
 
 <aside class="tori-note" aria-label="토리의 한 마디">
-  <img
-    src={url('/images/poses/pose-06.jpg')}
-    alt="가슴에 손을 얹고 인사하는 토리"
-    width="64"
-    height="64"
-    loading="lazy"
-  />
+  <Pic path="pose-06.jpg" alt="가슴에 손을 얹고 인사하는 토리" width={64} height={64} />
   <div>
     <div class="tn-title">토리의 한 마디</div>
     <div class="tn-text">{text}</div>

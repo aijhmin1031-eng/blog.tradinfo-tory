@@ -1,11 +1,12 @@
 ---
 // 특집: 반도체·AI, docs/topics-standard.md v1.0의 구성 요소 기준을 따른다.
 // 수치는 전부 data/series·corp.json 바인딩 (하드코딩 금지), 기사는 frontmatter topics 태그로 자동 수집.
+import Pic from '../../components/Pic.astro';
 import Base from '../../layouts/Base.astro';
 import LineChart from '../../components/LineChart.astro';
 import Delta from '../../components/Delta.astro';
 import { getCollection } from 'astro:content';
-import { url, heroFor, fmtDate, CATEGORIES, isPublished, readingMinutesOf } from '../../lib/site';
+import { url, fmtDate, CATEGORIES, isPublished, readingMinutesOf } from '../../lib/site';
 import { GLOSSARY } from '../../lib/glossary';
 import { PICTOGRAMS } from '../../lib/pictograms';
 import { TOPICS } from '../../lib/topics';
@@ -163,7 +164,7 @@ const timeline = [
 
     <div class="tp-note-card">
       <div class="tp-note-head">
-        <img src={url('/images/tori/tori.jpg')} alt="" width="30" height="30" />
+        <Pic path="tori.jpg" width={30} height={30} />
         <span class="serif">토리의 노트, 지금 국면</span>
       </div>
       <p>
@@ -252,7 +253,7 @@ const timeline = [
       {
         reading.map((p) => (
           <a class="tp-post" href={url(`/posts/${p.id}/`)}>
-            <img src={heroFor(p.data.category, p.data.hero)} alt="" width="220" height="124" loading="lazy" />
+            <Pic category={p.data.category} hero={p.data.hero} width={220} height={124} />
             <div class="tp-post-body">
               <span class="tp-post-meta-row">
                 <span class="tp-role" data-role={p.data.topicRole ?? '데이터'}>{p.data.topicRole ?? '데이터'}</span>

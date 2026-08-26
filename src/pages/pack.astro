@@ -2,6 +2,7 @@
 // 도토리 그림함 — 무료 이미지 나눔 목록.
 // 낱장 페이지(/pack/<slug>/)로만 내려받게 두어, 한 번에 쓸어 담는 대신 필요한 그림을 골라 보게 한다.
 // 검색 유입이 목적이므로 팩 소개와 이미지 설명은 사람이 읽는 문장으로 적고 구조화 데이터를 함께 싣는다.
+import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
 import Collab from '../components/Collab.astro';
 import { url } from '../lib/site';
@@ -127,12 +128,11 @@ const collection = {
                 data-search={`${item.name} ${item.slug} ${item.keywords.join(' ')}`}
               >
                 <div class={`pk-thumb${pack.transparent ? ' pk-thumb-alpha alpha-grid' : ''}`}>
-                  <img
-                    src={url(thumbOf(pack, item))}
+                  <Pic
+                    path={thumbOf(pack, item)}
                     alt={`${item.name} 무료 이미지 · 도토리경제 그림함`}
-                    width="400"
-                    height="400"
-                    loading="lazy"
+                    width={400}
+                    height={400}
                   />
                 </div>
                 <div class="pk-card-foot">

@@ -1,8 +1,11 @@
 ---
+import Pic from '../components/Pic.astro';
 import Base from './Base.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import ToriNote from '../components/ToriNote.astro';
-import { CATEGORIES, url, fmtDate, heroFor, SITE, readingMinutesOf } from '../lib/site';
+import { CATEGORIES, url, fmtDate, SITE, readingMinutesOf } from '../lib/site';
+import { getImage } from 'astro:assets';
+import { heroMeta, metaByPath } from '../lib/images';
 import { dedupeSources } from '../lib/sources';
 import { TOPICS } from '../lib/topics';
 import Comments from '../components/Comments.astro';
@@ -26,7 +29,15 @@ const readingMinutes = readingMinutesOf(post.body ?? '');
 // 조회수: 배포 주소(GitHub Pages·Vercel)와 무관한 논리 경로로 집계한다
 const viewPath = `/posts/${(post as { slug?: string; id: string }).slug ?? post.id}/`;
 const cat = CATEGORIES[category];
-const heroImg = heroFor(category, hero);
+// og:image·JSON-LD 는 URL 문자열이 필요하다. 최적화된 파일의 주소를 여기서 한 번 만든다.
+// OG 는 호환성 때문에 JPEG 로 뽑는다(일부 수집기가 WebP 를 못 읽는다).
+const heroSrc = heroMeta(category, hero);
+// 토리 초상은 로고(JSON-LD)와 본문 양쪽에서 쓰인다. 빌드 주소를 한 번 만들어 함께 쓴다.
+const toriMeta = metaByPath('tori.jpg');
+const toriBuilt = toriMeta ? await getImage({ src: toriMeta, width: 180, height: 180 }) : null;
+const toriSrc = toriBuilt ? toriBuilt.src : url('/images/og-default.jpg');
+const heroOg = heroSrc ? await getImage({ src: heroSrc, width: 1200, height: 675, format: 'jpeg' }) : null;
+const heroImg = heroOg ? heroOg.src : url('/images/og-default.jpg');
 // 이 기사가 속한 특집, 기사→특집 역링크 배너 (특집 편성 기준 §3 상호 링크)
 const postTopics = TOPICS.filter((t) => (post.data.topics ?? []).includes(t.key));
 
@@ -44,7 +55,7 @@ const publisherLd = {
   '@type': 'Organization',
   name: SITE.name,
   url: abs(url('/')),
-  logo: { '@type': 'ImageObject', url: abs(url('/images/tori/tori.jpg')) },
+  logo: { '@type': 'ImageObject', url: abs(toriSrc) },
 };
 
 const jsonLd = {
@@ -99,7 +110,7 @@ const crumbsLd = {
       <p class="post-dek">{description}</p>
       <div class="post-byline">
         <img
-          src={url('/images/tori/tori.jpg')}
+          src={toriSrc}
           alt="토리"
           width="26"
           height="26"
@@ -130,7 +141,7 @@ const crumbsLd = {
     </header>
 
     <figure class="post-hero">
-      <img src={heroImg} alt={`${title} 대표 이미지`} width="1200" height="675" fetchpriority="high" />
+      <Pic category={category} hero={hero} alt={`${title} 대표 이미지`} width={1200} height={675} eager />
     </figure>
 
     {three && <ThreeLines what={three.what} why={three.why} next={three.next} />}
@@ -188,7 +199,7 @@ const crumbsLd = {
           {related.map((r) => (
             <a class="related-row" href={url(`/posts/${r.id}/`)}>
               <span class="related-thumb">
-                <img src={heroFor(r.data.category, r.data.hero)} alt="" width="96" height="54" loading="lazy" />
+                <Pic category={r.data.category} hero={r.data.hero} width={96} height={54} />
               </span>
               <span class="related-name">{r.data.title}</span>
               <span class:list={['chip', CATEGORIES[r.data.category].cls]}>

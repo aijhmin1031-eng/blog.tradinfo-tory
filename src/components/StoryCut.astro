@@ -1,5 +1,6 @@
 ---
 // 카툰 컷 + 캡션, 갈림길 등 연재 기사 본문용. img 는 /images/story/ 하위 파일명(확장자 제외).
+import Pic from './Pic.astro';
 import { url } from '../lib/site';
 interface Props {
   img: string;
@@ -9,7 +10,7 @@ interface Props {
 }
 const { img, alt = '', cap = '', quote = false } = Astro.props;
 ---
-<figure class:list={['story-cut', quote ? 'is-quote' : '']}><img src={url(`/images/story/${img}.jpg`)} alt={alt} width="1200" height="896" loading="lazy" />{cap && <figcaption class:list={[quote ? 'serif' : '']}>{cap}</figcaption>}</figure><style>
+<figure class:list={['story-cut', quote ? 'is-quote' : '']}><Pic path={`${img}.jpg`} alt={alt} width={1200} height={896} />{cap && <figcaption class:list={[quote ? 'serif' : '']}>{cap}</figcaption>}</figure><style>
   .story-cut { margin: 26px 0; }
   .story-cut img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
   .story-cut figcaption { margin-top: 10px; font-size: 14px; line-height: 1.8; color: var(--sub); word-break: keep-all; }

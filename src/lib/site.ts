@@ -23,8 +23,9 @@ export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export const url = (path: string) => `${base}${path.startsWith('/') ? path : `/${path}`}`;
 
-export const heroFor = (category: CategoryKey, hero?: string) =>
-  hero ? url(hero) : url(`/images/cat/${CATEGORIES[category].slug}.jpg`);
+// heroFor 는 2026-08-26 에 제거했다. 대표 이미지는 이제 `public/` 이 아니라 `src/assets/` 에 있고
+// URL 문자열이 아니라 ImageMetadata 로 다룬다(빌드가 리사이즈·WebP 를 맡는다).
+// 대신 `lib/images.ts` 의 heroMeta()/metaByPath() 와 `components/Pic.astro` 를 쓸 것.
 
 // ── 시간대 ────────────────────────────────────────────────
 // 이 블로그의 기준 시간은 한국(KST)이다. 빌드는 UTC 서버에서 도는데

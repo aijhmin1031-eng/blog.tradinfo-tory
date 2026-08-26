@@ -1,6 +1,7 @@
 ---
 // 「토리 이야기」 목차. 전에는 about 한 페이지에 65컷이 통째로 쌓여 있어
 // 어느 화가 있는지 보이지도, 한 화만 공유하지도 못했다. 여기서 화별로 갈라 준다.
+import Pic from '../../components/Pic.astro';
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { url, isPublished } from '../../lib/site';
@@ -55,13 +56,7 @@ const ld = {
         open.map((e) => (
           <a class="st-card" href={url(`/story/${e.slug}/`)}>
             <div class="st-thumb">
-              <img
-                src={url(`/images/story/${e.cover}.jpg`)}
-                alt={`${e.title} 대표 컷`}
-                width="440"
-                height="330"
-                loading="lazy"
-              />
+              <Pic path={`${e.cover}.jpg`} alt={`${e.title} 대표 컷`} width={440} height={330} />
             </div>
             <div class="st-body">
               <div class="st-series">{e.series}</div>
