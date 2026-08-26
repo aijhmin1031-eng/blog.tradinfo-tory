@@ -199,7 +199,23 @@ https://dotoriecon.com/category/basics/
 - 웹 페이지 수집 — 허브 8건·기사 10건 **요청 완료(8/26)**
 - **RSS `rss.xml` — 제출 완료(8/24 06:28:47).** 기사 40편을 담고 있고 새 글이 자동으로 실린다.
 
-### 네이버 대조군 실험 (2026-08-26 진행 중)
+### 네이버 대조군 실험 (2026-08-26) — 1차 결과: **수집 요청이 있어야 가져간다**
+
+| | 경과 | 결과 |
+|---|---|---|
+| 처치군 `fob-vs-cif` (IndexNow + **수집 요청**) | 약 30분 | **떴다** |
+| 대조군 `semi-export-unit-value` (IndexNow 만) | 몇 시간 | **안 뜬다** |
+
+**더 오래 기다린 쪽이 안 떴다.** 사이트맵(8/24)·RSS(8/24)·IndexNow(8/26)를 다 받고도
+안 가져가다가 수집 요청 30분 만에 색인됐다.
+
+**조치**: 20편 추가 제출(2일차·3일차 우선순위), **뉴스형 10편은 대조군으로 남긴다.**
+검색 가치가 낮아 대조군 비용이 거의 없다. **내일 그중 하나가 저절로 뜨는지로 확정한다.**
+확정되면 **매일 발행분도 손으로 넣어야 하므로 아침 점검에 절차를 추가**해야 한다.
+
+<details><summary>원래 설계 (참고)</summary>
+
+
 
 **8/26 수집 요청 뒤 기사 `fob-vs-cif` 가 네이버에 떴다.** 아침에는 안 떴다.
 **다만 원인이 둘로 갈린다**: ①같은 날 IndexNow 168건 제출(기사 40편 전부) ②수집 요청 10편.
@@ -234,6 +250,8 @@ semi-export-by-country · semiconductor-export-engine · semi-export-unit-value
 shareholder-return-two-roads · tori-galimgil-01 · memory-stocks-summer
 semi-import-paradox · seoul-fx-market-day
 ```
+
+</details>
 
 주소는 `https://dotoriecon.com/posts/<슬러그>/` 형식이다.
 **목록을 소유주에게 줄 때는 반드시 실제 HTTP 200 을 확인하고 줄 것**
