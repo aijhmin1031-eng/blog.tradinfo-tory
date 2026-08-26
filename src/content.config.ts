@@ -82,4 +82,37 @@ const briefs = defineCollection({
   }),
 });
 
-export const collections = { posts, briefs };
+
+// ── 영문판(/en/) — 2026-08-26 신설 ─────────────────────────────────────
+// **일부러 별도 컬렉션이다.** 같은 posts 컬렉션에 lang 필드로 섞으면
+// `getCollection('posts', ...)` 를 쓰는 12곳(카테고리·숲·특집·사전·갈림길…)이
+// 전부 영문 기사를 함께 집어 온다. 한 곳만 빠뜨려도 한글 목록에 영문이 새고,
+// 그것이 조용히 일어난다. 컬렉션을 가르면 기존 호출부는 한 줄도 안 건드려도 된다.
+//
+// 스키마가 한글판과 다른 이유: 영문판은 미러가 아니라 별도 편집이다(소유주 결정).
+// three(세 줄 요약)·sources 는 같은 구조를 쓰되, 세계관 필드(toriNote·place)는
+// 데이터 기사에서 무기명으로 가므로 선택이다.
+const postsEn = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/posts-en' }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    draft: z.boolean().default(false),
+    hero: z.string().optional(),
+    /** 짝이 되는 한글 기사 슬러그. hreflang 을 양방향으로 걸 때 쓴다. */
+    translationOf: z.string().optional(),
+    three: z
+      .object({ what: z.string(), why: z.string(), next: z.string() })
+      .optional(),
+    /** Tori's Note — 데이터 트래커는 무기명, 논평만 서명(소유주 결정 2026-08-26) */
+    toriNote: z.string().optional(),
+    dataAsOf: z.string().optional(),
+    sources: z
+      .array(z.object({ org: z.string(), name: z.string(), url: z.string().optional(), note: z.string().optional() }))
+      .optional(),
+    topics: z.array(z.string()).optional(),
+  }),
+});
+
+export const collections = { posts, briefs, postsEn };

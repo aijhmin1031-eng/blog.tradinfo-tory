@@ -1,0 +1,18 @@
+---
+import { getCollection, render } from 'astro:content';
+import PostEn from '../../../layouts/PostEn.astro';
+import { isPublished } from '../../../lib/site';
+
+export async function getStaticPaths() {
+  // 날짜 게이트는 한글판과 같은 규칙이다 — 미래 pubDate 는 그날 아침 빌드가 자동 발행한다.
+  const posts = await getCollection('postsEn', ({ data }) => !data.draft && isPublished(data.pubDate));
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<PostEn post={post} body={post.body ?? ''}>
+  <Content />
+</PostEn>

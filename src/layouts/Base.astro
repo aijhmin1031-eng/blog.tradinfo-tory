@@ -6,6 +6,7 @@ import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
 import { SITE, CATEGORIES, url, fmtDate, dateLineIn, shortDateIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
+import { T, HTML_LANG, OG_LOCALE, HREFLANG, localizedPath, type Lang } from '../lib/i18n';
 
 interface Props {
   title?: string;
@@ -16,18 +17,32 @@ interface Props {
   /** 본문에 구독 박스가 이미 있는 페이지(기사)는 푸터 폼을 생략해 2중 노출을 피한다 */
   footerNewsletter?: boolean;
   ogType?: 'website' | 'article';
+  /** 페이지 언어. 영문판(/en/)은 'en' 을 넘긴다. */
+  lang?: Lang;
+  /**
+   * 짝이 되는 다른 언어 페이지의 **중립 경로**(`/posts/x/` 처럼 /en 접두어 없이).
+   * 넘기면 hreflang 을 **양방향**으로 걸고 언어 전환 버튼이 그 글로 간다.
+   * 구글은 짝이 서로를 가리킬 때만 hreflang 을 인정하므로, 짝이 실제로 있을 때만 넘길 것.
+   */
+  altPath?: string;
 }
 const {
   title,
-  description = SITE.description,
+  description,
   compact = false,
   ogImage = url('/images/og-default.jpg'),
   activeNav = '',
   footerNewsletter = true,
   ogType = 'website',
+  lang = 'ko',
+  altPath,
 } = Astro.props;
 
-const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} | ${SITE.taglineSub}`;
+const t = T[lang];
+const isEn = lang === 'en';
+const pageDesc = description ?? t.description;
+
+const pageTitle = title ? `${title} | ${t.siteName}` : (isEn ? `${t.siteName} | ${t.tagline}` : `${SITE.name} | ${SITE.taglineSub}`);
 // 이 블로그의 기준 시간은 한국이다. 빌드가 UTC 서버에서 돌아 예전에는 하루가 밀려 나왔다.
 // 미 국채·달러 지표가 '어제 값'인 이유를 읽는 분이 알 수 있도록 뉴욕 날짜를 참고로 함께 적는다.
 const now = new Date();
@@ -42,6 +57,17 @@ const canonicalPath = (basePath && Astro.url.pathname.startsWith(basePath)
   ? Astro.url.pathname.slice(basePath.length)
   : Astro.url.pathname) || '/';
 const canonical = new URL(canonicalPath, CANONICAL_ORIGIN).href;
+
+// ── hreflang (2026-08-26) ────────────────────────────────────────────
+// 같은 내용의 두 언어판이 **서로를 가리킬 때만** 구글이 hreflang 을 인정한다.
+// 한쪽만 걸면 무시될 뿐 아니라 두 판이 중복 콘텐츠로 경쟁할 수 있다.
+// 그래서 짝(altPath)이 실제로 있을 때만 내보낸다. x-default 는 한글판이다(정본).
+const otherLang: Lang = isEn ? 'ko' : 'en';
+const altHref = altPath ? new URL(localizedPath(altPath, otherLang), CANONICAL_ORIGIN).href : null;
+const koHref = altHref ? (isEn ? altHref : canonical) : null;
+const enHref = altHref ? (isEn ? canonical : altHref) : null;
+// 언어 전환 버튼의 착지. 짝이 없으면 그 언어의 홈으로 보낸다(막다른 곳을 만들지 않는다).
+const switchHref = url(localizedPath(altPath ?? '/', otherLang));
 // 정본(Vercel) 빌드에서만 켜는 것들 — GitHub Pages 미러에는 없는 엔드포인트다.
 const onVercel = !!process.env.VERCEL;
 
@@ -88,6 +114,17 @@ const navItems: {
     ],
   },
 ];
+// 영문 내비는 **세계관 용어를 쓰지 않는다**(소유주 결정 2026-08-26).
+// Acorn Forest·Acorn Warehouse 는 영어권에서 유아용으로 읽힌다. 기능 이름으로 간다.
+// 그리고 영문판은 「데이터 데스크」라 트래커가 기사보다 앞에 온다.
+const navItemsEn: typeof navItems = [
+  { key: 'home', name: T.en.navHome, href: url('/en/') },
+  { key: 'tracker', name: T.en.navTracker, href: url('/en/tracker/') },
+  { key: 'analysis', name: T.en.navArticles, href: url('/en/analysis/') },
+  { key: 'about', name: T.en.navAbout, href: url('/en/about/') },
+];
+const nav = isEn ? navItemsEn : navItems;
+
 const FOREST_KEYS = new Set(['forest', 'topics', 'story', 'about', ...Object.values(CATEGORIES).map((c) => c.slug), ...TOPICS.map((t) => t.key)]);
 const isActive = (n: (typeof navItems)[number]) =>
   activeNav === n.key ||
@@ -96,21 +133,25 @@ const isActive = (n: (typeof navItems)[number]) =>
 ---
 
 <!doctype html>
-<html lang="ko">
+<html lang={HTML_LANG[lang]} data-lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={pageDesc} />
     <link rel="canonical" href={canonical} />
+    {koHref && <link rel="alternate" hreflang={HREFLANG.ko} href={koHref} />}
+    {enHref && <link rel="alternate" hreflang={HREFLANG.en} href={enHref} />}
+    {koHref && <link rel="alternate" hreflang="x-default" href={koHref} />}
     {SITE.naverVerify && <meta name="naver-site-verification" content={SITE.naverVerify} />}
     {SITE.googleVerify && <meta name="google-site-verification" content={SITE.googleVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
-    <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url('/rss.xml')} />
+    {!isEn && <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url('/rss.xml')} />}
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:site_name" content={t.siteName} />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
     <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={pageDesc} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={new URL(ogImage, Astro.site)} />
     <meta name="twitter:card" content="summary_large_image" />
@@ -228,7 +269,7 @@ const isActive = (n: (typeof navItems)[number]) =>
     <slot name="head" />
   </head>
   <body>
-    <a class="skip-link" href="#main">본문 바로가기</a>
+    <a class="skip-link" href="#main">{isEn ? 'Skip to content' : '본문 바로가기'}</a>
     <header>
       <div class="topbar">
         <div class="wrap topbar-in">
@@ -236,16 +277,22 @@ const isActive = (n: (typeof navItems)[number]) =>
             {dateLine}
             <span class="topbar-et" title="뉴욕 현지 날짜 · 미 증시와 국채 지표의 기준">뉴욕 {etLine}</span>
           </span>
-          <span class="topbar-slogan">매일 아침 7시, 새 도토리가 올라옵니다</span>
+          <span class="topbar-slogan">
+            {isEn ? 'Updated every morning, 07:00 Korea time' : '매일 아침 7시, 새 도토리가 올라옵니다'}
+          </span>
           <span class="topbar-actions">
-            <a href={url('/story/')}>토리 이야기</a>
-            <a href={url('/contact/')} class="topbar-work">협업 문의</a>
-            <a href={url('/search/')} aria-label="검색" title="검색" class="topbar-icon">
+            {/* 언어 전환 — 짝이 없으면 그 언어의 홈으로 보낸다(막다른 곳을 만들지 않는다). */}
+            <a href={switchHref} class="topbar-lang" hreflang={HREFLANG[otherLang]} aria-label={t.langSwitchLabel}>
+              {t.langSwitch}
+            </a>
+            {!isEn && <a href={url('/story/')}>토리 이야기</a>}
+            {!isEn && <a href={url('/contact/')} class="topbar-work">협업 문의</a>}
+            {!isEn && <a href={url('/search/')} aria-label="검색" title="검색" class="topbar-icon">
               <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
                 <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
                 <path d="M11 11 L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
               </svg>
-            </a>
+            </a>}
             <button id="theme-toggle" aria-label="화면 테마 전환" title="라이트/다크 전환">
               <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
                 <circle cx="8" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"
@@ -264,17 +311,17 @@ const isActive = (n: (typeof navItems)[number]) =>
       {
         !compact ? (
           <div class="masthead wrap">
-            <a href={url('/')} class="masthead-logo">
+            <a href={url(isEn ? '/en/' : '/')} class="masthead-logo">
               <Acorn size={36} />
-              <span class="masthead-name serif">도토리경제</span>
+              <span class="masthead-name serif">{t.siteName}</span>
             </a>
-            <div class="masthead-tagline">{SITE.taglineSub}</div>
+            <div class="masthead-tagline">{isEn ? t.tagline : SITE.taglineSub}</div>
           </div>
         ) : (
           <div class="compact-head wrap">
-            <a href={url('/')} class="compact-logo">
-              <Acorn size={19} label="도토리경제" />
-              <span class="serif">도토리경제</span>
+            <a href={url(isEn ? '/en/' : '/')} class="compact-logo">
+              <Acorn size={19} label={t.siteName} />
+              <span class="serif">{t.siteName}</span>
             </a>
           </div>
         )
@@ -282,10 +329,10 @@ const isActive = (n: (typeof navItems)[number]) =>
       {!compact && <div class="double-rule wrap" style="padding:0;" />}
     </header>
 
-    <nav class="nav" aria-label="주요 카테고리">
+    <nav class="nav" aria-label={isEn ? 'Sections' : '주요 카테고리'}>
       <div class="wrap nav-in">
         {
-          navItems.map((n) =>
+          nav.map((n) =>
             n.children ? (
               <div class="nav-group">
                 <a
@@ -342,14 +389,14 @@ const isActive = (n: (typeof navItems)[number]) =>
     </nav>
     <div class="nav-backdrop" aria-hidden="true"></div>
 
-    <Ticker />
+    <Ticker lang={lang} />
 
     <main id="main">
       <slot />
     </main>
 
     <footer class="footer">
-      {footerNewsletter && (
+      {footerNewsletter && !isEn && (
         <div class="wrap footer-collab">
           <Collab source="footer" />
         </div>
@@ -357,35 +404,53 @@ const isActive = (n: (typeof navItems)[number]) =>
       <div class="wrap footer-in">
         <div class="footer-brand">
           <div class="footer-logo">
-            <Acorn size={17} cap="#8CA0BF" body="#C77B4A" label="도토리경제" />
-            <span class="serif">도토리경제</span>
+            <Acorn size={17} cap="#8CA0BF" body="#C77B4A" label={t.siteName} />
+            <span class="serif">{t.siteName}</span>
           </div>
-          <div class="footer-tag">{SITE.tagline}<br />&copy; {kstYear} Dotori Economy</div>
+          <div class="footer-tag">{isEn ? t.tagline : SITE.tagline}<br />&copy; {kstYear} Dotori Economy</div>
         </div>
         <div class="footer-links">
-          <div>
-            <div class="footer-col-title">콘텐츠</div>
-            {
-              Object.values(CATEGORIES).map((c) => (
+          {isEn ? (
+            <div>
+              <div class="footer-col-title">Sections</div>
+              <a href={url('/en/tracker/')}>{T.en.navTracker}</a>
+              <a href={url('/en/analysis/')}>{T.en.navArticles}</a>
+              <a href={url('/en/about/')}>{T.en.navAbout}</a>
+              <a href={url('/')} hreflang="ko">한국어</a>
+            </div>
+          ) : (
+            <div>
+              <div class="footer-col-title">콘텐츠</div>
+              {Object.values(CATEGORIES).map((c) => (
                 <a href={url(`/category/${c.slug}/`)}>{c.name}</a>
-              ))
-            }
-          </div>
-          <div>
-            <div class="footer-col-title">도토리경제</div>
-            <a href={url('/about/')}>토리는 누구인가</a>
-            <a href={url('/method/')}>숫자를 다루는 방법</a>
-            <a href={url('/story/')}>토리 이야기</a>
-            <a href={url('/board/')}>도토리 광장</a>
-            <a href={url('/contact/')}>협업 문의</a>
-            <a href={url('/privacy/')}>개인정보처리방침</a>
-            <a href={url('/rss.xml')}>RSS</a>
-          </div>
+              ))}
+            </div>
+          )}
+          {isEn ? (
+            <div>
+              <div class="footer-col-title">Dotori Economy</div>
+              <a href={url('/en/about/')}>Editorial standards</a>
+              <a href={url('/privacy/')}>Privacy</a>
+              <a href={url('/contact/')}>Contact</a>
+            </div>
+          ) : (
+            <div>
+              <div class="footer-col-title">도토리경제</div>
+              <a href={url('/about/')}>토리는 누구인가</a>
+              <a href={url('/method/')}>숫자를 다루는 방법</a>
+              <a href={url('/story/')}>토리 이야기</a>
+              <a href={url('/board/')}>도토리 광장</a>
+              <a href={url('/contact/')}>협업 문의</a>
+              <a href={url('/privacy/')}>개인정보처리방침</a>
+              <a href={url('/rss.xml')}>RSS</a>
+              <a href={url('/en/')} hreflang="en">English</a>
+            </div>
+          )}
         </div>
         <div class="footer-legal">
-          본 콘텐츠는 정보 제공을 목적으로 하며 투자 자문이 아닙니다. 인용 데이터의 출처: 한국은행
-          ECOS, 관세청 수출입무역통계, 미 연준 FRED, UN Comtrade. 데이터는 발표 기관 사정에 따라
-          정정될 수 있습니다.
+          {isEn
+            ? 'This publication is for information only and does not constitute investment advice. Data sources: Bank of Korea (ECOS), Korea Customs Service, U.S. Federal Reserve (FRED) and UN Comtrade. Figures are subject to revision by the issuing agencies.'
+            : '본 콘텐츠는 정보 제공을 목적으로 하며 투자 자문이 아닙니다. 인용 데이터의 출처: 한국은행 ECOS, 관세청 수출입무역통계, 미 연준 FRED, UN Comtrade. 데이터는 발표 기관 사정에 따라 정정될 수 있습니다.'}
         </div>
       </div>
     </footer>
@@ -812,4 +877,13 @@ const isActive = (n: (typeof navItems)[number]) =>
   }
   .footer-collab { padding-top: 34px; padding-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.14); margin-bottom: 30px; }
   .topbar-work { color: var(--accent) !important; font-weight: 700; }
+  /* 언어 전환 — 상단바에서 가장 먼저 눈에 띄어야 하는 것은 아니지만 늘 같은 자리에 있어야 한다. */
+  .topbar-lang {
+    color: var(--brand) !important;
+    font-weight: 700;
+    border: 1px solid var(--hair);
+    padding: 1px 7px;
+    border-radius: 2px;
+  }
+  .topbar-lang:hover { color: var(--brand-hover) !important; border-color: var(--brand); }
 </style>

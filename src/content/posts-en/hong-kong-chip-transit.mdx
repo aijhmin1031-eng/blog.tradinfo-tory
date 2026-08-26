@@ -1,0 +1,97 @@
+---
+title: 'Where Korean chips actually go: the Hong Kong problem'
+description: 'Korea shipped $4.37bn of integrated circuits to Hong Kong in July 2026 and bought back $0.03bn. The destination column in customs data records where a chip last cleared, not where it is used, and the gap between those two questions is where most readings of Korean chip trade go wrong.'
+pubDate: 2026-08-27
+hero: '/images/hero/semi-hongkong-route.jpg'
+translationOf: 'semi-hongkong-route'
+topics: ['topic-semi']
+dataAsOf: '2026-08-22'
+three:
+  what: 'Korean chip exports to Hong Kong reached <strong>$4.37bn</strong> in July 2026 against <strong>$0.03bn</strong> of imports from it, a ratio of 0.8 per cent. Taiwan, on comparable volumes, returns 85.1 per cent'
+  why: 'Hong Kong is a transit port, not a market. Treating its column as final demand overstates consumption in the territory and understates it in the economies behind it'
+  next: 'The ratio of imports to exports separates the two cases cleanly. Monthly co-movement does not, and the correlations below show why'
+toriNote: 'Cargo piled on a quay is not necessarily consumed in the city that owns the quay. In trade statistics, where something went and where it is used are two different questions, and only one of them is actually recorded.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity and partner country (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542, monthly, exports to and imports from China, Hong Kong and Taiwan, July 2025 to July 2026'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: co-movement test for transit and division-of-labour ports'
+    note: 'Pearson correlations computed on both levels and month-on-month growth rates. The sample is 13 months (12 for growth rates) and is not seasonally adjusted, so the ranking and the size of the gaps are informative while the coefficients themselves are not precise'
+---
+
+Korea shipped **$4.37bn** of integrated circuits to Hong Kong in July 2026 and bought back
+**$0.03bn**, a ratio of 0.8 per cent. On comparable export volumes, Taiwan returned 85.1 per cent.
+The two destinations sit more than a hundred times apart on the same measure, and that distance is
+the most useful thing in the whole dataset.
+
+## Hong Kong: $4.37bn out, $0.03bn back
+
+Shipments of HS 8542 to Hong Kong rose from $1.50bn a month in July 2025 to $4.37bn in July 2026,
+peaking at $6.11bn in June. Traffic in the opposite direction never exceeded rounding error. That
+asymmetry is not a quirk of one month; it is the defining feature of the series.
+
+It also tells you what Hong Kong is. The territory does not consume $4bn of integrated circuits a
+month. It forwards them. Monthly swings in the column are correspondingly violent, because they
+track shipping and clearance schedules rather than end demand.
+
+## Taiwan: two-way traffic on similar volumes
+
+Taiwan's column is built differently. Exports rose from $3.43bn to $3.90bn over the same period,
+while imports rose from $2.26bn to $3.32bn. Both directions are large because the relationship is a
+division of labour: Korean fabless designers send work to Taiwanese foundries, and system chips for
+servers and equipment come back.
+
+<div class="table-scroll">
+
+| Destination | Exports | Imports | Imports ÷ exports |
+|---|---:|---:|---:|
+| Hong Kong | $4.37bn | $0.03bn | **0.8%** |
+| China | $13.42bn | $3.55bn | 26.4% |
+| Taiwan | $3.90bn | $3.32bn | **85.1%** |
+
+</div>
+
+*July 2026, HS 8542. Source: Korea Customs Service.*
+
+## The obvious test fails
+
+The standard explanation of a transit port implies something checkable. If Hong Kong is a waypoint
+into mainland China, the two columns should rise and fall together month by month. They do not.
+
+<div class="table-scroll">
+
+| Pair | On levels | On growth rates |
+|---|---:|---:|
+| Hong Kong exports vs China exports | R² 73.5% | **R² 0.0%** |
+| Taiwan exports vs Taiwan imports | R² 26.6% | R² 3.6% |
+| Hong Kong exports vs imports (control) | R² 18.9% | R² 1.0% |
+| China exports vs imports (control) | R² 91.3% | R² 14.3% |
+
+</div>
+
+The first row contradicts the story this article is telling. A level correlation of 73.5 per cent
+only says both series grew over the same period, which almost any pair of rising series would show.
+Strip out the common trend and nothing survives: on month-on-month growth rates the relationship is
+R² 0.0 per cent. A heavy month into Hong Kong does not imply a heavy month into China.
+
+Taiwan fares no better. If the division of labour were tightly coupled, exports and imports would
+move together; on growth rates they reach R² 3.6 per cent, barely above the one-way control. Month
+to month, even a genuinely two-way port does not move in step.
+
+## What separates the two ports is the ratio, not the co-movement
+
+The distinction survives in the fourth column of the first table and nowhere else. Hong Kong returns
+0.8 per cent of what it receives; Taiwan returns 85.1 per cent. Monthly timing is scrambled by
+clearance and shipping schedules, but the ratio exposes the structure directly.
+
+## What to watch
+
+- **Do not read the Hong Kong figure as demand.** It is a waypoint. A rise there says something
+  about routing, not about consumption in the territory.
+- **Watch Taiwan's two directions separately.** If one side grows while the other stalls, the
+  division of labour itself is changing, and that is a more consequential signal than the headline.
+- **Separate the pie from the slice.** Destination shares move when the
+  [export total](/en/tracker/) moves. Establish which one changed before attributing anything to a
+  single market.

@@ -254,6 +254,37 @@ img { max-width: 100%; height: auto; }
   padding: 1px 6px;
 }
 
+/* ── 영문판 색 규약 (2026-08-26 소유주 결정) ────────────────────────────
+   절대 규칙 6 은 상승=빨강·하락=파랑(한국 금융 관례)이다. 서구 관례는 **상승=초록·
+   하락=빨강**이라, 한글판 색을 그대로 내보내면 외국 독자가 상승 화살표를 하락으로 읽는다.
+   그래서 영문판(<html data-lang="en">)에서만 두 토큰의 값을 바꾼다.
+
+   **--up 과 --down 을 맞바꾸는 것으로는 안 된다.** 한글판의 하락은 빨강이 아니라
+   파랑이므로, 맞바꾸면 상승이 파랑이 되어 서구 기준으로도 틀린다. 값을 따로 정의한다.
+   마크업의 up/down 클래스는 양쪽이 그대로 쓰므로 컴포넌트는 한 줄도 안 바뀐다. */
+:root[data-lang='en'] {
+  --up: #2F7A38;
+  --down: #C73E3A;
+  /* 시세 띠(어두운 배경)의 화살표도 같이 뒤집는다 — Delta 가 onDark 에서 쓰는 토큰이다.
+     이걸 빼면 헤드라인 숫자만 초록이고 상단 띠는 빨간 상승이 남아 한 화면에서 어긋난다. */
+  --dark-band-up: #6FBE77;
+  --dark-band-down: #E2685C;
+}
+:root[data-theme='dark'][data-lang='en'] {
+  --up: #6FB06B;
+  --down: #E06A5E;
+  --dark-band-up: #6FBE77;
+  --dark-band-down: #E2685C;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light'])[data-lang='en'] {
+    --up: #6FB06B;
+    --down: #E06A5E;
+    --dark-band-up: #6FBE77;
+    --dark-band-down: #E2685C;
+  }
+}
+
 /* 숫자 강조 */
 .num-up { color: var(--up); font-weight: 700; }
 .num-down { color: var(--down); font-weight: 700; }

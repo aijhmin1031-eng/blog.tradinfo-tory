@@ -1,11 +1,17 @@
 ---
-// 상승/하락 삼각형 + 수치 (한국 관습: 상승 빨강, 하락 파랑)
+// 상승/하락 삼각형 + 수치.
+// 색은 CSS 토큰(--up/--down, 어두운 띠는 --dark-band-*)에서 온다. 한글판은 한국 관습대로
+// 상승 빨강·하락 파랑이고, **영문판은 서구 관습대로 상승 초록·하락 빨강**이다
+// (global.css 의 :root[data-lang='en'] 이 토큰 값을 갈아 끼운다 — 이 파일은 몰라도 된다).
 interface Props {
   dir: 'up' | 'down';
   text?: string;
   onDark?: boolean;
+  /** 낭독기용 라벨 언어. 영문판에서 '상승'을 읽어 주면 안 된다. */
+  lang?: 'ko' | 'en';
 }
-const { dir, text = '', onDark = false } = Astro.props;
+const { dir, text = '', onDark = false, lang = 'ko' } = Astro.props;
+const dirLabel = lang === 'en' ? (dir === 'up' ? 'up' : 'down') : dir === 'up' ? '상승' : '하락';
 const color = onDark
   ? dir === 'up'
     ? 'var(--dark-band-up)'
@@ -16,7 +22,7 @@ const color = onDark
 ---
 
 <span style={`display:inline-flex;align-items:center;gap:4px;color:${color};`}>
-  <svg width="8" height="8" viewBox="0 0 8 8" aria-label={dir === 'up' ? '상승' : '하락'}>
+  <svg width="8" height="8" viewBox="0 0 8 8" aria-label={dirLabel}>
     {dir === 'up' ? (
       <path d="M4 1 L7.4 7 L0.6 7 Z" fill="currentColor"></path>
     ) : (

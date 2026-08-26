@@ -1,0 +1,97 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  title="About"
+  description="Dotori Economy publishes Korean trade, currency and interest-rate data with independent analysis. Sources, methods and editorial standards for the English edition."
+  lang="en"
+  activeNav="about"
+  altPath="/about/"
+>
+  <div class="ea">
+    <header>
+      <h1>About Dotori Economy</h1>
+      <p class="ea-standfirst">
+        A daily record of Korean trade and macroeconomic data, published from the primary sources
+        rather than from other people's coverage of them.
+      </p>
+    </header>
+
+    <h2>What is published here</h2>
+    <p>
+      The Korean edition has run since 2026 and publishes two pieces a day. This English edition is
+      narrower on purpose. It carries the material that is genuinely hard to obtain outside Korea:
+      monthly semiconductor trade by destination, taken from Korea Customs Service records, together
+      with the analysis built on it. It is not a translation of the Korean edition and does not
+      attempt to mirror it.
+    </p>
+
+    <h2>Where the numbers come from</h2>
+    <p>
+      Figures are collected automatically each morning at 06:50 Korea time from the following:
+    </p>
+    <ul>
+      <li><strong>Korea Customs Service</strong> for trade by commodity and partner country, including HS 8542.</li>
+      <li><strong>Bank of Korea (ECOS)</strong> for exchange rates, policy and market interest rates.</li>
+      <li><strong>U.S. Federal Reserve (FRED)</strong> for U.S. yields and commodity benchmarks.</li>
+      <li><strong>Financial Services Commission</strong> for listed-company prices, and <strong>DART</strong> for disclosures.</li>
+    </ul>
+    <p>
+      Series are stored as they are received and are never edited by hand. Where an agency revises a
+      figure, the revision is what appears at the next collection.
+    </p>
+
+    <h2>Standards</h2>
+    <ul>
+      <li>
+        <strong>Every figure carries its reference period.</strong> A number without a date is not
+        publishable here, and neither is a number whose source cannot be named.
+      </li>
+      <li>
+        <strong>Claims are tested against the data, not asserted.</strong> Where this publication
+        argues that one series drives another, it also publishes the test that could have refuted
+        the claim, including the control pairs. Several such tests have contradicted the
+        article being written and the article was changed.
+      </li>
+      <li>
+        <strong>Limits are stated.</strong> Sample lengths, missing months and the absence of
+        seasonal adjustment are disclosed where they affect the reading.
+      </li>
+      <li>
+        <strong>Customs basis is disclosed.</strong> Korean exports are recorded free on board and
+        imports cost, insurance and freight, so the two are not directly comparable and the
+        resulting balance is a customs figure, not a balance-of-payments one.
+      </li>
+    </ul>
+
+    <h2>Reuse</h2>
+    <p>
+      Figures and tables published here may be reproduced with attribution to Dotori Economy and a
+      link to the page they came from. The underlying statistics remain the property of the issuing
+      agencies and are subject to their terms.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Corrections, data questions and collaboration enquiries: <a href="mailto:dotori.workroom@gmail.com">dotori.workroom@gmail.com</a>.
+      Corrections are made on the page itself with the change noted.
+    </p>
+
+    <p class="ea-ko">
+      The Korean edition is at <a href="/" hreflang="ko">도토리경제</a>.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .ea { max-width: var(--w-prose); margin: 0 auto; padding: 8px 0 40px; }
+  .ea header { border-bottom: 2px solid var(--ink); padding-bottom: 18px; margin-bottom: 8px; }
+  .ea h1 { font-family: var(--font-serif); font-size: 36px; margin: 0 0 12px; color: var(--ink); }
+  .ea-standfirst { font-size: 17px; line-height: 1.75; color: var(--sub); margin: 0; }
+  .ea h2 { font-family: var(--font-serif); font-size: 23px; font-weight: 900; color: var(--ink); border-top: 1px solid var(--hair); padding-top: 24px; margin: 2em 0 0.7em; }
+  .ea p { font-size: 16.5px; line-height: 1.85; color: var(--body-ink); margin: 0 0 1.1em; }
+  .ea ul { margin: 0 0 1.2em; padding-left: 1.15em; }
+  .ea li { font-size: 16px; line-height: 1.8; color: var(--body-ink); margin-bottom: 0.55em; }
+  .ea-ko { margin-top: 34px; font-size: 14.5px; color: var(--sub); }
+</style>

@@ -28,6 +28,11 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = join(ROOT, 'src/content/posts');
+// 영문판(/en/) — 2026-08-26. 별도 컬렉션이라 디렉토리도 따로다.
+// **게이트가 영문을 못 보면 영문은 규칙 밖에 놓인다.** 그 구멍을 열어 두지 않는다.
+const POSTS_EN = join(ROOT, 'src/content/posts-en');
+const dirOf = (slug) => (existsSync(join(POSTS_EN, `${slug}.mdx`)) ? POSTS_EN : POSTS);
+const isEnSlug = (slug) => existsSync(join(POSTS_EN, `${slug}.mdx`));
 const BASE_REF = process.env.QUALITY_BASE_REF || 'origin/main';
 
 // site.ts readingMinutesOf 와 같은 규칙: 한글 글자수만 센다(500자/분).
@@ -72,9 +77,9 @@ function countSourceUrls(front) {
   return count;
 }
 
-function gitShow(slug) {
+function gitShow(slug, sub = 'src/content/posts') {
   try {
-    return execSync(`git show ${BASE_REF}:src/content/posts/${slug}.mdx`, {
+    return execSync(`git show ${BASE_REF}:${sub}/${slug}.mdx`, {
       cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'], encoding: 'utf8',
     });
   } catch {
@@ -84,7 +89,8 @@ function gitShow(slug) {
 
 // --- 한 편 점검 ----------------------------------------------------------
 function check(slug) {
-  const path = join(POSTS, `${slug}.mdx`);
+  const isEn = isEnSlug(slug);
+  const path = join(dirOf(slug), `${slug}.mdx`);
   if (!existsSync(path)) {
     return { slug, ok: false, fails: [`파일 없음: ${path}`], warns: [], info: {} };
   }
@@ -94,8 +100,14 @@ function check(slug) {
   const fails = [];
   const warns = [];
 
-  const chars = koChars(body);
-  const mins = readingMinutes(body);
+  // 영문 기사에 koChars 를 쓰면 **항상 0자**가 되어 분량·물타기 검사가 통째로 무력화된다.
+  // 영어는 단어수로 세고, 한글 1,500자 내외에 해당하는 분량을 단어로 환산해 기준을 잡는다
+  // (한글 500자/분 · 영어 220단어/분 → 1,500자 ≈ 3분 ≈ 660단어).
+  const enWords = (b) => (b.replace(/<[^>]+>/g, ' ').match(/[A-Za-z][A-Za-z'-]*/g) ?? []).length;
+  const chars = isEn ? enWords(body) : koChars(body);
+  const mins = isEn ? Math.max(1, Math.round(chars / 220)) : readingMinutes(body);
+  const unit = isEn ? '단어' : '자';
+  const THIN = isEn ? 570 : 1300; // 기준(660단어 / 1,500자)의 약 87%
   const sources = countSources(front);
   const sourceUrls = countSourceUrls(front);
 
@@ -110,24 +122,30 @@ function check(slug) {
   if (/오늘의 결론/.test(body)) {
     fails.push('「오늘의 결론」이 남아 있다 — 「실무에서 틀리기 쉬운 지점」(설명) 또는 「다음에 확인할 것」(데이터)으로 교체.');
   }
-  const hasNewEnding = /실무에서 틀리기 쉬운 지점/.test(body) || /다음에 확인할 것/.test(body);
+  const hasNewEnding = isEn
+    ? /## What to watch|## Where this goes wrong in practice/.test(body)
+    : /실무에서 틀리기 쉬운 지점/.test(body) || /다음에 확인할 것/.test(body);
   if (!hasNewEnding) {
-    fails.push('새 끝맺음(「실무에서 틀리기 쉬운 지점」/「다음에 확인할 것」)이 없다.');
+    fails.push(isEn
+      ? '끝맺음이 없다 — 「## What to watch」(데이터) 또는 「## Where this goes wrong in practice」(설명)로 끝낼 것.'
+      : '새 끝맺음(「실무에서 틀리기 쉬운 지점」/「다음에 확인할 것」)이 없다.');
   }
 
   // ③ 긴 대시(—) 금지 — 절대 규칙 #3(소유주 지시). 마침표·쉼표·콜론, 나열은 가운뎃점(·).
-  const emDashes = (raw.match(/—/g) || []).length;
+  // 절대 규칙 3(긴 대시 금지)은 **한글 조판 규칙**이다. 영어에서 em dash 는 정상 문장부호이고,
+  // 금지하면 영문 기사가 전부 실패한다. 그래서 영문에는 걸지 않는다.
+  const emDashes = isEn ? 0 : (raw.match(/—/g) || []).length;
   if (emDashes > 0) {
     fails.push(`긴 대시(—) ${emDashes}개 — 절대 규칙 위반. 마침표·쉼표·콜론으로, 나열은 가운뎃점(·)으로.`);
   }
 
   // ④ 물타기 — git 원본 대비 분량은 늘었는데 출처가 그대로면 실패.
-  const baseRaw = gitShow(slug);
+  const baseRaw = gitShow(slug, isEn ? 'src/content/posts-en' : 'src/content/posts');
   let baseChars = null;
   let baseSources = null;
   if (baseRaw) {
     const b = splitFront(baseRaw);
-    baseChars = koChars(b.body);
+    baseChars = isEn ? enWords(b.body) : koChars(b.body); // 영문에 koChars 를 쓰면 0이 나와 물타기 판정이 거짓양성이 된다
     baseSources = countSources(b.front);
     // 물타기의 신호는 "큰 폭으로 늘었는데 새 출처가 없다"이다. 링크 한 줄·오탈자 같은
     // 소소한 손질(150자 이하 증가)까지 잡으면 이미 끝난 기사를 다시 못 만지므로 임계값을 둔다.
@@ -144,13 +162,15 @@ function check(slug) {
   // 분량 리포트(목표는 결과일 뿐 — 미달은 경고로만).
   // 기준은 1,500자 내외(소유주 지시 2026-08-25). 하한선이 아니라 기준점이므로 경고만 낸다.
   // 채우려고 문장을 붙이는 것이 미달보다 나쁘다.
-  if (chars < 1300) {
-    warns.push(`분량 ${chars}자(${mins}분) — 기준 1,500자 내외보다 짧다. ` +
+  if (chars < THIN) {
+    warns.push(`분량 ${chars}${unit}(${mins}분) — 기준 ${isEn ? '660단어' : '1,500자'} 내외보다 짧다. ` +
       '분량을 채우려 하지 말고 새 사실이 충분한지만 볼 것(부족하면 소재를 더 찾는다).');
   }
 
   // ⑤ 내부 연결(체류 시간) — 우리 기사/특집/토리 이야기로 가는 링크 수를 센다.
-  const internalLinks = (body.match(/\]\((\/posts\/|\/story\/|\/topics\/)/g) || []).length;
+  const internalLinks = isEn
+    ? (body.match(/\]\(\/en\//g) || []).length
+    : (body.match(/\]\((\/posts\/|\/story\/|\/topics\/)/g) || []).length;
   if (internalLinks === 0) {
     warns.push('내부 링크 0개 — 관련 우리 기사가 있으면 [핵심어](/posts/슬러그/)로 걸어 독자를 붙잡을 것(operations.md 「내부 연결 원칙」).');
   }
@@ -159,7 +179,7 @@ function check(slug) {
   // 대상이 "이 기사보다 늦게" 뜨고 "오늘 기준으로도 아직" 안 떴을 때만 잡는다(과거의 공백은 무의미).
   const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
   const myPub = (front.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) || [])[1];
-  for (const m of body.matchAll(/\]\(\/posts\/([a-z0-9-]+)\/\)/g)) {
+  for (const m of isEn ? [] : body.matchAll(/\]\(\/posts\/([a-z0-9-]+)\/\)/g)) {
     const target = m[1];
     const tPath = join(POSTS, `${target}.mdx`);
     if (!existsSync(tPath)) {
@@ -181,11 +201,11 @@ function check(slug) {
     if (!t) continue;
     // 표(|)·JSX(<)·소제목(#)·import·인용부호 블록은 문단 길이 대상에서 뺀다.
     if (/^[|<#]/.test(t) || /^import\s/.test(t)) continue;
-    const c = koChars(t);
-    if (c > 350) longParas.push({ c, head: t.replace(/\s+/g, ' ').slice(0, 24) });
+    const c = isEn ? enWords(t) : koChars(t);
+    if (c > (isEn ? 155 : 350)) longParas.push({ c, head: t.replace(/\s+/g, ' ').slice(0, 24) });
   }
   for (const p of longParas) {
-    warns.push(`문단이 ${p.c}자로 길다 ("${p.head}…") — 내용이 바뀌는 지점에서 문단을 나눌 것(빈 줄).`);
+    warns.push(`문단이 ${p.c}${unit}로 길다 ("${p.head}…") — 내용이 바뀌는 지점에서 문단을 나눌 것(빈 줄).`);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -280,7 +300,7 @@ function check(slug) {
     ok: fails.length === 0,
     fails,
     warns,
-    info: { chars, mins, sources, sourceUrls, baseChars, baseSources, internalLinks, isNew, tables: tables.length, h2: h2s.length },
+    info: { chars, mins, unit, sources, sourceUrls, baseChars, baseSources, internalLinks, isNew, isEn, tables: tables.length, h2: h2s.length },
   };
 }
 
@@ -333,9 +353,9 @@ for (const slug of slugs) {
   const { info } = r;
   const head = r.ok ? '\x1b[32m통과\x1b[0m' : '\x1b[31m실패\x1b[0m';
   const size = info.chars != null
-    ? ` ${info.chars}자·${info.mins}분·출처 ${info.sources}건·링크 ${info.internalLinks}개·표 ${info.tables}개` +
+    ? ` ${info.chars}${info.unit}·${info.mins}분·출처 ${info.sources}건·링크 ${info.internalLinks}개·표 ${info.tables}개` +
       (info.isNew ? ' \x1b[33m[신규]\x1b[0m' : '') +
-      (info.baseChars != null ? ` (원본 ${info.baseChars}자·출처 ${info.baseSources}건)` : '')
+      (info.baseChars != null ? ` (원본 ${info.baseChars}${info.unit}·출처 ${info.baseSources}건)` : '')
     : '';
   console.log(`\n[${head}] ${slug}${size}`);
   for (const f of r.fails) console.log(`  ✗ ${f}`);

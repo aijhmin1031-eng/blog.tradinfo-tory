@@ -2,12 +2,26 @@
 import indicators from '../data/indicators.json';
 import Delta from './Delta.astro';
 
-const items = indicators.ticker;
+interface Props {
+  /** 영문판(/en/)에서는 라벨과 기준일 표기를 영어로 바꾼다. */
+  lang?: 'ko' | 'en';
+}
+const { lang = 'ko' } = Astro.props;
+const isEn = lang === 'en';
+
+// 라벨은 파이프라인이 만든 indicators.json 에서 온다. 대부분 기호(USD/KRW·WTI·KOSPI)라
+// 그대로 쓰면 되고, 한국어인 둘만 갈아 끼운다. 사전에 없는 라벨은 원문 그대로 둔다
+// (파이프라인이 항목을 늘려도 조용히 빈칸이 되지 않게 — 모르는 것은 지우지 않는다).
+const EN_LABEL: Record<string, string> = {
+  '美 10Y': 'US 10Y',
+  '국고채 10Y': 'KTB 10Y',
+};
+const items = indicators.ticker.map((t) => ({ ...t, label: isEn ? (EN_LABEL[t.label] ?? t.label) : t.label }));
 // 기준일은 오른쪽에 고정 표시, 흐르는 항목 사이에 끼우면 지나갈 때만 보인다.
 const asofShort = indicators.asOf.slice(5).replace('-', '.');
 ---
 
-<div class="ticker" aria-label="주요 시세">
+<div class="ticker" aria-label={isEn ? 'Market snapshot' : '주요 시세'}>
   <div class="tk-scroll">
     <div class="tk-track mono">
       {
@@ -17,7 +31,7 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
               <span class="tk">
                 <span class="tk-label">{t.label}</span>
                 <span class="tk-value">{t.value}</span>
-                <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark />
+                <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark lang={lang} />
               </span>
             ))}
           </div>
@@ -25,8 +39,12 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
       }
     </div>
   </div>
-  <div class="tk-fixed mono" title={`데이터 기준일 ${indicators.asOf}`}>
-    <span class="tk-fixed-label">기준</span> {asofShort} 종가
+  <div class="tk-fixed mono" title={isEn ? `Data as of ${indicators.asOf}` : `데이터 기준일 ${indicators.asOf}`}>
+    {isEn ? (
+      <><span class="tk-fixed-label">close</span> {asofShort}</>
+    ) : (
+      <><span class="tk-fixed-label">기준</span> {asofShort} 종가</>
+    )}
   </div>
 </div>
 

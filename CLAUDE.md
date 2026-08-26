@@ -37,6 +37,7 @@
   산출: `data/series/*.json`(장기 축적, git이 이력) + `src/data/*.json`(화면 바인딩) — CI가 커밋백
 - 배포는 이중: GitHub Pages(정본) + Vercel 병행(`astro.config.mjs`가 VERCEL env로 base 분기, Vercel 사본은 도메인 연결 전까지 noindex)
 - Supabase 프로젝트 `tradetory`(서울, 무료 티어): 뉴스레터 구독·조회수·갈림길 채점 아카이브. 클라이언트 설정은 `src/lib/supabase.ts`(anon 키는 공개용 설계, 쓰기는 RPC·엣지 함수만). 갈림길 채점 기록은 `galimgil_scores` 테이블(절차는 worklog 8/23 일지)
+- **영문판 `/en/`**(2026-08-26 개설): 한글판 미러가 아니라 **「데이터 데스크」**다. 중심은 `/en/tracker/`(관세청 HS 8542 국가별, 매일 자동 갱신). 원고는 `src/content/posts-en/`(컬렉션 `postsEn` — **일부러 갈랐다**), 조판은 `layouts/PostEn.astro`, 문자열·색 규약은 `src/lib/i18n.ts`. **영문만 상승=초록·하락=빨강**(서구 관례), **em dash 허용**(한글 조판 규칙이므로). 기준 정본은 **`docs/english-edition.md`**
 - 세계관: `docs/worldview.md` · 운영 절차: `docs/operations.md` · 특집 기준: `docs/topics-standard.md` · 품질 체계: `docs/quality.md` · **유입: `docs/traffic.md`**
 
 ## 시크릿 (값을 절대 출력·커밋하지 말 것)

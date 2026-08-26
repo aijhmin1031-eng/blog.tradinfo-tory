@@ -1,0 +1,263 @@
+---
+/**
+ * Korea Semiconductor Export Tracker — 영문판의 중심 자산 (2026-08-26 신설).
+ *
+ * 왜 기사가 아니라 트래커인가:
+ *   로이터·닛케이와 「기사」로 붙으면 진다. 그러나 관세청 HS 8542 국가별 월별 원자료를
+ *   **영어로 무료 공개하는 곳은 사실상 없다.** TrendForce 는 유료고 통신사는 기사만 쓴다.
+ *   레퍼런스는 사람들이 북마크하고 인용하고 **링크한다** — 우리 최대 병목이 외부 링크 0개다.
+ *
+ * 이 페이지는 손으로 갱신하지 않는다. data/series/*.json 을 빌드 시점에 읽으므로
+ * 매일 06:50 파이프라인이 돌면 다음 빌드에서 저절로 최신이 된다.
+ */
+import Base from '../../layouts/Base.astro';
+import SeriesChart from '../../components/SeriesChart.astro';
+import { T } from '../../lib/i18n';
+// 시리즈는 **정적 import** 로 읽는다. import.meta.url 로 경로를 계산하면 Astro 의
+// 청크 배치에 따라 저장소 밖을 가리키는 일이 생긴다(실제로 /en/ 홈에서 그렇게 깨졌다).
+import total from '../../../data/series/trade_hs8542.json';
+import cn from '../../../data/series/trade_hs8542_CN.json';
+import hk from '../../../data/series/trade_hs8542_HK.json';
+import tw from '../../../data/series/trade_hs8542_TW.json';
+
+type Pt = { d: string; exp?: number; imp?: number; bal?: number };
+
+const DESTS = [
+  { series: cn, name: 'China', note: 'Largest single destination; a mix of final demand and assembly.' },
+  { series: hk, name: 'Hong Kong', note: 'Entrepôt. Almost nothing returns the other way.' },
+  { series: tw, name: 'Taiwan', note: 'Two-way trade with the foundry supply chain.' },
+];
+
+const pts: Pt[] = total.points;
+const last = pts[pts.length - 1];
+
+/**
+ * 전년 동월 비교는 **인덱스가 아니라 날짜로** 찾는다 (2026-08-26).
+ *
+ * 처음에는 `p[p.length - 13]` 로 짚었는데 빌드가 죽었다. 대만 계열만 12개월치라
+ * 인덱스가 음수가 됐기 때문이다. 죽지 않았더라도 더 나빴을 것이다 — 계열에 빠진
+ * 달이 하나만 있어도 **13개월 전을 「전년 동월」이라고 적게 된다.** 관세청 자료는
+ * 실제로 국가별로 결측이 생긴다(대만이 그렇다). 그래서 12개월 전 그 달을 날짜로
+ * 찾고, 없으면 **비교를 포기한다**(지어낸 기준시점은 절대 규칙 2 위반이다).
+ */
+const monthsBefore = (yyyymm: string, n: number) => {
+  const y = Number(yyyymm.slice(0, 4));
+  const m = Number(yyyymm.slice(4, 6));
+  const t = y * 12 + (m - 1) - n;
+  return `${Math.floor(t / 12)}${String((t % 12) + 1).padStart(2, '0')}`;
+};
+const findMonth = (arr: Pt[], d: string) => arr.find((x) => x.d === d) ?? null;
+const baseMonth = monthsBefore(last.d, 12);
+const baseline = findMonth(pts, baseMonth);
+
+/** YYYYMM → "July 2026" */
+const monthName = (d: string) =>
+  new Date(Number(d.slice(0, 4)), Number(d.slice(4, 6)) - 1, 1).toLocaleDateString('en-US', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+
+const bn = (usd: number) => (usd / 1e9).toFixed(2);
+const pct = (now: number, then: number) => (now / then - 1) * 100;
+const signed = (n: number) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`;
+
+const rows = DESTS.map((d) => {
+  const p: Pt[] = d.series.points;
+  const cur = p[p.length - 1];
+  const prev = findMonth(p, baseMonth); // 그 달이 없으면 null → 변화율을 적지 않는다
+  return {
+    ...d,
+    exp: cur.exp ?? 0,
+    imp: cur.imp ?? 0,
+    yoy: prev ? pct(cur.exp ?? 0, prev.exp ?? 1) : null,
+    ratio: ((cur.imp ?? 0) / (cur.exp ?? 1)) * 100,
+  };
+});
+const namedExp = rows.reduce((a, r) => a + r.exp, 0);
+const othersExp = (last.exp ?? 0) - namedExp;
+
+const totalYoy = baseline ? pct(last.exp ?? 0, baseline.exp ?? 1) : null;
+const asOf = monthName(last.d);
+const title = 'Korea Semiconductor Export Tracker';
+const description = `Monthly Korean exports of integrated circuits (HS 8542) by destination, drawn from Korea Customs Service records. ${asOf}: $${bn(last.exp ?? 0)} billion, ${
+  totalYoy === null ? 'no year-earlier comparison available' : `${signed(totalYoy)} year on year`
+}.`;
+---
+
+<Base title={title} description={description} lang="en" activeNav="tracker" compact={false}>
+  <article class="tracker">
+    <header class="tk-head">
+      <p class="tk-kicker">Data tracker · Updated daily</p>
+      <h1>{title}</h1>
+      <p class="tk-standfirst">
+        Korean exports of electronic integrated circuits (HS 8542), by destination, taken directly
+        from Korea Customs Service records. The figures below refresh automatically each morning,
+        Korea time. Reuse is permitted with attribution.
+      </p>
+    </header>
+
+    <section class="tk-lede" aria-label="Headline figures">
+      <div class="tk-stat">
+        <span class="tk-stat-label">Exports, {asOf}</span>
+        <strong class="tk-stat-value mono">${bn(last.exp ?? 0)}bn</strong>
+        <span class:list={['tk-stat-delta', totalYoy === null ? '' : totalYoy >= 0 ? 'num-up' : 'num-down']}>
+          {totalYoy === null ? 'No year-earlier figure available' : `${signed(totalYoy)} year on year`}
+        </span>
+      </div>
+      <div class="tk-stat">
+        <span class="tk-stat-label">Imports, {asOf}</span>
+        <strong class="tk-stat-value mono">${bn(last.imp ?? 0)}bn</strong>
+        <span class="tk-stat-delta">Ratio to exports {(((last.imp ?? 0) / (last.exp ?? 1)) * 100).toFixed(1)}%</span>
+      </div>
+      <div class="tk-stat">
+        <span class="tk-stat-label">Trade surplus, {asOf}</span>
+        <strong class="tk-stat-value mono">${bn(last.bal ?? 0)}bn</strong>
+        <span class="tk-stat-delta">HS 8542 only</span>
+      </div>
+    </section>
+
+    <SeriesChart
+      series="trade_hs8542"
+      field="exp"
+      scale={1e-9}
+      window={13}
+      title={`Monthly chip exports reached $${bn(last.exp ?? 0)} billion in ${asOf}`}
+      unit="US$ billion (HS 8542 exports, monthly)"
+      color="up"
+      valueSuffix="bn"
+      xLabelEvery={6}
+      endLabelAuto
+      source="Korea Customs Service, trade statistics by commodity (HS 8542)"
+    />
+
+    <h2>Destinations: ${bn(last.exp ?? 0)} billion, split three ways</h2>
+    <p>
+      The single most misread figure in Korean chip trade is the destination column. It records
+      where a shipment last cleared customs, not where the chip is consumed. Hong Kong is the clearest
+      case: shipments there return almost nothing in the opposite direction, because the territory is a
+      transit port rather than a market.
+    </p>
+
+    <div class="tk-tablewrap">
+      <table class="tk-table">
+        <caption>
+          Korean exports of integrated circuits (HS 8542) by destination, {asOf}. US$ billion.
+          Change column compares with {monthName(baseMonth)}; “n/a” means that month is absent from
+          the series. Source: Korea Customs Service.
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Destination</th>
+            <th scope="col" class="num">Exports</th>
+            <th scope="col" class="num">Imports</th>
+            <th scope="col" class="num">Imports ÷ exports</th>
+            <th scope="col" class="num">Exports, y/y</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">{r.name}</th>
+              <td class="num mono">${bn(r.exp)}bn</td>
+              <td class="num mono">${bn(r.imp)}bn</td>
+              <td class="num mono">{r.ratio.toFixed(1)}%</td>
+              <td class:list={['num', 'mono', r.yoy === null ? 'tk-na' : r.yoy >= 0 ? 'num-up' : 'num-down']}>
+                {r.yoy === null ? 'n/a' : signed(r.yoy)}
+              </td>
+            </tr>
+          ))}
+          <tr class="tk-other">
+            <th scope="row">All other destinations</th>
+            <td class="num mono">${bn(othersExp)}bn</td>
+            <td class="num mono tk-na">n/a</td>
+            <td class="num mono tk-na">n/a</td>
+            <td class="num mono tk-na">n/a</td>
+          </tr>
+          <tr class="tk-total">
+            <th scope="row">Total</th>
+            <td class="num mono">${bn(last.exp ?? 0)}bn</td>
+            <td class="num mono">${bn(last.imp ?? 0)}bn</td>
+            <td class="num mono">{(((last.imp ?? 0) / (last.exp ?? 1)) * 100).toFixed(1)}%</td>
+            <td class:list={['num', 'mono', totalYoy === null ? 'tk-na' : totalYoy >= 0 ? 'num-up' : 'num-down']}>
+              {totalYoy === null ? 'n/a' : signed(totalYoy)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      The fourth column is the one worth keeping. A destination that buys back a comparable volume is
+      part of a division of labour; one that buys back almost nothing is a waypoint. On the {asOf}{' '}
+      figures those two cases sit more than an order of magnitude apart, which no month-to-month
+      correlation of the export series would reveal.
+    </p>
+
+    <h2>How these figures are compiled</h2>
+    <ul class="tk-method">
+      <li>
+        <strong>Source.</strong> Korea Customs Service open API for trade statistics by commodity and
+        partner country, heading HS 8542 (electronic integrated circuits).
+      </li>
+      <li>
+        <strong>Basis.</strong> Exports are recorded free on board, imports cost, insurance and
+        freight. The two are therefore not perfectly comparable, and the surplus above is a customs
+        figure rather than a balance-of-payments one.
+      </li>
+      <li>
+        <strong>Revisions.</strong> Monthly figures are provisional when first released and are
+        revised by the issuing agency. This page carries whatever the agency currently publishes.
+      </li>
+      <li>
+        <strong>Frequency.</strong> The series is collected every morning at 06:50 Korea time. The
+        most recent complete month shown is {asOf}.
+      </li>
+    </ul>
+
+    <p class="tk-cite">
+      <strong>Citation.</strong> Dotori Economy, “Korea Semiconductor Export Tracker”, {asOf} data,
+      compiled from Korea Customs Service records.
+    </p>
+  </article>
+</Base>
+
+<style>
+  .tracker { max-width: var(--w-prose); margin: 0 auto; padding: 8px 0 40px; }
+  .tk-head { border-bottom: 2px solid var(--ink); padding-bottom: 18px; margin-bottom: 26px; }
+  .tk-kicker {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin: 0 0 8px;
+  }
+  .tracker h1 { font-family: var(--font-serif); font-size: 38px; line-height: 1.2; margin: 0 0 12px; color: var(--ink); }
+  .tk-standfirst { font-size: 17px; line-height: 1.75; color: var(--sub); margin: 0; }
+  .tk-lede { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin: 26px 0 32px; }
+  .tk-stat { border: 1px solid var(--hair); background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 5px; }
+  .tk-stat-label { font-size: 12.5px; color: var(--muted); }
+  .tk-stat-value { font-size: 27px; font-weight: 700; color: var(--ink); line-height: 1.15; }
+  .tk-stat-delta { font-size: 13px; color: var(--sub); font-weight: 600; }
+  /* 방향 색은 이 규칙보다 먼저 지고 있었다(스코프 클래스가 전역 .num-up 을 이긴다).
+     영문판에서는 --up 이 초록, --down 이 빨강이다(global.css 의 [data-lang="en"]). */
+  .tk-stat-delta.num-up { color: var(--up); }
+  .tk-stat-delta.num-down { color: var(--down); }
+  .tracker h2 { font-family: var(--font-serif); font-size: 25px; font-weight: 900; color: var(--ink); border-top: 1px solid var(--hair); padding-top: 26px; margin: 2.2em 0 0.7em; }
+  .tracker p { font-size: 17px; line-height: 1.85; color: var(--body-ink); margin: 0 0 1.3em; }
+  /* 넓은 표는 페이지가 아니라 표가 스크롤한다 */
+  .tk-tablewrap { overflow-x: auto; margin: 0 0 1.4em; }
+  .tk-table { width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 520px; }
+  .tk-table caption { caption-side: bottom; text-align: left; font-size: 12.5px; color: var(--muted); padding-top: 9px; }
+  .tk-table th, .tk-table td { border: 1px solid var(--hair); padding: 9px 12px; text-align: left; }
+  .tk-table thead th { background: var(--surface); font-weight: 700; }
+  .tk-table .num { text-align: right; }
+  .tk-table tbody th { font-weight: 600; }
+  .tk-other td, .tk-other th { color: var(--muted); }
+  .tk-total th, .tk-total td { border-top: 2px solid var(--ink); font-weight: 700; }
+  .tk-method { margin: 0 0 1.4em; padding-left: 1.1em; }
+  .tk-method li { font-size: 15.5px; line-height: 1.8; color: var(--body-ink); margin-bottom: 0.5em; }
+  .tk-na { color: var(--muted); }
+  .tk-cite { font-size: 13.5px; color: var(--sub); border-left: 2px solid var(--ink); padding: 6px 0 6px 16px; }
+  @media (max-width: 720px) {
+    .tracker h1 { font-size: 29px; }
+    .tk-stat-value { font-size: 23px; }
+  }
+</style>

@@ -1,0 +1,72 @@
+---
+import Base from '../../layouts/Base.astro';
+import Pic from '../../components/Pic.astro';
+import { getCollection } from 'astro:content';
+import { isPublished } from '../../lib/site';
+import { T } from '../../lib/i18n';
+
+const posts = (await getCollection('postsEn', ({ data }) => !data.draft && isPublished(data.pubDate)))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const t = T.en;
+const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+---
+
+<Base
+  title="Analysis"
+  description="Analysis of Korean trade, currency and semiconductor data from Dotori Economy, built on primary customs and central-bank records."
+  lang="en"
+  activeNav="analysis"
+>
+  <div class="an-wrap">
+    <header class="an-head">
+      <h1>Analysis</h1>
+      <p>
+        Every piece below is built on primary records: Korea Customs Service trade statistics, Bank of
+        Korea series and U.S. Federal Reserve data. Figures carry the month they refer to, and the
+        underlying series are listed at the foot of each article.
+      </p>
+    </header>
+
+    {posts.length === 0 ? (
+      <p class="an-empty">
+        The first English analysis pieces are being prepared. In the meantime, the{' '}
+        <a href="/en/tracker/">Korea Semiconductor Export Tracker</a> is updated every morning.
+      </p>
+    ) : (
+      <ul class="an-list">
+        {posts.map((p) => (
+          <li class="an-item">
+            {p.data.hero && (
+              <a href={`/en/posts/${p.id}/`} class="an-thumb">
+                <Pic path={p.data.hero} alt="" width={220} height={124} />
+              </a>
+            )}
+            <div class="an-body">
+              <h2><a href={`/en/posts/${p.id}/`}>{p.data.title}</a></h2>
+              <p>{p.data.description}</p>
+              <p class="an-meta mono">{fmt(p.data.pubDate)}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</Base>
+
+<style>
+  .an-wrap { max-width: var(--w-prose); margin: 0 auto; padding: 8px 0 40px; }
+  .an-head { border-bottom: 2px solid var(--ink); padding-bottom: 16px; margin-bottom: 24px; }
+  .an-head h1 { font-family: var(--font-serif); font-size: 34px; margin: 0 0 10px; color: var(--ink); }
+  .an-head p { font-size: 16px; line-height: 1.8; color: var(--sub); margin: 0; }
+  .an-list { list-style: none; margin: 0; padding: 0; }
+  .an-item { display: flex; gap: 18px; padding: 20px 0; border-bottom: 1px solid var(--hair); }
+  .an-thumb { flex: 0 0 180px; display: block; }
+  .an-thumb :global(img) { width: 100%; height: auto; }
+  .an-body h2 { font-family: var(--font-serif); font-size: 21px; line-height: 1.35; margin: 0 0 7px; }
+  .an-body h2 a { color: var(--ink); }
+  .an-body h2 a:hover { color: var(--brand); }
+  .an-body p { font-size: 14.5px; line-height: 1.75; color: var(--sub); margin: 0 0 7px; }
+  .an-meta { font-size: 12px; color: var(--muted); }
+  .an-empty { font-size: 16px; line-height: 1.8; color: var(--sub); }
+  @media (max-width: 640px) { .an-item { flex-direction: column; } .an-thumb { flex: none; max-width: 100%; } }
+</style>
