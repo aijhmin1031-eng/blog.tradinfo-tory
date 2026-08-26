@@ -1,0 +1,117 @@
+---
+title: 'A $24.34bn monthly surplus from one product, and the won went the other way'
+description: 'Korea ran a $24.34bn trade surplus in integrated circuits alone in July 2026, up 3.5 times in thirteen months. Over the same period the won weakened 8.9 per cent against the dollar, which is the opposite of what the textbook channel predicts.'
+pubDate: 2026-08-26
+hero: '/images/hero/semi-trade-surplus-anatomy.jpg'
+translationOf: 'semi-trade-surplus-anatomy'
+topics: ['topic-semi']
+dataAsOf: '2026-08-25'
+three:
+  what: 'The monthly trade surplus in integrated circuits alone rose from $6.92bn in July 2025 to <strong>$24.34bn</strong> in July 2026, a factor of 3.52'
+  why: 'Exports grew 2.66 times while imports grew 1.56 times. A difference between two series growing at unequal rates widens faster than either of them'
+  next: 'The textbook channel says a widening surplus should strengthen the currency. Across these thirteen months the correlation carries the <strong>opposite sign</strong>, and on month-on-month changes it disappears altogether'
+toriNote: 'A surplus is worth less as a headline than as a question about which tree it came from. When one tree fills most of the store, the harvest of that tree decides the winter, and no aggregate will show that.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542, monthly, July 2025 to July 2026. Exports FOB, imports CIF'
+  - org: 'Bank of Korea'
+    name: 'Economic Statistics System (ECOS), won-dollar exchange rate'
+    url: 'https://ecos.bok.or.kr/'
+    note: 'Daily closing rates averaged by calendar month to match the monthly frequency of the trade data'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: co-movement test between the semiconductor surplus and the won'
+    note: 'Pearson correlations on levels and on month-on-month growth rates. The sample is 13 months, 12 for growth rates, and is not seasonally adjusted, so the sign and the difference in magnitude are informative while the coefficients themselves are not precise'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+Korea's trade surplus in integrated circuits alone reached **$24.34bn** in July 2026, against
+$6.92bn in July 2025 — a factor of 3.52 in thirteen months. Over the same thirteen months the won
+weakened from a monthly average of 1,375.2 to 1,497.4 per dollar, **8.9 per cent in the wrong
+direction** for anyone reading the surplus as a source of currency strength.
+
+<SeriesChart
+  series="trade_hs8542"
+  field="bal"
+  scale={1e-9}
+  window={13}
+  lang="en"
+  title="Semiconductor trade surplus, $6.92bn to $24.34bn a month"
+  unit="$bn (HS 8542, exports less imports)"
+  color="up"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '$6.92bn' },
+    { date: '202606', label: '$24.74bn', dx: -40, dy: 4 },
+  ]}
+  source="Korea Customs Service, HS 8542, own calculation"
+/>
+
+## Why 2.66 and 1.56 produce 3.52
+
+The surplus is a difference, and differences amplify. Exports of HS 8542 grew by a factor of 2.66
+over the thirteen months while imports grew by 1.56. Neither number is extraordinary on its own; the
+gap between them is, because the surplus inherits the growth of the larger series without the
+damping of the smaller one.
+
+The path matters as much as the endpoints. The monthly surplus crossed $10bn in December 2025,
+reached $17.69bn in March 2026, peaked at $24.74bn in June and stands at $24.34bn. Three
+consecutive months above $20bn from a single four-digit tariff line is, by some distance, the
+largest such concentration in Korean trade statistics.
+
+It is worth naming what the customs data cannot settle here. Imports rise in a boom because
+production requires inputs, so a widening surplus is not automatically a sign of a strengthening
+position — it can equally mean the import side has not yet caught up. The
+[unit value series](/en/posts/chip-export-unit-value/) shows that roughly five sixths of this
+surplus is attributable to price rather than shipped volume, which is the more consequential fact
+about its durability.
+
+## The channel that fails the test
+
+The standard argument is short. Exporters earn dollars, sell them for won, and a $24bn monthly
+surplus is $24bn of supply pressure on the dollar, so the won should strengthen. If that channel
+dominated, thirteen months of a tripling surplus would have produced a stronger won.
+
+<div class="table-scroll">
+
+| July 2025 → July 2026 | From | To | Change |
+|---|---:|---:|---:|
+| Semiconductor surplus | $6.92bn | $24.34bn | **×3.52** |
+| Won per dollar, monthly average | 1,375.2 | 1,497.4 | **+8.9%, weaker won** |
+
+</div>
+
+*Source: Korea Customs Service (HS 8542), Bank of Korea (ECOS). Own calculation.*
+
+The correlation confirms the mismatch rather than the story. On levels the Pearson coefficient is
+0.864, an R² of 74.6 per cent — but the sign says that months with larger surpluses were months with
+a **weaker** won, not a stronger one. Strip out the common trend by testing month-on-month changes
+instead, and almost nothing remains: R² falls to 2.2 per cent. A level correlation between two
+series that both rose over the same period is close to uninformative, which is precisely why the
+growth-rate test is the one that matters.
+
+## The won did strengthen, afterwards
+
+Won strength arrived, but out of sequence. The surplus peaked in June 2026 at $24.74bn. The dollar
+peaked on 2 July at 1,554.4 won, and by 25 August the rate had fallen to 1,380.6, a move of 11.2
+per cent in under two months. The strengthening followed the surplus peak rather than accompanying
+the surplus climb.
+
+That ordering is not evidence of a lagged channel either, on a sample of this length. What it does
+establish is narrower and firmer: across these thirteen months, the semiconductor surplus is not
+sufficient to explain the won, and a sentence pairing the two as cause and effect gets the sign
+wrong before it gets the magnitude wrong.
+
+## What to watch
+
+- **The composition of any decline.** A $24.34bn surplus is $32.72bn of exports less $8.38bn of
+  imports. A fall driven by weaker exports and a fall driven by heavier imports mean opposite
+  things, and [imports are a measure of activity](/en/posts/why-korea-imports-chips/).
+- **When the sign flips.** Larger surpluses have coincided with a weaker won throughout this
+  sample, which is the reverse of the textbook. The reference point for the next reading is the
+  July 2026 monthly average of 1,497.4 won.
+- **Concentration risk in the aggregate.** One tariff line now sets the direction of the national
+  trade balance, and [excluding it changes the sign of the bilateral balance with China](/en/posts/china-deficit-without-chips/).
+  The [monthly country split](/en/tracker/) is published as each month clears customs.

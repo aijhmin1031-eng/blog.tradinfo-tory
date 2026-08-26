@@ -1,0 +1,115 @@
+---
+title: 'Take out semiconductors and Korea runs a deficit with China'
+description: 'Korea recorded a $5.38bn trade surplus with China in July 2026. Integrated circuits alone accounted for $9.87bn of it, which leaves every other product line combined at a deficit of $4.50bn — a figure that has barely moved in three months.'
+pubDate: 2026-08-26
+hero: '/images/hero/semi-china-deficit-truth.jpg'
+translationOf: 'semi-china-deficit-truth'
+topics: ['topic-semi']
+dataAsOf: '2026-08-22'
+three:
+  what: 'Korea''s July 2026 balance with China was <strong>+$5.38bn</strong> in total, of which integrated circuits contributed <strong>+$9.87bn</strong>. Everything else combined ran a deficit of <strong>-$4.50bn</strong>'
+  why: 'The non-semiconductor deficit has held between -$4.38bn and -$4.54bn for three consecutive months. The bilateral surplus is one product line net of a stable deficit in everything else'
+  next: 'Of the $1.76bn rise in the bilateral surplus between June and July, $1.72bn — 98 per cent — came from semiconductors alone'
+toriNote: 'Totals conceal. A store can show a surplus of acorns and still come up short the moment one tree is taken out of the count, and no aggregate will ever reveal which tree that is.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by partner country (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'China, monthly, May to July 2026. Exports FOB, imports CIF'
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity and partner country (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542 to and from China and Hong Kong, monthly, May to July 2026'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: bilateral balance less the semiconductor line, and attribution of the month-on-month change'
+    note: 'The non-semiconductor balance is the total bilateral balance minus the HS 8542 balance for the same month and partner. Both come from the same customs source, so the subtraction is consistent in coverage even though exports are FOB and imports CIF'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+Korea's trade balance with China was **positive $5.38bn** in July 2026. Its balance with China in
+integrated circuits alone was **positive $9.87bn**. Subtracting the second from the first leaves
+every other traded product combined at **negative $4.50bn**, and that deficit has held within
+$160m of the same level for three consecutive months.
+
+<SeriesChart
+  series="trade_CN"
+  field="bal"
+  scale={1e-9}
+  lang="en"
+  title="Korea's total monthly balance with China, $bn"
+  unit="$bn (all products, customs basis)"
+  color="up"
+  source="Korea Customs Service, monthly trade by partner country"
+/>
+
+## +$9.87bn from one line, -$4.50bn from everything else
+
+Two customs tables placed side by side produce the structure. The country table gives the total; the
+commodity-by-country table gives the semiconductor component. The remainder is arithmetic.
+
+<div class="table-scroll">
+
+| 2026 | Total balance with China | Semiconductors (HS 8542) | **Everything else** |
+|---|---:|---:|---:|
+| May | +$3.78bn | +$8.16bn | **-$4.38bn** |
+| June | +$3.62bn | +$8.16bn | **-$4.54bn** |
+| July | +$5.38bn | +$9.87bn | **-$4.50bn** |
+
+</div>
+
+*Source: Korea Customs Service. Own calculation. Percentages of total trade are not shown because
+the two tables differ in coverage only by product, not by partner or period.*
+
+Three months, one picture. Semiconductors bring in $8bn to $10bn a month and the rest of the trading
+relationship returns roughly $4.5bn of it. The headline surplus is not a broad-based position; it is
+the net of two large and opposing flows, one of which is a single four-digit tariff line.
+
+## What sits in the deficit
+
+The import side of the relationship is no longer narrow. Korea bought $16.29bn of goods from China
+in July against $21.66bn of exports, an import-to-export ratio of 75.2 per cent. Battery materials
+and intermediate chemicals, electrical and electronic finished goods, machinery components and
+consumer products all appear in that column.
+
+The older description of this relationship — Korea supplies intermediate goods, China assembles —
+no longer fits. Both economies now sit inside each other's supply chains, and outside
+semiconductors the flow has been running towards Korea for years. That is what a stable $4.5bn
+monthly deficit in everything else represents.
+
+## 98 per cent of the monthly change
+
+Attribution settles the question of which side drives the aggregate. Between June and July the
+bilateral surplus widened by $1.76bn. The semiconductor balance widened by $1.72bn over the same
+month, which is 98 per cent of the total change. The non-semiconductor balance moved from -$4.54bn
+to -$4.50bn, a change of $40m.
+
+So the monthly expression of the bilateral surplus is written almost entirely by one product. When
+the surplus grows, semiconductors grew; when it shrinks, semiconductors shrank. The rest of the
+relationship contributes a level, not a direction.
+
+Adding Hong Kong widens the exposure rather than diluting it. Hong Kong functions largely as a
+[transit point for cargo bound for the mainland](/en/posts/hong-kong-chip-transit/), and Korea's net
+semiconductor balance with the territory was $4.33bn in July. Taken together, the Greater China
+semiconductor surplus runs at roughly $14bn a month: $12.36bn in May, $14.19bn in June and $14.21bn
+in July. Reading China in isolation understates the dependence rather than overstating it.
+
+## Where this goes wrong in practice
+
+**Reading the headline balance as a diversified surplus.** The same month, from the same source,
+supports both "a $5.38bn surplus with China" and "a $4.50bn deficit with China excluding chips".
+Neither is wrong. A total is a residual of opposing flows, and the sign of the residual says nothing
+about concentration.
+
+**Treating China and Hong Kong as separate markets.** Statistics stop at borders and cargo does
+not. A share of what clears in Hong Kong continues to the mainland, so the China column alone
+understates semiconductor exposure to Greater China.
+
+**Comparing two figures measured differently.** Customs records exports FOB and imports CIF, so the
+import side carries freight and insurance that the export side does not. On a goods-only basis the
+non-semiconductor deficit is somewhat smaller than the $4.50bn printed above.
+
+**Taking HS 8542 for the semiconductor industry.** The line covers integrated circuits. Equipment
+sits in HS 8486 and materials elsewhere, so this subtraction isolates a product, not a sector — and
+the [surplus that product generates](/en/posts/chip-surplus-anatomy/) is itself
+[mostly a price phenomenon](/en/posts/chip-export-unit-value/) rather than a volume one.

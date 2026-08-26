@@ -245,6 +245,13 @@ img { max-width: 100%; height: auto; }
   color: var(--sub);
 }
 .prose table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+/* ★ 표는 좁은 화면에서 **자기 상자 안에서만** 넘쳐야 한다. 문서가 넘치면 페이지 전체에
+   가로 스크롤이 생긴다. 영문 기사들이 `<div class="table-scroll">` 로 표를 감싸고 있었는데
+   **그 클래스가 어디에도 정의돼 있지 않았다** — 껍데기만 있고 규칙이 없어 390px 에서
+   표가 문서를 53px 밀어냈다(2026-08-26 수리). 숫자 표는 칼럼이 좁아지면 읽을 수 없으므로
+   폭을 억지로 줄이지 않고 min-width 를 주어 상자 안에서 밀게 한다. */
+.prose .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.6em 0; }
+.prose .table-scroll table { margin: 0; min-width: 420px; }
 .prose th, .prose td { border: 1px solid var(--hair); padding: 9px 12px; text-align: left; }
 .prose th { background: var(--surface); font-weight: 700; }
 .prose code {

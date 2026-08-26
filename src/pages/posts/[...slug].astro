@@ -11,6 +11,12 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 
+// 영문 짝 찾기. 영문 원고의 translationOf 가 이 글의 슬러그를 가리키면 짝이다.
+// altPath 는 **중립 경로**를 넘기는 자리라 영문 슬러그로 만든다(Base 가 /en 을 붙인다).
+const enPair = (await getCollection('postsEn', ({ data }) => !data.draft && isPublished(data.pubDate)))
+  .find((e) => e.data.translationOf === post.id);
+const altPath = enPair ? `/posts/${enPair.id}/` : undefined;
+
 const all = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
@@ -25,6 +31,6 @@ const newer = idx > 0 ? all[idx - 1] : undefined;
 const older = idx >= 0 && idx < all.length - 1 ? all[idx + 1] : undefined;
 ---
 
-<PostLayout post={post} related={related} newer={newer} older={older}>
+<PostLayout post={post} related={related} newer={newer} older={older} altPath={altPath}>
   <Content />
 </PostLayout>

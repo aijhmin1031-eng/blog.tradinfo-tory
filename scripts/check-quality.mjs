@@ -179,17 +179,22 @@ function check(slug) {
   // 대상이 "이 기사보다 늦게" 뜨고 "오늘 기준으로도 아직" 안 떴을 때만 잡는다(과거의 공백은 무의미).
   const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
   const myPub = (front.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) || [])[1];
-  for (const m of isEn ? [] : body.matchAll(/\]\(\/posts\/([a-z0-9-]+)\/\)/g)) {
+  // 영문판도 같은 검사를 받아야 한다(2026-08-26). 영문 기사끼리 링크하는데 상대가 예약분이면
+  // 그 링크는 발행일까지 404 다 — 6편을 한꺼번에 낼 때 실제로 걸릴 수 있었다.
+  for (const m of isEn
+    ? body.matchAll(/\]\(\/en\/posts\/([a-z0-9-]+)\/\)/g)
+    : body.matchAll(/\]\(\/posts\/([a-z0-9-]+)\/\)/g)) {
     const target = m[1];
-    const tPath = join(POSTS, `${target}.mdx`);
+    const tPath = join(isEn ? POSTS_EN : POSTS, `${target}.mdx`);
+    const shown = isEn ? `/en/posts/${target}/` : `/posts/${target}/`;
     if (!existsSync(tPath)) {
-      fails.push(`내부 링크 대상이 없다: /posts/${target}/ — 슬러그를 확인할 것.`);
+      fails.push(`내부 링크 대상이 없다: ${shown} — 슬러그를 확인할 것.`);
       continue;
     }
     const tFront = splitFront(readFileSync(tPath, 'utf8')).front;
     const tPub = (tFront.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) || [])[1];
     if (tPub && (!myPub || tPub > myPub) && tPub > todayKST) {
-      fails.push(`죽은 내부 링크 — /posts/${target}/ 는 ${tPub}에 발행되는데 아직 발행 전이다(오늘 ${todayKST}). ` +
+      fails.push(`죽은 내부 링크 — ${shown} 는 ${tPub}에 발행되는데 아직 발행 전이다(오늘 ${todayKST}). ` +
         '독자가 클릭하면 404다. 이미 발행된 기사로 링크하거나 대상 발행일을 앞당길 것.');
     }
   }
@@ -268,7 +273,8 @@ function check(slug) {
   }
 
   // ⑨ 표 — 비교 축이 둘 이상인 표가 최소 하나. 장식용 2행 표는 만들지 않는다.
-  const UNIT = /%|％|달러|원|억|조|배|bp|포인트|톤|TEU|CBM|배럴|온스|R²|건|명|kg|KG|만/;
+  // 단위 사전에 **영문판 단위**가 없어 「$3.78bn」짜리 표가 「단위 없음」으로 걸렸다(2026-08-26 수리).
+  const UNIT = /%|％|달러|원|억|조|배|bp|포인트|톤|TEU|CBM|배럴|온스|R²|건|명|kg|KG|만|\$|\bbn\b|per cent|\bpp\b/;
   const tables = [];
   {
     const lines = body.split('\n');
@@ -344,7 +350,13 @@ if (args.includes('--linkable')) {
 
 let slugs = args;
 if (args.includes('--all')) {
-  slugs = queueSlugs().filter((s) => existsSync(join(POSTS, `${s}.mdx`)));
+  // 큐(한글 보강 대상) + **영문 전량**. 큐는 한글 기사 목록이라 영문은 영원히 검사
+  // 대상에 들어오지 않았다 — CI 의 「품질 점검」이 영문을 한 편도 안 보고 있었다(2026-08-26 수리).
+  // 영문은 편수가 적고 새 판이므로 매번 전수로 본다.
+  const en = readdirSync(POSTS_EN)
+    .filter((f) => f.endsWith('.mdx'))
+    .map((f) => f.slice(0, -4));
+  slugs = [...queueSlugs().filter((s) => existsSync(join(POSTS, `${s}.mdx`))), ...en];
 }
 
 let anyFail = false;

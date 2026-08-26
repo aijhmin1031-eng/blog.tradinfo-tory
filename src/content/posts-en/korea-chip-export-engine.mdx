@@ -1,0 +1,119 @@
+---
+title: 'Korea now exports $32.7bn of chips a month, up 2.7 times in a year'
+description: 'Monthly Korean exports of integrated circuits rose from $12.29bn in July 2025 to $32.72bn in July 2026. Thirteen months of customs records show a cycle driven by price rather than volume, which is what makes its slope both steep and fragile.'
+pubDate: 2026-08-26
+hero: '/images/hero/semiconductor-export-engine.jpg'
+translationOf: 'semiconductor-export-engine'
+topics: ['topic-semi']
+dataAsOf: '2026-08-22'
+three:
+  what: 'Korean exports of integrated circuits (HS 8542) rose from <strong>$12.29bn</strong> in July 2025 to <strong>$32.72bn</strong> in July 2026, a factor of <strong>2.66</strong>'
+  why: 'Export weight fell 1.2 per cent over the same period. The increase is almost entirely price and product mix, not shipped volume'
+  next: 'The first two consecutive monthly declines mark the turn. July 2026 was already below the June peak of $33.56bn'
+toriNote: 'The most useful question to ask of any export series is whether the money came from selling more or from selling dearer. This cycle answers the second way, and cycles that answer the second way tend to turn without warning.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity and partner country (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542, monthly, July 2025 to July 2026. Exports are recorded FOB and imports CIF'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: monthly growth factors, phase decomposition and unit value per kilogram'
+    note: 'Unit value is export value divided by export weight. Weight is a separate query against the customs database and is not part of the automated daily collection, so the weight figures are fixed as of 22 August 2026 while the value series updates each morning'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+Korea exported **$32.72bn** of integrated circuits in July 2026, against **$12.29bn** in the same
+month a year earlier — a factor of 2.66. Over those thirteen months the weight of those shipments
+fell 1.2 per cent. The entire increase is in the price of what crossed the border, not in how much
+of it crossed.
+
+<SeriesChart
+  series="trade_hs8542"
+  field="exp"
+  scale={1e-9}
+  window={13}
+  lang="en"
+  title="Monthly Korean chip exports, $12.29bn to $32.72bn in thirteen months"
+  unit="$bn (HS 8542, customs basis)"
+  color="up"
+  xLabelEvery={4}
+  marks={[
+    { date: '202507', label: '$12.29bn' },
+    { date: '202606', label: '$33.56bn', dx: -38, dy: 4 },
+  ]}
+  source="Korea Customs Service, HS 8542"
+/>
+
+## Three phases: $13.95bn, $16.73bn, $33.56bn
+
+The curve is not one movement. It breaks into three, and the breaks matter more than the total,
+because each phase has a different cause and a different implied durability.
+
+<div class="table-scroll">
+
+| Phase | Period | From | To | Change |
+|---|---|---:|---:|---:|
+| Recovery | Jul–Nov 2025 | $12.29bn | $13.95bn | +13.5% |
+| Step change | Nov–Dec 2025 | $13.95bn | $16.73bn | **+19.9% in one month** |
+| Acceleration | Feb–Jun 2026 | $19.45bn | $33.56bn | **+72.5% in four months** |
+
+</div>
+
+*HS 8542, monthly export value. Source: Korea Customs Service, own calculation.*
+
+The first phase is an ordinary upturn: five months, thirteen per cent, the pace a memory market
+recovers at. The second is a single month that resets the level. The third is the one that changes
+the character of the series — in four months the monthly figure gains more than the whole of the
+July 2025 total. July 2026, at $32.72bn, is the first month to come in below its predecessor.
+
+There is a second reason to read the phases separately. Base effects are about to change what the
+annual comparison means. The 2.66 factor above is measured against a July 2025 that belongs to the
+recovery phase; from December 2025 the base is already elevated, so an identical absolute gain will
+print as a much smaller percentage. Year-on-year growth in this series will decelerate through the
+coming winter even if the monthly level holds, and commentary that treats that deceleration as a
+downturn will be reading the base rather than the market.
+
+## Value moved, volume did not
+
+The same customs table records weight alongside value, and the weight column is the more revealing
+of the two. Shipments of HS 8542 weighed 1,699,752 kg in July 2025 and 1,679,933 kg in July 2026.
+Value rose 166 per cent while tonnage fell 1.2 per cent, which puts the average price of an exported
+kilogram at $19,479, against $7,230 a year earlier.
+
+What that arithmetic does not do is identify the cause. A higher price per kilogram is produced
+equally by selling the same chips dearer and by shifting the mix towards denser, costlier parts such
+as stacked memory for AI accelerators. Customs records carry value and weight and nothing else, so
+both readings survive the data. The [unit value series](/en/posts/chip-export-unit-value/) tests how
+far the mix explanation can be pushed before the evidence runs out.
+
+## A cycle priced rather than shipped
+
+The distinction is not academic. An upturn carried by volume is anchored in installed capacity and
+order books, and it decays at the speed those decay. An upturn carried by price is anchored in the
+balance of supply and demand for a commodity that has historically corrected hard, and it can
+reverse in a quarter. Memory prices have done so repeatedly, and the export line would follow them
+down at something close to the slope it climbed.
+
+That is also why the monthly figure is worth more attention than the annual one. The
+[surplus this generates](/en/posts/chip-surplus-anatomy/) is now large enough to set the direction
+of Korea's entire trade balance, which means a single product cycle is carrying a national
+aggregate.
+
+The import side of the same table gives the boom its scale. Imports of HS 8542 rose from $5.37bn to
+$8.38bn over the thirteen months, a factor of 1.56 against exports at 2.66. Because a surplus is the
+difference between two series growing at different rates, it grows faster than either: from $6.92bn
+a month to $24.34bn, a factor of 3.52. Differences behave that way, and any commentary that treats a
+surplus as a smoother measure than its components has the arithmetic backwards.
+
+## What to watch
+
+- **Two consecutive monthly declines.** July 2026 ($32.72bn) came in 2.5 per cent below June
+  ($33.56bn). One month is noise in a series this volatile; a second consecutive fall is the first
+  defensible sign of a turn.
+- **The gap between value and weight.** As long as tonnage is flat and value climbs, the cycle is
+  priced. If weight starts rising while value stalls, the composition of the boom has changed and
+  the risk profile changes with it.
+- **Where the shipments go.** Two thirds of July's total went to Greater China, and the
+  [Hong Kong column](/en/posts/hong-kong-chip-transit/) records transit rather than consumption. The
+  [daily tracker](/en/tracker/) carries the country split as each month is published.

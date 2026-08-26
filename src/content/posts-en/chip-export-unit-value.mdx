@@ -1,0 +1,125 @@
+---
+title: 'Same tonnage, 2.7 times the money: Korean chip exports per kilogram'
+description: 'A kilogram of exported Korean integrated circuits fetched $19,479 in July 2026 against $7,230 a year earlier, while total export weight fell 1.2 per cent. Equipment imports, the figure that would corroborate a capacity story, rose only 55 per cent.'
+pubDate: 2026-08-26
+hero: '/images/hero/semi-export-unit-value.jpg'
+translationOf: 'semi-export-unit-value'
+topics: ['topic-semi']
+dataAsOf: '2026-08-22'
+three:
+  what: 'The average price of an exported kilogram of integrated circuits rose from $7,230 in July 2025 to <strong>$19,479</strong> in July 2026, a factor of 2.69'
+  why: 'Export weight fell 1.2 per cent over the same period. Value rose 166 per cent and unit value 169 per cent, so the boom is priced rather than shipped'
+  next: 'Equipment imports rose only 55 per cent, which is too little to attribute the price move to new capacity. Customs data cannot separate a mix shift from a price rise, and this article does not claim it can'
+toriNote: 'A sack that once held acorns and now holds truffles weighs the same and sells for many times more. When weight and value part company in a trade statistic, the contents of the sack have changed — and the statistic will not say into what.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542 for integrated circuits and HS 8486 for semiconductor manufacturing equipment, July 2025 to July 2026. Exports FOB, imports CIF'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: unit value per kilogram, and a counterfactual holding weight and imports fixed'
+    note: 'Unit value is export value divided by export weight. Weight is queried separately from the customs database and is not part of the automated daily collection, so these figures are fixed as of 22 August 2026. The counterfactual holds July 2026 tonnage and import value constant and reprices exports at the July 2025 unit value, which is an arithmetic illustration and not a forecast'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+A kilogram of Korean integrated circuits left the country for **$19,479** in July 2026. A year
+earlier the same kilogram fetched **$7,230**. Total export weight over those thirteen months fell
+1.2 per cent, from 1,699,752 kg to 1,679,933 kg, so the whole of the 166 per cent rise in export
+value sits in that one ratio.
+
+<SeriesChart
+  series="trade_hs8542"
+  field="exp"
+  scale={1e-9}
+  window={13}
+  lang="en"
+  title="Export value climbed while tonnage stood still, $bn per month"
+  unit="$bn (HS 8542, customs basis)"
+  color="up"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '$12.29bn' },
+    { date: '202607', label: '$32.72bn', dx: -40, dy: 14 },
+  ]}
+  source="Korea Customs Service, HS 8542"
+/>
+
+## $7,230 to $19,479 per kilogram
+
+The unit value series moves in one direction almost without interruption: $7,230, $7,630, $7,717,
+$8,276, $9,106, $10,165 through the end of 2025, then $9,868 in January 2026 — the only
+month-on-month fall in the thirteen — followed by $13,205, $14,071, $14,448, $17,963, $19,272 and
+$19,479. The steep section begins in February 2026, and five consecutive monthly records follow it.
+
+That single January decline is the most useful line in the series, because it establishes what a
+break in the trend looks like. One down month has already occurred without changing anything. Two
+consecutive down months have not occurred at any point in the sample.
+
+## The corroborating figure that does not corroborate
+
+The convenient explanation is that Korea installed capacity for higher-value parts and is now
+selling them. Convenience is not evidence, and this explanation implies a second number that can be
+checked independently: imports of semiconductor manufacturing equipment, HS 8486, which Korea buys
+almost entirely from abroad.
+
+The direction fits. Equipment imports rose from $1.63bn in July 2025 to $2.54bn in July 2026, up
+55.4 per cent. The magnitude does not.
+
+<div class="table-scroll">
+
+| Thirteen months to July 2026 | Jul 2025 | Jul 2026 | Change |
+|---|---:|---:|---:|
+| Export unit value | $7,230/kg | $19,479/kg | **+169%** |
+| Export value | $12.29bn | $32.72bn | **+166%** |
+| Equipment imports (HS 8486) | $1.63bn | $2.54bn | **+55%** |
+
+</div>
+
+*Source: Korea Customs Service, HS 8542 and HS 8486. Own calculation.*
+
+Equipment purchases grew at roughly a third of the rate of the thing they are supposed to explain,
+and the most recent three months make the gap plainer still: equipment imports were $2.56bn in May,
+$2.71bn in June and $2.54bn in July, effectively flat, while unit value climbed from $17,963 to
+$19,479 across the same three months. Whatever is lifting the price per kilogram, it is not
+predominantly new capacity coming online.
+
+Here the data stops, and the honest course is to say so. Customs records contain value and weight.
+They cannot distinguish a shift towards more expensive products from a rise in the price of the same
+products, because both raise value per kilogram identically. Separating them requires
+product-level price series, which the customs database does not carry.
+
+Unit value also makes a better early indicator than headline export value, for a mechanical reason.
+Monthly customs totals are disturbed by the number of working days, by holidays, and by whether a
+large shipment clears on the last day of a month or the first of the next. Dividing by weight
+removes most of that noise, because the same disturbances move both numerator and denominator.
+What remains is closer to the price signal itself, which is why the January 2026 dip is visible in
+the unit value series while the value series that month simply looks like a pause.
+
+## What price contributed, in dollars
+
+An arithmetic illustration gives the effect a size. July 2026 shipped 1,679,933 kg. Sold at the July
+2025 unit value of $7,230, that tonnage would have earned $12.15bn. It earned $32.72bn. The
+difference, **$20.57bn**, is what the change in unit value contributed in a single month.
+
+Holding the month's imports at their actual $8.38bn, the semiconductor trade surplus would have been
+$3.77bn rather than $24.34bn. Roughly five sixths of
+[the surplus](/en/posts/chip-surplus-anatomy/) is attributable to price rather than volume. The
+calculation fixes tonnage and imports deliberately, and is an illustration of scale rather than a
+counterfactual forecast.
+
+## What to watch
+
+- **Two consecutive falls in unit value.** The series has fallen month-on-month once in thirteen
+  months, in January 2026. A second consecutive decline would be the first event without precedent
+  in the sample.
+- **Equipment imports, in both directions.** Three months near $2.5bn is a plateau. A return above
+  the March 2026 high of $2.93bn indicates capacity expansion resuming; a fall below $2.0bn
+  indicates the investment cycle rolling over.
+- **The measuring stick, when comparing to imports.** Customs records exports FOB and imports CIF,
+  so the import figure includes freight and insurance while the export figure does not. Any ratio
+  built from both, the surplus included, is a comparison of two slightly different measures.
+- **Weight, not only value.** Flat tonnage with rising value is the signature of this cycle. It is
+  also the reason a shipping or logistics reading of the boom finds nothing: the
+  [export total](/en/posts/korea-chip-export-engine/) has nearly tripled without the freight
+  volume moving, and the [country split](/en/tracker/) is updated as each month lands.

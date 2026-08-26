@@ -1,0 +1,119 @@
+---
+title: 'Why the world''s largest chip exporter buys $8.38bn of chips a month'
+description: 'Korea imported $8.38bn of integrated circuits in July 2026, 56 per cent more than a year earlier, while exporting $32.72bn. The two curves move together even after the common trend is removed, which is the clearest available evidence that they belong to one industry rather than two.'
+pubDate: 2026-08-26
+hero: '/images/hero/semi-import-paradox.jpg'
+translationOf: 'semi-import-paradox'
+topics: ['topic-semi']
+dataAsOf: '2026-08-22'
+three:
+  what: 'Imports of integrated circuits rose from $5.37bn in July 2025 to <strong>$8.38bn</strong> in July 2026, up 56 per cent, in the same months exports rose 2.66 times'
+  why: 'Korea sells memory and buys back the system chips its fabless designers have had manufactured abroad. A rising import bill is a measure of activity, not of displacement'
+  next: 'On month-on-month changes the two series still correlate at <strong>R² 38.9 per cent</strong>, far above every other pair tested in this series. The co-movement is real rather than a shared trend'
+toriNote: 'Read exports and imports as a scoreboard and this statistic looks like a contradiction. Read them as a workshop and it is ordinary: the busier the workshop, the more material comes through the door.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity and partner country (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542, monthly, total and by partner, July 2025 to July 2026. Exports FOB, imports CIF'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: co-movement test between monthly exports and imports'
+    note: 'Pearson correlations on levels and on month-on-month growth rates. The sample is 13 months, 12 for growth rates, and is not seasonally adjusted. Taiwan is missing one month in the partner series, so partner shares are quoted for July 2026 only'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+Korea imported **$8.38bn** of integrated circuits in July 2026, 56 per cent more than the $5.37bn
+of July 2025. In the same thirteen months its exports of the same tariff line rose 2.66 times, to
+$32.72bn. The country that sells more memory than any other is also buying chips at a record rate,
+and the two facts are the same fact.
+
+<SeriesChart
+  series="trade_hs8542"
+  field="imp"
+  scale={1e-9}
+  window={13}
+  lang="en"
+  title="Chip imports rose with exports, not against them, $bn per month"
+  unit="$bn (HS 8542 imports, customs basis)"
+  color="up"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '$5.37bn' },
+    { date: '202606', label: '$8.82bn', dx: -40, dy: 4 },
+  ]}
+  source="Korea Customs Service, HS 8542"
+/>
+
+## $8.38bn in, and 82 per cent of it from two places
+
+The partner breakdown explains the mechanism better than any description of it. Of July's imports,
+China supplied $3.55bn and Taiwan $3.32bn — together 81.9 per cent of the total.
+
+<div class="table-scroll">
+
+| July 2026, HS 8542 imports | Value | Share of total |
+|---|---:|---:|
+| China | $3.55bn | 42.3% |
+| Taiwan | $3.32bn | 39.6% |
+| All other partners | $1.51bn | 18.1% |
+| **Total** | **$8.38bn** | **100%** |
+
+</div>
+
+*Source: Korea Customs Service. Own calculation.*
+
+Taiwan is the informative entry. Korea's chip strength is concentrated in memory, which its own
+plants fabricate. Logic and system chips are a different business: Korean fabless companies design
+them and contract the manufacturing to foundries, most of which are Taiwanese, and the finished
+parts return as imports. The same applies to processors and controllers bought outright for
+domestic assembly of phones, cars and servers.
+
+That is why an import bill rising alongside exports is not a sign of erosion. It is the accounting
+trace of a division of labour, and it grows when the industry is busy.
+
+## The co-movement that survives detrending
+
+This series has repeatedly warned against level correlations, because two series that both rise
+over the same period will correlate whatever their relationship. Exports and imports of HS 8542
+correlate at R² 94.7 per cent on levels, which on its own means very little.
+
+The month-on-month test is the one that carries information, and here it does not collapse. On
+growth rates the two series still correlate at **R² 38.9 per cent** — the highest of any pair
+examined in this series, against 2.2 per cent for the surplus against the won and effectively zero
+for [Hong Kong shipments against mainland shipments](/en/posts/hong-kong-chip-transit/). A heavy
+export month in Korean chips really is a heavy import month, in the same month, not merely in the
+same year.
+
+Thirty-nine per cent is not determinism, and the sample is twelve observations. What it does rule
+out is the reading in which one series comes at the expense of the other. Nothing in these thirteen
+months resembles substitution.
+
+## What the customs line does not cover
+
+Two limits belong with the figures. The first is coverage: HS 8542 is integrated circuits.
+Manufacturing equipment sits in HS 8486 — imports of $2.54bn in July — and materials such as wafers,
+gases and photoresists sit in other lines entirely. Korea's true import dependence in this sector is
+larger than $8.38bn, and it is concentrated in equipment from a small number of suppliers.
+
+The second is the measuring stick. Exports are recorded FOB and imports CIF, so freight and
+insurance are inside the import figure and outside the export one. The ratio of the two, and the
+[$24.34bn surplus](/en/posts/chip-surplus-anatomy/) built from them, are comparisons of two slightly
+different quantities.
+
+## Where this goes wrong in practice
+
+**Treating rising imports as lost ground.** In this product the import curve tracks activity. It
+fell in the quiet months of late 2025 — $5.08bn in September — and climbed through the boom. A
+falling import bill in a boom would be the anomaly worth investigating.
+
+**Assuming the surplus moves with exports alone.** The surplus is a difference, and imports have
+grown 1.56 times while exports grew 2.66 times. When the surplus narrows, the composition decides
+the meaning: weaker exports and heavier imports point in opposite directions.
+
+**Reading the China import line as the mainland's own output.** Cargo clears where it clears.
+Statistics record the last border crossed, which is why the
+[Hong Kong column](/en/posts/hong-kong-chip-transit/) and the
+[China balance excluding chips](/en/posts/china-deficit-without-chips/) have to be read together
+rather than separately. The [country tracker](/en/tracker/) carries both sides of each partner line
+as the monthly data lands.

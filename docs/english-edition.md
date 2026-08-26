@@ -73,7 +73,7 @@
 | 기사 목록 | `src/pages/en/analysis.astro` | |
 | 기사 | `src/pages/en/posts/[...slug].astro` + `layouts/PostEn.astro` | |
 | 소개 | `src/pages/en/about.astro` | 출처·기준·재사용 조건 |
-| 원고 | `src/content/posts-en/*.mdx` | 컬렉션 `postsEn` |
+| 원고 | `src/content/posts-en/*.mdx` | 컬렉션 `postsEn` · **2026-08-26 현재 6편** |
 | 문자열 | `src/lib/i18n.ts` | UI 사전·경로 변환·색 규약 플래그 |
 
 **컬렉션을 일부러 갈랐다.** 같은 `posts` 컬렉션에 `lang` 필드로 섞으면
@@ -94,12 +94,40 @@
 
 인용 3종(두괄식 리드·수치형 소제목 1개·표 1개)은 **양쪽 공통**이고 신규 기사에는 실패로 건다.
 
+`--all`(CI 의 「품질 점검」 job)은 **영문 전량을 매번 본다.** 원래는 큐(`backfill-queue.md`)에
+적힌 한글 슬러그만 돌아서 **영문이 한 편도 검사되지 않았다** — 게이트가 영문 규칙을 갖고 있는데
+전수 모드가 영문을 안 불러 규칙이 죽어 있었다(2026-08-26 수리).
+
+죽은 내부 링크 검사도 영문에 걸었다. 영문 기사끼리 `/en/posts/…` 로 링크하는데 상대가
+예약분이면 그 링크는 발행일까지 404 다. 6편을 한 번에 낼 때 실제로 걸릴 수 있었다.
+
+단위 사전에 영문 단위(`$`·`bn`·`per cent`)를 넣었다. 그전에는 `$3.78bn` 짜리 표가
+「단위 없음」 경고를 맞았다.
+
 **아직 안 되는 것**: `audit.mjs`·`precheck-scheduled.mjs` 는 `src/content/posts` 만 훑는다.
 영문 기사가 늘면 이 둘도 열어야 한다(미결 27번).
 
-## 8. 다음 단계
+## 8. 진행 상황과 다음 단계
 
-1. **반도체 특집 40편 중 외국인 수요가 있는 12~15편**을 골라 영문 편집(번역이 아니다).
+**1차 편집분 6편(2026-08-26)** — 번역이 아니라 영문 편집이다. 수치는 전부
+`data/series/trade_hs8542*.json`·`usdkrw.json`·`trade_hs8486.json` 에서 **다시 계산해** 대조했다.
+
+| 슬러그 | 한글 짝 | 축 |
+|---|---|---|
+| `korea-chip-export-engine` | `semiconductor-export-engine` | 월 수출 $12.29bn → $32.72bn (×2.66) |
+| `chip-export-unit-value` | `semi-export-unit-value` | kg당 $7,230 → $19,479, 장비 수입은 +55% 뿐 |
+| `chip-surplus-anatomy` | `semi-trade-surplus-anatomy` | 흑자 $24.34bn, 원화는 반대로 8.9% 약세 |
+| `china-deficit-without-chips` | `semi-china-deficit-truth` | 반도체 빼면 對中 -$4.50bn, 월 변동의 98%가 반도체 |
+| `why-korea-imports-chips` | `semi-import-paradox` | 수입 $8.38bn, 증감률 상관 R² 38.9% (유일하게 살아남음) |
+| `hong-kong-chip-transit` | `semi-hongkong-route` | 반송률 0.8% 대 85.1%, 13개월 내내 띠가 겹치지 않는다 |
+
+**여섯 편 모두 게이트 통과**(646~785단어·표 1개 이상·수치형 소제목·두괄식 리드).
+6편이 서로를 링크하므로 **전부 같은 날 발행**했다 — 예약분이 섞이면 링크가 404 가 된다.
+
+다음 단계:
+
+1. **반도체 특집 40편 중 외국인 수요가 있는 나머지**를 골라 영문 편집(번역이 아니다).
+   1차분이 데이터 기사 위주였으므로 다음은 구조 설명(HBM·파운드리·수출통제) 쪽이 후보다.
 2. 4주 뒤 **GSC 에서 `/en/` 노출**을 확인해 확장 여부를 판단한다.
    노출 0 = 순위 문제(외부 링크 필요) · 노출은 있는데 클릭 0 = 제목·설명 문제.
 3. 트래커가 인용되기 시작하면 **품목·국가를 늘린다**(HS 8486 장비, 베트남·미국 등).

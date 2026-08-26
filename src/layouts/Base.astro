@@ -79,6 +79,9 @@ const onVercel = !!process.env.VERCEL;
 const navItems: {
   key: string;
   name: string;
+  /** 좁은 화면용 짧은 라벨. 영문 내비는 다섯 칸이라 정식 라벨로는 390px 에서 460px 을
+   *  차지해 마지막 칸이 잘렸다(2026-08-26 수리). 한글 라벨은 원래 짧아 필요 없다. */
+  short?: string;
   href: string;
   children?: { key: string; name: string; href: string; desc?: string }[];
 }[] = [
@@ -122,9 +125,9 @@ const navItems: {
 // 그리고 영문판은 「데이터 데스크」라 트래커가 기사보다 앞에 온다.
 const navItemsEn: typeof navItems = [
   { key: 'home', name: T.en.navHome, href: url('/en/') },
-  { key: 'tracker', name: T.en.navTracker, href: url('/en/tracker/') },
+  { key: 'tracker', name: T.en.navTracker, short: 'Tracker', href: url('/en/tracker/') },
   { key: 'analysis', name: T.en.navArticles, href: url('/en/analysis/') },
-  { key: 'pack', name: T.en.navPack, href: url('/en/pack/') },
+  { key: 'pack', name: T.en.navPack, short: 'Illustrations', href: url('/en/pack/') },
   { key: 'about', name: T.en.navAbout, href: url('/en/about/') },
 ];
 const nav = isEn ? navItemsEn : navItems;
@@ -368,7 +371,7 @@ const isActive = (n: (typeof navItems)[number]) =>
                 class:list={['nav-item', { active: activeNav === n.key }]}
                 aria-current={activeNav === n.key ? 'page' : undefined}
               >
-                {n.name}
+                {n.short ? <><span class="nav-long">{n.name}</span><span class="nav-short">{n.short}</span></> : n.name}
               </a>
             )
           )
@@ -861,6 +864,15 @@ const isActive = (n: (typeof navItems)[number]) =>
     .nav-in { justify-content: flex-start; }
     /* 손가락 탭 영역을 넉넉히(≈48px 높이) */
     .nav-item { padding: 15px 16px; font-size: 13.5px; }
+  }
+  /* 영문 내비는 다섯 칸이라 좁은 화면에서 마지막 칸이 잘렸다. 항목을 지우지 않고
+     라벨을 줄이고 여백을 좁혀 다섯 칸을 그대로 넣는다(실측 347px < 390px). */
+  .nav-long { display: inline; }
+  .nav-short { display: none; }
+  @media (max-width: 560px) {
+    .nav-long { display: none; }
+    .nav-short { display: inline; }
+    html[data-lang='en'] .nav-item { padding: 15px 10px; font-size: 13px; }
   }
   /* (스크롤 잠금은 폐지했다. 모바일에서 body{overflow:hidden} 이 안 먹는 브라우저가 있어
      패널이 화면에 붙어 떠 있는 버그를 만들었다. 지금은 스크롤하면 닫히도록 JS 가 처리한다.) */

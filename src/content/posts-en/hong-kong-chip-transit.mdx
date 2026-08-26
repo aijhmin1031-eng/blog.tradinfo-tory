@@ -1,7 +1,7 @@
 ---
 title: 'Where Korean chips actually go: the Hong Kong problem'
 description: 'Korea shipped $4.37bn of integrated circuits to Hong Kong in July 2026 and bought back $0.03bn. The destination column in customs data records where a chip last cleared, not where it is used, and the gap between those two questions is where most readings of Korean chip trade go wrong.'
-pubDate: 2026-08-27
+pubDate: 2026-08-26
 hero: '/images/hero/semi-hongkong-route.jpg'
 translationOf: 'semi-hongkong-route'
 topics: ['topic-semi']
@@ -16,6 +16,9 @@ sources:
     name: 'Trade statistics by commodity and partner country (open API)'
     url: 'https://www.data.go.kr/data/15100475/openapi.do'
     note: 'HS 8542, monthly, exports to and imports from China, Hong Kong and Taiwan, July 2025 to July 2026'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: monthly import-to-export ratio by destination, and its range over the sample'
+    note: 'Imports divided by exports for the same destination and month, HS 8542, July 2025 to July 2026. The bands quoted are the lowest and highest monthly values in that window; Taiwan is missing February 2026 in the source data and that month is excluded from its band'
   - org: 'Dotori Economy'
     name: 'Own calculation: co-movement test for transit and division-of-labour ports'
     note: 'Pearson correlations computed on both levels and month-on-month growth rates. The sample is 13 months (12 for growth rates) and is not seasonally adjusted, so the ranking and the size of the gaps are informative while the coefficients themselves are not precise'
@@ -86,6 +89,29 @@ The distinction survives in the fourth column of the first table and nowhere els
 0.8 per cent of what it receives; Taiwan returns 85.1 per cent. Monthly timing is scrambled by
 clearance and shipping schedules, but the ratio exposes the structure directly.
 
+It also holds across the whole sample rather than in one convenient month, which is what makes it
+usable as a classifier. Over the thirteen months the return ratio stayed inside a band for each
+destination, and the three bands do not overlap at any point.
+
+<div class="table-scroll">
+
+| Destination, Jul 2025 – Jul 2026 | Lowest month | Highest month | Character |
+|---|---:|---:|---|
+| Hong Kong | 0.7% | 3.4% | Transit |
+| China | 26.4% | 48.2% | Mixed |
+| Taiwan | 47.3% | 85.1% | Division of labour |
+
+</div>
+
+*Imports as a percentage of exports, HS 8542, by month. Source: Korea Customs Service, own
+calculation. Taiwan is missing one month in the source data.*
+
+A single measure that never confuses a transit port with a manufacturing partner across thirteen
+consecutive months is worth more than a correlation that fails every detrending test. It is also
+directional in a useful way: China's ratio has fallen steadily, from 48.2 per cent in July 2025 to
+26.4 per cent in July 2026, meaning the mainland now returns a smaller share of what it takes in.
+That drift is a change in the structure of the relationship, and it is visible in no other column.
+
 ## What to watch
 
 - **Do not read the Hong Kong figure as demand.** It is a waypoint. A rise there says something
@@ -93,5 +119,10 @@ clearance and shipping schedules, but the ratio exposes the structure directly.
 - **Watch Taiwan's two directions separately.** If one side grows while the other stalls, the
   division of labour itself is changing, and that is a more consequential signal than the headline.
 - **Separate the pie from the slice.** Destination shares move when the
-  [export total](/en/tracker/) moves. Establish which one changed before attributing anything to a
-  single market.
+  [export total](/en/posts/korea-chip-export-engine/) moves, and that total has risen 2.66 times in
+  thirteen months. Establish which one changed before attributing anything to a single market; the
+  [daily tracker](/en/tracker/) carries both.
+- **Read the mainland column with the transit column.** Excluding this tariff line,
+  [Korea runs a deficit with China](/en/posts/china-deficit-without-chips/), and adding Hong Kong to
+  the mainland raises the Greater China semiconductor surplus to roughly $14bn a month. Neither
+  figure is visible in the headline bilateral balance.
