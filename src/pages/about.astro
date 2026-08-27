@@ -153,7 +153,10 @@ const desc =
   .ab-title { font-size: clamp(30px, 5vw, 42px); font-weight: 900; margin: 12px 0 10px; color: var(--ink); }
   .ab-sub { color: var(--sub); font-size: 14.5px; letter-spacing: 0.06em; }
 
-  .ab-lead { max-width: var(--measure); margin: 34px 0 0; }
+  /* ★ 단축 margin 이 .wrap 의 `margin: 0 auto` 를 덮어 좌우가 0 이 됐다.
+     max-width 가 720px 이라 넓은 화면에서 본문만 왼쪽 끝에 붙었다(2026-08-27 소유주 제보).
+     .wrap 을 좁히려면 좌우는 반드시 auto 로 남길 것. padding 단축의 형제 함정이다. */
+  .ab-lead { max-width: var(--measure); margin: 34px auto 0; }
   .ab-lead p { font-size: 15px; line-height: 2; color: var(--sub); word-break: keep-all; }
   .ab-lead p + p { margin-top: 16px; }
 

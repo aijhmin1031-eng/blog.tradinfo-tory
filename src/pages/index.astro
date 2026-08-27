@@ -536,7 +536,12 @@ const jsonLd = {
     padding-top: 64px;
     flex-wrap: wrap;
   }
-  .mascot-img {
+  /* ★ `<Pic class="mascot-img">` 로 넘긴 클래스는 **자식 컴포넌트의 img** 에 붙는다.
+     부모의 스코프 해시가 달라 이 규칙이 통째로 무시됐고, Pic 의 기본값(width:100%)이 먹어
+     180px 이어야 할 그림이 **1,158px** 로 나왔다(2026-08-27 소유주 제보).
+     오늘 고친 `X img` → `X :global(img)` 24곳과 다른 형태라 그 사슬에 안 걸렸다.
+     자식 컴포넌트에 넘긴 클래스는 반드시 :global() 로 감쌀 것. */
+  .mascot :global(.mascot-img) {
     width: 180px;
     height: 180px;
     border-radius: 50%;
