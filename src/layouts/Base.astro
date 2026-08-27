@@ -101,6 +101,10 @@ const navItems: {
       })),
       ...TOPICS.map((t) => ({ key: t.key, name: `${t.name} 특집`, href: url(t.href), desc: t.desc })),
       { key: 'story', name: '토리 이야기', href: url('/story/'), desc: '토리를 그린 카툰 연재 · 화별로 읽기' },
+      // 소개가 상단 내비 어디에도 없었다(2026-08-27 소유주 제보). 푸터에만 있어 171쪽에서 링크되지만
+      // 처음 온 독자가 「누가 쓰는가」를 찾을 자리가 메뉴에 없었다. 'about' 은 이미 FOREST_KEYS 라
+      // 여기에 두면 활성 표시도 그대로 맞는다.
+      { key: 'about', name: '소개', href: url('/about/'), desc: '도토리경제는 무엇인가 · 운영 안내와 연락처' },
       { key: 'forest', name: '숲 전체 보기', href: url('/forest/'), desc: '분야·특집·최신 기사를 한 화면에서' },
     ],
   },
@@ -705,6 +709,13 @@ const isActive = (n: (typeof navItems)[number]) =>
       left: 50%;
       transform: translateX(-50%);
       min-width: 230px;
+      /* 항목이 늘면 패널이 화면 아래로 넘친다(소개 추가로 8항목이 되며 692px, 실제로 잘렸다).
+         넘칠 때만 패널 안에서 스크롤한다 — 항목을 지우지 않고 목록을 지키는 쪽을 택한다.
+         빼는 값은 내비 하단까지의 거리다: 홈은 머리글이 커서 267px, 기사·목록은 compact 라 166px.
+         큰 쪽에 여유 16px 을 더해 잡는다(작은 쪽에서는 조금 손해지만 어느 쪽도 잘리지 않는다). */
+      max-height: calc(100vh - 283px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
       background: var(--surface);
       border: 1px solid var(--hair);
       border-top: 2px solid var(--ink);
@@ -720,7 +731,7 @@ const isActive = (n: (typeof navItems)[number]) =>
     }
     .nav-sub {
       display: block;
-      padding: 11px 18px;
+      padding: 9px 18px;
       text-decoration: none;
     }
     .nav-sub:hover { background: var(--paper); }
