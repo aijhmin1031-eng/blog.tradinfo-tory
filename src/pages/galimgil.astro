@@ -85,10 +85,14 @@ const hitRate = done.length ? Math.round((hits / done.length) * 100) : null;
         <div class="gl-rec-n mono down">{done.length - hits}</div>
         <div class="gl-rec-label">빗나감</div>
       </div>
-      <div class="gl-rec-item" role="listitem">
-        <div class="gl-rec-n mono">{hitRate === null ? '—' : hitRate + '%'}</div>
-        <div class="gl-rec-label">적중률</div>
-      </div>
+      {/* 채점된 회차가 없을 때 자리표시자를 놓지 않는다. 빈 칸을 채우려고 긴 대시를 쓰면
+          절대 규칙 3 위반이고(실제로 --html 감시에 걸렸다), 「—%」는 정보도 아니다. */}
+      {hitRate !== null && (
+        <div class="gl-rec-item" role="listitem">
+          <div class="gl-rec-n mono">{hitRate}%</div>
+          <div class="gl-rec-label">적중률</div>
+        </div>
+      )}
     </div>
     <p class="gl-rec-note">
       전적은 사람이 적지 않습니다. 각 회차가 미리 적어 둔 숫자 문턱을 매일 아침 갱신되는 지표와
