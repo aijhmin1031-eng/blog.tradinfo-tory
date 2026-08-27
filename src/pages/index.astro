@@ -426,7 +426,9 @@ const jsonLd = {
     padding-bottom: 16px;
   }
   #tori-greet.show { transform: translateY(0); }
-  #tori-greet img {
+  /* ★ ID 선택자도 스코프를 탄다 — `<Pic>` 안의 img 에 닿지 않아 88px 그림이 210px 로 나왔다
+     (2026-08-27 감사에서 발견). 오늘 만난 세 번째 변종이다: 자손 선택자·전달 클래스·ID. */
+  #tori-greet :global(img) {
     width: 88px;
     height: 88px;
     border-radius: 50%;

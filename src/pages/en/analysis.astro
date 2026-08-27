@@ -45,7 +45,8 @@ const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 6
           <li class="an-item">
             {p.data.hero && (
               <a href={`/en/posts/${p.id}/`} class="an-thumb">
-                <Pic path={p.data.hero} alt="" width={220} height={124} />
+                {/* 같은 이유로 원본을 넉넉히 받는다 — 390px 에서 354px 까지 넓어진다. */}
+                <Pic path={p.data.hero} alt="" width={440} height={248} />
               </a>
             )}
             <div class="an-body">

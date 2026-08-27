@@ -94,7 +94,8 @@ const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 6
 </Base>
 
 <style>
-  .ea-head :global(.ea-portrait) { display: block; border-radius: 50%; border: 1px solid var(--hair); margin-bottom: 14px; }
+  /* 크기를 빼먹어 104px 초상이 644px 로 나왔다(2026-08-27 감사). :global 만으로는 부족하다. */
+  .ea-head :global(.ea-portrait) { display: block; width: 104px; height: 104px; object-fit: cover; border-radius: 50%; border: 1px solid var(--hair); margin-bottom: 14px; }
   .ea { max-width: var(--w-prose); margin: 0 auto; padding: 8px 18px 40px; /* 좌우 여백: .wrap 을 쓰지 않으므로 직접 준다(2026-08-26) */ }
   .ea header { border-bottom: 2px solid var(--ink); padding-bottom: 18px; margin-bottom: 8px; }
   .ea h1 { font-family: var(--font-serif); font-size: 36px; margin: 0 0 12px; color: var(--ink); }

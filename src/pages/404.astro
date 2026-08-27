@@ -1,11 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
+import Pic from '../components/Pic.astro';
 import { url } from '../lib/site';
 ---
 
 <Base title="페이지를 찾을 수 없습니다" compact>
   <section class="wrap nf">
-    <img src={url('/images/poses/pose-04.jpg')} alt="갸웃하며 생각에 잠긴 토리" width="180" height="180" class="tori-idle" />
+    {/* ★ 여기만 날 <img> 로 public 경로를 가리키고 있었다. 8/26 에 그림이 src/assets 로
+        옮겨지면서 그 경로가 사라져 **404 페이지의 그림이 깨져 있었다.** 404 는 아무도 일부러
+        찾아가지 않으므로 아무도 못 봤다. <Pic> 으로 바꿔 최적화 파이프라인에 태운다. */}
+    <Pic path="pose-04.jpg" alt="갸웃하며 생각에 잠긴 토리" width={180} height={180} class="tori-idle nf-tori" />
     <h1 class="serif">이 도토리는 다른 다람쥐가 먼저 가져갔네요</h1>
     <p>주소가 변경되었거나 존재하지 않는 페이지입니다. 창고에서 다른 도토리를 찾아보시기 바랍니다.</p>
     <a class="nf-btn" href={url('/')}>오늘의 도토리로 돌아가기</a>
@@ -14,7 +18,8 @@ import { url } from '../lib/site';
 
 <style>
   .nf { text-align: center; padding-top: 72px; padding-bottom: 72px; }
-  .nf img { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hair); }
+  /* :global 이어야 한다 — <Pic> 안의 img 는 이 파일의 스코프가 아니다(오늘 세 번째로 만난 함정). */
+  .nf :global(.nf-tori) { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 1px solid var(--hair); margin: 0 auto; }
   .nf h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 900; margin: 26px 0 10px 0; }
   .nf p { color: var(--sub); font-size: 14.5px; margin-bottom: 26px; }
   .nf-btn { display: inline-block; background: var(--brand); color: #fff; font-size: 13.5px; font-weight: 700; padding: 11px 22px; transition: background 0.15s ease; }

@@ -354,7 +354,9 @@ const timeline = [
     max-width: 860px;
   }
   .tp-note-head { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 14.5px; color: var(--ink); margin-bottom: 8px; }
-  .tp-note-head :global(img) { border-radius: 50%; }
+  /* ★ 크기를 안 잡아 <Pic> 의 기본값(width:100%)이 먹어 30px 그림이 화면 폭까지 커졌다
+     (2026-08-27 소유주 제보). 자식 컴포넌트에 스타일을 걸 때는 **크기까지** 함께 지정할 것. */
+  .tp-note-head :global(img) { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; flex: none; }
   .tp-note-card p { font-size: 14px; color: var(--sub); line-height: 1.85; margin: 0; word-break: keep-all; }
   .tp-sec { font-size: 21px; color: var(--ink); border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin: 42px 0 18px; }
   .tp-caption {

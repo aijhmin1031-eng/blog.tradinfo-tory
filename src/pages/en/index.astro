@@ -94,7 +94,8 @@ const ogImage = _ogMeta ? (await getImage({ src: _ogMeta, width: 1200, height: 6
             <li>
               {p.data.hero && (
                 <a href={`/en/posts/${p.id}/`} class="eh-thumb">
-                  <Pic path={p.data.hero} alt="" width={160} height={90} />
+                  {/* 390px 에서 카드가 354px 까지 넓어진다. 원본을 160px 로 받으면 늘어나 흐려진다(2026-08-27 감사). */}
+                  <Pic path={p.data.hero} alt="" width={360} height={203} />
                 </a>
               )}
               <div>
