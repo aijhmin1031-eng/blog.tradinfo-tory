@@ -49,21 +49,53 @@ const done = scored.filter((e) => e.verdict && (e.verdict.status === 'hit' || e.
 const hits = done.filter((e) => e.verdict!.status === 'hit').length;
 const pending = scored.filter((e) => e.verdict?.status === 'pending').length;
 const hitRate = done.length ? Math.round((hits / done.length) * 100) : null;
+
+// 구조화 데이터. 회차가 흩어진 기사로만 보이면 검색엔진이 「연재」로 묶지 못한다.
+// 지어낸 값은 넣지 않는다 — 제목·주소·발행일처럼 실제로 있는 것만 싣는다.
+const abs = (path: string) => (Astro.site ? new URL(path, Astro.site).toString() : path);
+const collectionLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: '토리의 갈림길',
+  description:
+    '주식·채권·환율·원자재의 다음 주 방향을 숫자 문턱으로 미리 적고 공개 채점하는 주간 연재입니다.',
+  inLanguage: 'ko-KR',
+  url: abs(url('/galimgil/')),
+  about: [
+    { '@type': 'Thing', name: '주식시장 전망' },
+    { '@type': 'Thing', name: '채권시장 금리 전망' },
+    { '@type': 'Thing', name: '원/달러 환율 전망' },
+    { '@type': 'Thing', name: '원자재 가격 전망' },
+  ],
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: episodes.length,
+    itemListElement: episodes.map((e, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: e.title,
+      url: abs(e.href),
+    })),
+  },
+};
 ---
 
 <Base
-  title="토리의 갈림길"
-  description="매주 월요일, 조건이 붙은 두 갈래 길을 그리고 다음 주에 공개 채점하는 주간 전망 연재. 전 회차의 채점 기록을 아카이브로 공개합니다."
+  title="토리의 갈림길 · 주간 시장 전망과 공개 채점"
+  description="주식·채권·환율·원자재를 한 주에 하나씩, 다음 주 방향을 숫자 문턱으로 미리 적고 결과를 공개 채점합니다. 코스피와 국고채 금리, 원/달러 전망의 적중률을 회차별로 공개하는 도토리경제의 주간 연재입니다."
   activeNav="galimgil"
   compact
 >
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(collectionLd)} />
+  </Fragment>
   <section class="wrap gl-head">
     <div class="kicker-en" style="color: var(--accent);">WEEKLY CROSSROADS</div>
     <h1 class="serif gl-title">토리의 갈림길</h1>
     <p class="gl-sub">
-      매주 월요일, 토리는 방향을 예언하는 대신 조건이 붙은 두 갈래 길을 그립니다.
-      그리고 다음 주, 어느 길이 실제로 열렸는지 이 게시판에 정직하게 표시합니다.
-      이 연재의 전 재산은 아래 채점표입니다.
+      주식·채권·환율·원자재를 한 주에 하나씩 다룹니다. 다음 주 방향을 숫자 문턱으로 미리 적고,
+      코스피와 국고채 금리, 원/달러가 그 문턱을 지켰는지 기계가 대조해 적중과 빗나감을 표시합니다.
+      맞힌 것만 남기지 않습니다. 이 연재의 전 재산은 아래 채점표입니다.
     </p>
   </section>
 

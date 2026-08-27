@@ -62,6 +62,13 @@ const publisherLd = {
   logo: { '@type': 'ImageObject', url: abs(toriSrc) },
 };
 
+// 이 기사가 실제로 다루는 것. 있는 값만 모은다.
+const aboutNames = [
+  cat.name,
+  ...(post.data.topics ?? []).map((k) => TOPICS.find((t) => t.key === k)?.name).filter((n): n is string => !!n),
+  ...(post.data.forecast ? [post.data.forecast.label, '시장 전망'] : []),
+];
+
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Article',
@@ -79,6 +86,15 @@ const jsonLd = {
   // citation 은 이 기사가 실제로 인용한 것만 적는다. 전에는 104편 전부 같은 문자열이 박혀 있었다.
   ...(sources.length
     ? { citation: sources.map((s) => `${s.org} ${s.name}`).join(', ') }
+    : {}),
+  // 주제어. **지어내지 않는다** — 분야 이름과 이 기사가 실제로 속한 특집, 그리고 전망 기사라면
+  // 그 전망이 다루는 지표 이름만 넣는다. 검색어를 본문에 뿌리는 대신 구조화 데이터로 밝히는 쪽이
+  // 정확하고, 조판도 더럽히지 않는다(2026-08-27).
+  ...(aboutNames.length
+    ? {
+        about: aboutNames.map((n) => ({ '@type': 'Thing', name: n })),
+        keywords: aboutNames.join(', '),
+      }
     : {}),
 };
 
