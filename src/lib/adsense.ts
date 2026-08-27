@@ -7,7 +7,7 @@
 //
 // 값은 비밀이 아니다. 게시자 ID 는 모든 방문자의 페이지 소스에 그대로 노출되는 공개 식별자다.
 // 빈 문자열이면 아무것도 내보내지 않는다(지금 상태).
-export const ADSENSE_PUB_ID = '';
+export const ADSENSE_PUB_ID = 'ca-pub-9956611000880183';
 
 /** `ca-pub-…` 형태인지. 오타로 잘못된 코드가 전 페이지에 박히는 것을 막는다. */
 export const adsenseOn = /^ca-pub-\d{10,}$/.test(ADSENSE_PUB_ID);
