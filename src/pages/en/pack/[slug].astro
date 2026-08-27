@@ -3,6 +3,7 @@
 // 구글 이미지의 라이선스 표시를 위해 ImageObject 구조화 데이터를 싣는다.
 // **원본은 public/ 에 그대로 둔다**(내려받기 대상). 화면용 미리보기만 최적화한다.
 import Pic from '../../../components/Pic.astro';
+import Acorn from '../../../components/Acorn.astro';
 import Base from '../../../layouts/Base.astro';
 import { getImage } from 'astro:assets';
 import { metaByPath } from '../../../lib/images';
@@ -101,13 +102,6 @@ const breadcrumb = {
         <h1>{en.name}</h1>
         <p class="ei-desc">{en.desc}</p>
 
-        {poem.length > 0 && (
-          <figure class="ei-poem">
-            <blockquote>{poem.map((line) => <span>{line}</span>)}</blockquote>
-            <figcaption>On this illustration</figcaption>
-          </figure>
-        )}
-
         <dl class="ei-spec">
           <div><dt>Format</dt><dd class="mono">Transparent PNG</dd></div>
           <div><dt>Size</dt><dd class="mono">1600 × 1600 px</dd></div>
@@ -139,6 +133,17 @@ const breadcrumb = {
         <ul class="ei-keys">{en.keywords.map((k) => <li>{k}</li>)}</ul>
       </div>
     </div>
+
+
+    {poem.length > 0 && (
+      <figure class="ei-poem" style={facts?.colors?.[0] ? `--tint:${facts.colors[0]}` : undefined}>
+        <div class="ei-poem-in">
+          <div class="ei-poem-mark" aria-hidden="true"><Acorn size={22} label="Dotori Economy acorn mark" /></div>
+          <figcaption><span>ON THIS ILLUSTRATION</span></figcaption>
+          <blockquote>{poem.map((line) => <span>{line}</span>)}</blockquote>
+        </div>
+      </figure>
+    )}
 
     <section class="ei-use">
       <h2>Where it works</h2>
@@ -185,10 +190,42 @@ const breadcrumb = {
   .ei-spec dt { font-size: 12px; font-weight: 700; color: var(--muted); }
   .ei-spec dd { font-size: 13px; color: var(--ink); margin: 0; }
 
-  .ei-poem { margin: 22px 0 0; padding: 2px 0 2px 16px; border-left: 2px solid var(--accent); }
-  .ei-poem blockquote { margin: 0; font-family: var(--font-serif); font-size: 15.5px; line-height: 1.95; color: var(--ink); }
+  /* 시. 한글판과 같은 조판(2026-08-27). 세로 규칙선은 쓰지 않는다.
+     판의 색과 테두리는 그 그림에서 뽑은 대표 색에서 만든다. */
+  .ei-poem {
+    margin: 44px auto 0;
+    max-width: 900px;
+    padding: 46px 28px 44px;
+    border-radius: 20px;
+    background-color: var(--surface);
+    background: color-mix(in srgb, var(--tint, var(--surface)) 13%, var(--surface));
+    border: 1px solid var(--hair);
+    border-color: color-mix(in srgb, var(--tint, var(--hair)) 30%, var(--hair));
+    text-align: center;
+  }
+  .ei-poem-in { max-width: 32em; margin: 0 auto; }
+  .ei-poem-mark { display: flex; justify-content: center; margin-bottom: 16px; }
+  .ei-poem figcaption { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 22px; }
+  .ei-poem figcaption span { font-size: 10.5px; letter-spacing: 0.18em; color: var(--muted); white-space: nowrap; }
+  .ei-poem figcaption::before,
+  .ei-poem figcaption::after {
+    content: '';
+    width: 34px;
+    height: 1px;
+    background: color-mix(in srgb, var(--tint, var(--hair)) 45%, var(--hair));
+  }
+  .ei-poem blockquote {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: clamp(17px, 2.1vw, 20px);
+    line-height: 2.05;
+    color: var(--ink);
+  }
   .ei-poem blockquote span { display: block; }
-  .ei-poem figcaption { margin-top: 8px; font-size: 11px; letter-spacing: 0.06em; color: var(--muted); }
+  @media (max-width: 560px) {
+    .ei-poem { padding: 34px 18px 32px; margin-top: 32px; border-radius: 16px; }
+    .ei-poem figcaption::before, .ei-poem figcaption::after { width: 22px; }
+  }
 
   .ei-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
   .ei-swatch { display: inline-flex; align-items: center; gap: 6px; }
