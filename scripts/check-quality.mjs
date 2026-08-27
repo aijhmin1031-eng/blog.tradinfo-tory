@@ -379,16 +379,23 @@ if (args.includes('--html')) {
       .replace(/<style[\s\S]*?<\/style>/g, ' ')
       .replace(/<[^>]*>/g, ' ');
     const n = (text.match(/—/g) || []).length;
-    if (n) hits.push({ rel, n });
+    if (n) hits.push({ rel, n, kind: '긴 대시' });
+    // ★ 물결표가 짝을 이루면 GFM 이 **취소선**으로 읽는다(2026-08-27 사고).
+    //    「0~1원 … 12~18원」 처럼 한 문단에 물결표가 둘이면 그 사이 전체에 줄이 그어졌다.
+    //    본문에서 취소선을 의도한 적이 없으므로 <del> 이 나오면 사고다. 원고에서 `\~` 로 이스케이프할 것.
+    const raw = readFileSync(f, 'utf8');
+    const dels = (raw.match(/<del>/g) || []).length;
+    if (dels) hits.push({ rel, n: dels, kind: '취소선(<del>)' });
   }
   if (hits.length === 0) {
-    console.log('\x1b[32m통과\x1b[0m 화면에 나가는 긴 대시 없음 (영문판 제외)');
+    console.log('\x1b[32m통과\x1b[0m 화면 조판 이상 없음 — 긴 대시·취소선 (영문판은 대시 제외)');
     process.exit(0);
   }
-  console.log(`\x1b[31m실패\x1b[0m 긴 대시가 화면에 나간다 — ${hits.length}쪽`);
-  for (const h of hits.slice(0, 12)) console.log(`  ✗ ${h.rel} (${h.n}곳)`);
-  if (hits.length > 12) console.log(`  … 그 밖 ${hits.length - 12}쪽`);
-  console.log('  제목은 말줄임표, 본문은 마침표·쉼표·콜론, 나열은 가운뎃점으로 바꿀 것(절대 규칙 3).');
+  console.log(`\x1b[31m실패\x1b[0m 화면 조판 이상 — ${hits.length}건`);
+  for (const h of hits.slice(0, 12)) console.log(`  ✗ ${h.rel} — ${h.kind} ${h.n}곳`);
+  if (hits.length > 12) console.log(`  … 그 밖 ${hits.length - 12}건`);
+  console.log('  긴 대시: 제목은 말줄임표, 본문은 마침표·쉼표·콜론, 나열은 가운뎃점(절대 규칙 3).');
+  console.log('  취소선: 한 문단에 물결표가 둘이면 GFM 이 취소선으로 읽는다. 원고에서 `\\~` 로 이스케이프할 것.');
   process.exit(1);
 }
 
