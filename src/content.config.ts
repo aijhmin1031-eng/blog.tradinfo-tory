@@ -21,6 +21,31 @@ const posts = defineCollection({
       .optional(),
     toriNote: z.string().optional(),
     dataAsOf: z.string().optional(),
+    /**
+     * 갈림길 연재의 **기계가 채점할 수 있는 전망**(2026-08-27 신설).
+     *
+     * 왜 프런트매터인가: 1화는 채점을 사람이 하기로 해 놓고 `pending` 인 채 멈췄다.
+     * 전망을 숫자 문턱으로 적어 두면 **빌드가 매일 시계열을 다시 읽어 스스로 판정한다.**
+     * 사람이 손댈 일이 없으므로 다시 멈추지 않는다.
+     *
+     * rule: stay_below(high 를 한 번도 안 넘으면 적중) · stay_above(low 를 한 번도 안 깨면 적중)
+     *       · stay_between(둘 다 지키면 적중). 관측 구간의 **종가**로만 판정한다.
+     */
+    forecast: z
+      .object({
+        series: z.string(),
+        field: z.enum(['v', 'exp', 'imp', 'bal']).default('v'),
+        label: z.string(),
+        unit: z.string(),
+        from: z.string(),
+        to: z.string(),
+        claim: z.string(),
+        confidence: z.number().min(1).max(99),
+        rule: z.enum(['stay_below', 'stay_above', 'stay_between']),
+        low: z.number().optional(),
+        high: z.number().optional(),
+      })
+      .optional(),
     // 이 기사가 실제로 쓴 원자료. 기사 끝 「자료」 블록과 구조화 데이터 citation 을 여기서 만든다.
     // 없는 출처를 지어 넣지 말 것 — 비어 있으면 자료 블록과 citation 둘 다 생략된다(lib/sources.ts).
     sources: z

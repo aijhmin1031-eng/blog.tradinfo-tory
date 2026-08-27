@@ -1,7 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
-import { url, fmtDate, isPublished } from '../lib/site';
+import { url, fmtDate, isPublished, todayIn, TZ_KST } from '../lib/site';
+import { evaluate, ruleText, VERDICT_LABEL } from '../lib/galimgil';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 
 // 갈림길 연재분: 발행분은 목록으로, 미발행 다음 화는 예고로
@@ -19,10 +20,35 @@ const episodes = all
       description: p.data.description,
       date: fmtDate(p.data.pubDate),
       num: parseInt(slug.replace('tori-galimgil-', ''), 10) || 0,
+      forecast: p.data.forecast,
     };
   });
 const upcoming = all.filter((p) => !isPublished(p.data.pubDate)).pop();
 const upcomingDate = upcoming ? fmtDate(upcoming.data.pubDate) : null;
+
+// ── 자동 채점 (2026-08-27) ─────────────────────────────────────────────
+// 전에는 이 전적표를 Supabase 에서 클라이언트가 불러왔고, 그 표의 값은 **사람이 넣어야** 했다.
+// 아무도 넣지 않아 1화가 `pending` 인 채 멈췄다. 이제 기사 프런트매터의 `forecast`(숫자 문턱)를
+// 빌드가 시계열과 대조해 판정한다. 매일 아침 지표가 갱신되고 사이트가 다시 만들어지므로
+// **판정이 저절로 바뀐다.**
+const todayKST = todayIn(TZ_KST);
+const scored = await Promise.all(
+  episodes.map(async (e) => {
+    const f = e.forecast;
+    if (!f) return { ...e, verdict: null, forecast: null };
+    let points: { d: string; v?: number; exp?: number; imp?: number; bal?: number }[] = [];
+    try {
+      points = (await import(`../../data/series/${f.series}.json`)).default.points;
+    } catch {
+      return { ...e, verdict: null, forecast: f };
+    }
+    return { ...e, forecast: f, verdict: evaluate(f, points, todayKST) };
+  })
+);
+const done = scored.filter((e) => e.verdict && (e.verdict.status === 'hit' || e.verdict.status === 'miss'));
+const hits = done.filter((e) => e.verdict!.status === 'hit').length;
+const pending = scored.filter((e) => e.verdict?.status === 'pending').length;
+const hitRate = done.length ? Math.round((hits / done.length) * 100) : null;
 ---
 
 <Base
@@ -42,36 +68,32 @@ const upcomingDate = upcoming ? fmtDate(upcoming.data.pubDate) : null;
   </section>
 
   <section class="wrap">
-    <div
-      class="gl-record"
-      id="gl-record"
-      data-sb-url={SUPABASE_URL}
-      data-sb-key={SUPABASE_ANON_KEY}
-      role="list"
-      aria-label="연재 전적"
-    >
+    <div class="gl-record" role="list" aria-label="연재 전적">
       <div class="gl-rec-item" role="listitem">
-        <div class="gl-rec-n mono" data-k="total">{episodes.length}</div>
+        <div class="gl-rec-n mono">{episodes.length}</div>
         <div class="gl-rec-label">연재 회차</div>
       </div>
       <div class="gl-rec-item" role="listitem">
-        <div class="gl-rec-n mono" data-k="scored">0</div>
+        <div class="gl-rec-n mono">{done.length}</div>
         <div class="gl-rec-label">채점 완료</div>
       </div>
       <div class="gl-rec-item" role="listitem">
-        <div class="gl-rec-n mono up" data-k="road_a">0</div>
-        <div class="gl-rec-label">A의 길</div>
+        <div class="gl-rec-n mono up">{hits}</div>
+        <div class="gl-rec-label">적중</div>
       </div>
       <div class="gl-rec-item" role="listitem">
-        <div class="gl-rec-n mono down" data-k="road_b">0</div>
-        <div class="gl-rec-label">B의 길</div>
+        <div class="gl-rec-n mono down">{done.length - hits}</div>
+        <div class="gl-rec-label">빗나감</div>
       </div>
       <div class="gl-rec-item" role="listitem">
-        <div class="gl-rec-n mono" data-k="partial">0</div>
-        <div class="gl-rec-label">부분 개통</div>
+        <div class="gl-rec-n mono">{hitRate === null ? '—' : hitRate + '%'}</div>
+        <div class="gl-rec-label">적중률</div>
       </div>
     </div>
-    <p class="gl-rec-note">전적은 채점 아카이브에서 실시간으로 불러오며, A·B는 그 주에 실제로 열린 길을 뜻합니다.</p>
+    <p class="gl-rec-note">
+      전적은 사람이 적지 않습니다. 각 회차가 미리 적어 둔 숫자 문턱을 매일 아침 갱신되는 지표와
+      대조해 사이트가 스스로 채점합니다. 채점 중인 회차 {pending}건은 관측 구간이 끝나면 자동으로 넘어갑니다.
+    </p>
   </section>
 
   <section class="wrap gl-list-wrap">
@@ -88,17 +110,32 @@ const upcomingDate = upcoming ? fmtDate(upcoming.data.pubDate) : null;
       )
     }
     <div class="gl-list">
-      {episodes.map((e) => (
-        <a href={e.href} class="gl-card" data-slug={e.slug}>
+      {scored.map((e) => (
+        <a href={e.href} class="gl-card">
           <div class="gl-card-top">
             <span class="gl-ep mono">#{e.num}</span>
-            <span class="gl-badge pending" data-role="badge">채점 대기</span>
+            <span class:list={['gl-badge', e.verdict?.status ?? 'pending']}>
+              {e.verdict ? VERDICT_LABEL[e.verdict.status] : '채점 규칙 없음'}
+            </span>
           </div>
           <div class="gl-card-title serif">{e.title}</div>
+          {e.forecast && (
+            <div class="gl-claim">
+              <span class="gl-claim-label">전망</span>
+              {e.forecast.claim}
+              <span class="gl-conf mono">확신도 {e.forecast.confidence}%</span>
+            </div>
+          )}
           <div class="gl-card-desc">{e.description}</div>
           <div class="gl-card-meta">
             <span>{e.date}</span>
-            <span class="gl-verdict-note" data-role="note"></span>
+            {e.verdict && e.verdict.days > 0 && (
+              <span class="gl-verdict-note mono">
+                {e.forecast!.label} {e.verdict.min?.toLocaleString()}~{e.verdict.max?.toLocaleString()}
+                {e.forecast!.unit} · {e.verdict.days}거래일
+                {e.verdict.brokeOn ? ` · ${e.verdict.brokeOn} 이탈` : ''}
+              </span>
+            )}
           </div>
         </a>
       ))}
