@@ -31,7 +31,11 @@
 - 컴포넌트: `KeyStat`(큰 수치) `PointCards`(아이콘 요점 카드) `LineChart`(마크·라벨 차트) `Term`(용어 메모 칩) `Spark`(고저 라벨 스파크라인) `CorpPanel` `TradePanel` `Ticker`(기준일 고정 칩)
 - 용어 사전: `src/lib/glossary.ts` + `src/lib/pictograms.ts` → 본문 `<Term t="용어" />`, `/glossary/` 페이지 자동
 - 특집: `src/lib/topics.ts` 등록부 → 내비 드롭다운·`/topics/` 인덱스 자동. **개설·유지 기준은 `docs/topics-standard.md` 필수 준수**
-- 내비는 **3슬롯 고정**(오늘의 도토리 · 도토리 숲▾ · 도토리 창고▾) — 읽을거리는 숲, 도구는 창고 아래로. 항목을 늘리지 말고 드롭다운이 흡수한다. 숲 착지는 `/forest/`, 창고 착지는 `/warehouse/`
+- 내비는 **4슬롯 고정**(오늘의 도토리 · 도토리 숲▾ · 도토리 창고▾ · 소개) — 읽을거리는 숲, 도구는 창고 아래로.
+  **읽을거리·도구를 늘릴 때는 항목을 늘리지 말고 드롭다운이 흡수한다.** 소개만 예외로 최상위에 둔다
+  (2026-08-27 소유주 지시 — 「누가 쓰는가」는 처음 온 독자와 심사자가 가장 먼저 찾는 자리다).
+  숲 착지는 `/forest/`, 창고 착지는 `/warehouse/`. **다섯 칸째는 안 된다** — 390px 에서 4칸이 355px 라
+  여유가 35px 뿐이다(여백을 12px 로 줄여 맞춘 값이다).
 - 데이터 파이프라인(매일 아침 KST 06:50 자동, `npm run pipeline`):
   `collect.mjs`(ECOS·FRED 지표) → `corp.mjs`(주식시세·DART 공시) → `trade.mjs`(관세청 국가·품목별) → `brief.mjs`(아침 브리핑 발행)
   산출: `data/series/*.json`(장기 축적, git이 이력) + `src/data/*.json`(화면 바인딩) — CI가 커밋백

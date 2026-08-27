@@ -102,10 +102,6 @@ const navItems: {
       })),
       ...TOPICS.map((t) => ({ key: t.key, name: `${t.name} 특집`, href: url(t.href), desc: t.desc })),
       { key: 'story', name: '토리 이야기', href: url('/story/'), desc: '토리를 그린 카툰 연재 · 화별로 읽기' },
-      // 소개가 상단 내비 어디에도 없었다(2026-08-27 소유주 제보). 푸터에만 있어 171쪽에서 링크되지만
-      // 처음 온 독자가 「누가 쓰는가」를 찾을 자리가 메뉴에 없었다. 'about' 은 이미 FOREST_KEYS 라
-      // 여기에 두면 활성 표시도 그대로 맞는다.
-      { key: 'about', name: '소개', href: url('/about/'), desc: '도토리경제는 무엇인가 · 운영 안내와 연락처' },
       { key: 'forest', name: '숲 전체 보기', href: url('/forest/'), desc: '분야·특집·최신 기사를 한 화면에서' },
     ],
   },
@@ -124,6 +120,10 @@ const navItems: {
       { key: 'map', name: '블로그 지도', href: url('/map/'), desc: '전체 콘텐츠 구성을 한눈에 (매일 자동 갱신)' },
     ],
   },
+  // 소개는 드롭다운 안에 두면 8항목 중 하나로 묻힌다(소유주 지시 2026-08-27로 밖으로 뺐다).
+  // 「누가 쓰는가」는 처음 온 독자와 심사자가 가장 먼저 찾는 자리라 한 번에 보이는 편이 낫다.
+  // 3슬롯 고정 규약을 4슬롯으로 고친 것이며, 그만큼 모바일 여백을 줄여 폭을 맞췄다(실측 355px).
+  { key: 'about', name: '소개', href: url('/about/') },
 ];
 // 영문 내비는 **세계관 용어를 쓰지 않는다**(소유주 결정 2026-08-26).
 // Acorn Forest·Acorn Warehouse 는 영어권에서 유아용으로 읽힌다. 기능 이름으로 간다.
@@ -137,7 +137,8 @@ const navItemsEn: typeof navItems = [
 ];
 const nav = isEn ? navItemsEn : navItems;
 
-const FOREST_KEYS = new Set(['forest', 'topics', 'story', 'about', ...Object.values(CATEGORIES).map((c) => c.slug), ...TOPICS.map((t) => t.key)]);
+// 'about' 을 뺐다: 소개가 최상위 칸이 되면서, 남겨 두면 /about/ 에서 숲과 소개가 함께 강조된다.
+const FOREST_KEYS = new Set(['forest', 'topics', 'story', ...Object.values(CATEGORIES).map((c) => c.slug), ...TOPICS.map((t) => t.key)]);
 const isActive = (n: (typeof navItems)[number]) =>
   activeNav === n.key ||
   (n.children?.some((c) => c.key === activeNav) ?? false) ||
@@ -887,6 +888,12 @@ const isActive = (n: (typeof navItems)[number]) =>
     .nav-in { justify-content: flex-start; }
     /* 손가락 탭 영역을 넉넉히(≈48px 높이) */
     .nav-item { padding: 15px 16px; font-size: 13.5px; }
+  }
+  /* 소개가 최상위로 나오며 한글 내비도 4칸이 됐다. 기존 여백(16px)으로는 387px 로
+     화면(390px)에 3px 차이로 겨우 들어가 글꼴 렌더링만 달라져도 잘린다. 여백을 12px 로
+     줄여 355px 로 맞춘다(2026-08-27 실측). */
+  @media (max-width: 560px) {
+    .nav-item { padding: 15px 12px; }
   }
   /* 영문 내비는 다섯 칸이라 좁은 화면에서 마지막 칸이 잘렸다. 항목을 지우지 않고
      라벨을 줄이고 여백을 좁혀 다섯 칸을 그대로 넣는다(실측 347px < 390px). */
