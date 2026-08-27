@@ -349,6 +349,49 @@ if (args.includes('--linkable')) {
 }
 
 let slugs = args;
+// ── --html: 산출 HTML 에서 화면에 나가는 긴 대시를 잡는다 (2026-08-27 신설) ──────
+// 절대 규칙 3(긴 대시 금지)은 **기사 본문에만** 걸려 있었다. 그래서 조판 파일(.astro)의
+// UI 문구로 두 번 새어 나갔다 — 그림함 낱장 118쪽의 「없음 — 투명 PNG」와 소개 페이지 한 줄.
+// 소스를 훑으면 주석의 대시까지 걸려 거짓양성이 쏟아진다. **독자가 실제로 보는 것**을 보는 편이
+// 정확하다: 빌드 산출물에서 script·style·태그를 걷어내고 남은 글에만 묻는다.
+// 영문판(/en/)은 em dash 가 정상 문장부호이므로 제외한다(english-edition.md 3절).
+if (args.includes('--html')) {
+  const DIST = join(ROOT, 'dist');
+  if (!existsSync(DIST)) {
+    console.error('dist 가 없다. `npm run build` 뒤에 실행할 것.');
+    process.exit(2);
+  }
+  const walk = (dir) => {
+    const out = [];
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) out.push(...walk(full));
+      else if (e.name.endsWith('.html')) out.push(full);
+    }
+    return out;
+  };
+  const hits = [];
+  for (const f of walk(DIST)) {
+    const rel = f.slice(DIST.length + 1);
+    if (rel.startsWith('en/')) continue;
+    const text = readFileSync(f, 'utf8')
+      .replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/<style[\s\S]*?<\/style>/g, ' ')
+      .replace(/<[^>]*>/g, ' ');
+    const n = (text.match(/—/g) || []).length;
+    if (n) hits.push({ rel, n });
+  }
+  if (hits.length === 0) {
+    console.log('\x1b[32m통과\x1b[0m 화면에 나가는 긴 대시 없음 (영문판 제외)');
+    process.exit(0);
+  }
+  console.log(`\x1b[31m실패\x1b[0m 긴 대시가 화면에 나간다 — ${hits.length}쪽`);
+  for (const h of hits.slice(0, 12)) console.log(`  ✗ ${h.rel} (${h.n}곳)`);
+  if (hits.length > 12) console.log(`  … 그 밖 ${hits.length - 12}쪽`);
+  console.log('  제목은 말줄임표, 본문은 마침표·쉼표·콜론, 나열은 가운뎃점으로 바꿀 것(절대 규칙 3).');
+  process.exit(1);
+}
+
 if (args.includes('--all')) {
   // 큐(한글 보강 대상) + **영문 전량**. 큐는 한글 기사 목록이라 영문은 영원히 검사
   // 대상에 들어오지 않았다 — CI 의 「품질 점검」이 영문을 한 편도 안 보고 있었다(2026-08-26 수리).
