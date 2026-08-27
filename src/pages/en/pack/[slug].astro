@@ -144,7 +144,7 @@ const breadcrumb = {
   .ei-top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 34px; margin-top: 18px; align-items: start; }
   @media (max-width: 780px) { .ei-top { grid-template-columns: 1fr; gap: 22px; } }
   .ei-stage { border: 1px solid var(--hair); border-radius: 16px; display: grid; place-items: center; padding: 22px; }
-  .ei-stage img { width: 100%; height: auto; display: block; }
+  .ei-stage :global(img) { width: 100%; height: auto; display: block; }
   .ei-info h1 { font-size: clamp(24px, 3.4vw, 34px); font-weight: 900; color: var(--ink); }
   .ei-desc { font-size: 15px; color: var(--sub); line-height: 1.85; margin-top: 12px; }
   .ei-spec { margin: 20px 0 0; border-top: 1px solid var(--hair); }

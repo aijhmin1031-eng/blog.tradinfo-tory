@@ -65,7 +65,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && isPubli
     background: var(--surface);
     overflow: hidden;
   }
-  .row-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .row-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; }
   @media (max-width: 640px) {
     /* 작은 썸네일(96px·16:9=54px)이 긴 본문 옆 세로 가운데에 떠서 왼쪽에 빈 칸이 크게 남았다.
        홈에서 고친 것과 같은 병이다(2026-08-26 소유주 제보). 썸네일을 키워 4:3 으로 두고
@@ -86,5 +86,5 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft && isPubli
     color: var(--sub);
     font-size: 14.5px;
   }
-  .empty img { border-radius: 50%; border: 1px solid var(--hair); margin-bottom: 14px; }
+  .empty :global(img) { border-radius: 50%; border: 1px solid var(--hair); margin-bottom: 14px; }
 </style>

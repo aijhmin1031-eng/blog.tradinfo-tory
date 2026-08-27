@@ -297,7 +297,7 @@ const jsonLd = {
   @media (max-width: 760px) { .sb-grid { grid-template-columns: 1fr 1fr; } .sb-grid > :nth-child(3) { display: none; } }
   .sb-card { display: block; }
   .sb-thumb { border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--surface); }
-  .sb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .sb-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
   .sb-card-title { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-top: 9px; word-break: keep-all; }
   .sb-card:hover .sb-card-title { color: var(--accent); }
   .sb-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
@@ -334,7 +334,7 @@ const jsonLd = {
     background: var(--surface);
     overflow: hidden;
   }
-  .hero-image img { display: block; width: 100%; height: auto; transition: transform 0.4s ease; }
+  .hero-image :global(img) { display: block; width: 100%; height: auto; transition: transform 0.4s ease; }
   .hero-image:hover img { transform: scale(1.02); }
   .hero-chart { width: 100%; }
   .hero-chart :global(.chart) { margin: 6px 0 0 0; max-width: none; }
@@ -373,7 +373,7 @@ const jsonLd = {
     background: var(--surface);
     overflow: hidden;
   }
-  .row-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .row-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
   .row:hover .row-thumb img { transform: scale(1.05); }
   .row-title {
     font-size: 19px;
@@ -497,7 +497,7 @@ const jsonLd = {
   .fband-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
   .fband-card { display: block; }
   .fband-thumb { aspect-ratio: 16 / 9; border: 1px solid var(--hair); background: var(--surface); overflow: hidden; }
-  .fband-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .fband-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
   .fband-card:hover .fband-thumb img { transform: scale(1.04); }
   .fband-card-title { font-size: 15.5px; font-weight: 700; line-height: 1.55; margin-top: 11px; word-break: keep-all; }
   .fband-card:hover .fband-card-title { color: var(--accent); }

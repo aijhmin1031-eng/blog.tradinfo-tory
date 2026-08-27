@@ -58,7 +58,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     padding: 10px;
     overflow: hidden;
   }
-  .frame img { display: block; width: 100%; height: auto; }
+  .frame :global(img) { display: block; width: 100%; height: auto; }
   .panel-no { font-size: 10px; color: var(--muted); text-align: right; margin-top: 7px; }
 
   /* 말풍선, HTML 텍스트라 선명하고 수정·번역·검색 전부 가능.

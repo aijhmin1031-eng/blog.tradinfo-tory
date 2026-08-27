@@ -170,7 +170,7 @@ const desc =
   .fo-latest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 20px; margin-top: 20px; }
   .fo-card { display: block; }
   .fo-thumb { border-radius: 10px; overflow: hidden; aspect-ratio: 16 / 9; background: var(--surface); }
-  .fo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fo-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
   .fo-card-title { font-size: 14.5px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-top: 4px; word-break: keep-all; }
   .fo-card:hover .fo-card-title { color: var(--accent); }
   .fo-date { display: block; font-size: 11px; color: var(--muted); margin-top: 5px; }
@@ -194,7 +194,7 @@ const desc =
   .fo-topic { display: block; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
   .fo-topic:hover { border-color: var(--accent); }
   .fo-topic-thumb { aspect-ratio: 16 / 9; background: var(--surface); }
-  .fo-topic-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fo-topic-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
   .fo-topic-body { padding: 13px 15px 16px; }
   .fo-topic-name { font-size: 16px; font-weight: 900; color: var(--ink); }
   .fo-topic-desc { font-size: 12.5px; color: var(--sub); line-height: 1.8; margin-top: 7px; word-break: keep-all; }
@@ -204,7 +204,7 @@ const desc =
   @media (max-width: 760px) { .fo-story-grid { grid-template-columns: 1fr 1fr; } .fo-story-grid > :nth-child(3) { display: none; } }
   .fo-story-card { display: block; }
   .fo-story-thumb { border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; aspect-ratio: 4 / 3; background: var(--surface); }
-  .fo-story-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .fo-story-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
   .fo-story-title { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.5; margin-top: 9px; word-break: keep-all; }
   .fo-story-card:hover .fo-story-title { color: var(--accent); }
 

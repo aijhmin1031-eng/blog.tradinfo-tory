@@ -12,7 +12,7 @@ const { img, alt = '', cap = '', quote = false } = Astro.props;
 ---
 <figure class:list={['story-cut', quote ? 'is-quote' : '']}><Pic path={`${img}.jpg`} alt={alt} width={1200} height={896} />{cap && <figcaption class:list={[quote ? 'serif' : '']}>{cap}</figcaption>}</figure><style>
   .story-cut { margin: 26px 0; }
-  .story-cut img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
+  .story-cut :global(img) { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); display: block; }
   .story-cut figcaption { margin-top: 10px; font-size: 14px; line-height: 1.8; color: var(--sub); word-break: keep-all; }
   .story-cut.is-quote figcaption { font-size: 16.5px; color: var(--ink); font-weight: 700; text-align: center; padding: 6px 12px 0; }
 </style>

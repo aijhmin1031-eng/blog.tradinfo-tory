@@ -245,7 +245,7 @@ const collection = {
   /* 투명 팩은 전역 .alpha-grid 의 체커보드를 살려야 하므로 단색을 덮지 않는다 */
   .pk-thumb.alpha-grid { background-color: var(--grid-b); }
   .pk-thumb-alpha { padding: 14px; box-sizing: border-box; }
-  .pk-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .pk-thumb :global(img) { width: 100%; height: 100%; object-fit: contain; display: block; }
   .pk-card-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 13px; }
   .pk-name { font-size: 13px; font-weight: 700; color: var(--ink); }
   .pk-dl { font-size: 10px; color: var(--muted); }

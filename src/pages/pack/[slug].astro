@@ -176,7 +176,7 @@ const breadcrumb = {
   .it-stage { border: 1px solid var(--line); border-radius: 16px; background-color: var(--surface); display: grid; place-items: center; padding: 22px; }
   .it-stage.alpha-grid { background-color: var(--grid-b); }
 
-  .it-stage img { width: 100%; height: auto; display: block; }
+  .it-stage :global(img) { width: 100%; height: auto; display: block; }
 
   .it-title { font-size: clamp(24px, 3.4vw, 34px); font-weight: 900; color: var(--ink); word-break: keep-all; }
   .it-desc { font-size: 15px; color: var(--sub); line-height: 1.9; margin-top: 12px; word-break: keep-all; }
@@ -202,7 +202,7 @@ const breadcrumb = {
   .it-thumb { border: 1px solid var(--line); border-radius: 10px; background-color: var(--surface); aspect-ratio: 1; overflow: hidden; }
   .it-thumb.alpha-grid { background-color: var(--grid-b); }
   .it-thumb.alpha { padding: 10px; box-sizing: border-box; }
-  .it-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .it-thumb :global(img) { width: 100%; height: 100%; object-fit: contain; display: block; }
   .it-card span { display: block; font-size: 12px; font-weight: 700; color: var(--ink); margin-top: 7px; }
   .it-card:hover .it-thumb { border-color: var(--accent); }
   .it-all { font-size: 13px; color: var(--sub); margin-top: 22px; line-height: 1.9; }
