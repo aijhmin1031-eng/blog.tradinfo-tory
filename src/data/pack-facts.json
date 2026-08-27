@@ -1,0 +1,733 @@
+{
+ "coin-acorn": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 123,
+  "alpha": true,
+  "colors": [
+   "#BF7918",
+   "#8F471B",
+   "#F7B931",
+   "#4D2810"
+  ]
+ },
+ "chart-up": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 69,
+  "alpha": true,
+  "colors": [
+   "#F8EDD9",
+   "#D3A98F",
+   "#BA6132",
+   "#74767B",
+   "#32445B"
+  ]
+ },
+ "chart-down": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 74,
+  "alpha": true,
+  "colors": [
+   "#FEF3D9",
+   "#E0D1B9",
+   "#BB562F",
+   "#8E8F91",
+   "#36324A"
+  ]
+ },
+ "piggy-bank": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 60,
+  "alpha": true,
+  "colors": [
+   "#ED8B66",
+   "#C06145",
+   "#F5AA31",
+   "#774C45",
+   "#333E4F"
+  ]
+ },
+ "banknotes": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 152,
+  "alpha": true,
+  "colors": [
+   "#C3AC8C",
+   "#2A3648",
+   "#BE6135",
+   "#F4DEB9",
+   "#EBAD4E"
+  ]
+ },
+ "gold-bars": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 62,
+  "alpha": true,
+  "colors": [
+   "#F8B92D",
+   "#BC8D31",
+   "#A26615",
+   "#FEDE80"
+  ]
+ },
+ "cargo-ship": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 140,
+  "alpha": true,
+  "colors": [
+   "#15385C",
+   "#A84E2E",
+   "#B9AF9F",
+   "#604445",
+   "#4B667B"
+  ]
+ },
+ "harbor-crane": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 165,
+  "alpha": true,
+  "colors": [
+   "#AC471B",
+   "#2F4660",
+   "#5F2E16",
+   "#DBD9D9",
+   "#A8A7A7"
+  ]
+ },
+ "globe-routes": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 175,
+  "alpha": true,
+  "colors": [
+   "#184265",
+   "#D96931",
+   "#A3461F",
+   "#8F887D",
+   "#BEAC93"
+  ]
+ },
+ "ledger-pen": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 136,
+  "alpha": true,
+  "colors": [
+   "#F6E9D1",
+   "#A48764",
+   "#2B3341",
+   "#D8C5AA",
+   "#65584B"
+  ]
+ },
+ "abacus": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 177,
+  "alpha": true,
+  "colors": [
+   "#DAC3AB",
+   "#BE7D41",
+   "#455B78",
+   "#7B8798",
+   "#F2EBE1"
+  ]
+ },
+ "bank-building": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 110,
+  "alpha": true,
+  "colors": [
+   "#D7BE91",
+   "#2C4464",
+   "#7A7B77",
+   "#CE9948",
+   "#FFE9AD"
+  ]
+ },
+ "exchange": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 116,
+  "alpha": true,
+  "colors": [
+   "#C05F30",
+   "#C7BAA0",
+   "#EADDBF",
+   "#264A76",
+   "#D2A047"
+  ]
+ },
+ "semiconductor": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 104,
+  "alpha": true,
+  "colors": [
+   "#D86038",
+   "#1F3F63",
+   "#7D5E3D"
+  ]
+ },
+ "scale": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 87,
+  "alpha": true,
+  "colors": [
+   "#30415E",
+   "#B97929",
+   "#DCD8D6",
+   "#EBA933",
+   "#8E441D"
+  ]
+ },
+ "lighthouse": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 86,
+  "alpha": true,
+  "colors": [
+   "#FEDB93",
+   "#905B30",
+   "#1A2C43",
+   "#FFF5D6",
+   "#C1A78C"
+  ]
+ },
+ "tori-treasure": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 106,
+  "alpha": true,
+  "colors": [
+   "#A55D30",
+   "#FEEED3",
+   "#DBC1A4",
+   "#CF7B45",
+   "#BD9676"
+  ]
+ },
+ "tori-reading": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 185,
+  "alpha": true,
+  "colors": [
+   "#A95E30",
+   "#F0DBC0",
+   "#30425F",
+   "#D4B798",
+   "#BA9676"
+  ]
+ },
+ "full-moon": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 81,
+  "alpha": true,
+  "colors": [
+   "#F7BF4B",
+   "#D5C1A6",
+   "#C0913F",
+   "#FEF5DA",
+   "#96682D"
+  ]
+ },
+ "songpyeon": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 113,
+  "alpha": true,
+  "colors": [
+   "#2F455E",
+   "#EAA42F",
+   "#F5E9D3",
+   "#C3C0B7",
+   "#C05B2A"
+  ]
+ },
+ "gift-bojagi": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 102,
+  "alpha": true,
+  "colors": [
+   "#2F4461",
+   "#C05B36",
+   "#E8AD4D",
+   "#F3DEBE",
+   "#D7BC94"
+  ]
+ },
+ "persimmon": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 73,
+  "alpha": true,
+  "colors": [
+   "#F26D13",
+   "#757932",
+   "#A0A045",
+   "#AD4D11",
+   "#62431F"
+  ]
+ },
+ "chestnut": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 87,
+  "alpha": true,
+  "colors": [
+   "#D78D2F",
+   "#AB5E1C",
+   "#FEC15B"
+  ]
+ },
+ "acorn-trio": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 85,
+  "alpha": true,
+  "colors": [
+   "#DD622F",
+   "#294161",
+   "#F9E1BB",
+   "#944420",
+   "#F58D5B"
+  ]
+ },
+ "oak-leaf": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 101,
+  "alpha": true,
+  "colors": [
+   "#D85E28",
+   "#F3A833",
+   "#1E4162",
+   "#904416",
+   "#FEE1A9"
+  ]
+ },
+ "ginkgo-leaf": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 101,
+  "alpha": true,
+  "colors": [
+   "#F0AB41",
+   "#D6662A",
+   "#F6DCA9",
+   "#D5B682"
+  ]
+ },
+ "rice-sheaf": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 271,
+  "alpha": true,
+  "colors": [
+   "#AD762D",
+   "#5C4B43",
+   "#1D3151",
+   "#BB9880",
+   "#D9BE9F"
+  ]
+ },
+ "coin-pouch": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 245,
+  "alpha": true,
+  "colors": [
+   "#172E4A",
+   "#8A662D",
+   "#5D3630",
+   "#D49335",
+   "#F2D6A2"
+  ]
+ },
+ "lantern": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 60,
+  "alpha": true,
+  "colors": [
+   "#2C3349",
+   "#A46644",
+   "#BD8866",
+   "#EAD6B8",
+   "#684735"
+  ]
+ },
+ "yakgwa": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 114,
+  "alpha": true,
+  "colors": [
+   "#C06417",
+   "#D1954C",
+   "#814415"
+  ]
+ },
+ "ribbon-label": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 61,
+  "alpha": true,
+  "colors": [
+   "#F8E8CA",
+   "#BEAD95",
+   "#C35F38",
+   "#794123",
+   "#ECB34E"
+  ]
+ },
+ "frame-round": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 223,
+  "alpha": true,
+  "colors": [
+   "#D66131",
+   "#1E375E",
+   "#8F451D",
+   "#ECD7B1",
+   "#EAA538"
+  ]
+ },
+ "corner-flourish": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 154,
+  "alpha": true,
+  "colors": [
+   "#2F3849",
+   "#BD5C34",
+   "#D69542",
+   "#D3BDA3",
+   "#F5E6C8"
+  ]
+ },
+ "divider": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 61,
+  "alpha": true,
+  "colors": [
+   "#79461C",
+   "#D38825",
+   "#283142",
+   "#E1CEB1"
+  ]
+ },
+ "latte": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1376,
+  "alpha": true,
+  "colors": [
+   "#EFD4C3",
+   "#EBB880",
+   "#C3AFAD",
+   "#BB857B"
+  ]
+ },
+ "sketchbook": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 2037,
+  "alpha": true,
+  "colors": [
+   "#F7EDDF",
+   "#D7BDAB",
+   "#898D8E"
+  ]
+ },
+ "acorns": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1397,
+  "alpha": true,
+  "colors": [
+   "#D8A67F",
+   "#A96132",
+   "#F5D0A9",
+   "#C0C2C1",
+   "#8E3B09"
+  ]
+ },
+ "tart": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1606,
+  "alpha": true,
+  "colors": [
+   "#F1C291",
+   "#F5E9D8",
+   "#EF7665",
+   "#D84943",
+   "#A9B878"
+  ]
+ },
+ "teapot": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1608,
+  "alpha": true,
+  "colors": [
+   "#EFD8C1",
+   "#C6BEA8",
+   "#FFFCEB",
+   "#E48B79"
+  ]
+ },
+ "macaron": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1338,
+  "alpha": true,
+  "colors": [
+   "#FDEEE8",
+   "#F2AAA3"
+  ]
+ },
+ "sugarcube": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1171,
+  "alpha": true,
+  "colors": [
+   "#F2EADB",
+   "#D7C7A9"
+  ]
+ },
+ "lemon": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 1747,
+  "alpha": true,
+  "colors": [
+   "#FAE88E",
+   "#A6BE7D",
+   "#FFFED9",
+   "#7B9C63"
+  ]
+ },
+ "laptop": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 103,
+  "alpha": true,
+  "colors": [
+   "#FDF2DC",
+   "#DD6F43",
+   "#4C3E41",
+   "#935741",
+   "#8F9495"
+  ]
+ },
+ "notebook-pen": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 181,
+  "alpha": true,
+  "colors": [
+   "#263E60",
+   "#B0714C",
+   "#7B7873",
+   "#D4A57A",
+   "#5D4D46"
+  ]
+ },
+ "clipboard": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 39,
+  "alpha": true,
+  "colors": [
+   "#FEF8E8",
+   "#C46540",
+   "#C8BAAB",
+   "#F6BC47"
+  ]
+ },
+ "desk-calendar": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 66,
+  "alpha": true,
+  "colors": [
+   "#F9EDDA",
+   "#2C4260",
+   "#97624A",
+   "#ADA090",
+   "#CF7D35"
+  ]
+ },
+ "coffee-mug": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 114,
+  "alpha": true,
+  "colors": [
+   "#293F61",
+   "#D85F2E",
+   "#F3DEC0",
+   "#AA8A72",
+   "#D1BCA5"
+  ]
+ },
+ "document-folder": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 87,
+  "alpha": true,
+  "colors": [
+   "#F0BB60",
+   "#C29147",
+   "#D2C0A5",
+   "#1A324A",
+   "#8D9293"
+  ]
+ },
+ "sticky-notes": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 70,
+  "alpha": true,
+  "colors": [
+   "#FDEBBC",
+   "#194272",
+   "#D5BB91",
+   "#EF7644",
+   "#AC5A37"
+  ]
+ },
+ "presentation-board": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 56,
+  "alpha": true,
+  "colors": [
+   "#F8EBD5",
+   "#D5C5AE",
+   "#BD5931",
+   "#D79737",
+   "#042D61"
+  ]
+ },
+ "whiteboard": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 49,
+  "alpha": true,
+  "colors": [
+   "#C1C3C5",
+   "#323D4F",
+   "#F4F1EC",
+   "#D1AF76",
+   "#B98836"
+  ]
+ },
+ "printer": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 98,
+  "alpha": true,
+  "colors": [
+   "#FAEFD8",
+   "#E66438",
+   "#2E405D",
+   "#D4C4AF",
+   "#92703F"
+  ]
+ },
+ "desk-lamp": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 85,
+  "alpha": true,
+  "colors": [
+   "#2C415F",
+   "#D75F33",
+   "#FFEEBD",
+   "#D8BC92",
+   "#A6491F"
+  ]
+ },
+ "magnifier-doc": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 123,
+  "alpha": true,
+  "colors": [
+   "#F4E9D6",
+   "#C39045",
+   "#BFAC8F",
+   "#293F64",
+   "#635E61"
+  ]
+ },
+ "stamp": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 62,
+  "alpha": true,
+  "colors": [
+   "#C54B2C",
+   "#2F4261",
+   "#EBA744",
+   "#5D3735",
+   "#7C6345"
+  ]
+ },
+ "envelope": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 61,
+  "alpha": true,
+  "colors": [
+   "#F9E8C6",
+   "#C2AC8D",
+   "#C24E29",
+   "#93785A"
+  ]
+ },
+ "gear-cogs": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 103,
+  "alpha": true,
+  "colors": [
+   "#2F4460",
+   "#C25F33",
+   "#EBA833",
+   "#AA9278",
+   "#DDDEDC"
+  ]
+ },
+ "wall-clock": {
+  "w": 1600,
+  "h": 1600,
+  "kb": 66,
+  "alpha": true,
+  "colors": [
+   "#FAEBD2",
+   "#AC5C2E",
+   "#BE955A",
+   "#D6B98A",
+   "#7C7D7F"
+  ]
+ }
+}
