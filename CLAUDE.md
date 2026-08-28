@@ -42,12 +42,12 @@
 - 배포는 이중: GitHub Pages(정본) + Vercel 병행(`astro.config.mjs`가 VERCEL env로 base 분기, Vercel 사본은 도메인 연결 전까지 noindex)
 - Supabase 프로젝트 `tradetory`(서울, 무료 티어): 뉴스레터 구독·조회수·갈림길 채점 아카이브. 클라이언트 설정은 `src/lib/supabase.ts`(anon 키는 공개용 설계, 쓰기는 RPC·엣지 함수만). 갈림길 채점 기록은 `galimgil_scores` 테이블(절차는 worklog 8/23 일지)
 - **영문판 `/en/`**(2026-08-26 개설): 한글판 미러가 아니라 **「데이터 데스크」**다. 중심은 `/en/tracker/`(관세청 HS 8542 국가별, 매일 자동 갱신). 원고는 `src/content/posts-en/`(컬렉션 `postsEn` — **일부러 갈랐다**), 조판은 `layouts/PostEn.astro`, 문자열·색 규약은 `src/lib/i18n.ts`. **영문만 상승=초록·하락=빨강**(서구 관례), **em dash 허용**(한글 조판 규칙이므로). 기준 정본은 **`docs/english-edition.md`**
-- **기사 대표 이미지는 「데이터 시각화」다**(2026-08-28 소유주 지시 — 카툰 히어로가 「유치하다」).
-  그 기사의 핵심 수치를 세운 차트를 굽는다. 정본은 **`docs/hero-images.md`**,
-  도구는 `scripts/figures/{fetch-fonts,hero-chart,render-hero}.mjs`.
-  **앞으로 쓰는 기사부터** 적용하고 기존 116편은 그대로 둔다. 토리는 머리글·소개·`/story/`·그림함에 그대로 있다.
-  ★ 굽는 스크립트는 **조판 겹침과 두부(폰트 미로드)를 실측해 죽는다** — 둘 다 첫 판에서 실제로 터졌고,
-  둘 다 「그림은 나오는데 틀린」 종류라 눈으로만 잡히던 것이다.
+- **기사 대표 이미지는 「편집 일러스트(등각 투영)」다**(2026-08-28 소유주 결정 — 카툰 히어로가 「유치하다」).
+  네 방향을 실제로 구워 놓고 골랐다. 정본은 **`docs/hero-images.md`** 에 고정 스타일 프롬프트가 있다.
+  Pollo `openai/gpt-image-2-0` · 16:9 · 1K · medium. **스타일 문장은 손대지 않고 장면만 바꾼다.**
+  장면은 소재 나열이 아니라 **그 기사의 발견(대비·구조) 자체**를 옮긴다.
+  **8/28 발행분부터** 적용하고 그 이전 기사는 그대로 둔다. 토리는 머리글·소개·`/story/`·그림함에 그대로 있다.
+  ★ **차트를 히어로로 쓰는 안은 폐기됐다**(소유주 반려). 차트는 본문에서 `SeriesChart` 가 한다.
 - 세계관: `docs/worldview.md` · 운영 절차: `docs/operations.md` · 특집 기준: `docs/topics-standard.md` · 품질 체계: `docs/quality.md` · **유입: `docs/traffic.md`** · **대표 이미지: `docs/hero-images.md`**
 
 ## 시크릿 (값을 절대 출력·커밋하지 말 것)
