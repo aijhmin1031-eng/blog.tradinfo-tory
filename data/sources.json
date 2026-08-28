@@ -143,6 +143,51 @@
       "source": "FRED",
       "fred": "UNRATE",
       "cycle": "M"
+    },
+    {
+      "id": "dxy",
+      "name": "달러인덱스(광범위)",
+      "unit": "pt",
+      "source": "FRED",
+      "fred": "DTWEXBGS",
+      "cycle": "D",
+      "note": "환율 기사의 필수 대조축. 「원화가 약해졌다」와 「달러가 강해졌다」를 가르지 못하면 해석이 틀린다. 우리는 dollar-index-explained 기사를 쓰면서 이 계열이 없었다"
+    },
+    {
+      "id": "us2y",
+      "name": "미 국채 2년",
+      "unit": "%",
+      "source": "FRED",
+      "fred": "DGS2",
+      "cycle": "D",
+      "note": "10년과 짝으로 쓴다. 장단기 역전은 시장이 침체를 말하는 방식이다"
+    },
+    {
+      "id": "us10y2y",
+      "name": "미 장단기 금리차(10Y-2Y)",
+      "unit": "%p",
+      "source": "FRED",
+      "fred": "T10Y2Y",
+      "cycle": "D",
+      "note": "FRED 가 이미 계산해 주는 계열. 우리가 빼면 결측일 처리에서 어긋난다"
+    },
+    {
+      "id": "unrate_kr",
+      "name": "한국 실업률",
+      "unit": "%",
+      "source": "FRED",
+      "fred": "LRHUTTTTKRM156S",
+      "cycle": "M",
+      "note": "미국 실업률만 있어 비대칭이었다. OECD 계열이라 한국 공식 발표와 소수점이 다를 수 있어 출처를 OECD로 적을 것"
+    },
+    {
+      "id": "brent",
+      "name": "브렌트 유가",
+      "unit": "달러",
+      "source": "FRED",
+      "fred": "POILBREUSDM",
+      "cycle": "M",
+      "note": "우리 수입 원유는 WTI 보다 브렌트·두바이에 연동된다. 국내 물가 경로를 말할 때 WTI 만으로는 약하다"
     }
   ]
 }
