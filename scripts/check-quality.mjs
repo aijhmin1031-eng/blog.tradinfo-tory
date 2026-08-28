@@ -225,6 +225,36 @@ function check(slug) {
   // 상시가 된 경고는 안 보게 된다(audit.mjs 의 --fail-on 주석과 같은 이유).
   // 기존분은 audit 이 우선순위를 매겨 감사 일과가 순서대로 처리한다.
   const isNew = baseRaw === null;
+
+  // ★ 인용 3종을 **분야별로 가른다** (2026-08-28 소유주 결정 — 「다 똑같은 양식이라 식상하다」).
+  //
+  // 실측이 지적을 뒷받침했다: 발행분 69편의 **PointCards 사용률이 네 분야 모두 100%**,
+  // 소제목 수도 4.3~5.8 로 사실상 같았다. 분야별로 다른 것은 차트 유무뿐이고
+  // 그것은 편집 판단이 아니라 데이터가 있냐 없냐였다.
+  //
+  // 원인은 이 규칙이 **분야를 안 가리고** 걸려 있던 데 있다. 인용 3종은 데이터 기사에
+  // 맞는 규칙인데 전 분야에 강제되니, 개념 설명글도 억지로 표를 갖고 억지로 수치형
+  // 소제목을 달았다. **소유주가 인용 가능성 일부를 내주고 다양성을 택했다.**
+  //
+  // | 분야 | 두괄식 리드 | 수치형 소제목 | 표 |
+  // |---|---|---|---|
+  // | trade (리포트형)  | 강제 | 강제 | 강제 |
+  // | money (경로 추적형) | 강제 | 면제 | 강제 |
+  // | tariff (분기형)    | 강제 | 면제 | 강제(판별표) |
+  // | basics (문답형)    | 강제 | 면제 | 면제 |
+  //
+  // **두괄식 리드는 전 분야 공통이다** — 검색엔진·LLM 이 집어 가는 자리라 여기서 물러나면
+  // 다양성이 아니라 그냥 인용 불가가 된다. 내주는 것은 수치형 소제목과 표뿐이다.
+  const myCat = (front.match(/^category:\s*(\w+)/m) || [])[1] ?? '';
+  const FORM = {
+    trade:  { numHead: true,  table: true  },
+    money:  { numHead: false, table: true  },
+    tariff: { numHead: false, table: true  },
+    basics: { numHead: false, table: false },
+  };
+  // 영문판은 데이터 데스크라 리포트형 하나로 간다(english-edition.md).
+  const form = isEn ? { numHead: true, table: true } : (FORM[myCat] ?? { numHead: true, table: true });
+
   const level = (m) => (isNew ? fails : warns).push(m);
 
   // 숫자 중 「내용이 아닌 것」을 뺀다: 연도·HS 코드·제목에 든 숫자(버전명·주제어).
@@ -263,9 +293,11 @@ function check(slug) {
   // ⑧ 핵심 발견 소제목은 수치형 — 소제목 전체를 바꾸라는 뜻이 아니다.
   // 발견을 담은 소제목 **하나**에 숫자를 넣는다(소유주 결정 2026-08-26).
   const h2s = body.match(/^##\s+.+$/gm) || [];
+  // 「소제목이 없다」는 전 분야 공통이다(분야와 무관하게 독자가 길을 잃는다).
+  // 분야로 가르는 것은 **수치형이어야 하는가**뿐이다.
   if (h2s.length === 0) {
     warns.push('소제목(##)이 없다 — 독자가 어디쯤인지 알 수 없다(operations.md 「흐름」).');
-  } else if (!h2s.some((h) => realNums(h).length > 0)) {
+  } else if (form.numHead && !h2s.some((h) => realNums(h).length > 0)) {
     level(
       `핵심 발견 소제목이 수치형이 아니다 — 소제목 ${h2s.length}개 중 숫자를 담은 것이 하나도 없다. ` +
       '발견을 담은 소제목 하나만 「홍콩, 수출 43.7억 대 수입 0.3억」처럼 수치형으로 바꿀 것(나머지는 지금 톤 유지).'
@@ -288,7 +320,7 @@ function check(slug) {
       i = r;
     }
   }
-  if (tables.length === 0) {
+  if (form.table && tables.length === 0) {
     level('표가 없다 — 세 항목 이상의 나열·대조는 줄글이 아니라 표로(operations.md 「문단·줄바꿈 원칙」). 인용도 표에서 나온다.');
   } else {
     for (const t of tables) {

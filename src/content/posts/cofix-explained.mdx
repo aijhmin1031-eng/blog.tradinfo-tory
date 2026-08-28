@@ -25,7 +25,7 @@ sources:
     note: '2016년 8월~2026년 6월 월별 119개 · 도토리 창고 축적분'
 ---
 
-import PointCards from '../../components/PointCards.astro';
+import AskBlock from '../../components/AskBlock.astro';
 import Term from '../../components/Term.astro';
 import SeriesContext from '../../components/SeriesContext.astro';
 
@@ -81,10 +81,10 @@ import SeriesContext from '../../components/SeriesContext.astro';
 올랐는지는 [예금금리가 다시 3%를 넘은 사정](/posts/deposit-special-rates/)에서
 따로 짚었다.
 
-<PointCards items={[
-  { icon: 'doc', title: '계약서의 세 글자', desc: '내 대출이 신규취급액·잔액·신잔액 중 무엇에 연동되는지, 변동 주기가 6개월인지 12개월인지. 이 두 줄이 앞으로 몇 년의 이자를 정한다.' },
-  { icon: 'chart', title: '뉴스보다 공시', desc: '기준금리 결정일보다 매월 15일 15시 은행연합회 공시가 내 이자에 직결된다. 달력에 표시할 날짜는 이쪽이다.' },
-  { icon: 'coin', title: '못 바꾸는 것과 바꾸는 것', desc: '코픽스는 협상 대상이 아니지만 가산금리는 신용도·거래 실적에 따라 다르다. 바꿀 수 있는 쪽에 힘을 쓰는 것이 실속이다.' },
+<AskBlock items={[
+  { q: '내 계약서에서 무엇을 먼저 확인하나', a: '두 줄이다. 신규취급액·잔액·신잔액 중 무엇에 연동되는지, 그리고 변동 주기가 6개월인지 12개월인지. 이 두 줄이 앞으로 몇 년의 이자를 정한다.' },
+  { q: '달력에 표시할 날짜는 언제인가', a: '기준금리 결정일이 아니라 <strong>매월 15일 15시</strong>, 은행연합회 공시일이다. 내 이자에 직결되는 것은 이쪽이다.' },
+  { q: '내가 바꿀 수 있는 부분은 어디인가', a: '코픽스는 협상 대상이 아니다. 가산금리는 신용도·거래 실적에 따라 달라진다. 바꿀 수 있는 쪽에 힘을 쓰는 것이 실속이다.' },
 ]} />
 
 ## 실무에서 틀리기 쉬운 지점

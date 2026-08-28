@@ -214,11 +214,24 @@ for (const file of files) {
   if (leadPara && !realNums(leadPara).length) {
     issues.push({ w: 55, tag: '리드 비두괄식', msg: '첫 문단에 결론 수치가 없다 — 검색엔진·LLM 이 집어 가는 자리다' });
   }
+  // ★ 인용 3종을 **분야별로 가른다**(2026-08-28 소유주 결정, `check-quality.mjs` 의 FORM 과 같은 표).
+  // 발행분 69편의 PointCards 사용률이 네 분야 모두 100% 였고 소제목 수도 4.3~5.8 로 같았다.
+  // 원인은 이 규칙이 분야를 안 가린 데 있었다. **두괄식 리드만 전 분야 공통**으로 남긴다
+  // (거기서 물러나면 다양성이 아니라 인용 불가가 된다). 내주는 것은 수치형 소제목과 표다.
+  const FORM = {
+    trade:  { numHead: true,  table: true  },
+    money:  { numHead: false, table: true  },
+    tariff: { numHead: false, table: true  },
+    basics: { numHead: false, table: false },
+  };
+  const cat2 = (front.match(/^category:\s*(\w+)/m) ?? [])[1] ?? '';
+  const form = FORM[cat2] ?? { numHead: true, table: true };
+
   const h2s = body.match(/^##\s+.+$/gm) ?? [];
-  if (h2s.length && !h2s.some((h) => realNums(h).length)) {
+  if (form.numHead && h2s.length && !h2s.some((h) => realNums(h).length)) {
     issues.push({ w: 50, tag: '소제목 무수치', msg: `소제목 ${h2s.length}개 중 발견을 수치로 말하는 것이 없다 — 하나만 수치형으로` });
   }
-  if (!/^\s*\|[\s:|-]+\|\s*$/m.test(body)) {
+  if (form.table && !/^\s*\|[\s:|-]+\|\s*$/m.test(body)) {
     issues.push({ w: 45, tag: '표 없음', msg: '나열·대조가 줄글에 묻혀 있다 — 인용은 표에서 나온다' });
   }
 
