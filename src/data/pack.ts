@@ -114,6 +114,40 @@ const p3: PackItem[] = [
   { slug: 'wall-clock', name: '벽시계', desc: '테두리가 굵은 둥근 벽시계입니다. 시간 관리와 마감, 근무 시간과 일정 안내를 다루는 글에 씁니다.', keywords: ['시계', '벽시계', '시간', '마감', '일정', '근무시간', 'wall clock'], en: { name: "Wall clock", desc: "A round wall clock with a heavy rim. For time management, deadlines, working hours and schedules.", keywords: ["wall clock", "time", "deadline", "schedule", "working hours"] } },
 ];
 
+const pIllustration: PackItem[] = [
+  { slug: 'ai-model-memory-math', name: '격자 창고', desc: '같은 크기 칸이 가로세로로 정연하게 늘어선 창고에 블록이 하나씩 채워진 그림입니다. 채워진 면적이 두 변의 곱이라는 것이 한눈에 보여, AI 모델의 파라미터 수×정밀도 같은 곱셈 구조나 데이터 용량을 설명하는 글에 어울립니다.', keywords: ['격자', '창고', 'AI 모델', '메모리', '파라미터', '계산', 'grid storage'] },
+  { slug: 'base-rate-300', name: '두 개의 계단', desc: '나란한 두 계단 중 하나는 이미 꼭대기에 닿아 평평하고, 다른 하나는 아직 마지막 몇 칸을 오르고 있는 그림입니다. 시장이 먼저 반영한 뒤 정책이 뒤따라가는 상황, 금리 인상 국면을 설명하는 글에 씁니다.', keywords: ['금리', '기준금리', '계단', '선반영', '통화정책', 'interest rate'] },
+  { slug: 'car-chip-shortage-lesson', name: '멈춘 조립라인', desc: '완성차가 줄지어 멈춰 선 조립라인 한쪽에 부품함 하나가 비어 있는 그림입니다. 부품 하나가 전체 생산을 막는 공급망 병목, 반도체 부족 사태를 설명하는 글에 어울립니다.', keywords: ['조립라인', '자동차', '반도체 부족', '공급망', '병목', 'supply chain'] },
+  { slug: 'chip-ip-royalty', name: '설계에서 뻗어나가는 선', desc: '작은 설계실에서 여러 공장으로 가는 선을 따라 대가가 되돌아오는 그림입니다. 설계자산과 로열티, 지식재산 기반 수익 구조를 다루는 글에 씁니다.', keywords: ['설계', 'IP', '로열티', '지식재산', '라이선스', 'royalty'] },
+  { slug: 'cleanroom-dust-war', name: '웨이퍼 위의 먼지 한 톨', desc: '클린룸 한가운데 놓인 웨이퍼 위에 바위만 한 먼지 한 톨이 놓인 그림입니다. 미세공정의 오염 관리, 클린룸 등급을 설명하는 글에 어울립니다.', keywords: ['클린룸', '웨이퍼', '먼지', '반도체 공정', '정밀', 'cleanroom'] },
+  { slug: 'datacenter-power-bill', name: '데이터센터 전력망', desc: '서버 랙마다 같은 크기의 냉각 설비가 짝을 이루고, 변전소에서 전력선이 이어지는 데이터센터 그림입니다. AI 연산의 전력 수요, 데이터센터 전기요금을 다루는 글에 씁니다.', keywords: ['데이터센터', '전력', 'AI', '서버', '냉각', 'data center power'] },
+  { slug: 'dram-chicken-game', name: '폐허 속 세 공장', desc: '넓은 부지에 문 닫은 공장 흔적이 늘어서 있고, 그 사이 셋만 살아 남아 가동 중인 그림입니다. 치킨게임 끝의 과점 구조, 산업 구조조정을 설명하는 글에 어울립니다.', keywords: ['치킨게임', '구조조정', '과점', 'D램', '산업', 'industry shakeout'] },
+  { slug: 'dram-vs-nand', name: '작업대와 서랍장', desc: '바로 옆에 놓인 빈 작업대와 꽉 찬 서랍장이 같은 기계에 연결된 그림입니다. 휘발성과 비휘발성 메모리, D램과 낸드의 역할 차이를 설명하는 글에 씁니다.', keywords: ['메모리', 'D램', '낸드', '휘발성', '저장장치', 'memory'] },
+  { slug: 'euv-lithography-intro', name: '빛으로 새기는 회로', desc: '노광 장비가 마스크를 통과한 빛을 웨이퍼에 투영해 회로 무늬를 새기는 그림입니다. 반도체 노광 공정, 미세 패턴 형성을 설명하는 글에 어울립니다.', keywords: ['노광', '리소그래피', 'EUV', '반도체 공정', '회로', 'lithography'] },
+  { slug: 'foundry-vs-idm', name: '세 갈래 생산 모델', desc: '한 지붕 아래 설계와 생산을 함께 하는 공장, 설계만 하는 작은 사무실, 생산만 하는 큰 공장이 나란한 그림입니다. IDM·팹리스·파운드리로 갈린 반도체 산업 구조를 설명하는 글에 씁니다.', keywords: ['파운드리', 'IDM', '팹리스', '반도체 산업', '생산모델', 'foundry'] },
+  { slug: 'gpu-npu-asic', name: '범용에서 전용으로', desc: '팔이 여러 개인 만능 기계에서 팔이 하나뿐인 전용 기계로 크기가 줄어드는 세 대의 기계 그림입니다. 유연성과 효율을 맞바꾸는 AI 칩의 스펙트럼, GPU·NPU·ASIC 차이를 설명하는 글에 어울립니다.', keywords: ['GPU', 'NPU', 'ASIC', 'AI 칩', '반도체', 'ai chip'] },
+  { slug: 'hbm-rivals-structure', name: '두 겹 장벽 너머 세 공장', desc: '넓은 길이 두 개의 높은 벽을 지나며 좁아지고, 그 너머에 공장 셋만 서 있는 그림입니다. 이중 기술장벽이 만든 소수 과점 시장, HBM 경쟁 구도를 설명하는 글에 씁니다.', keywords: ['HBM', '과점', '기술장벽', '메모리', '경쟁', 'oligopoly'] },
+  { slug: 'inflation-two-faces', name: '위아래에서 밀어올리는 힘', desc: '같은 판을 위에서는 케이블이 당기고 아래에서는 피스톤이 미는 그림입니다. 수요와 비용, 두 방향에서 오르는 물가의 구조를 설명하는 글에 어울립니다.', keywords: ['인플레이션', '물가', '수요견인', '비용인상', '경제', 'inflation'] },
+  { slug: 'intermediary-trade-types', name: '세 갈래 무역로', desc: '두 항구를 잇는 세 갈래 길 중 하나는 중간 창고를 거쳐 되팔고, 하나는 화물 없이 선만 잇고, 하나는 공장에 맡겼다 되찾아오는 그림입니다. 중계·중개·가공무역의 차이를 설명하는 글에 씁니다.', keywords: ['중계무역', '중개무역', '가공무역', '무역', '물류', 'trade route'] },
+  { slug: 'invoice-packing-list', name: '장부와 포장 명세', desc: '거래 내역을 적은 장부와 상자마다 무엇이 담겼는지 그린 절개도가 나란한 두 책상 그림입니다. 인보이스와 패킹리스트 같은 무역 서류의 역할을 설명하는 글에 어울립니다.', keywords: ['인보이스', '패킹리스트', '무역서류', '수출입', '서류', 'invoice'] },
+  { slug: 'moores-law-60years', name: '밀도가 두 배씩 오르는 고가교', desc: '다리의 경간이 갈수록 절반으로 짧아지면서 그 안의 구조물은 두 배로 촘촘해지는 고가교 그림입니다. 무어의 법칙과 반도체 집적도의 역사를 설명하는 글에 씁니다.', keywords: ['무어의 법칙', '집적도', '반도체 역사', '기술발전', "moore's law"] },
+  { slug: 'ondevice-ai-memory', name: '떨어져 나온 작은 기기', desc: '연산과 메모리를 자체로 갖춘 작은 휴대기기가 멀리 있는 거대한 데이터센터와 아무 연결 없이 서 있는 그림입니다. 온디바이스 AI, 클라우드에서 독립한 연산을 설명하는 글에 어울립니다.', keywords: ['온디바이스', 'AI', '엣지컴퓨팅', '메모리', '기기', 'on-device ai'] },
+  { slug: 'semi-eight-processes', name: '여덟 정거장의 생산라인', desc: '원판 하나가 컨베이어를 따라 여덟 개의 서로 다른 정거장을 거쳐 완제품으로 나오는 생산라인 그림입니다. 반도체 8대 공정의 전체 흐름을 설명하는 글에 씁니다.', keywords: ['반도체 공정', '생산라인', '웨이퍼', '제조', '8대공정', 'semiconductor process'] },
+  { slug: 'semi-hongkong-route', name: '그대로 흘러가는 항구', desc: '넓은 반입 차선으로 들어온 화물이 그만큼 넓은 반출 차선으로 곧장 빠져나가고, 부두 자체의 창고는 거의 비어 있는 그림입니다. 중계·환적 무역, 통과 물동량을 설명하는 글에 어울립니다.', keywords: ['중계무역', '환적', '항구', '통과물동량', '무역경로', 'transit port'] },
+  { slug: 'semiconductor-cycle-reading', name: '빠른 신호와 느린 공장', desc: '빠르게 바뀌는 신호탑 옆에 아직 골조만 선 공장이 나란한 그림입니다. 수요는 빨리 바뀌고 공급은 늦게 따라가는 반도체 사이클의 구조를 설명하는 글에 씁니다.', keywords: ['반도체 사이클', '수요공급', '슈퍼사이클', '산업', 'cycle'] },
+  { slug: 'tori-galimgil-02', name: '수문 아래 수위', desc: '운하 수문에 표시된 기준선보다 조금 낮은 곳에 수위가 머물러 있는 그림입니다. 정해진 문턱을 지키는지 지켜보는 시장 전망, 채권·금리 전망을 설명하는 글에 어울립니다.', keywords: ['수문', '문턱', '시장전망', '금리', '수위', 'threshold'] },
+  { slug: 'trade-claim-arbitration', name: '법정 대신 원탁', desc: '마주 선 두 화물 플랫폼 사이에 중립적인 원탁이 놓이고, 법원 건물은 닫힌 채 한쪽에 물러나 있는 그림입니다. 소송 대신 상사중재로 푸는 무역 분쟁을 설명하는 글에 씁니다.', keywords: ['상사중재', '무역분쟁', '클레임', '중재', '법률', 'arbitration'] },
+  { slug: 'trade-fraud-patterns', name: '다른 겉모양, 같은 속', desc: '겉모습이 저마다 다른 궤짝 다섯 개를 열어 보면 안의 뼈대가 모두 똑같은 그림입니다. 수법은 진화해도 뼈대가 같은 무역사기 유형을 설명하는 글에 어울립니다.', keywords: ['무역사기', '사기유형', '리스크', '무역', '사기', 'trade fraud'] },
+  { slug: 'trade-payment-three-ways', name: '세 개의 다리', desc: '두 부두를 잇는 다리 셋 중 하나는 그냥 곧장 이어지고, 하나는 작은 검문소를 거치고, 하나는 큰 기관 건물이 다리 위에 올라앉은 그림입니다. 송금·추심·신용장 세 결제 방식의 차이를 설명하는 글에 씁니다.', keywords: ['무역결제', '신용장', '추심', '송금', '은행', 'trade payment'] },
+  { slug: 'transistor-tiny-switch', name: '격자 위의 스위치들', desc: '같은 크기의 스위치 소자가 끝없이 늘어선 칩 표면을 극도로 가까이서 본 그림입니다. 트랜지스터와 디지털 연산의 기초를 설명하는 글에 어울립니다.', keywords: ['트랜지스터', '반도체', '스위치', '디지털', '기초', 'transistor'] },
+  { slug: 'wafer-300mm-economics', name: '잉곳에서 웨이퍼로', desc: '원통형 결정 기둥이 가는 톱에 잘려 얇은 원판들로 갈라지는 그림입니다. 웨이퍼가 원판인 이유, 반도체 원자재 공정을 설명하는 글에 씁니다.', keywords: ['웨이퍼', '잉곳', '실리콘', '반도체 원자재', '제조', 'wafer'] },
+  { slug: 'chip-equipment-imports', name: '멈춘 궤짝과 이어지는 행렬', desc: '다 쌓아 놓고 멈춘 짧은 궤짝 더미 옆으로, 반대편에서는 화물이 끝없이 이어져 나가는 그림입니다. 설비투자는 정체하고 수출만 늘어나는 상황을 설명하는 글에 어울립니다.', keywords: ['설비투자', '반도체장비', '수출', '정체', '산업', 'equipment import'] },
+  { slug: 'where-korean-chips-go', name: '세 개의 부두', desc: '부두 셋 중 하나는 배로 빽빽하고, 하나는 적당하고, 하나는 배 한 척만 남은 그림입니다. 수출 대상국이 한쪽으로 쏠리는 국가별 무역 지도를 설명하는 글에 씁니다.', keywords: ['수출지도', '국가별무역', '부두', '무역편중', 'export map'] },
+  { slug: 'memory-shares-and-the-market', name: '같은 파도, 같은 기울기', desc: '항만에 정박한 배들이 물결 하나에 전부 같은 각도로 기울어지는 그림입니다. 개별 종목이 아니라 시장 전체가 움직인 주가 변동을 설명하는 글에 어울립니다.', keywords: ['주가', '증시', '시장변동', '동조화', '베타', 'stock market'] },
+  { slug: 'korean-memory-cycle-signals', name: '죽은 계기 하나', desc: '나란히 놓인 계기 셋 중 둘은 살아 있고 하나는 유리가 흐려진 채 꺼져 있는 그림입니다. 여러 지표 중 하나가 신호로서 힘을 잃은 상황, 경기 신호를 점검하는 글에 씁니다.', keywords: ['경기신호', '지표', '계기판', '사이클', '진단', 'economic signal'] },
+  { slug: 'semi-trade-surplus-anatomy', name: '넓은 출하, 가는 반입', desc: '넓고 빽빽한 출하 차선 옆에 가늘게 흐르는 반입 차선이 대비를 이루는 그림입니다. 수출은 크고 수입은 작은 무역수지 구조를 설명하는 글에 어울립니다.', keywords: ['무역수지', '흑자', '수출입', '무역', '경상수지', 'trade surplus'] },
+  { slug: 'wti-oil-price-swing', name: '높이가 제각각인 탱크', desc: '격자로 늘어선 원유 저장탱크의 부유 지붕 높이가 저마다 다른 그림입니다. 오르내리는 유가, 원자재 가격 변동을 설명하는 글에 씁니다.', keywords: ['유가', '원유', 'WTI', '원자재', '가격변동', 'oil price'] },
+];
 export const PACKS: Pack[] = [
   {
     key: 'vol1',
@@ -181,6 +215,22 @@ export const PACKS: Pack[] = [
       note: '원본 3000픽셀 파일과 더 많은 수채화 그림은 소소의 작업실 무료나눔에서 받을 수 있습니다.',
     },
     items: soso,
+  },
+  {
+    key: 'illustration',
+    vol: 5,
+    title: '산업·시장 편집 일러스트',
+    note:
+      '기사 대표 이미지로 그린 등각 투영 편집 일러스트 32종입니다(2026-08-28 도입). ' +
+      '반도체 공정·물류·금리·시장 같은 주제를 소재 나열이 아니라 대비와 구조로 그렸습니다. ' +
+      '배경이 있는 JPG라 그대로 얹어도 됩니다.',
+    date: '2026-08-28',
+    dir: '/images/pack-illustrations',
+    format: 'jpg',
+    size: '1376 × 768 픽셀',
+    transparent: false,
+    thumb: (s) => `/images/pack-illustrations/thumb/${s}.jpg`,
+    items: pIllustration,
   },
 ];
 

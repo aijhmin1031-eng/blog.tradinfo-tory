@@ -93,6 +93,10 @@ const breadcrumb = {
       <span>{en.name}</span>
     </nav>
 
+    {/* ★ 이 페이지 전체가 「투명 PNG」를 하드코딩하고 있다(포맷·크기·배경 문구 전부).
+       5탄(편집 일러스트, JPG·불투명)은 아직 .en 항목이 없어 무사하지만, 나중에 5탄에
+       영문을 붙이면 이 페이지가 조용히 틀린 설명을 낸다. 그때는 한글판처럼
+       pack.transparent·pack.format·pack.size 를 참조하도록 고칠 것. */}
     <div class="ei-top">
       <div class="ei-stage alpha-grid">
         <img src={preview} alt={`${en.name}, free transparent PNG illustration`} width="600" height="600" />
