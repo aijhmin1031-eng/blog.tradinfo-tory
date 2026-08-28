@@ -89,3 +89,74 @@ characters, no faces. No text, no letters, no numbers, no logos, no watermark.
 (`scripts/figures/hero-chart.mjs` 등, 2026-08-28 커밋 `a845987` 에 있다) 소유주가
 「데이터 기반 이미지 아님」으로 확실히 반려했다. **차트는 본문에서 `SeriesChart` 가 이미
 하고 있고**, 히어로 자리는 그림의 몫이다. 되살릴 이유가 생기면 그 커밋에서 꺼낼 수 있다.
+
+## 섹션별 시각 언어 (2026-08-28 소유주 결정)
+
+소유주 지시: 「완전 다른 컨셉과 디자인으로. 기존에 사용한 카툰 형식은 어디가 적합할까?」
+
+**액센트만 바꾸는 안은 반려됐다.** 같은 등각 일러스트에 색만 네 가지로 두는 것은
+결국 같은 그림이라 다양성이 아니다(그 시안도 실제로 구워 보고 접었다).
+**조판 언어 자체를 가른다.**
+
+### 카툰이 맞는 자리를 찾았다
+
+카툰의 강점은 친근함·서사이고 약점은 실무자에게 유치하게 읽히는 것이다.
+그러니 **독자가 초심자일 때** 맞는다. `상식 사전`의 정의가 그대로다 —
+「낯선 용어와 제도를 **입문자의 눈높이로** 푼다」. 여기서 카툰은 유치한 것이 아니라
+**「여기가 쉬운 입구다」라는 신호**다. 반대로 `수출입 리포트`·`관세·통상`은 HS코드·신용장으로
+검색해 들어온 실무자가 닿는 자리라 정색한 톤이 필요하다.
+
+**그림의 결이 「이건 어떤 종류의 읽기인가」를 미리 알려 준다** — 이것이 이 체계의 목적이다.
+
+| 섹션 | 시각 언어 | 왜 이 언어인가 |
+|---|---|---|
+| **수출입 리포트** trade | **등각 투영 일러스트**(현행 유지) | 항만·물류·공정은 **공간의 흐름**이라 등각이 원래 맞는 자리 |
+| **돈의 흐름** money | **계기·다이얼 매크로**, 어두운 바탕 | 환율·금리는 공간이 아니라 **값**이다. 정밀 기기를 가까이서, 무게감 |
+| **관세·통상** tariff | **서류·도장·봉인의 평면 구성**(위에서 내려봄) | 관세는 장소가 아니라 **규칙과 서식**이다 |
+| **상식 사전** basics | **토리 카툰** | 입문자 눈높이. 카툰이 제 역할을 하는 유일한 자리 |
+
+### 프롬프트 뼈대
+
+**trade** — 위 「만드는 법」의 고정 스타일 문장을 그대로.
+
+**money** — 등각이 아니라 **매크로**임을 명시해야 한다(안 적으면 등각으로 돌아간다).
+```
+Editorial illustration for a financial newspaper, rendered as a tight macro study rather
+than a wide scene: an extreme close view of a single precision brass pressure gauge and a
+fine graduated dial, shallow depth of field, sitting on a near-black ground with one warm
+rim light picking out the machined edges. Deep navy shadows, brushed brass, a single
+burnt-orange needle. Absolutely not isometric, not a wide establishing shot.
+No text, no letters, no numbers on the dial face, no logos, no watermark.
+```
+
+**tariff** — **정투상(위에서 곧장 내려봄)**을 명시한다.
+```
+Editorial illustration for a financial newspaper, composed as a flat top-down still life on
+a desk, seen straight from above (orthographic, not isometric, no perspective): official
+customs forms laid in an overlapping grid, a round rubber stamp, an ink pad, a wax seal and
+a paper clip with generous white space. Warm off-white paper with subtle fibre texture, deep
+navy printed rules, one burnt-orange stamp impression as the only saturated element.
+The form fields are empty ruled boxes with no writing.
+No text, no letters, no numbers, no logos, no watermark.
+```
+
+**basics** — 카툰. **`docs/character/` 의 레퍼런스 URL이 필수**이고 모델은 `google/nano-banana-2` 다
+(캐릭터 일관성은 레퍼런스로만 유지된다).
+```
+Same flat vector cartoon style as the reference squirrel character (navy vest with brass
+buttons and golden acorn pin, gold-rimmed round glasses), clean thick outlines, flat solid
+colors, warm cream background. <장면>. Friendly and clear, the register of a good textbook
+illustration. Strictly no text, no letters, no signboards, no numbers, no watermark.
+```
+
+### 알고 있어야 할 것
+
+- **money 만 유일하게 사진풍이다.** 나머지 셋은 일러스트인데 이것만 포토리얼에 가까워서,
+  네 언어를 나란히 놓으면 이질감이 생긴다. 「어두운 바탕 + 정밀 기기」가 money 를 구분하는
+  힘이기도 하므로 **의도된 이질감으로 두되**, 목록 페이지에서 어색하면 이 칸을 먼저 손볼 것.
+- **tariff 는 「빈 칸」이어야 한다.** 서식에 글자를 넣게 하면 깨진 글자가 나온다.
+  「The form fields are empty ruled boxes with no writing」을 반드시 넣는다.
+- **money·tariff 는 등각으로 되돌아가려는 경향이 있다.** 「absolutely not isometric」·
+  「orthographic, not isometric」을 명시해야 유지된다.
+- **소급하지 않는다.** 8/27·8/28 에 구운 32장은 전부 등각 오렌지다.
+  섹션별 언어는 **그 뒤에 굽는 것부터** 적용한다.
