@@ -127,13 +127,28 @@ function check(slug) {
   if (/오늘의 결론/.test(body)) {
     fails.push('「오늘의 결론」이 남아 있다 — 「실무에서 틀리기 쉬운 지점」(설명) 또는 「다음에 확인할 것」(데이터)으로 교체.');
   }
+  //
+  // ★ 2026-08-28: **양식을 선언한 기사는 마지막 절이 정해진 문구가 아니어도 된다.**
+  // 붙박이 문구를 강제한 결과 100여 편이 전부 같은 소제목으로 끝났는데, 그것이 바로
+  // 소유주가 지적한 식상함이다(「다 똑같은 양식이라 보는 게 식상하다」). 규칙의 뜻은
+  // 「무엇을 언제 보면 되는지 주고 끝나라」이지 특정 문구가 아니다. 그래서 선언한 기사에는
+  // **마지막 `##` 절이 앞을 가리키는가**(날짜 또는 확인·판별의 말)로 대신 묻는다.
+  // 선언 안 한 옛 기사는 규칙이 그대로다 — 소급하면 100여 편이 한꺼번에 빨개진다.
+  const declaredFormEarly = (front.match(/^form:\s*(\w+)/m) || [])[1];
+  const lastSection = body.split(/^##\s+/m).pop() ?? '';
+  const forwardLooking =
+    /\d{1,2}월\s*\d{1,2}일/.test(lastSection) ||
+    /확인할|지켜볼|볼 것|판별|다음 분기점|어디서 갈리/.test(lastSection);
   const hasNewEnding = isEn
     ? /## What to watch|## Where this goes wrong in practice/.test(body)
-    : /실무에서 틀리기 쉬운 지점/.test(body) || /다음에 확인할 것/.test(body);
+    : /실무에서 틀리기 쉬운 지점/.test(body) || /다음에 확인할 것/.test(body) ||
+      (!!declaredFormEarly && forwardLooking);
   if (!hasNewEnding) {
     fails.push(isEn
       ? '끝맺음이 없다 — 「## What to watch」(데이터) 또는 「## Where this goes wrong in practice」(설명)로 끝낼 것.'
-      : '새 끝맺음(「실무에서 틀리기 쉬운 지점」/「다음에 확인할 것」)이 없다.');
+      : declaredFormEarly
+        ? '끝맺음이 앞을 가리키지 않는다 — 마지막 절에 「무엇을 언제 보면 되는지」를 날짜나 확인 대상으로 적을 것.'
+        : '새 끝맺음(「실무에서 틀리기 쉬운 지점」/「다음에 확인할 것」)이 없다.');
   }
 
   // ③ 긴 대시(—) 금지 — 절대 규칙 #3(소유주 지시). 마침표·쉼표·콜론, 나열은 가운뎃점(·).
