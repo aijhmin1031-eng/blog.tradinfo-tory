@@ -47,7 +47,9 @@ for (const def of defs) {
   const last = pts[pts.length - 1].d;
   const iso = ymdToDate(String(last));
   const age = iso ? Math.round((Date.parse(today) - Date.parse(iso)) / 86400000) : null;
-  const limit = def.cycle === 'M' ? MAX_AGE_M : MAX_AGE_D;
+  // 계열마다 공표 지연이 다르다. 정의가 자기 주기를 아는 것이 맞으므로
+  // `maxAgeDays` 가 있으면 그것을 쓴다(수출·국제수지는 두 달 남짓 늦게 나온다).
+  const limit = def.maxAgeDays ?? (def.cycle === 'M' ? MAX_AGE_M : MAX_AGE_D);
   if (age != null && age > limit) stale.push({ def, last, age, limit });
   else ok.push({ def, last, age, n: pts.length });
 }
