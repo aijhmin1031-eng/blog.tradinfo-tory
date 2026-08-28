@@ -4,7 +4,7 @@ import Ticker from '../components/Ticker.astro';
 import Collab from '../components/Collab.astro';
 import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
-import { SITE, CATEGORIES, url, fmtDate, dateLineIn, shortDateIn, dateLineEnIn, shortDateEnIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
+import { SITE, CATEGORIES, url, fmtDate, shortDateIn, shortDateEnIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import { ADSENSE_PUB_ID, adsenseOn } from '../lib/adsense';
 import { T, HTML_LANG, OG_LOCALE, HREFLANG, localizedPath, type Lang } from '../lib/i18n';
@@ -50,7 +50,8 @@ const now = new Date();
 // 날짜도 판을 따라간다. 영문 페이지에 한국어 날짜가 찍히고 있었다(2026-08-26 수리).
 // isEn 은 아래에서 정해지므로 여기서는 lang 을 직접 본다.
 const _isEnDate = lang === 'en';
-const dateLine = _isEnDate ? dateLineEnIn(TZ_KST, now) : dateLineIn(TZ_KST, now);
+// 한국·뉴욕 두 날짜를 **같은 형식**으로 내고 지명을 앞에 붙인다(소유주 지시 2026-08-28).
+const dateLine = _isEnDate ? shortDateEnIn(TZ_KST, now) : shortDateIn(TZ_KST, now);
 const etLine = _isEnDate ? shortDateEnIn(TZ_ET, now) : shortDateIn(TZ_ET, now);
 const kstYear = todayIn(TZ_KST, now).slice(0, 4);
 // 정본 주소는 커스텀 도메인 한 곳이다. GitHub Pages 미러도 canonical은 이 도메인을 가리켜
@@ -298,13 +299,14 @@ const isActive = (n: (typeof navItems)[number]) =>
       <div class="topbar">
         <div class="wrap topbar-in">
           <span class="topbar-date">
-            {dateLine}
+            <span title={isEn ? 'Korea Standard Time, the reference for this publication' : '한국 표준시 · 이 매체의 기준 시각'}
+            >{isEn ? 'Seoul ' : '한국 '}{dateLine}</span>
             <span
               class="topbar-et"
               title={isEn
                 ? 'New York local date, the reference for US equity and Treasury figures'
                 : '뉴욕 현지 날짜 · 미 증시와 국채 지표의 기준'}
-            >{isEn ? 'NY ' : '뉴욕 '}{etLine}</span>
+            >{isEn ? 'New York ' : '뉴욕 '}{etLine}</span>
           </span>
           <span class="topbar-slogan">
             {isEn ? 'Data updated each Korean morning · new analysis each US morning' : '매일 아침 7시, 새 도토리가 올라옵니다'}

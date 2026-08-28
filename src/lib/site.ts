@@ -56,21 +56,20 @@ export const todayIn = (tz: string, now: Date = new Date()) => {
   return `${y}-${m}-${d}`;
 };
 
-/** 상단 표시용: 2026년 8월 24일 월요일 */
-export const dateLineIn = (tz: string, now: Date = new Date()) => {
-  const { y, m, d, wd } = partsIn(tz, now);
-  return `${y}년 ${Number(m)}월 ${Number(d)}일 ${KO_DAYS[wd] ?? wd}요일`;
+// 상단바 날짜는 **한 형식으로 통일한다**(2026-08-28 소유주 지시).
+// 그전에는 한국이 「2026년 8월 28일 금요일」, 뉴욕이 「뉴욕 8월 28일 (금)」이라
+// 나란히 놓인 두 날짜의 형식이 서로 달랐다. 둘 다 짧은 형식으로 맞추고,
+// 어느 쪽이 어느 시간대인지 **앞에 지명을 붙인다**(한국 / 뉴욕).
+// 긴 형식 dateLineIn·dateLineEnIn 은 이때 걷어냈다 — 상단바가 유일한 사용처였다.
+
+/** 영문판 참고 표시: 28 Aug (Fri) — 한글 「8월 28일 (금)」과 같은 결로 맞춘다 */
+export const shortDateEnIn = (tz: string, now: Date = new Date()) => {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short' })
+      .formatToParts(now).map((x) => [x.type, x.value]),
+  );
+  return `${p.day} ${p.month} (${p.weekday})`;
 };
-
-/** 영문판 날짜 줄: Wednesday, 26 August 2026 (2026-08-26 신설 — 영문에 한국어 날짜가 찍히고 있었다) */
-export const dateLineEnIn = (tz: string, now: Date = new Date()) =>
-  new Intl.DateTimeFormat('en-GB', {
-    timeZone: tz, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  }).format(now);
-
-/** 영문판 참고 표시: NY 26 Aug */
-export const shortDateEnIn = (tz: string, now: Date = new Date()) =>
-  new Intl.DateTimeFormat('en-GB', { timeZone: tz, day: 'numeric', month: 'short' }).format(now);
 
 /** 참고 표시용: 8월 23일 (일) */
 export const shortDateIn = (tz: string, now: Date = new Date()) => {
