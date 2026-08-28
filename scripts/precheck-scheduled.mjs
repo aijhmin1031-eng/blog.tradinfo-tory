@@ -125,8 +125,12 @@ for (const f of files) {
   const title = (front.match(/^title:\s*'(.+?)'\s*$/m) || [])[1] || '';
   if (cat && cat !== 'basics') {
     const head = title;
+    // 범위 서술(「72달러에서 93달러를 오가다」)은 지나간 구간이라 낡은 것이 아니다.
+    if (/\d[\s\S]{0,10}?(?:에서|~)[\s\S]{0,10}?\d/.test(head) && /오가|사이|까지|등락/.test(head)) continue;
     for (const m of head.matchAll(/(\d+(?:[.,]\d+)?)\s*(%|원|달러)(대)?/g)) {
       if (m[3]) continue; // 「3%대」 = 구간 표현
+      const after = head.slice(m.index + m[0].length, m.index + m[0].length + 6);
+      if (/^를?\s*(넘|밑|아래|위)|^이상|^이하/.test(after)) continue; // 문턱 서술
       const around = head.slice(Math.max(0, m.index - 22), m.index + m[0].length + 22);
       const hit = SERIES_OF.find(([re]) => re.test(around));
       if (!hit) continue;
@@ -134,7 +138,7 @@ for (const f of files) {
       if (cur == null) continue;
       const claimed = parseFloat(m[1].replace(/,/g, ''));
       const diff = Math.abs(claimed - cur) / cur;
-      if (diff > 0.02 && diff < 0.5) {
+      if (diff > 0.03 && diff < 0.5) {
         warn.stale.push(`${slug}(${pub}) «${m[0]}» 대 ${hit[1]} 현재 ${cur}`);
       }
     }

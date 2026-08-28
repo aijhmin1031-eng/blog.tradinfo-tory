@@ -37,6 +37,73 @@ const failOn = Number((args.find((a) => a.startsWith('--fail-on=')) ?? '').split
 const asJson = args.includes('--json');
 const only = args.filter((a) => !a.startsWith('--'));
 
+// ★ 제목의 수치가 지금도 맞는가 (2026-08-28 신설, 소유주 지시 「최신성이 부족하다」)
+//
+// `precheck` 는 **예약분**을 본다. 이미 나간 기사의 제목이 낡는 것은 이쪽이 본다.
+// 실제로 두 편이 「기준금리 2.75%」를 제목에 달고 살아 있었다(8월 27일 3.00% 가 됐다).
+//
+// 만드는 과정에서 두 번 헛짚었다(경위는 `docs/operations.md` 「6. 재고 구성」).
+// 나이(dataAsOf 지연)로는 못 잡는다 — 지연 9일 사이에 정책이 바뀐 사례가 있었다.
+// **제목만** 본다. 본문의 과거 비교 수치는 낡은 것이 아니라 원래 과거 값이다.
+const SERIES_OF = [
+  [/기준금리/, 'baserate'], [/국고채/, 'ktb10y'], [/미\s*국채/, 'us10y'],
+  [/원\/달러|원달러/, 'usdkrw'], [/엔화|원\/100엔/, 'jpy100'],
+  [/코스피|KOSPI/, 'kospi'], [/WTI|유가/, 'wti'],
+  [/정기예금|예금\s*금리/, 'deposit1y'],
+];
+const seriesCache = new Map();
+const seriesLatest = (id) => {
+  if (seriesCache.has(id)) return seriesCache.get(id);
+  let v = null;
+  try {
+    const p = JSON.parse(readFileSync(join(ROOT, 'data/series', `${id}.json`), 'utf8')).points;
+    v = p?.length ? p[p.length - 1].v ?? null : null;
+  } catch {}
+  seriesCache.set(id, v);
+  return v;
+};
+/**
+ * 제목이 현재값과 어긋나는 수치를 담고 있으면 그 목록을 돌려준다.
+ *
+ * 오탐을 걸러 내는 세 장치. 셋 다 실제 오탐을 보고 넣은 것이다.
+ *  ① **범위 서술**은 뺀다 — 「72달러에서 93달러를 오가다」는 지나간 구간을 말한 것이라
+ *     현재값이 그 안에 있어도 틀린 게 아니다.
+ *  ② **문턱 서술**은 뺀다 — 「3%를 넘었나」·「3%대」는 점이 아니라 경계·구간이다.
+ *  ③ 계열 이름이 여럿 걸리면 **수치에 가장 가까운 것**을 고른다. 앞에서부터 찾으면
+ *     「기준금리 2.75%, 국고채 4.38%」의 4.38% 가 기준금리에 붙어 버린다.
+ */
+const staleFigures = (title) => {
+  // ① 범위 서술 판정: 숫자 둘이 «에서/~» 로 이어지고 오가다·사이·까지 로 닫힌다.
+  // 「72달러에서 93달러를」처럼 단위(달러·원)가 한글이라 [^가-힣] 로는 끊긴다. 길이로 잡는다.
+  const isRange =
+    /\d[\s\S]{0,10}?(?:에서|~)[\s\S]{0,10}?\d/.test(title) && /오가|사이|까지|등락/.test(title);
+  if (isRange) return [];
+
+  const out = [];
+  for (const m of title.matchAll(/(\d+(?:[.,]\d+)?)\s*(%|원|달러)/g)) {
+    const after = title.slice(m.index + m[0].length, m.index + m[0].length + 6);
+    if (/^대|^를?\s*(넘|밑|아래|위)|^이상|^이하/.test(after)) continue; // ② 문턱·구간
+    const around = title.slice(Math.max(0, m.index - 22), m.index + m[0].length + 22);
+    // ③ 가장 가까운 계열 이름을 고른다.
+    let best = null, bestDist = Infinity;
+    for (const [re, id] of SERIES_OF) {
+      const mm = around.match(re);
+      if (!mm) continue;
+      const dist = Math.abs(mm.index - (m.index - Math.max(0, m.index - 22)));
+      if (dist < bestDist) { bestDist = dist; best = id; }
+    }
+    if (!best) continue;
+    const cur = seriesLatest(best);
+    if (cur == null) continue;
+    const claimed = parseFloat(m[1].replace(/,/g, ''));
+    const diff = Math.abs(claimed - cur) / cur;
+    // 3% 미만은 정상 변동(국고채 4.38→4.288 은 2.1% 로, 낡은 것이 아니라 움직인 것이다),
+    // 50% 이상은 애초에 같은 대상을 가리키는 수치가 아니다.
+    if (diff > 0.03 && diff < 0.5) out.push(`${m[0]}(${best} 현재 ${cur})`);
+  }
+  return out;
+};
+
 const splitFront = (raw) => {
   const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   return m ? { front: m[1], body: m[2] } : { front: '', body: raw };
@@ -103,6 +170,13 @@ for (const file of files) {
     const q = claims[0].trim().replace(/\s+/g, ' ').slice(0, 44);
     issues.push({ w: 100, tag: '검정 없음', msg: `수치로 주장하는데 반증 시도가 없다 → "${q}…"` });
   }
+  // ①-2 제목의 수치가 현재값과 어긋나는가 — 독자가 가장 먼저 보는 자리의 거짓이다.
+  // 「검정 없음」(100) 다음, 「출처 없음」(90) 위에 둔다.
+  const stale = staleFigures(title);
+  if (stale.length) {
+    issues.push({ w: 95, tag: '제목 수치 낡음', msg: `제목이 현재와 다른 값을 말한다 → ${stale.join(' · ')}` });
+  }
+
   // ② 형식 — 게이트와 같은 기준이지만 전수로 본다
   if (!(front.match(/^\s+-\s+org:/gm) ?? []).length) issues.push({ w: 90, tag: '출처 없음', msg: 'sources 배열이 비어 있다' });
   if (!/실무에서 틀리기 쉬운 지점|다음에 확인할 것/.test(body)) issues.push({ w: 80, tag: '끝맺음 없음', msg: '끝맺음이 규칙 밖이다' });
