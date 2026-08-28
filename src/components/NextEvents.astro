@@ -1,0 +1,73 @@
+---
+// 「다음 분기점」 — 홈에서 앞을 보는 자리.
+// 전문 매체는 같은 지표를 쓰면서 「오늘 밤 11시」를 제목에 박는다. 우리는 지나간 값만 보여 왔다.
+// 날짜는 발표 기관 공식 일정에서 확인한 것만 등록부에 들어간다(`src/data/calendar.json`).
+import { upcoming, kstMoment, calLabel, ddayLabel, CAL_SOURCES } from '../lib/calendar';
+
+interface Props { count?: number; }
+const { count = 3 } = Astro.props;
+
+const rows = upcoming(count).map((e) => {
+  const k = kstMoment(e);
+  return {
+    id: e.id,
+    dday: ddayLabel(k.date),
+    imminent: k.date === new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date()),
+    label: calLabel(k.date),
+    time: k.time,
+    org: e.org,
+    name: e.name,
+    what: e.what,
+    href: CAL_SOURCES[e.src],
+  };
+});
+---
+{rows.length > 0 && (
+  <section class="nx wrap reveal">
+    <div class="nx-head">
+      <h2 class="nx-title serif">다음 분기점</h2>
+      <p class="nx-sub">숫자가 바뀌는 날은 정해져 있다. 발표 기관의 공식 일정에서 확인한 날짜다.</p>
+    </div>
+    <ul class="nx-list">
+      {rows.map((r) => (
+        <li class:list={['nx-row', r.imminent && 'is-today']}>
+          <span class="nx-dday mono">{r.dday}</span>
+          <span class="nx-date mono">{r.label}{r.time && <span class="nx-time"> 한국시간 {r.time}</span>}</span>
+          <span class="nx-body">
+            <span class="nx-org">{r.org}</span>
+            <a class="nx-name" href={r.href} target="_blank" rel="noopener">{r.name}</a>
+            <span class="nx-what">{r.what}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+<style>
+  .nx { margin: 40px auto 0; }
+  .nx-head { border-bottom: 2px solid var(--ink); padding-bottom: 7px; margin-bottom: 2px; }
+  .nx-title { font-size: 19px; letter-spacing: -0.01em; margin: 0; }
+  .nx-sub { margin: 4px 0 0; font-size: 12.5px; color: var(--muted); word-break: keep-all; }
+  .nx-list { list-style: none; margin: 0; padding: 0; }
+  .nx-row {
+    display: grid; grid-template-columns: 46px 168px 1fr; align-items: baseline;
+    gap: 12px; padding: 11px 2px; border-bottom: 1px solid var(--hair);
+  }
+  .nx-dday {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: var(--muted);
+  }
+  .is-today .nx-dday { color: var(--accent); }
+  .is-today { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+  .nx-date { font-size: 13px; color: var(--ink); }
+  .nx-time { color: var(--muted); font-size: 11.5px; }
+  .nx-body { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+  .nx-org { font-size: 11.5px; color: var(--muted); }
+  .nx-name { font-size: 14px; font-weight: 600; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--hair); }
+  .nx-name:hover { border-color: var(--accent); color: var(--accent); }
+  .nx-what { font-size: 12.5px; color: var(--muted); word-break: keep-all; }
+  @media (max-width: 640px) {
+    .nx-row { grid-template-columns: 40px 1fr; row-gap: 3px; padding: 10px 2px; }
+    .nx-body { grid-column: 2; }
+    .nx-date { font-size: 12.5px; }
+  }
+</style>

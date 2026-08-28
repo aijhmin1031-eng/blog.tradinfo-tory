@@ -21,6 +21,9 @@
 //   node scripts/audit.mjs a b c        # 지정한 슬러그만
 //   node scripts/audit.mjs --json       # 기계용 출력
 
+import { readFileSync as __rf2 } from 'node:fs';
+const __forms2 = JSON.parse(__rf2(new URL('../src/data/forms.json', import.meta.url), 'utf8'));
+const FORMS = __forms2.forms, BY_CAT = __forms2.byCategory;
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -218,14 +221,11 @@ for (const file of files) {
   // 발행분 69편의 PointCards 사용률이 네 분야 모두 100% 였고 소제목 수도 4.3~5.8 로 같았다.
   // 원인은 이 규칙이 분야를 안 가린 데 있었다. **두괄식 리드만 전 분야 공통**으로 남긴다
   // (거기서 물러나면 다양성이 아니라 인용 불가가 된다). 내주는 것은 수치형 소제목과 표다.
-  const FORM = {
-    trade:  { numHead: true,  table: true  },
-    money:  { numHead: false, table: true  },
-    tariff: { numHead: false, table: true  },
-    basics: { numHead: false, table: false },
-  };
+  // 표는 `src/data/forms.json` 한 곳에만 있다(2026-08-28). 이 파일과 check-quality.mjs 가
+  // 같은 것을 읽으므로, 예전처럼 「한쪽만 고치지 말 것」을 사람이 기억할 필요가 없다.
   const cat2 = (front.match(/^category:\s*(\w+)/m) ?? [])[1] ?? '';
-  const form = FORM[cat2] ?? { numHead: true, table: true };
+  const declared2 = (front.match(/^form:\s*(\w+)/m) ?? [])[1];
+  const form = FORMS[FORMS[declared2] ? declared2 : (BY_CAT[cat2] ?? 'report')];
 
   const h2s = body.match(/^##\s+.+$/gm) ?? [];
   if (form.numHead && h2s.length && !h2s.some((h) => realNums(h).length)) {

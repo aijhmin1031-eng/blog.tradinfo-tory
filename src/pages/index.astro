@@ -2,6 +2,7 @@
 import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
 import StatTiles from '../components/StatTiles.astro';
+import NextEvents from '../components/NextEvents.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
 import { getCollection } from 'astro:content';
@@ -157,6 +158,8 @@ const jsonLd = {
       </section>
     )
   }
+
+  <NextEvents />
 
   {
     weekPosts.length > 0 && (

@@ -21,6 +21,11 @@
 // 아직 발행 안 된 기사로 링크를 걸어 두면 독자에게 404가 간다(2026-08-25 실제 발생).
 // 쓰기 전에 이 목록을 보고 그 안에서만 고르면 애초에 안 걸린다.
 
+import { readFileSync as __rf } from 'node:fs';
+// 양식 표는 한 곳에만 있다(src/data/forms.json). 예전에는 이 파일과 audit.mjs 가
+// 같은 표를 각자 베껴 들고 있어 「한쪽만 고치지 말 것」이라고 적어 두어야 했다.
+const __forms = JSON.parse(__rf(new URL('../src/data/forms.json', import.meta.url), 'utf8'));
+const FORMS = __forms.forms, BY_CAT = __forms.byCategory;
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -245,15 +250,15 @@ function check(slug) {
   //
   // **두괄식 리드는 전 분야 공통이다** — 검색엔진·LLM 이 집어 가는 자리라 여기서 물러나면
   // 다양성이 아니라 그냥 인용 불가가 된다. 내주는 것은 수치형 소제목과 표뿐이다.
+  // ★ 2026-08-28 부터 **분야가 아니라 내용이 양식을 정한다**(소유주 지시 — 「기사 양식을
+  // 5가지 정도 만들어 놓고 기사 내용에 따라 적절하게 적용하자」). 분야에 묶어 두니
+  // money 는 전부 경로형이라 같은 분야 안에서 다양성이 안 나왔다.
+  // 표는 `src/data/forms.json` 한 곳에만 있다 — 이 파일과 audit.mjs 가 같은 것을 읽는다.
   const myCat = (front.match(/^category:\s*(\w+)/m) || [])[1] ?? '';
-  const FORM = {
-    trade:  { numHead: true,  table: true  },
-    money:  { numHead: false, table: true  },
-    tariff: { numHead: false, table: true  },
-    basics: { numHead: false, table: false },
-  };
+  const declaredForm = (front.match(/^form:\s*(\w+)/m) || [])[1];
+  const formKey = FORMS[declaredForm] ? declaredForm : (BY_CAT[myCat] ?? 'report');
   // 영문판은 데이터 데스크라 리포트형 하나로 간다(english-edition.md).
-  const form = isEn ? { numHead: true, table: true } : (FORM[myCat] ?? { numHead: true, table: true });
+  const form = isEn ? FORMS.report : FORMS[formKey];
 
   const level = (m) => (isNew ? fails : warns).push(m);
 
@@ -302,6 +307,28 @@ function check(slug) {
       `핵심 발견 소제목이 수치형이 아니다 — 소제목 ${h2s.length}개 중 숫자를 담은 것이 하나도 없다. ` +
       '발견을 담은 소제목 하나만 「홍콩, 수출 43.7억 대 수입 0.3억」처럼 수치형으로 바꿀 것(나머지는 지금 톤 유지).'
     );
+  }
+
+  // ⑧-2 양식별 추가 요소 — **`form:` 을 스스로 선언한 기사에만** 건다.
+  //
+  // 왜 선언한 기사에만인가: 옛 기사 100여 편은 분야로 양식이 되돌려지는데,
+  // 거기에 새 요소를 소급하면 tariff 11편 중 8편이 **상시 경고**로 남는다(실측).
+  // 상시로 켜져 있는 경고는 아무도 안 본다 — 그 순간 게이트 전체가 무력해진다.
+  // 새 양식은 옵트인이므로 그 부담도 옵트인한 기사가 진다.
+  if (declaredForm && form.extra === 'assumption') {
+    // 환산형: 「내 돈으로 얼마인가」는 **계산 조건**과 **그 계산이 아닌 것**을 같이 적어야
+    // 성립한다. 조건 없는 금액은 그럴듯한 숫자일 뿐이고, 한계 없는 금액은 견적으로 읽힌다.
+    const hasCond = /가정|단순 계산|단순히 계산|조건으로 계산|기준으로 계산|계산하면|환산하면/.test(body);
+    const hasLimit = /다만|이 계산은|견적이 아니|아니므로|정확하지 않/.test(body);
+    if (!hasCond) level('환산형인데 계산 조건이 없다 — 「3억원·30년·원리금균등으로 단순 계산하면」처럼 조건을 문장으로 적을 것.');
+    if (!hasLimit) level('환산형인데 한계 문장이 없다 — 「이 계산은 특정 상품의 견적이 아니라 폭의 크기를 보여주기 위한 비교다」처럼 무엇이 아닌지 적을 것.');
+  }
+  if (declaredForm && form.extra === 'timing') {
+    // 갈림형: 갈래만 그리고 **언제 갈리는지**를 안 적으면 독자가 기다릴 자리가 없다.
+    // 날짜가 있으면 가장 좋고(등록부 `src/data/calendar.json`), 없으면 조건 시점이라도.
+    if (!/\d{1,2}월 \d{1,2}일|한국시간|시점/.test(body)) {
+      level('갈림형인데 판별 시점이 없다 — 「10월 22일 금통위에서」처럼 언제 갈리는지 적을 것(일정은 src/data/calendar.json).');
+    }
   }
 
   // ⑨ 표 — 비교 축이 둘 이상인 표가 최소 하나. 장식용 2행 표는 만들지 않는다.

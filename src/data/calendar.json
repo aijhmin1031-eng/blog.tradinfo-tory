@@ -1,0 +1,35 @@
+{
+  "note": "경제 일정 등록부 — 우리 시계열 24개는 전부 「지나간 값」이라 기사가 늘 뒤를 본다. 앞을 보려면 다음 분기점이 언제인지 알아야 한다. 날짜는 반드시 발표 기관의 공식 일정 페이지에서 확인해 verifiedAt 을 남긴다(절대규칙 2). 확인 못 한 일정은 넣지 않는다 — 빈 것이 틀린 것보다 낫다.",
+  "sources": {
+    "bok": "https://www.bok.or.kr/portal/singl/crncyPolicyDrcMtg/listYear.do?mtgSe=A&menuNo=200755",
+    "fomc": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+  },
+  "events": [
+    { "id": "bok-2026-01", "date": "2026-01-15", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-02", "date": "2026-02-26", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정·경제전망", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-04", "date": "2026-04-10", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-05", "date": "2026-05-28", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정·경제전망", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-07", "date": "2026-07-16", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-08", "date": "2026-08-27", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정·경제전망", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-10", "date": "2026-10-22", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+    { "id": "bok-2026-11", "date": "2026-11-26", "org": "한국은행", "name": "금융통화위원회", "what": "기준금리 결정·경제전망", "series": "baserate", "tz": "KST", "src": "bok", "verifiedAt": "2026-08-28" },
+
+    { "id": "fomc-2026-01", "date": "2026-01-28", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-03", "date": "2026-03-18", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-04", "date": "2026-04-29", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-06", "date": "2026-06-17", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-07", "date": "2026-07-29", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-09", "date": "2026-09-16", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-10", "date": "2026-10-28", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2026-12", "date": "2026-12-09", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+
+    { "id": "fomc-2027-01", "date": "2027-01-29", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-03", "date": "2027-03-19", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-05", "date": "2027-05-07", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-06", "date": "2027-06-18", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-07", "date": "2027-07-30", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-09", "date": "2027-09-17", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-10", "date": "2027-10-29", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "src": "fomc", "verifiedAt": "2026-08-28" },
+    { "id": "fomc-2027-12", "date": "2027-12-10", "org": "미 연준", "name": "FOMC", "what": "정책금리 결정·경제전망요약(SEP)", "series": "fedfunds", "tz": "ET", "etTime": "14:00", "sep": true, "src": "fomc", "verifiedAt": "2026-08-28" }
+  ]
+}

@@ -7,6 +7,13 @@ const posts = defineCollection({
     title: z.string(),
     description: z.string(),
     category: z.enum(['money', 'tariff', 'trade', 'basics']),
+    /**
+     * 기사 양식 5종 (2026-08-28 신설, 소유주 지시 「기사 내용에 따라 적절하게 적용」).
+     * **분야가 아니라 내용이 양식을 정한다.** 고르는 법은 「이 기사가 답하는 질문이 무엇인가」.
+     * 생략하면 분야의 기본 양식으로 되돌린다(`src/lib/forms.ts` FORM_BY_CATEGORY).
+     * 정본은 `docs/article-forms.md`.
+     */
+    form: z.enum(['report', 'ledger', 'branch', 'path', 'ask']).optional(),
     pubDate: z.coerce.date(),
     featured: z.boolean().default(false),
     draft: z.boolean().default(false),
