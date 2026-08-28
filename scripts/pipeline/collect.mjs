@@ -112,6 +112,27 @@ async function main() {
     }
   }
 
+  // 파생: 한국 소비자물가 상승률 (전년동월대비)
+  //
+  // ★ 한국과 미국의 물가가 **다른 형태로 온다.** 미국은 FRED `units=pc1` 로 상승률(%)이
+  // 바로 오는데, ECOS 소비자물가는 **지수**(2020=100)로 온다. 이름만 「상승률」로 붙여 두면
+  // **지수 119.77 과 상승률 3.30% 를 나란히 놓는 사고**가 난다(실제로 처음에 그렇게 넣었다).
+  // 그래서 지수는 지수로 두고, 상승률은 여기서 같은 달 전년 값과 나눠 파생 계열로 만든다.
+  if (acc.cpi_kr?.points?.length) {
+    const idx = new Map(acc.cpi_kr.points.map((p) => [p.d, p.v]));
+    const yoyPoints = acc.cpi_kr.points
+      .map((p) => {
+        const prev = idx.get(String(Number(p.d.slice(0, 4)) - 1) + p.d.slice(4));
+        return prev ? { d: p.d, v: +((p.v / prev - 1) * 100).toFixed(2) } : null;
+      })
+      .filter(Boolean);
+    if (yoyPoints.length) {
+      const out = { id: 'cpi_kr_yoy', name: '한국 소비자물가 상승률', unit: '%', cycle: 'M', points: yoyPoints, updatedAt: new Date().toISOString().slice(0, 10) };
+      await writeFile(new URL('cpi_kr_yoy.json', SERIES_DIR), JSON.stringify(out) + '\n');
+      console.log(`[collect] cpi_kr_yoy: ${yoyPoints.length}개 파생, 최신 ${yoyPoints[yoyPoints.length - 1].d} ${yoyPoints[yoyPoints.length - 1].v}%`);
+    }
+  }
+
   // 파생: 한·미 금리차 (공통 날짜)
   const usMap = new Map(acc.us10y.points.map((p) => [p.d, p.v]));
   const gapPoints = acc.ktb10y.points

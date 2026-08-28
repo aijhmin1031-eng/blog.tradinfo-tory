@@ -20,6 +20,14 @@ const MAX_AGE_D = arg('max-age', 10); // 일별 계열 기준. 월별은 따로 
 const MAX_AGE_M = 70; // 월별은 공표 지연이 커서 두 달까지는 정상으로 본다.
 
 const defs = JSON.parse(readFileSync(join(ROOT, 'data/sources.json'), 'utf8')).series;
+
+// 파생 계열은 sources.json 에 없다(수집이 아니라 계산으로 만들어진다).
+// 그래도 **없으면 기사를 못 쓰는 것은 마찬가지**이므로 함께 점검한다.
+// 여기 적지 않으면 파생이 조용히 사라져도 점검기가 통과라고 말한다.
+const DERIVED = [
+  { id: 'cpi_kr_yoy', name: '한국 소비자물가 상승률', cycle: 'M', source: '파생', note: 'collect.mjs 가 cpi_kr 지수에서 전년동월대비로 계산' },
+];
+defs.push(...DERIVED);
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
 
 const ymdToDate = (s) =>
