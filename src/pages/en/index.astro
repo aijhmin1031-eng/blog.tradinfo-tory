@@ -9,7 +9,7 @@ import { metaByPath } from '../../lib/images';
 import Base from '../../layouts/Base.astro';
 import Pic from '../../components/Pic.astro';
 import { getCollection } from 'astro:content';
-import { isPublished } from '../../lib/site';
+import { isPublishedEn } from '../../lib/site';
 // 시리즈는 **정적 import** 로 읽는다. 처음에는 import.meta.url 로 경로를 계산했는데,
 // Astro 가 페이지를 어느 청크에 묶느냐에 따라 그 URL 이 달라져 같은 코드가 한 페이지에서는
 // 되고 다른 페이지에서는 저장소 밖(/home/user/data/…)을 가리켰다. 정적 import 는
@@ -23,7 +23,7 @@ const monthName = (d: string) =>
     month: 'long', year: 'numeric', timeZone: 'UTC',
   });
 
-const posts = (await getCollection('postsEn', ({ data }) => !data.draft && isPublished(data.pubDate)))
+const posts = (await getCollection('postsEn', ({ data }) => !data.draft && isPublishedEn(data.pubDate)))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
 const fmt = (d: Date) => d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
 // 소셜 카드. 네 쪽이 전부 같은 기본 이미지를 쓰고 있었다(2026-08-26 수리).

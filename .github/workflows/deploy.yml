@@ -6,6 +6,11 @@ on:
   schedule:
     # 매일 아침 KST 06:50 (UTC 21:50 전일) — 지표 수집·브리핑 발행·그날 예약 기사 자동 발행·배포
     - cron: '50 21 * * *'
+    # ★ 매일 미국 동부 오전 (UTC 13:00 = EDT 09:00 · EST 08:00) — 영문판 발행용 빌드.
+    # cron 은 UTC 고정이라 서머타임을 못 따라가지만, 13:00 UTC 는 여름 9시·겨울 8시로
+    # 둘 다 미국 오전 안에 들어온다. 이 회차는 **파이프라인을 돌리지 않는다**(수집은 아침 회차의 몫).
+    # 하는 일은 하나다 — ET 로 오늘이 된 영문 기사를 빌드에 태워 내보내는 것.
+    - cron: '0 13 * * *'
   workflow_dispatch:
 
 permissions:
@@ -72,8 +77,11 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # 파이프라인은 **아침 KST 회차에서만** 돈다.
+      # 미국 오전 회차(13:00 UTC)는 영문 발행용이라 수집·커밋백을 다시 할 이유가 없고,
+      # 두 번 돌면 같은 날 데이터를 두 번 커밋해 이력이 지저분해진다.
       - name: Run data pipeline (collect + daily brief)
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '50 21 * * *' || github.event_name == 'workflow_dispatch'
         env:
           ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
@@ -82,7 +90,7 @@ jobs:
         run: npm run pipeline
 
       - name: Commit accumulated data back to repo
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '50 21 * * *' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "tori-pipeline"
           git config user.email "actions@users.noreply.github.com"

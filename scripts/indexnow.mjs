@@ -30,6 +30,7 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = join(ROOT, 'src/content/posts');
+const POSTS_EN = join(ROOT, 'src/content/posts-en');
 const PUBLIC = join(ROOT, 'public');
 const HOST = 'dotoriecon.com';
 const ORIGIN = `https://${HOST}`;
@@ -39,6 +40,9 @@ const args = process.argv.slice(2);
 const flag = (f) => args.includes(f);
 const explicit = args.filter((a) => a.startsWith('http'));
 const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
+// 영문판은 미 동부 시간으로 잰다(발행 게이트 isPublishedEn 과 같은 기준).
+// KST 로 재면 ET 아침에 나간 영문 기사가 「어제 것」으로 분류돼 제출에서 빠진다.
+const todayET = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 
 // 키는 public/ 의 <32자 16진수>.txt 하나로 정한다. 파일이 곧 소유 증명이다.
 const keyFile = readdirSync(PUBLIC).find((f) => /^[0-9a-f]{8,128}\.txt$/.test(f));
@@ -66,6 +70,20 @@ const publishedPosts = (onlyToday) =>
     .filter((p) => p.pub && p.pub <= todayKST && (!onlyToday || p.pub === todayKST))
     .map((p) => `${ORIGIN}/posts/${p.slug}/`);
 
+// 영문 기사도 같이 제출한다 (2026-08-28 신설). 그전에는 한글만 나가서
+// **영문 6편이 개설 이래 한 번도 IndexNow 로 알려진 적이 없었다.**
+// 미국 독자를 노린다면 이쪽이 오히려 중요하다 — 지금까지 잡힌 유일한 검색 유입이 bing.com 이다.
+const publishedPostsEn = (onlyToday) =>
+  readdirSync(POSTS_EN)
+    .filter((f) => f.endsWith('.mdx'))
+    .map((f) => {
+      const raw = readFileSync(join(POSTS_EN, f), 'utf8');
+      const pub = (raw.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) ?? [])[1] ?? '';
+      return { slug: f.slice(0, -4), pub };
+    })
+    .filter((p) => p.pub && p.pub <= todayET && (!onlyToday || p.pub === todayET))
+    .map((p) => `${ORIGIN}/en/posts/${p.slug}/`);
+
 // 전체 씨뿌리기는 사이트맵을 그대로 쓴다. 허브·용어 낱장까지 한 번에 알린다.
 const fromSitemap = () => {
   const sm = join(ROOT, 'dist/sitemap-0.xml');
@@ -79,17 +97,21 @@ const fromSitemap = () => {
     .map((u) => u.replace(/^https?:\/\/[^/]+(\/blog\.tradinfo-tory)?/, ORIGIN));
 };
 
-let urls = explicit.length ? explicit : flag('--all') ? fromSitemap() : publishedPosts(true);
+let urls = explicit.length
+  ? explicit
+  : flag('--all')
+    ? fromSitemap()
+    : [...publishedPosts(true), ...publishedPostsEn(true)];
 urls = [...new Set(urls)].filter((u) => u.startsWith(ORIGIN));
 
 if (!urls.length) {
-  console.log(`오늘(${todayKST}) 새로 발행된 기사가 없다. 보낼 것 없음.`);
+  console.log(`오늘(KST ${todayKST} · ET ${todayET}) 새로 발행된 기사가 없다. 보낼 것 없음.`);
   process.exit(0);
 }
 
 const body = { host: HOST, key, keyLocation: `${ORIGIN}/${keyFile}`, urlList: urls };
 
-console.log(`IndexNow · ${todayKST} KST · ${urls.length}건`);
+console.log(`IndexNow · KST ${todayKST} · ET ${todayET} · ${urls.length}건`);
 for (const u of urls) console.log('  ' + u);
 
 if (flag('--print-curl')) {

@@ -1,0 +1,112 @@
+---
+title: 'Record exports, falling shares: 94 per cent of it was the market'
+description: 'SK Hynix fell 39.5 per cent from its July peak to its 30 July trough while Korean chip exports were setting records. Regressing daily returns on the KOSPI explains 93.9 per cent of the variance, so the summer was a market event that memory shares amplified rather than a semiconductor event.'
+pubDate: 2026-08-28
+hero: '/images/hero/memory-stocks-summer.jpg'
+translationOf: 'memory-stocks-summer'
+topics: ['topic-semi']
+dataAsOf: '2026-08-28'
+three:
+  what: 'SK Hynix fell <strong>39.5 per cent</strong> from peak to trough between 9 and 30 July 2026, and Samsung Electronics 27.4 per cent, while chip exports were at record levels'
+  why: 'Daily returns regressed on the KOSPI give an R-squared of <strong>93.9 per cent</strong> for SK Hynix and 94.3 per cent for Samsung. The index itself fell 25.2 per cent over the same stretch'
+  next: 'Both shares, and the index, reached their low on <strong>the same day</strong>. A sector-specific cause would not have synchronised to the calendar day'
+toriNote: 'The first question about a falling share is usually which of its own troubles brought it down. The cheaper question is whether everything else fell too. Here everything else did, on the same day, and the answer cost one line of arithmetic against an index.'
+sources:
+  - org: 'Financial Services Commission'
+    name: 'Stock price information (open API)'
+    url: 'https://www.data.go.kr/data/15094808/openapi.do'
+    note: 'Daily closing prices for Samsung Electronics (005930) and SK Hynix (000660), 8 July to 26 August 2026, 34 trading days'
+  - org: 'Bank of Korea'
+    name: 'ECOS economic statistics system'
+    url: 'https://ecos.bok.or.kr/'
+    note: 'KOSPI daily close over the same 34 trading days'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: ordinary least squares of daily returns on KOSPI daily returns, 33 observations'
+    note: 'Beta, alpha and R-squared are computed from simple daily returns over one 34-day window. Thirty-three observations is a small sample and the daily alpha is not statistically separated from zero here; the R-squared is the figure this article relies on'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+SK Hynix closed at 2,186,000 won on 9 July 2026 and at 1,322,000 won on 30 July, a fall of
+**39.5 per cent** in fifteen trading days. Samsung Electronics fell 27.4 per cent over the same
+stretch. Korean integrated-circuit exports in July 2026 were $32.72bn, the highest month in the
+series and 166 per cent above July 2025. The obvious reading is that the market had turned against
+memory ahead of the data. The obvious reading is wrong, and one line of arithmetic disposes of it.
+
+<SeriesChart
+  series="stk_000660"
+  scale={1e-6}
+  window={34}
+  lang="en"
+  title="SK Hynix daily close, won mn"
+  unit="won mn per share (KRX close)"
+  color="down"
+  xLabelEvery={8}
+  marks={[
+    { date: '20260709', label: '2.19mn' },
+    { date: '20260730', label: '1.32mn', dy: 16 },
+    { date: '20260826', label: '1.69mn', dx: -40 },
+  ]}
+  source="Financial Services Commission, KRX close"
+/>
+
+## An R-squared of 93.9 per cent and a beta of 1.59
+
+Regressing each share's daily return on the KOSPI daily return over the 33 available observations
+gives the following.
+
+<div class="table-scroll">
+
+| 8 Jul to 26 Aug 2026 | Beta to KOSPI | R-squared | Peak-to-trough | Peak to 26 Aug |
+|---|---:|---:|---:|---:|
+| Samsung Electronics | 1.35 | **94.3%** | −27.4% | −8.2% |
+| SK Hynix | 1.59 | **93.9%** | −39.5% | −22.8% |
+| KOSPI | 1.00 | — | −25.2% | −8.9% |
+
+</div>
+
+*Source: Financial Services Commission, Bank of Korea. Own calculation over 33 daily returns.*
+
+An R-squared of 93.9 per cent means that almost all of the daily movement in SK Hynix over this
+window is accounted for by the movement of the index it sits in. What is left for every
+semiconductor-specific cause combined — pricing, inventory, a competitor's results, an export
+figure — is the remaining six per cent.
+
+The beta explains the rest of the difference. At 1.59, SK Hynix moves roughly half again as far as
+the index in both directions. An index that fell 25.2 per cent peak to trough would carry a
+1.59-beta share down about 40 per cent on that relationship alone, which is what happened.
+
+The six per cent left over does have a direction, and it is worth stating precisely because it is
+the part most likely to be over-read. Samsung ran 0.151 percentage points a day ahead of what its
+beta implied and SK Hynix 0.180 points behind, which compounds to roughly plus five and minus six
+per cent across the window and accounts for the gap between their peak-to-date figures. Neither
+estimate survives its own standard error: the t-statistics are 0.48 and −0.47, against 22.6 and 21.8
+for the betas. The market relationship is measured firmly here. The company-specific part is not
+measured at all.
+
+## The date is the stronger evidence
+
+A regression can be argued with. The calendar is harder to argue with: the KOSPI, Samsung
+Electronics and SK Hynix all reached their low on **30 July 2026**, the same trading day. On 28 July
+the index fell 10.8 per cent, Samsung 13.4 per cent and SK Hynix 14.6 per cent. On 31 July the index
+rose 17.9 per cent, Samsung 26.8 per cent and SK Hynix 30.0 per cent.
+
+A cause specific to memory would have to have arrived and departed on precisely the days the whole
+Korean market moved, and would have to have moved the index too. The simpler account is that one
+market-wide event moved everything and the higher-beta names moved further.
+
+This is the same conclusion the export data reaches from the other side. Chip exports rose through
+the entire drawdown, and the equipment imports that would signal a producer's own change of view
+[plateaued rather than fell](/en/posts/chip-equipment-imports/). Neither series recorded the summer.
+
+## What to watch
+
+Whether the relationship holds outside this window. One 34-day sample containing a 25 per cent index
+drawdown is a period in which correlations rise mechanically, and betas measured through a crash
+tend to overstate what they will be in a calm quarter. The figure to re-run is the same regression
+over the next quarter, and a materially lower R-squared would mean the shares had begun trading on
+their own news again.
+
+Until then the practical consequence stands: over this summer, the Korean memory tape carried
+almost no information about Korean memory. Anyone reading those prices as a forecast of the export
+figures was reading the index.

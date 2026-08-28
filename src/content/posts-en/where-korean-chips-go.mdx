@@ -1,0 +1,108 @@
+---
+title: 'Where Korean chips go: Greater China took 54 per cent as Taiwan stood still'
+description: 'Of $32.72bn in Korean integrated-circuit exports in July 2026, China took $13.42bn and Hong Kong $4.37bn, together 54.4 per cent against 41.4 per cent a year earlier. Taiwan fell from 27.9 per cent to 11.9 per cent without its shipments ever declining.'
+pubDate: 2026-08-28
+hero: '/images/hero/semi-export-by-country.jpg'
+translationOf: 'semi-export-by-country'
+topics: ['topic-semi']
+dataAsOf: '2026-08-28'
+three:
+  what: 'China and Hong Kong together took <strong>54.4 per cent</strong> of Korean integrated-circuit exports in July 2026, against 41.4 per cent in July 2025'
+  why: 'Shipments to China multiplied by <strong>3.73</strong> and to Hong Kong by 2.92, while the total multiplied by 2.66. Taiwan multiplied by 1.14'
+  next: 'Taiwan is the only one of the three where Korean imports grew faster than exports, but its monthly balance ranges from <strong>$0.58bn to $3.20bn</strong>, so a single month settles nothing'
+toriNote: 'A share can fall without anyone walking away. Taiwan bought more Korean chips in July 2026 than in July 2025 and still lost more than half its place on the list, because the list itself grew faster. Falling behind and moving backwards leave the same mark in a percentage column.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity and country (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8542 for integrated circuits, exports to China, Hong Kong and Taiwan, July 2025 to July 2026. Exports FOB, imports CIF. The Taiwan series is missing February 2026'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: country shares of monthly export value, growth multiples and the range of monthly bilateral balances'
+    note: 'Shares are each destination divided by total HS 8542 export value in the same month. The three destinations shown do not sum to the total, and no claim is made about the remainder'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+Korea exported **$32.72bn** of integrated circuits in July 2026. China took $13.42bn of that and
+Hong Kong $4.37bn, or **54.4 per cent between them**, against 41.4 per cent in the same month a
+year earlier. Taiwan took $3.90bn, which is 11.9 per cent, down from 27.9 per cent. Taiwan did not
+buy less. It bought 13.7 per cent more, in a market that grew 166 per cent.
+
+<SeriesChart
+  series="trade_hs8542_CN"
+  field="exp"
+  scale={1e-9}
+  window={13}
+  lang="en"
+  title="Korean integrated-circuit exports to China, $bn per month"
+  unit="$bn (HS 8542, customs basis, FOB)"
+  color="up"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '$3.60bn' },
+    { date: '202607', label: '$13.42bn', dx: -44, dy: 14 },
+  ]}
+  source="Korea Customs Service, HS 8542 to China"
+/>
+
+## Taiwan grew 13.7 per cent while the total grew 166 per cent
+
+The three destinations moved at three speeds, and the gap between them is wider than any of the
+individual moves.
+
+<div class="table-scroll">
+
+| HS 8542 exports, July to July | Jul 2025 | Jul 2026 | Multiple | Share Jul 2026 |
+|---|---:|---:|---:|---:|
+| China | $3.60bn | $13.42bn | ×3.73 | 41.0% |
+| Hong Kong | $1.50bn | $4.37bn | ×2.92 | 13.4% |
+| Taiwan | $3.43bn | $3.90bn | **×1.14** | 11.9% |
+| All destinations | $12.29bn | $32.72bn | ×2.66 | 100% |
+
+</div>
+
+*Source: Korea Customs Service, HS 8542. Own calculation.*
+
+In July 2025 China and Taiwan were close to equal customers, 29.3 per cent against 27.9 per cent.
+Thirteen months later one is three and a half times the other. Nothing in the Taiwan column
+deteriorated to produce that; the entire reordering is a difference in growth rates.
+
+Hong Kong is a separate case and should not be read as final demand. Korean chips entering Hong Kong
+are overwhelmingly in transit, a pattern set out in
+[the reading of the Hong Kong route](/en/posts/hong-kong-chip-transit/). Its 13.4 per cent belongs
+with China's 41.0 per cent for most purposes, which is why the two are summed here and why the sum,
+not either part, is the number worth quoting.
+
+The traffic is also close to one-way, and became more so. Korea sent $4.37bn of integrated circuits
+to Hong Kong in July 2026 and received $34.4m back, a ratio of **127 to 1**. A year earlier the
+ratio was 29 to 1, because the import leg actually shrank over the thirteen months while the export
+leg tripled. China, by contrast, sells back in volume: Korean imports from China multiplied by 2.05
+to $3.55bn. A destination that buys but does not sell is behaving like a port rather than a market.
+
+## The one direction Taiwan did move
+
+Taiwan is the only one of the three where Korean **imports** grew faster than Korean exports.
+Imports from Taiwan multiplied by 1.47 against exports at 1.14, and the bilateral surplus in July
+2026 was $0.58bn against $1.17bn a year earlier.
+
+That looks like a convergence, and the temptation is to call it one: memory flowing out, logic
+flowing back, the two trades approaching balance. The monthly series does not support the claim.
+Across the thirteen months the Taiwan balance runs from **$0.58bn to $3.20bn**, and the $3.20bn was
+June 2026, the month immediately before the low. A series that swings by a factor of five from one
+month to the next cannot be read for a trend at a sample of twelve, and February 2026 is missing
+from it.
+
+What survives is narrower and firmer: Taiwan is the destination where the two directions of trade
+are closest in size, and it is the only one of the three where the import side is growing faster.
+Whether that becomes convergence is a question for more months, not for this one.
+
+## What to watch
+
+Whether Taiwan's share stabilises near 12 per cent or continues to fall. A share can decline for two
+quite different reasons, and only one of them is visible in a percentage: a destination that stops
+growing, and a destination that shrinks. Taiwan has so far done the first and never the second, and
+the month it does the second would be the first genuine change in this table.
+
+Alongside it, whether the concentration in Greater China holds above half. The combined share passed
+50 per cent during 2026 and the level itself is now the thing being tracked, since a single policy
+change at either end would land on 54 per cent of the export book rather than on 41 per cent of it.

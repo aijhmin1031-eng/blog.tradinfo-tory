@@ -73,12 +73,26 @@
 | 기사 목록 | `src/pages/en/analysis.astro` | |
 | 기사 | `src/pages/en/posts/[...slug].astro` + `layouts/PostEn.astro` | |
 | 소개 | `src/pages/en/about.astro` | 출처·기준·재사용 조건 |
-| 원고 | `src/content/posts-en/*.mdx` | 컬렉션 `postsEn` · **2026-08-26 현재 6편** |
+| 원고 | `src/content/posts-en/*.mdx` | 컬렉션 `postsEn` · **2026-08-28 현재 10편** |
 | 문자열 | `src/lib/i18n.ts` | UI 사전·경로 변환·색 규약 플래그 |
 
 **컬렉션을 일부러 갈랐다.** 같은 `posts` 컬렉션에 `lang` 필드로 섞으면
 `getCollection('posts', ...)` 를 쓰는 12곳(카테고리·숲·특집·사전·갈림길…)이 영문을 함께
 집어 온다. 한 곳만 빠뜨려도 한글 목록에 영문이 새고 **그것이 조용히 일어난다.**
+
+## 6-2. 발행 시각 — 영문은 ET 로 잰다 (2026-08-28 소유주 지시)
+
+「미국 시장도 우리의 주요 독자」이므로 **영문 발행 시각은 미국 오전**이어야 한다.
+
+- 게이트가 둘이다: 한글 `isPublished`(KST) · 영문 **`isPublishedEn`(ET)**. `lib/site.ts`.
+  같은 날짜 문자열이라도 **발행 시점이 반나절 어긋나는 것이 맞다.**
+- `postsEn` 을 읽는 자리는 **네 곳뿐**이고 전부 ET 게이트다: `en/posts/[...slug]` ·
+  `en/analysis` · `en/index` · **`posts/[...slug]` 의 `enPair`**. 마지막을 빠뜨리면 hreflang 이
+  한 방향으로 돌아간다.
+- CI cron 이 둘이다: `50 21 * * *`(KST 06:50, 수집+발행) · **`0 13 * * *`**(ET 오전, 영문 발행).
+  **미국 회차는 파이프라인을 안 돌린다**(`github.event.schedule` 로 가름).
+- **IndexNow 도 영문을 제출한다**(2026-08-28 신설, ET 날짜 기준). 그전에는 한글만 나갔다.
+  Bing 이 IndexNow 를 받고, 지금까지 우리에게 잡힌 유일한 검색 유입이 bing.com 이다.
 
 ## 7. 게이트 (영문도 검사한다)
 

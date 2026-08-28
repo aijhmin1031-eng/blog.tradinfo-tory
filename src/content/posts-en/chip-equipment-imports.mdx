@@ -1,0 +1,112 @@
+---
+title: 'Korean chip equipment imports plateaued in March. Exports did not.'
+description: 'Korea imported $2.54bn of semiconductor manufacturing equipment in July 2026, up 55.4 per cent on the year but down 13.3 per cent from the March peak. Chip exports rose 31.4 per cent over those same five months, and equipment fell to 7.8 per cent of export value from 13.3 per cent.'
+pubDate: 2026-08-28
+hero: '/images/hero/semi-equipment-imports.jpg'
+translationOf: 'semi-equipment-imports'
+topics: ['topic-semi']
+dataAsOf: '2026-08-28'
+three:
+  what: 'Imports of semiconductor manufacturing equipment, HS 8486, reached <strong>$2.54bn</strong> in July 2026 against $1.63bn a year earlier, but the peak was $2.93bn in March'
+  why: 'Between March and July chip exports rose <strong>31.4 per cent</strong> while equipment imports fell 13.3 per cent. The two series stopped moving together'
+  next: 'Equipment now equals <strong>7.8 per cent</strong> of chip export value against 13.3 per cent a year ago. Customs records shipments rather than installed capacity, and five flat months are not yet a turn'
+toriNote: 'A miller who sells twice the flour and buys no more millstones is either running the mill harder or charging more for the same sack. The customs file records the millstones. It does not record which of the two is happening.'
+sources:
+  - org: 'Korea Customs Service'
+    name: 'Trade statistics by commodity (open API)'
+    url: 'https://www.data.go.kr/data/15100475/openapi.do'
+    note: 'HS 8486 for semiconductor manufacturing equipment and HS 8542 for integrated circuits, July 2025 to July 2026. Imports CIF, exports FOB'
+  - org: 'Dotori Economy'
+    name: 'Own calculation: equipment imports as a share of chip export value, and the March to July change in both series'
+    note: 'The ratio is monthly HS 8486 import value divided by monthly HS 8542 export value. Both are flow measures in the same month, so the ratio is a coincident comparison and not a lag-corrected one'
+---
+
+import SeriesChart from '../../components/SeriesChart.astro';
+
+Korea imported **$2.54bn** of semiconductor manufacturing equipment in July 2026, against $1.63bn
+in July 2025. That is a rise of 55.4 per cent, and it is the smaller half of the story. The series
+peaked at **$2.93bn in March 2026** and has fallen 13.3 per cent since. Over the same five months
+Korean chip exports rose 31.4 per cent, from $24.90bn to $32.72bn.
+
+<SeriesChart
+  series="trade_hs8486"
+  field="imp"
+  scale={1e-9}
+  window={13}
+  lang="en"
+  title="Semiconductor equipment imports, $bn per month"
+  unit="$bn (HS 8486, customs basis, CIF)"
+  color="up"
+  xLabelEvery={6}
+  marks={[
+    { date: '202507', label: '$1.63bn' },
+    { date: '202603', label: '$2.93bn', dy: -12 },
+    { date: '202607', label: '$2.54bn', dx: -40, dy: 14 },
+  ]}
+  source="Korea Customs Service, HS 8486"
+/>
+
+Equipment imports are the closest thing Korean trade data offers to a forward look at memory
+supply. Korea manufactures very little of the lithography, deposition and etch equipment its fabs
+install, so almost every tool arrives through customs and is counted. A fab ordering tools now is
+declaring an intention to produce in twelve to twenty-four months. The export line records what was
+sold last month; the equipment line records what somebody expects to sell later.
+
+## Equipment fell to 7.8 per cent of export value from 13.3 per cent
+
+The ratio between the two lines is the part that has moved furthest, and it has moved in one
+direction for most of the sample.
+
+<div class="table-scroll">
+
+| HS 8486 imports against HS 8542 exports | Jul 2025 | Mar 2026 | Jul 2026 |
+|---|---:|---:|---:|
+| Equipment imports | $1.63bn | $2.93bn | $2.54bn |
+| Chip exports | $12.29bn | $24.90bn | $32.72bn |
+| Equipment as share of exports | 13.3% | 11.8% | **7.8%** |
+
+</div>
+
+*Source: Korea Customs Service, HS 8486 and HS 8542. Own calculation.*
+
+A year ago Korea was buying roughly one dollar of equipment for every seven and a half dollars of
+chips it sold. It is now buying one for every thirteen. The denominator did most of that work:
+exports multiplied by 2.66 while equipment multiplied by 1.55.
+
+Two other readings of the same file are worth recording. The level did shift: equipment imports
+averaged $1.81bn a month over the second half of 2025 and $2.60bn a month over the first seven
+months of 2026, a rise of 43.6 per cent in the run rate. And Korea's own equipment exports, which
+are not negligible, fell behind. Korea shipped $1.06bn of HS 8486 abroad in July 2026 against
+$2.54bn imported, so exports covered 41.8 per cent of imports where a year earlier they covered
+58.4 per cent. The country is more dependent on imported tools than it was, not less.
+
+## What the ratio cannot settle
+
+Two explanations fit the same numbers, and the customs file does not separate them.
+
+The first is that the boom is priced rather than built. Korean chip exports rose 166 per cent over
+thirteen months while export tonnage fell 1.2 per cent, which is the subject of
+[a separate reading of the unit value](/en/posts/chip-export-unit-value/). Revenue that arrives
+through price does not require new tools, and a falling equipment ratio is what that would look
+like.
+
+The second is timing. Equipment is lumpy. A single extreme-ultraviolet lithography system is a
+nine-figure import that lands in one month, and a fab that ordered heavily in late 2025 may simply
+be taking delivery on a schedule set two years ago. On that reading the March peak is a delivery
+schedule rather than a decision, and the plateau since is an interval between orders.
+
+The second explanation is the one to hold, because the sample is short. Thirteen months contain one
+peak. The monthly series has already produced a 27.7 per cent fall (August 2025) and a 92.8 per
+cent rise (September 2025) without either marking a turn in anything.
+
+## What to watch
+
+Whether the plateau extends past July. Five months of flat equipment imports against rising exports
+is consistent with a late-cycle pattern, in which producers harvest price rather than add capacity,
+but it is equally consistent with an ordinary gap in delivery. A ninth and tenth flat month would
+begin to separate the two, and a return above $2.93bn would end the question.
+
+Alongside it, watch whether export value holds when the equipment line is soft. Korean memory
+shares have already fallen while exports were setting records, a divergence examined in
+[the summer share-price record](/en/posts/memory-shares-and-the-market/), and equipment is the
+series that would tell whether producers share the market view of what comes next.
