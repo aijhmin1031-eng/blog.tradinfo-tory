@@ -17,7 +17,8 @@
     "precheck": "node scripts/precheck-scheduled.mjs",
     "check-visit": "node scripts/check-visit-script.mjs",
     "indexnow": "node scripts/indexnow.mjs",
-    "check-images": "node scripts/check-images.mjs"
+    "check-images": "node scripts/check-images.mjs",
+    "series-check": "node scripts/series-check.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",

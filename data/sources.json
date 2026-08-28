@@ -116,6 +116,43 @@
       "fred": "PCOPPUSDM",
       "cycle": "M",
       "license": "St. Louis Fed FRED (IMF)"
+    },
+    {
+      "id": "cpi_kr",
+      "name": "한국 소비자물가 상승률",
+      "unit": "%",
+      "source": "ECOS",
+      "stat": "901Y009",
+      "item": "0",
+      "cycle": "M",
+      "note": "소비자물가지수 총지수. 전년동월대비는 화면에서 계산한다. ★ stat·item 코드는 미검증 — 첫 성공 실행에서 확인할 것"
+    },
+    {
+      "id": "fedfunds",
+      "name": "미 연준 정책금리(상단)",
+      "unit": "%",
+      "source": "FRED",
+      "fred": "DFEDTARU",
+      "cycle": "D",
+      "note": "연방기금금리 목표범위 상단. 뉴스가 인용하는 값이 이것이다"
+    },
+    {
+      "id": "cpi_us",
+      "name": "미국 소비자물가 상승률",
+      "unit": "%",
+      "source": "FRED",
+      "fred": "CPIAUCSL",
+      "units": "pc1",
+      "cycle": "M",
+      "note": "units=pc1 로 전년동기대비 %를 바로 받는다"
+    },
+    {
+      "id": "unrate_us",
+      "name": "미국 실업률",
+      "unit": "%",
+      "source": "FRED",
+      "fred": "UNRATE",
+      "cycle": "M"
     }
   ]
 }

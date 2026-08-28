@@ -37,7 +37,11 @@ async function fetchFred(def) {
   // 60개로 자르면 매일 쌓여도 늘 60일 근처에 머문다(accumulate가 과거치를 안 지우는 것과 무관하게,
   // 애초에 그만큼만 받아 오니까). 조회 상한은 ECOS와 맞춰 10년 — 일별 10년(~3,650일)을
   // 여유 있게 담도록 4000행을 요청해 다음 실행부터 깊이가 단번에 늘어나게 한다.
-  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${def.fred}&api_key=${FRED}&file_type=json&sort_order=desc&limit=4000`;
+  // units 를 주면 FRED 가 변환값을 직접 준다(pc1 = 전년동기대비 %).
+  // 물가는 지수보다 상승률로 읽는 것이 기사에 바로 쓰인다 — 우리가 계산하면
+  // 기준월이 어긋날 위험이 있으므로 원 제공자의 계산을 그대로 쓴다.
+  const unitsQ = def.units ? `&units=${def.units}` : '';
+  const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${def.fred}&api_key=${FRED}&file_type=json&sort_order=desc&limit=4000${unitsQ}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`FRED ${def.id} HTTP ${res.status}`);
   const obs = (await res.json())?.observations;
