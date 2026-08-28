@@ -1,5 +1,5 @@
 {
-  "note": "무역토리 지표 정의서 — 파이프라인이 이 파일을 읽어 수집한다. 지표 추가는 여기에 한 줄 추가로 끝난다.",
+  "note": "무역토리 지표 정의서 — 파이프라인이 이 파일을 읽어 수집한다. 지표 추가는 여기에 한 줄 추가로 끝난다. · gold(금값)은 2026-08-28 제거: FRED 가 2022년에 IBA(LBMA 금가격) 데이터를 삭제해 PGOLDUSDM·GOLDAMGBD228NLBM 둘 다 사용 불가. 되살릴 수 없는 정의를 남기면 series-check 가 영구히 빨간불이 되어 아무도 안 보게 된다.",
   "series": [
     {
       "id": "usdkrw",
@@ -86,16 +86,6 @@
       "fred": "DCOILWTICO",
       "cycle": "D",
       "license": "St. Louis Fed FRED"
-    },
-    {
-      "id": "gold",
-      "name": "국제 금값",
-      "unit": "달러/온스",
-      "frac": 2,
-      "source": "FRED",
-      "fred": "PGOLDUSDM",
-      "cycle": "M",
-      "license": "St. Louis Fed FRED (IMF)"
     },
     {
       "id": "natgas",
