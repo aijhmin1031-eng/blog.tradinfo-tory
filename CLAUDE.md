@@ -41,7 +41,7 @@
   산출: `data/series/*.json`(장기 축적, git이 이력) + `src/data/*.json`(화면 바인딩) — CI가 커밋백
 - 배포는 이중: GitHub Pages(정본) + Vercel 병행(`astro.config.mjs`가 VERCEL env로 base 분기, Vercel 사본은 도메인 연결 전까지 noindex)
 - Supabase 프로젝트 `tradetory`(서울, 무료 티어): 뉴스레터 구독·조회수·갈림길 채점 아카이브. 클라이언트 설정은 `src/lib/supabase.ts`(anon 키는 공개용 설계, 쓰기는 RPC·엣지 함수만). 갈림길 채점 기록은 `galimgil_scores` 테이블(절차는 worklog 8/23 일지)
-- **영문판 `/en/`**(2026-08-26 개설): 한글판 미러가 아니라 **「데이터 데스크」**다. 중심은 `/en/tracker/`(관세청 HS 8542 국가별, 매일 자동 갱신). 원고는 `src/content/posts-en/`(컬렉션 `postsEn` — **일부러 갈랐다**), 조판은 `layouts/PostEn.astro`, 문자열·색 규약은 `src/lib/i18n.ts`. **영문만 상승=초록·하락=빨강**(서구 관례), **em dash 허용**(한글 조판 규칙이므로). 기준 정본은 **`docs/english-edition.md`**
+- **영문판 `/en/`**(2026-08-26 개설): 한글판 미러가 아니라 **「데이터 데스크」**다. 중심은 `/en/tracker/`(관세청 HS 8542 국가별, 매일 자동 갱신). 원고는 `src/content/posts-en/`(컬렉션 `postsEn` — **일부러 갈랐다**), 조판은 `layouts/PostEn.astro`, 문자열·색 규약은 `src/lib/i18n.ts`. **영문만 상승=초록·하락=빨강**(서구 관례), **em dash 허용**(한글 조판 규칙이므로). 기준 정본은 **`docs/english-edition.md`**. **발행은 한글과 같은 아침 한 번**(2026-08-28 소유주 결정 — ET 오전 별도 배포안은 되돌렸다)
 - **기사 대표 이미지는 「편집 일러스트(등각 투영)」다**(2026-08-28 소유주 결정 — 카툰 히어로가 「유치하다」).
   네 방향을 실제로 구워 놓고 골랐다. 정본은 **`docs/hero-images.md`** 에 고정 스타일 프롬프트가 있다.
   Pollo `openai/gpt-image-2-0` · 16:9 · 1K · medium. **스타일 문장은 손대지 않고 장면만 바꾼다.**

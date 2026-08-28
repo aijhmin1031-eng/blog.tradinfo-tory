@@ -28,8 +28,12 @@ export type Verdict = {
   brokeOn: string | null;
   /** 지금까지 관측된 거래일 수 */
   days: number;
-  /** 관측 구간이 끝났는가 */
+  /** 관측 구간이 끝났는가 (달력 기준) */
   closed: boolean;
+  /** 시계열이 관측 구간 끝까지 실제로 채워져 있는가 */
+  covered: boolean;
+  /** 시계열의 마지막 날짜 (자료가 밀렸을 때 화면에 밝히려고) */
+  lastSeen: string | null;
 };
 
 type Point = { d: string; v?: number; exp?: number; imp?: number; bal?: number };
@@ -46,7 +50,19 @@ export function evaluate(f: Forecast, points: Point[], todayKST: string): Verdic
     .filter((x): x is { d: string; v: number } => typeof x.v === 'number');
 
   const closed = todayKST > f.to;
-  if (vals.length === 0) return { status: closed ? 'nodata' : 'pending', min: null, max: null, brokeOn: null, days: 0, closed };
+
+  // ★ 달력이 지났다고 채점하면 안 된다 (2026-08-28 발견).
+  // 파이프라인이 하루라도 거르면 시계열이 밀린다. 실제로 8/26·8/27 아침 스케줄이 건너뛰어
+  // 코스피가 8/26 에 멈춰 있었는데, 그 상태로 8/29 가 되면 **관측 구간 5거래일 중 3일만 보고
+  // 「적중」을 선언**하게 된다. 못 본 이틀에 문턱이 깨졌을 수도 있다.
+  // 그래서 「구간 끝까지 자료가 왔는가」를 따로 재고, 안 왔으면 채점하지 않는다.
+  // 문턱이 이미 깨진 경우만 예외다 — 그것은 남은 자료가 뒤집을 수 없다.
+  const all = points.filter((p) => p.d.length === 8);
+  const lastSeen = all.length ? ymd(all[all.length - 1].d) : null;
+  const covered = lastSeen != null && lastSeen >= f.to;
+
+  if (vals.length === 0)
+    return { status: closed && covered ? 'nodata' : 'pending', min: null, max: null, brokeOn: null, days: 0, closed, covered, lastSeen };
 
   const min = Math.min(...vals.map((x) => x.v));
   const max = Math.max(...vals.map((x) => x.v));
@@ -58,9 +74,9 @@ export function evaluate(f: Forecast, points: Point[], todayKST: string): Verdic
   });
 
   // 문턱을 깬 순간 결과는 확정된다. 구간이 남았어도 되돌릴 수 없다.
-  if (broke) return { status: 'miss', min, max, brokeOn: broke.d, days: vals.length, closed };
-  // 지키고 있으나 구간이 안 끝났으면 아직 채점 중이다.
-  return { status: closed ? 'hit' : 'pending', min, max, brokeOn: null, days: vals.length, closed };
+  if (broke) return { status: 'miss', min, max, brokeOn: broke.d, days: vals.length, closed, covered, lastSeen };
+  // 지키고 있으면 **구간이 끝나고 자료도 구간 끝까지 와야** 적중이다.
+  return { status: closed && covered ? 'hit' : 'pending', min, max, brokeOn: null, days: vals.length, closed, covered, lastSeen };
 }
 
 /** 화면에 쓸 한 줄. 「4.40% 를 넘지 않는다」 처럼 읽힌다. */
@@ -76,4 +92,12 @@ export const VERDICT_LABEL: Record<Verdict['status'], string> = {
   hit: '적중',
   miss: '빗나감',
   nodata: '자료 없음',
+};
+
+/** 한눈에 보는 표식 (소유주 지시 2026-08-28). 채점 전에는 표식을 주지 않는다. */
+export const VERDICT_MARK: Record<Verdict['status'], string> = {
+  pending: '',
+  hit: 'O',
+  miss: 'X',
+  nodata: '',
 };

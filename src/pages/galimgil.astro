@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { url, fmtDate, isPublished, todayIn, TZ_KST } from '../lib/site';
-import { evaluate, ruleText, VERDICT_LABEL } from '../lib/galimgil';
+import { evaluate, ruleText, VERDICT_LABEL, VERDICT_MARK } from '../lib/galimgil';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 
 // 갈림길 연재분: 발행분은 목록으로, 미발행 다음 화는 예고로
@@ -151,6 +151,9 @@ const collectionLd = {
           <div class="gl-card-top">
             <span class="gl-ep mono">#{e.num}</span>
             <span class:list={['gl-badge', e.verdict?.status ?? 'pending']}>
+              {e.verdict && VERDICT_MARK[e.verdict.status] && (
+                <span class="gl-mark" aria-hidden="true">{VERDICT_MARK[e.verdict.status]}</span>
+              )}
               {e.verdict ? VERDICT_LABEL[e.verdict.status] : '채점 규칙 없음'}
             </span>
           </div>
@@ -170,6 +173,9 @@ const collectionLd = {
                 {e.forecast!.label} {e.verdict.min?.toLocaleString()}~{e.verdict.max?.toLocaleString()}
                 {e.forecast!.unit} · {e.verdict.days}거래일
                 {e.verdict.brokeOn ? ` · ${e.verdict.brokeOn} 이탈` : ''}
+                {e.verdict.closed && !e.verdict.covered && e.verdict.lastSeen
+                  ? ` · 자료 ${e.verdict.lastSeen}까지`
+                  : ''}
               </span>
             )}
           </div>
@@ -250,6 +256,8 @@ const collectionLd = {
   .gl-card-top { display: flex; justify-content: space-between; align-items: center; }
   .gl-ep { font-size: 12px; color: var(--muted); }
   .gl-badge { font-size: 10.5px; font-weight: 700; border-radius: 999px; padding: 3px 10px; letter-spacing: 0.03em; }
+  /* O·X 는 글자가 아니라 표식이다. 라벨보다 한 단계 크게 두고 앞에 세운다. */
+  .gl-mark { font-family: var(--font-mono); font-size: 12px; font-weight: 700; margin-right: 4px; }
   .gl-badge.pending { color: var(--muted); border: 1px solid var(--line); }
   .gl-badge.a { color: #fff; background: var(--up); }
   .gl-badge.b { color: #fff; background: var(--down); }

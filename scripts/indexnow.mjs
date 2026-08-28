@@ -40,9 +40,7 @@ const args = process.argv.slice(2);
 const flag = (f) => args.includes(f);
 const explicit = args.filter((a) => a.startsWith('http'));
 const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
-// 영문판은 미 동부 시간으로 잰다(발행 게이트 isPublishedEn 과 같은 기준).
-// KST 로 재면 ET 아침에 나간 영문 기사가 「어제 것」으로 분류돼 제출에서 빠진다.
-const todayET = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+// 영문도 한글과 같은 한국시간 기준이다(같은 아침에 함께 발행하므로).
 
 // 키는 public/ 의 <32자 16진수>.txt 하나로 정한다. 파일이 곧 소유 증명이다.
 const keyFile = readdirSync(PUBLIC).find((f) => /^[0-9a-f]{8,128}\.txt$/.test(f));
@@ -81,7 +79,7 @@ const publishedPostsEn = (onlyToday) =>
       const pub = (raw.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) ?? [])[1] ?? '';
       return { slug: f.slice(0, -4), pub };
     })
-    .filter((p) => p.pub && p.pub <= todayET && (!onlyToday || p.pub === todayET))
+    .filter((p) => p.pub && p.pub <= todayKST && (!onlyToday || p.pub === todayKST))
     .map((p) => `${ORIGIN}/en/posts/${p.slug}/`);
 
 // 전체 씨뿌리기는 사이트맵을 그대로 쓴다. 허브·용어 낱장까지 한 번에 알린다.
@@ -105,13 +103,13 @@ let urls = explicit.length
 urls = [...new Set(urls)].filter((u) => u.startsWith(ORIGIN));
 
 if (!urls.length) {
-  console.log(`오늘(KST ${todayKST} · ET ${todayET}) 새로 발행된 기사가 없다. 보낼 것 없음.`);
+  console.log(`오늘(${todayKST}) 새로 발행된 기사가 없다. 보낼 것 없음.`);
   process.exit(0);
 }
 
 const body = { host: HOST, key, keyLocation: `${ORIGIN}/${keyFile}`, urlList: urls };
 
-console.log(`IndexNow · KST ${todayKST} · ET ${todayET} · ${urls.length}건`);
+console.log(`IndexNow · ${todayKST} KST · ${urls.length}건`);
 for (const u of urls) console.log('  ' + u);
 
 if (flag('--print-curl')) {
