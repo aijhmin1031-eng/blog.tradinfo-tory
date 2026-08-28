@@ -1,0 +1,20 @@
+# 일회성 API 탐색 — 우리 키로 무엇을 가져올 수 있는지 목록화한다.
+# 확인 뒤 이 파일은 지운다(상시 워크플로가 아니다).
+name: API 탐색 (일회성)
+on:
+  workflow_dispatch:
+jobs:
+  explore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 탐색
+        env:
+          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: node scripts/explore-apis.mjs
