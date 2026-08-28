@@ -99,7 +99,11 @@ async function main() {
     // 시리즈 하나가 실패해도(API 순간 오류 등) 나머지 수집·기존에 쌓인 값은 지켜야 한다.
     // 실패한 시리즈는 직전에 저장된 파일을 그대로 읽어 그 자리를 메운다.
     try {
-      const fresh = def.source === 'FRED' ? await fetchFred(def) : await fetchEcos(def);
+      const raw = def.source === 'FRED' ? await fetchFred(def) : await fetchEcos(def);
+      // scale — 원 제공 단위가 화면에 그대로 나가면 곤란한 계열이 있다.
+      // 외환보유액은 ECOS 가 천달러로 주는데 그대로 두면 티커에 아홉 자리가 찍힌다.
+      // 배율은 정의서에 한 줄로 두고, 저장 단계에서 한 번만 적용한다(누적 파일도 변환된 값으로 쌓인다).
+      const fresh = def.scale ? raw.map((p) => ({ d: p.d, v: +(p.v * def.scale).toFixed(4) })) : raw;
       acc[def.id] = await accumulate(def, fresh);
       console.log(`[collect] ${def.id}: ${acc[def.id].points.length}개 누적, 최신 ${lastV(acc[def.id]).d}`);
     } catch (e) {
