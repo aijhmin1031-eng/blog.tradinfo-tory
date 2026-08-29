@@ -339,6 +339,41 @@ function check(slug) {
     }
   }
 
+  // ⑧-3 ★ 지시어가 가리킬 대상 (2026-08-29 신설, 소유주가 발행분에서 잡았다)
+  //
+  // 사고: 소제목이 「**같은** 0.50%p가 대출에서는…」인데 **앞 절에 0.50%p 가 한 번도 없었다.**
+  // 파고들면 문장 문제가 아니라 논리 결함이었다 — 예금금리 3.16% 가 깎이는 이야기를
+  // 기준금리 인상분 0.50%p 와 한 덩어리로 묶었고, 그래서 **같은 기사의 검정 절**과 어긋났다.
+  // 게이트·감사는 이것을 못 잡았다(수치·출처·표·링크가 다 있어 전부 통과했다).
+  //
+  // 규칙은 **좁게** 잡았다 — 전수 122편으로 재서 헛불 0건이 되는 선까지 좁혔다.
+  //   · 「같은 N 동안/구간/기간」 또는 「같은 N%·N%p·Nbp」만 본다(역참조가 확실한 형태)
+  //   · 「같은 N이라도·라면·아도·어도」는 뺀다 — 가정·양보의 일반 진술이지 역참조가 아니다
+  //   · 프런트매터(description·three)도 함께 본다. **description 은 단독으로 읽히는 자리**라
+  //     지시 대상이 본문에 있어도 소용없다(실제로 그 결함이 description 에 복사돼 있었다).
+  const ANAPHORA = /같은\s+(-?\d[\d,]*\.?\d*)\s*(%p|%|bp|개월|년|일|달)?\s*(동안|구간|기간)?/g;
+  const danglingIn = (text, whole) => {
+    const bad = [];
+    for (const m of text.matchAll(ANAPHORA)) {
+      const [, num, unit = '', span = ''] = m;
+      if (/^(이?라도|이?라면|아도|어도|해도)/.test(text.slice(m.index + m[0].length, m.index + m[0].length + 6))) continue;
+      if (!(span || unit === '%' || unit === '%p' || unit === 'bp')) continue;
+      const before = (whole === text ? text.slice(0, m.index) : whole).replace(/,/g, '');
+      if (before.includes(num.replace(/,/g, ''))) continue;
+      bad.push(m[0].trim());
+    }
+    return bad;
+  };
+  for (const x of danglingIn(body, body)) {
+    level(`「${x}」의 지시 대상이 앞에 없다 — 그 수치가 본문 앞쪽에 나온 적이 없다. ` +
+          '「같은」이 무엇과 같은지 독자가 알 수 없고, 대개 서로 다른 수치를 한 덩어리로 묶은 논리 결함이다.');
+  }
+  // 프런트매터는 본문 전체를 근거로 삼는다(카드·검색 결과에서 단독으로 읽히므로 더 엄하게).
+  for (const x of danglingIn(front, '')) {
+    level(`프런트매터의 「${x}」가 무엇을 가리키는지 없다 — description·three 는 검색 결과와 ` +
+          '공유 카드에서 **단독으로** 읽힌다. 지시어 대신 대상을 그대로 적을 것.');
+  }
+
   // ⑨ 표 — 비교 축이 둘 이상인 표가 최소 하나. 장식용 2행 표는 만들지 않는다.
   // 단위 사전에 **영문판 단위**가 없어 「$3.78bn」짜리 표가 「단위 없음」으로 걸렸다(2026-08-26 수리).
   const UNIT = /%|％|달러|원|억|조|배|bp|포인트|톤|TEU|CBM|배럴|온스|R²|건|명|kg|KG|만|\$|\bbn\b|per cent|\bpp\b/;
