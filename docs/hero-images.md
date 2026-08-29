@@ -50,6 +50,20 @@
 Pollo API `openai/gpt-image-2-0`, `aspectRatio 16:9`, `resolution 1K`, `quality medium`.
 (키는 secret vault. **값을 커밋·출력하지 말 것.**)
 
+**키가 살아 있는지는 생성 없이 확인한다**(2026-08-29). 계정·크레딧 엔드포인트는 공개돼 있지 않아
+`/account` `/credits` `/balance` 전부 404 다. 대신 **일부러 빈 본문을 던져 응답 코드를 가른다.**
+
+```bash
+curl -s -o /dev/null -w '%{http_code}' -X POST \
+  https://pollo.ai/api/platform/generation/openai/gpt-image-2-0/image \
+  -H "x-api-key: $POLLO_API_KEY" -H 'Content-Type: application/json' -d '{"input":{}}'
+```
+
+- **400**(Input validation failed) = 인증 통과, 본문만 반려 → **키 유효**
+- **401**(user unauthorized) = 키가 죽었거나 없다
+
+생성이 일어나지 않으므로 과금도 없다. 장당 단가는 $0.067 이다.
+
 프롬프트는 **고정 스타일 문장 + 장면 한 문단**이다. 스타일 문장은 손대지 않는다.
 
 ```
