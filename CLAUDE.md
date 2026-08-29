@@ -151,6 +151,14 @@
 - **다음에 손볼 기사는 목록이 아니라 `npm run audit` 이 정한다**(2026-08-26 신설). 손으로 뽑은 큐(`docs/backfill-queue.md`)는 매일 2편씩 느는 기사를 못 따라가 구멍을 냈다. 감사는 107편 전수를 매번 다시 계산하고, **게이트가 못 보는 것(수치로 주장해 놓고 반증 시도가 없는 기사)까지 본다.** 체계 전체는 `docs/quality.md` 4층 구조.
 - **커밋 훅·CI가 규칙을 대신 지킨다**(2026-08-26). 훅은 옵트인(`git config core.hooksPath .githooks`), CI는 푸시마다 `품질 점검` job이 게이트 전수+`precheck`+`audit --fail-on=90`을 돈다. **CI 점검은 배포를 막지 않는다**(별도 job) — 기사 한 편의 흠으로 사이트가 멎으면 안 되므로.
 - **게이트는 신규 기사에도 필수다**(2026-08-26 소유주 지적으로 명문화). 쓰기 전 `node scripts/check-quality.mjs --linkable`로 링크 대상을 고르고, 커밋 전 `node scripts/check-quality.mjs <슬러그>`를 통과시킨다. **내부 링크 0개 경고를 무시하지 말 것** — 이 구멍으로 데이터 기사 14편이 링크 없이 남았다(큐 Tier C). 상세는 `docs/operations.md` 「4. 품질 기준」.
+- **★ API 탐색은 `curl` 로 할 것 — node fetch 의 「fetch failed」를 결론으로 삼지 말 것**(2026-08-29).
+  관세환율 API 를 node `fetch` 로 네 번 때렸더니 전부 **`fetch failed`(연결 실패)** 였다.
+  같은 URL 을 **`curl` 로 부르니 1.2초 만에 HTTP 403 과 `SERVICE_KEY_IS_NOT_REGISTERED_ERROR`
+  가 정상적으로 왔다.** 즉 **응답은 오고 있었는데 node fetch 가 삼킨 것**이고, 그대로 믿었으면
+  「네트워크가 막혔다」는 틀린 결론을 냈을 것이다(8/28 관세청 「전체 총계」 실험의 `fetch failed`
+  도 같은 착시일 수 있어 **curl 로 재시도할 값어치가 있다**).
+  탐색 스크립트에는 **`-w` 로 dns·connect·tls·http 시간을 갈라 찍고, 이미 되는 호출을 대조군으로
+  같이 때릴 것.** 대조군이 200 이면 키가 아니라 그 API 의 문제임이 한 번에 갈린다.
 - **★ 파이프라인 실행을 확인하는 동안 푸시하지 말 것**(2026-08-29 사고). `deploy.yml` 은
   `concurrency: group: pages, cancel-in-progress: true` 다. `workflow_dispatch` 로 파이프라인을
   돌려 놓고 그 사이에 커밋을 푸시하면 **내 푸시가 내 검증 실행을 취소한다**(취소는 실패로도
