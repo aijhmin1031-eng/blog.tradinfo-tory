@@ -76,6 +76,11 @@
 
 ## 시크릿 (값을 절대 출력·커밋하지 말 것)
 
+- **★ 키 재발급·교체는 소유주가 알아서 한다 — 미결로 올리지 말 것**(2026-08-29 소유주 지시).
+  키가 대화에 노출됐더라도 **한 번 알리는 것으로 끝내고**, 미결 목록이나 인계 문서의
+  「소유주 대기 건」에 넣지 않는다. 반복해서 상기시키지도 않는다.
+  (여기 적어 두는 이유는 다음 세션이 노출 흔적을 보고 **다시 미결로 올리는 것을 막기 위해서**다.)
+
 - 원본 보관: `aijhmin1031-eng/secret` repo의 age 암호문 (`master.env.age` 등). 마스터키는 소유주 Google Drive에만.
   사용 절차·목록은 그 repo의 README·index.md. 복호화 산출물은 `/tmp/secret-vault/`에만.
 - CI 사본: GitHub Actions Secrets에 `ECOS_API_KEY` `FRED_API_KEY` `DART_API_KEY` `DATA_GO_KR_KEY` 등록 완료.
