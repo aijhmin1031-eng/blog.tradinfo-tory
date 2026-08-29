@@ -24,6 +24,7 @@
 import { readFileSync as __rf2 } from 'node:fs';
 const __forms2 = JSON.parse(__rf2(new URL('../src/data/forms.json', import.meta.url), 'utf8'));
 const FORMS = __forms2.forms, BY_CAT = __forms2.byCategory;
+import { hasEnding } from './lib/ending.mjs';
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -121,7 +122,9 @@ const koChars = (s) => (s.match(/[가-힣]/g)?.length ?? 0);
 const CLAIM = /때문|이유는|덕분|탓에|영향으로|동행|따라 움직|이끌|주도|비례|반대로 움직|닮았|같은 방향/;
 // 「검정」: 그 주장을 반증하려 시도한 흔적이 있는가.
 //   operations.md 「검정 문단」 규칙: 원인을 지목하면 반증 시도를 함께 싣는다.
-const VERIFY = /상관계수|상관 |회귀|대조군|반증|결정계수|R²|베타|표본|유의|공통 추세|추세를 걷어|검정/;
+// 「반례」가 빠져 있었다(2026-08-29). 표본을 갈라 반대 사례를 제시하는 것은 전형적인 반증 시도인데
+// 어휘에 없어 위양성이 났다. 슬러그 예외 목록 대신 **판정 어휘를 완성한다**(미결 22 규약).
+const VERIFY = /상관계수|상관 |회귀|대조군|반증|반례|결정계수|R²|베타|표본|유의|공통 추세|추세를 걷어|검정/;
 
 // 산문만 남긴다: JSX 속성값이 문장으로 잡히면 위양성이 된다.
 const proseOnly = (body) =>
@@ -182,7 +185,7 @@ for (const file of files) {
 
   // ② 형식 — 게이트와 같은 기준이지만 전수로 본다
   if (!(front.match(/^\s+-\s+org:/gm) ?? []).length) issues.push({ w: 90, tag: '출처 없음', msg: 'sources 배열이 비어 있다' });
-  if (!/실무에서 틀리기 쉬운 지점|다음에 확인할 것/.test(body)) issues.push({ w: 80, tag: '끝맺음 없음', msg: '끝맺음이 규칙 밖이다' });
+  if (!hasEnding(front, body)) issues.push({ w: 80, tag: '끝맺음 없음', msg: '끝맺음이 규칙 밖이다' });
   if (body.includes('—') || front.includes('—')) issues.push({ w: 80, tag: '긴 대시', msg: '절대 규칙 위반' });
 
   const links = [...body.matchAll(/\]\(\/posts\/([a-z0-9-]+)\/\)/g)].map((m) => m[1]);

@@ -14,6 +14,7 @@
 //   node scripts/precheck-scheduled.mjs --all    # 발행분까지 포함
 // 종료코드 0=이상 없음, 1=치명(빌드 실패 유발) 항목 발견.
 
+import { hasEnding } from './lib/ending.mjs';
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -84,7 +85,7 @@ for (const f of files) {
   // ② 품질
   if (body.includes('—') || front.includes('—')) warn.dash.push(slug);
   if (!(front.match(/^\s+-\s+org:/gm) || []).length) warn.noSrc.push(slug);
-  if (!/실무에서 틀리기 쉬운 지점|다음에 확인할 것/.test(body)) warn.noEnd.push(slug);
+  if (!hasEnding(front, body)) warn.noEnd.push(slug);
 
   // ② 품질 ★ 신선도 (2026-08-28 신설, 소유주 지시 「최신 데이터 기반이 부족하다」)
   //

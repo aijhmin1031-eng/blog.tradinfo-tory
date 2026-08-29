@@ -21,6 +21,7 @@
 // 아직 발행 안 된 기사로 링크를 걸어 두면 독자에게 404가 간다(2026-08-25 실제 발생).
 // 쓰기 전에 이 목록을 보고 그 안에서만 고르면 애초에 안 걸린다.
 
+import { hasEnding } from './lib/ending.mjs';
 import { readFileSync as __rf } from 'node:fs';
 // 양식 표는 한 곳에만 있다(src/data/forms.json). 예전에는 이 파일과 audit.mjs 가
 // 같은 표를 각자 베껴 들고 있어 「한쪽만 고치지 말 것」이라고 적어 두어야 했다.
@@ -134,19 +135,11 @@ function check(slug) {
   // 「무엇을 언제 보면 되는지 주고 끝나라」이지 특정 문구가 아니다. 그래서 선언한 기사에는
   // **마지막 `##` 절이 앞을 가리키는가**(날짜 또는 확인·판별의 말)로 대신 묻는다.
   // 선언 안 한 옛 기사는 규칙이 그대로다 — 소급하면 100여 편이 한꺼번에 빨개진다.
-  const declaredFormEarly = (front.match(/^form:\s*(\w+)/m) || [])[1];
-  const lastSection = body.split(/^##\s+/m).pop() ?? '';
-  const forwardLooking =
-    /\d{1,2}월\s*\d{1,2}일/.test(lastSection) ||
-    /확인할|지켜볼|볼 것|판별|다음 분기점|어디서 갈리/.test(lastSection);
-  const hasNewEnding = isEn
-    ? /## What to watch|## Where this goes wrong in practice/.test(body)
-    : /실무에서 틀리기 쉬운 지점/.test(body) || /다음에 확인할 것/.test(body) ||
-      (!!declaredFormEarly && forwardLooking);
+  const hasNewEnding = hasEnding(front, body, isEn);
   if (!hasNewEnding) {
     fails.push(isEn
       ? '끝맺음이 없다 — 「## What to watch」(데이터) 또는 「## Where this goes wrong in practice」(설명)로 끝낼 것.'
-      : declaredFormEarly
+      : /^form:\s*\w+/m.test(front)
         ? '끝맺음이 앞을 가리키지 않는다 — 마지막 절에 「무엇을 언제 보면 되는지」를 날짜나 확인 대상으로 적을 것.'
         : '새 끝맺음(「실무에서 틀리기 쉬운 지점」/「다음에 확인할 것」)이 없다.');
   }

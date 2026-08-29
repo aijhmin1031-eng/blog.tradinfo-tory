@@ -16,6 +16,7 @@
 // 지표를 목표로 삼지 말 것. 숫자를 올리려고 글을 쓰면 물타기가 된다.
 // 지표는 **결과를 확인하는 자**이지 글쓰기의 목적이 아니다.
 
+import { hasEnding } from './lib/ending.mjs';
 import { readFileSync, writeFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -115,7 +116,7 @@ function measure() {
     arts.push({
       slug, pub, draft, chars,
       sources: src.n, sourceUrls: src.urls,
-      hasEnding: /실무에서 틀리기 쉬운 지점|다음에 확인할 것/.test(body),
+      hasEnding: hasEnding(front, body),
       oldEnding: /오늘의 결론/.test(body),
       emDash: (raw.match(/—/g) ?? []).length,
       internalLinks: (body.match(/\]\((\/posts\/|\/story\/|\/topics\/)/g) ?? []).length,
