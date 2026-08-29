@@ -1,0 +1,311 @@
+---
+// 수입원가 계산기 — 사업자 수입 기준(개인 직구가 아니다).
+//
+// 왜 이것인가(2026-08-29 소유주 결정): 유입 채널을 재 보니 일반 대중 키워드는 전부 선점돼
+// 있었다. 예금·대출 계산기는 전용 사이트와 금융사가, 개인 직구 관세는 gwanse.kr 가 잡고 있다.
+// 비어 있으면서 **우리 자산과 정확히 맞는 자리**가 사업자 수입 계산이었다.
+// 계산 구조의 정본은 기사 `import-duty-calculation`(과세가격 CIF → 관세 → 부가세)이다.
+//
+// 차별점은 **FTA 적용·미적용을 나란히 놓는 것**이다. 원산지증명서를 받을 값어치가
+// 금액으로 보인다. 다른 계산기는 이 비교를 하지 않는다.
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+import series from '../../data/series/usdkrw.json';
+
+const last = series.points[series.points.length - 1];
+const fxDefault = Math.round(last.v * 100) / 100;
+const fxAsOf = `${last.d.slice(0, 4)}.${last.d.slice(4, 6)}.${last.d.slice(6, 8)}`;
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: '수입원가 계산기',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'All',
+  description:
+    '사업자 수입 기준으로 과세가격(CIF), 관세, 부가가치세를 순서대로 계산하고 FTA 특혜세율 적용 여부를 나란히 비교합니다.',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  publisher: { '@type': 'Organization', name: '도토리경제' },
+};
+---
+
+<Base
+  title="수입원가 계산기"
+  description="사업자 수입 기준 관세·부가세 계산기. 과세가격(CIF)에서 관세, 부가가치세까지 순서대로 쌓아 계산하고, FTA 특혜세율을 적용했을 때와 아닐 때를 나란히 비교합니다."
+  compact
+  activeNav="warehouse"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
+
+  <section class="wrap ic">
+    <header class="ic-head">
+      <div class="kicker-en" style="color: var(--accent);">CALCULATOR</div>
+      <h1 class="serif ic-title">수입원가 계산기</h1>
+      <p class="ic-sub">
+        사업자 수입 기준입니다. 과세가격(CIF)에서 관세, 부가가치세까지 순서대로 쌓아
+        계산합니다. <strong>FTA 특혜세율을 적용했을 때와 아닐 때를 나란히 놓아</strong>
+        원산지증명서를 갖출 값어치를 금액으로 보여 줍니다.
+      </p>
+      <p class="ic-note">
+        해외직구(개인 통관)는 면세한도와 간이세율이 따로 적용되어 계산 구조가 다릅니다.
+        그 경계선은 <a href={url('/posts/overseas-direct-purchase-tax/')}>해외직구 150달러의 경계선</a>에 있습니다.
+      </p>
+    </header>
+
+    <form class="ic-form" id="ic-form" autocomplete="off">
+      <div class="ic-grid">
+        <label class="ic-f">
+          <span class="ic-l">물품 대금 <em>Cost</em></span>
+          <input type="number" id="f-cost" inputmode="decimal" step="any" min="0" value="10000" />
+          <span class="ic-u">외화</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">국제운임 <em>Freight</em></span>
+          <input type="number" id="f-freight" inputmode="decimal" step="any" min="0" value="800" />
+          <span class="ic-u">외화</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">보험료 <em>Insurance</em></span>
+          <input type="number" id="f-ins" inputmode="decimal" step="any" min="0" value="50" />
+          <span class="ic-u">외화</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">적용 환율</span>
+          <input type="number" id="f-fx" inputmode="decimal" step="any" min="0" value={fxDefault} />
+          <span class="ic-u">원</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">관세율 <em>기본·WTO</em></span>
+          <input type="number" id="f-duty" inputmode="decimal" step="any" min="0" max="100" value="8" />
+          <span class="ic-u">%</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">FTA 특혜세율</span>
+          <input type="number" id="f-fta" inputmode="decimal" step="any" min="0" max="100" value="0" />
+          <span class="ic-u">%</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">개별소비세율 <em>해당 품목만</em></span>
+          <input type="number" id="f-exc" inputmode="decimal" step="any" min="0" max="100" value="0" />
+          <span class="ic-u">%</span>
+        </label>
+        <label class="ic-f">
+          <span class="ic-l">부가가치세율</span>
+          <input type="number" id="f-vat" inputmode="decimal" step="any" min="0" max="100" value="10" />
+          <span class="ic-u">%</span>
+        </label>
+      </div>
+      <p class="ic-fxnote">
+        환율 기본값은 <strong>{fxDefault.toLocaleString('ko-KR')}원</strong>(한국은행 ECOS 원/달러, {fxAsOf} 기준)이며
+        매일 아침 자동으로 갱신됩니다. 실제 수입신고에 적용되는 환율은 이 시장 환율과 다를 수 있으므로
+        통관 단계에서 반드시 확인하십시오. 대금을 달러가 아닌 통화로 치렀다면 그 통화의 환율을 직접 넣으십시오.
+      </p>
+    </form>
+
+    <div class="ic-out" id="ic-out" aria-live="polite">
+      <div class="ic-cols">
+        <div class="ic-col">
+          <div class="ic-ct">FTA 미적용</div>
+          <div class="ic-big mono" id="o-base-total">0원</div>
+          <div class="ic-cs">총 납부 세액</div>
+          <table class="ic-t">
+            <tbody>
+              <tr><th><i class="ic-n"></i>과세가격 (CIF)</th><td class="mono" id="o-base-cif">0</td></tr>
+              <tr><th><i class="ic-n"></i>관세</th><td class="mono" id="o-base-duty">0</td></tr>
+              <tr class="ic-exc"><th><i class="ic-n"></i>개별소비세</th><td class="mono" id="o-base-exc">0</td></tr>
+              <tr><th><i class="ic-n"></i>부가세 과세표준</th><td class="mono" id="o-base-vbase">0</td></tr>
+              <tr><th><i class="ic-n"></i>부가가치세</th><td class="mono" id="o-base-vat">0</td></tr>
+              <tr class="ic-sum"><th>총 수입원가</th><td class="mono" id="o-base-cost">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="ic-col is-fta">
+          <div class="ic-ct">FTA 적용</div>
+          <div class="ic-big mono" id="o-fta-total">0원</div>
+          <div class="ic-cs">총 납부 세액</div>
+          <table class="ic-t">
+            <tbody>
+              <tr><th><i class="ic-n"></i>과세가격 (CIF)</th><td class="mono" id="o-fta-cif">0</td></tr>
+              <tr><th><i class="ic-n"></i>관세</th><td class="mono" id="o-fta-duty">0</td></tr>
+              <tr class="ic-exc"><th><i class="ic-n"></i>개별소비세</th><td class="mono" id="o-fta-exc">0</td></tr>
+              <tr><th><i class="ic-n"></i>부가세 과세표준</th><td class="mono" id="o-fta-vbase">0</td></tr>
+              <tr><th><i class="ic-n"></i>부가가치세</th><td class="mono" id="o-fta-vat">0</td></tr>
+              <tr class="ic-sum"><th>총 수입원가</th><td class="mono" id="o-fta-cost">0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="ic-diff" id="o-diff"></p>
+    </div>
+
+    <section class="ic-explain">
+      <h2 class="serif ic-h2">순서가 곧 금액이다</h2>
+      <p>
+        부가가치세는 과세가격이 아니라 <strong>관세를 더한 금액</strong>에 붙습니다. 개별소비세
+        대상 품목이면 그것까지 더한 뒤에 붙습니다. 세금이 따로 계산되지 않고 순서대로 쌓이기
+        때문에, 관세율만 보고 원가를 잡으면 최종 납부액을 낮게 잡게 됩니다. 구조는
+        <a href={url('/posts/import-duty-calculation/')}>수입 관세가 계산되는 구조</a>에 단계별로 정리해 두었습니다.
+      </p>
+      <p>
+        과세가격이 <strong>CIF 기준</strong>이라는 점도 자주 놓칩니다. 물건값만이 아니라 수입항
+        도착까지의 운임과 보험료가 포함됩니다. 같은 물건이라도 운임이 오르면 과세가격이 오르고,
+        그 위에 쌓이는 세금 전체가 함께 커집니다. 견적 조건에 따라 이 금액이 달라지는 이유는
+        <a href={url('/posts/fob-vs-cif/')}>FOB와 CIF의 차이</a>에 있습니다.
+      </p>
+
+      <h2 class="serif ic-h2">관세율은 정해진 하나가 아니다</h2>
+      <p>
+        하나의 품목에 기본세율·WTO 협정세율·FTA 협정세율이 동시에 존재할 수 있고, 요건을
+        갖추면 더 낮은 세율을 적용받습니다. FTA 특혜세율은 <strong>원산지증명서</strong>를
+        갖췄을 때만 적용되므로, 위 비교의 차액이 곧 그 서류 한 장의 값어치입니다. 발급 절차는
+        <a href={url('/posts/fta-origin-certificate/')}>FTA 원산지증명서</a>에 있습니다.
+      </p>
+      <p>
+        세율을 정하는 것은 <strong>HS코드</strong>입니다. 같은 물건처럼 보여도 코드가 달라지면
+        세율과 수입요건이 함께 달라집니다. 조회는 관세법령정보포털(CLIP)에서 무료로 할 수 있고,
+        금액이 크거나 반복 수입할 품목이면 관세평가분류원의 품목분류 사전심사를 받아 두는 편이
+        안전합니다. 10자리 구조와 조회 절차는
+        <a href={url('/posts/hs-code-basics/')}>HS코드 완전 기초</a>에 있습니다.
+      </p>
+
+      <h2 class="serif ic-h2">이 계산이 아닌 것</h2>
+      <p>
+        이 도구는 <strong>세액의 구조와 크기를 가늠하기 위한 계산</strong>이며 수입신고서의
+        세액이 아닙니다. 실제 납부액은 확정된 HS코드, 적용 환율, 원산지 요건 충족 여부,
+        품목별 감면·할당관세 적용에 따라 달라집니다. 관세율과 개별소비세율은 이용자가 직접
+        입력한 값을 그대로 쓰며 이 도구가 확인해 주지 않습니다. 신고 전에는 관세사 또는
+        세관에 확인하십시오.
+      </p>
+      <p>
+        환급 가능성도 함께 보십시오. 수출용 원재료로 쓸 물품이라면 여기서 낸 관세를 나중에
+        돌려받는 경로가 있습니다. <a href={url('/posts/duty-drawback-basics/')}>관세 환급</a>의
+        두 가지 방식과 요건을 확인해 두면 원가 계산이 달라집니다.
+      </p>
+    </section>
+  </section>
+
+  <script is:inline define:vars={{ fxDefault }}>
+    (function () {
+      var ids = ['f-cost', 'f-freight', 'f-ins', 'f-fx', 'f-duty', 'f-fta', 'f-exc', 'f-vat'];
+      var el = {};
+      ids.forEach(function (i) { el[i] = document.getElementById(i); });
+      var out = {};
+      ['base', 'fta'].forEach(function (k) {
+        ['cif', 'duty', 'exc', 'vbase', 'vat', 'cost', 'total'].forEach(function (f) {
+          out[k + '-' + f] = document.getElementById('o-' + k + '-' + f);
+        });
+      });
+      var diffEl = document.getElementById('o-diff');
+      var won = function (n) { return Math.round(n).toLocaleString('ko-KR') + '원'; };
+      var num = function (i) { var v = parseFloat(el[i].value); return isFinite(v) && v >= 0 ? v : 0; };
+
+      function leg(cif, rate, excRate, vatRate) {
+        var duty = cif * rate / 100;
+        var exc = (cif + duty) * excRate / 100;
+        var vbase = cif + duty + exc;
+        var vat = vbase * vatRate / 100;
+        return { cif: cif, duty: duty, exc: exc, vbase: vbase, vat: vat,
+                 tax: duty + exc + vat, cost: cif + duty + exc + vat };
+      }
+
+      function render() {
+        var fx = num('f-fx');
+        var cif = (num('f-cost') + num('f-freight') + num('f-ins')) * fx;
+        var excRate = num('f-exc');
+        var vatRate = num('f-vat');
+        var a = leg(cif, num('f-duty'), excRate, vatRate);
+        var b = leg(cif, num('f-fta'), excRate, vatRate);
+        [['base', a], ['fta', b]].forEach(function (p) {
+          var k = p[0], r = p[1];
+          out[k + '-cif'].textContent = won(r.cif);
+          out[k + '-duty'].textContent = won(r.duty);
+          out[k + '-exc'].textContent = won(r.exc);
+          out[k + '-vbase'].textContent = won(r.vbase);
+          out[k + '-vat'].textContent = won(r.vat);
+          out[k + '-cost'].textContent = won(r.cost);
+          out[k + '-total'].textContent = won(r.tax);
+        });
+        document.querySelectorAll('.ic-exc').forEach(function (row) {
+          row.hidden = excRate <= 0;
+        });
+        // 개별소비세 행이 숨으면 번호가 ①②④⑤ 로 건너뛴다. 보이는 행만 다시 매긴다.
+        var circ = ['①', '②', '③', '④', '⑤', '⑥'];
+        document.querySelectorAll('.ic-t tbody').forEach(function (tb) {
+          var n = 0;
+          Array.prototype.forEach.call(tb.rows, function (row) {
+            var slot = row.querySelector('.ic-n');
+            if (!slot) return;
+            if (row.hidden) { slot.textContent = ''; return; }
+            slot.textContent = circ[n] ? circ[n] + ' ' : '';
+            n++;
+          });
+        });
+
+        var gap = a.tax - b.tax;
+        if (gap > 0.5) {
+          diffEl.textContent =
+            '원산지증명서를 갖추면 세액이 ' + won(gap) + ' 줄어듭니다. 이 금액이 서류 한 장의 값어치입니다.';
+          diffEl.hidden = false;
+        } else {
+          diffEl.hidden = true;
+        }
+      }
+      ids.forEach(function (i) { el[i].addEventListener('input', render); });
+      document.getElementById('ic-form').addEventListener('submit', function (e) { e.preventDefault(); });
+      render();
+    })();
+  </script>
+</Base>
+
+<style>
+  .ic { max-width: 860px; margin: 0 auto; padding-bottom: 40px; }
+  .ic-head { border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+  .ic-title { font-size: 27px; margin: 2px 0 0; letter-spacing: -0.01em; }
+  .ic-sub { margin: 8px 0 0; font-size: 14.5px; color: var(--sub); line-height: 1.65; word-break: keep-all; }
+  .ic-note { margin: 7px 0 0; font-size: 12.5px; color: var(--muted); word-break: keep-all; }
+  .ic-note a, .ic-explain a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--hair); }
+  .ic-note a:hover, .ic-explain a:hover { border-color: var(--accent); }
+
+  .ic-form { margin: 20px auto 0; }
+  .ic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 18px; }
+  .ic-f { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 8px; }
+  .ic-l { grid-column: 1 / -1; font-size: 12.5px; color: var(--sub); font-weight: 600; }
+  .ic-l em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 4px; }
+  .ic-f input {
+    font-family: var(--font-mono); font-size: 15px; padding: 8px 10px; text-align: right;
+    border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink); width: 100%;
+  }
+  .ic-f input:focus { outline: none; border-color: var(--accent); }
+  .ic-u { font-size: 12px; color: var(--muted); }
+  .ic-fxnote { margin: 12px 0 0; font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+
+  .ic-out { margin: 26px auto 0; }
+  .ic-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ic-col { border: 1px solid var(--hair); border-radius: 4px; padding: 14px 16px; background: var(--surface); }
+  .ic-col.is-fta { border-color: var(--accent); }
+  .ic-ct { font-size: 12px; font-weight: 700; letter-spacing: 0.02em; color: var(--sub); }
+  .is-fta .ic-ct { color: var(--accent); }
+  .ic-big { font-size: 25px; font-weight: 700; margin-top: 5px; letter-spacing: -0.02em; }
+  .ic-cs { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .ic-t { width: 100%; border-collapse: collapse; margin-top: 11px; }
+  .ic-t th, .ic-t td { padding: 6px 0; font-size: 12.5px; border-bottom: 1px solid var(--hair2); }
+  .ic-t th { text-align: left; font-weight: 400; color: var(--sub); }
+  .ic-n { font-style: normal; color: var(--muted); }
+  .ic-t td { text-align: right; }
+  .ic-t .ic-sum th, .ic-t .ic-sum td { font-weight: 700; color: var(--ink); border-bottom: none; padding-top: 8px; }
+  .ic-diff {
+    margin: 14px 0 0; padding: 11px 14px; font-size: 13.5px; word-break: keep-all;
+    border-left: 3px solid var(--accent); background: var(--surface); border-radius: 3px; color: var(--ink);
+  }
+
+  .ic-explain { margin: 34px auto 0; }
+  .ic-h2 { font-size: 18px; margin: 24px 0 8px; letter-spacing: -0.01em; }
+  .ic-explain p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.8; color: var(--sub); word-break: keep-all; }
+
+  @media (max-width: 640px) {
+    .ic-grid { grid-template-columns: 1fr; gap: 10px; }
+    .ic-cols { grid-template-columns: 1fr; }
+    .ic-title { font-size: 23px; }
+    .ic-big { font-size: 22px; }
+  }
+</style>
