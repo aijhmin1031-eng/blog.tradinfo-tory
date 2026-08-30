@@ -1,0 +1,185 @@
+---
+// 오늘의 숫자 — 우리가 쌓은 계열 전부를 한 화면에 놓는다.
+//
+// 왜 만들었나 (2026-08-30, 전략 전환 ③): 우리는 25개 계열을 매일 수집해 쌓는데
+// **화면에는 티커 6개와 타일 3개만 나왔다.** 나머지 열여섯 계열은 JSON 파일로만 존재했다.
+// 매일 모으기만 하고 아무도 못 보는 데이터는 자산이 아니다.
+//
+// 이 페이지가 노리는 것은 셋이다.
+//   · **AI 인용** — 값과 **기준일과 출처**가 한자리에 있어야 인용될 수 있다(`llms.txt` 참조)
+//   · **사람 검색** — 「오늘 기준금리」는 사람도 검색한다
+//   · **우리 자신** — 기사를 쓸 때 현재값을 한눈에 확인한다
+//
+// ★ 값은 손으로 적지 않는다. `data/series/*.json` 을 빌드 시점에 읽으므로
+//   매일 아침 파이프라인이 갱신하면 이 페이지도 함께 최신이 된다.
+import Base from '../layouts/Base.astro';
+import { url, TZ_KST, todayIn } from '../lib/site';
+import defs from '../../data/sources.json';
+
+const series = import.meta.glob('../../data/series/*.json', { eager: true });
+const load = (id: string): any => (series[`../../data/series/${id}.json`] as any)?.default;
+
+const GROUPS: { name: string; ids: string[]; note: string }[] = [
+  { name: '환율', ids: ['usdkrw', 'jpy100', 'dxy'], note: '원화의 값과 달러 자체의 강약을 함께 본다' },
+  { name: '금리', ids: ['baserate', 'ktb10y', 'deposit1y', 'fedfunds', 'us2y', 'us10y', 'us10y2y'], note: '정책금리와 시장금리는 따로 움직인다' },
+  { name: '물가·고용', ids: ['cpi_kr', 'cpi_kr_yoy', 'ppi_kr', 'cpi_us', 'unrate_kr', 'unrate_us'], note: '한국 물가는 지수, 미국은 상승률로 온다' },
+  { name: '원자재', ids: ['wti', 'brent', 'natgas', 'copper'], note: '우리 수입 원유는 WTI 보다 브렌트에 가깝다' },
+  { name: '대외 거래', ids: ['exports_kr', 'balance_goods_kr', 'reserves_kr', 'prod_kr'], note: '환율의 구조적 배경이 여기 있다' },
+  { name: '증시', ids: ['kospi'], note: '' },
+];
+
+const meta = new Map<string, any>((defs.series as any[]).map((d) => [d.id, d]));
+// 자릿수는 **정의서의 `frac` 이 우선**이다. 크기로만 정하면 환율 1,380.30 이 1,380 으로 잘린다
+// (1,000 이상은 정수로 반올림하게 짜 두었더니 실제로 그렇게 나왔다). 환율은 소수 둘째 자리가 의미 있다.
+const fmt = (v: number, frac?: number) => {
+  const f = frac ?? (Math.abs(v) >= 10000 ? 0 : Math.abs(v) >= 100 ? 1 : 2);
+  return v.toLocaleString('ko-KR', { minimumFractionDigits: f, maximumFractionDigits: f });
+};
+const dstr = (d: string) =>
+  d.length === 8 ? `${d.slice(0, 4)}.${d.slice(4, 6)}.${d.slice(6, 8)}` : `${d.slice(0, 4)}.${d.slice(4, 6)}`;
+
+const rows = GROUPS.map((g) => ({
+  ...g,
+  items: g.ids.map((id) => {
+    const s = load(id);
+    if (!s?.points?.length) return null;
+    const last = s.points[s.points.length - 1];
+    const prev = s.points[s.points.length - 2];
+    const diff = prev ? last.v - prev.v : null;
+    const m = meta.get(id);
+    return {
+      id, name: s.name, unit: s.unit,
+      value: fmt(last.v, m?.frac), asOf: dstr(last.d),
+      diff: diff == null ? null : (diff >= 0 ? '+' : '') + fmt(diff, m?.frac),
+      up: diff == null ? null : diff > 0,
+      cycle: s.cycle === 'D' ? '일별' : '월별',
+      src: m?.license ?? (m?.source === 'FRED' ? 'St. Louis Fed FRED' : m?.source === 'ECOS' ? '한국은행 ECOS' : '도토리경제 파생'),
+      n: s.points.length,
+    };
+  }).filter(Boolean),
+})).filter((g) => g.items.length);
+
+const total = rows.reduce((a, g) => a + g.items.length, 0);
+const asOf = todayIn(TZ_KST);
+
+// schema.org/Dataset — 기계가 「이것은 데이터셋」으로 인식하게 한다.
+// 기사(Article)와 달리 데이터셋은 인용 대상으로 다뤄진다.
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: '도토리경제 경제지표 시계열',
+  description:
+    `한국은행 ECOS·미 연준 FRED·관세청에서 매일 자동 수집하는 한국·미국 경제지표 ${total}종의 최신값. 환율·금리·물가·원자재·대외거래를 포함하며 각 값에 기준일과 출처를 함께 표기한다.`,
+  url: 'https://dotoriecon.com/numbers/',
+  license: 'https://dotoriecon.com/about/',
+  isAccessibleForFree: true,
+  dateModified: asOf,
+  creator: { '@type': 'Organization', name: '도토리경제', url: 'https://dotoriecon.com/' },
+  temporalCoverage: '2016/..',
+  variableMeasured: rows.flatMap((g) =>
+    g.items.map((i: any) => ({ '@type': 'PropertyValue', name: i.name, unitText: i.unit, value: i.value, measurementTechnique: i.src })),
+  ),
+};
+---
+
+<Base
+  title="오늘의 숫자"
+  description={`한국은행 ECOS·미 연준 FRED·관세청에서 매일 자동 수집하는 경제지표 ${total}종의 최신값. 환율·금리·물가·원자재·대외거래를 기준일과 출처와 함께 한 화면에 놓았습니다.`}
+  compact
+  activeNav="warehouse"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
+
+  <section class="wrap nb">
+    <header class="nb-head">
+      <div class="kicker-en" style="color: var(--accent);">TODAY'S NUMBERS</div>
+      <h1 class="serif nb-title">오늘의 숫자</h1>
+      <p class="nb-sub">
+        한국은행 ECOS·미 연준 FRED·관세청에서 <strong>매일 아침 자동 수집</strong>하는 경제지표
+        {total}종입니다. 값마다 <strong>기준일과 출처</strong>를 함께 적었습니다.
+        인용하실 때는 기준일을 함께 밝혀 주십시오. 시점이 빠진 수치는 몇 달 뒤 틀린 문장이 됩니다.
+      </p>
+    </header>
+
+    {rows.map((g) => (
+      <section class="nb-g">
+        <div class="nb-gh">
+          <h2 class="serif nb-gt">{g.name}</h2>
+          {g.note && <span class="nb-gn">{g.note}</span>}
+        </div>
+        <table class="nb-t">
+          <thead>
+            <tr><th>지표</th><th class="r">현재값</th><th class="r">직전 대비</th><th class="r">기준일</th><th>출처</th></tr>
+          </thead>
+          <tbody>
+            {g.items.map((i: any) => (
+              <tr>
+                <th scope="row">{i.name}</th>
+                <td class="r mono nb-v">{i.value}<span class="nb-u"> {i.unit}</span></td>
+                <td class:list={['r', 'mono', 'nb-d', i.up === true && 'is-up', i.up === false && 'is-down']}>{i.diff ?? ''}</td>
+                <td class="r mono nb-as">{i.asOf}<span class="nb-u"> {i.cycle}</span></td>
+                <td class="nb-s">{i.src}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    ))}
+
+    <section class="nb-note">
+      <h2 class="serif nb-gt">이 표를 읽을 때</h2>
+      <p>
+        <strong>직전 대비</strong>는 그 계열의 바로 앞 관측값과의 차이입니다. 일별 계열은 전 영업일,
+        월별 계열은 전월과 비교한 값이므로 두 열을 같은 자로 읽으면 안 됩니다.
+        색은 한국 금융 관례를 따라 <span class="is-up">상승이 빨강</span>,
+        <span class="is-down">하락이 파랑</span>입니다.
+      </p>
+      <p>
+        <strong>한국 소비자물가는 지수, 미국은 상승률로 옵니다.</strong> 원 제공 형태가 다르기 때문이며,
+        한국의 전년동월대비 상승률은 저희가 지수에서 계산한 파생 계열입니다.
+        나란히 놓고 비교하실 때 주의하십시오.
+      </p>
+      <p>
+        각 수치의 배경과 해석은 <a href={url('/forest/')}>도토리 숲</a>의 기사에,
+        지표 대시보드와 기업·무역 자료는 <a href={url('/warehouse/')}>도토리 창고</a>에 있습니다.
+        수입 관세와 부가세를 직접 계산해 보시려면 <a href={url('/import-cost/')}>수입원가 계산기</a>를
+        이용하십시오.
+      </p>
+    </section>
+  </section>
+</Base>
+
+<style>
+  .nb { max-width: 900px; margin: 0 auto; padding-bottom: 44px; }
+  .nb-head { border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+  .nb-title { font-size: 27px; margin: 2px 0 0; letter-spacing: -0.01em; }
+  .nb-sub { margin: 8px 0 0; font-size: 14px; color: var(--sub); line-height: 1.7; word-break: keep-all; }
+  .nb-g { margin-top: 28px; }
+  .nb-gh { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--hair); padding-bottom: 6px; }
+  .nb-gt { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
+  .nb-gn { font-size: 12px; color: var(--muted); word-break: keep-all; }
+  .nb-t { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  .nb-t th, .nb-t td { padding: 8px 6px; font-size: 13px; border-bottom: 1px solid var(--hair2); text-align: left; }
+  .nb-t thead th { font-size: 11px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--hair); }
+  .nb-t tbody th { font-weight: 500; color: var(--ink); }
+  .nb-t .r { text-align: right; }
+  .nb-v { font-weight: 700; font-size: 14px; }
+  .nb-u { color: var(--muted); font-size: 11px; font-weight: 400; }
+  .nb-d.is-up { color: var(--up); }
+  .nb-d.is-down { color: var(--down); }
+  .nb-as { color: var(--sub); font-size: 12px; }
+  .nb-s { color: var(--muted); font-size: 11.5px; }
+  .nb-note { margin-top: 34px; border-top: 1px solid var(--hair); padding-top: 16px; }
+  .nb-note p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.8; color: var(--sub); word-break: keep-all; }
+  .nb-note a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--hair); }
+  .nb-note a:hover { border-color: var(--accent); }
+  .is-up { color: var(--up); }
+  .is-down { color: var(--down); }
+  @media (max-width: 640px) {
+    .nb-title { font-size: 23px; }
+    .nb-t th, .nb-t td { padding: 7px 3px; font-size: 12px; }
+    .nb-s { display: none; }
+    .nb-t thead th:last-child { display: none; }
+    .nb-t tbody td:last-child { display: none; }
+  }
+</style>

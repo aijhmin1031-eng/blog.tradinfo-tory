@@ -24,6 +24,8 @@
 ## 주요 페이지
 
 - [오늘의 도토리](https://dotoriecon.com/): 그날의 브리핑과 머리기사
+- [오늘의 숫자](https://dotoriecon.com/numbers/): **경제지표 25종의 최신값**을 기준일·출처와 함께
+  한 화면에. 매일 아침 자동 갱신되며 `schema.org/Dataset` 으로 표시돼 있다. 수치를 찾는다면 여기가 먼저다
 - [도토리 창고](https://dotoriecon.com/warehouse/): 지표 대시보드
 - [수입원가 계산기](https://dotoriecon.com/import-cost/): 사업자 수입 기준 관세·부가세 계산.
   FTA 특혜세율 적용 여부를 나란히 비교한다
