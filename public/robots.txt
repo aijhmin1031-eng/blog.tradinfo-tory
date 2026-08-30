@@ -5,5 +5,36 @@ Allow: /
 User-agent: Yeti
 Allow: /
 
+# AI 크롤러 — 의도적으로 허용한다 (2026-08-29).
+# `User-agent: *` 로도 허용되지만, 명시해 두어야 「막지 않았다」가 아니라
+# 「열어 두기로 정했다」가 기록으로 남는다. 우리 값어치는 설명이 아니라
+# 매일 갱신되는 수치와 자체 계산에 있고, 그것은 인용될수록 쌓인다.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
 Sitemap: https://dotoriecon.com/sitemap-index.xml
 Sitemap: https://dotoriecon.com/pack-images.xml
