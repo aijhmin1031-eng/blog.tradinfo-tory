@@ -1,0 +1,270 @@
+---
+// 예금 실질수익 계산기 — 「내 예금이 물가를 이기나」
+//
+// 왜 이것인가 (2026-08-30, 전략 전환 ④): 도구를 고르기 전에 자리를 셌다.
+//   · 「예금 이자 계산기」 → gesangi·calculatorlib·우리은행·뱅크샐러드가 상단을 채웠다. 못 이긴다.
+//   · 「**실질**금리 계산기」·「예금 **실수령액**」·「물가 반영 실질 수익」
+//     → **상위가 전부 뉴스 사이트다. 전용 도구가 하나도 없다.**
+//   즉 **명목 이자 계산기는 레드오션인데, 세금과 물가를 반영한 실질 계산기는 비어 있다.**
+//
+// 그리고 여기가 **우리 데이터가 자동으로 채워지는 자리**다. 남의 계산기는 이용자가 물가를
+// 찾아 넣어야 하는데, 우리는 `deposit1y`·`cpi_kr_yoy` 를 매일 갱신하므로 오늘 값이 기본값으로 들어간다.
+//
+// 개념의 근거는 기사 `deposit-real-return`(3.16% 가 세후 실질 -0.11% 가 되는 계산)이다.
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+import dep from '../../data/series/deposit1y.json';
+import cpi from '../../data/series/cpi_kr_yoy.json';
+
+const lastDep = dep.points[dep.points.length - 1];
+const lastCpi = cpi.points[cpi.points.length - 1];
+const rateDefault = lastDep.v;
+const cpiDefault = lastCpi.v;
+const ym = (d: string) => `${d.slice(0, 4)}년 ${Number(d.slice(4, 6))}월`;
+const breakEven = Math.round((cpiDefault / (1 - 0.154)) * 100) / 100;
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: '예금 실질수익 계산기',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'All',
+  description:
+    '예금 이자에서 이자소득세를 빼고 소비자물가 상승률까지 반영해 실질 손익을 계산합니다. 금리와 물가 기본값은 한국은행 ECOS 최신값으로 매일 갱신됩니다.',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  publisher: { '@type': 'Organization', name: '도토리경제' },
+};
+---
+
+<Base
+  title="예금 실질수익 계산기"
+  description={`예금 이자에서 세금을 빼고 물가까지 반영하면 실제로 얼마가 남는지 계산합니다. 금리 ${rateDefault}%·물가 ${cpiDefault}% 기본값은 한국은행 ECOS 최신값으로 매일 갱신됩니다. 오늘 기준 손익분기 금리는 연 ${breakEven}%입니다.`}
+  compact
+  activeNav="warehouse"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
+
+  <section class="wrap rr">
+    <header class="rr-head">
+      <div class="kicker-en" style="color: var(--accent);">CALCULATOR</div>
+      <h1 class="serif rr-title">예금 실질수익 계산기</h1>
+      <p class="rr-sub">
+        이자에서 <strong>이자소득세</strong>를 빼고, 남은 금액을 <strong>물가 상승률</strong>로 다시
+        깎으면 실제로 얼마가 남는지 계산합니다. 금리와 물가의 기본값은
+        <strong>한국은행 ECOS 최신값</strong>이며 매일 아침 자동으로 갱신됩니다.
+      </p>
+      <p class="rr-be">
+        오늘 기준 <strong>손익분기 금리는 연 {breakEven}%</strong>입니다. 물가 {cpiDefault}%를
+        세후로 따라잡으려면 세전 이율이 그만큼은 되어야 합니다.
+      </p>
+    </header>
+
+    <form class="rr-form" id="rr-form" autocomplete="off">
+      <div class="rr-grid">
+        <label class="rr-f">
+          <span class="rr-l">예치 금액</span>
+          <input type="number" id="f-amt" inputmode="numeric" step="any" min="0" value="10000000" />
+          <span class="rr-u">원</span>
+        </label>
+        <label class="rr-f">
+          <span class="rr-l">연 이율 <em>기본값 {rateDefault}%</em></span>
+          <input type="number" id="f-rate" inputmode="decimal" step="any" min="0" max="30" value={rateDefault} />
+          <span class="rr-u">%</span>
+        </label>
+        <label class="rr-f">
+          <span class="rr-l">예치 기간</span>
+          <input type="number" id="f-months" inputmode="numeric" step="1" min="1" max="120" value="12" />
+          <span class="rr-u">개월</span>
+        </label>
+        <label class="rr-f">
+          <span class="rr-l">물가 상승률 <em>기본값 {cpiDefault}%</em></span>
+          <input type="number" id="f-cpi" inputmode="decimal" step="any" min="0" max="30" value={cpiDefault} />
+          <span class="rr-u">%</span>
+        </label>
+        <label class="rr-f rr-sel">
+          <span class="rr-l">이자 계산</span>
+          <select id="f-comp">
+            <option value="simple" selected>단리</option>
+            <option value="monthly">월복리</option>
+          </select>
+        </label>
+        <label class="rr-f rr-sel">
+          <span class="rr-l">과세 방식</span>
+          <select id="f-tax">
+            <option value="15.4" selected>일반과세 15.4%</option>
+            <option value="9.5">세금우대 9.5%</option>
+            <option value="0">비과세 0%</option>
+          </select>
+        </label>
+      </div>
+    </form>
+
+    <div class="rr-out" id="rr-out" aria-live="polite">
+      <div class="rr-verdict" id="o-verdict"></div>
+      <div class="rr-big mono" id="o-real">0원</div>
+      <div class="rr-cs">물가를 반영한 1년 뒤 실질 손익</div>
+
+      <table class="rr-t">
+        <tbody>
+          <tr><th><i class="rr-n">①</i> 원금</th><td class="mono" id="o-p">0</td></tr>
+          <tr><th><i class="rr-n">②</i> 세전 이자</th><td class="mono" id="o-i">0</td></tr>
+          <tr><th><i class="rr-n">③</i> 이자소득세</th><td class="mono" id="o-tax">0</td></tr>
+          <tr><th><i class="rr-n">④</i> 세후 원리금</th><td class="mono" id="o-after">0</td></tr>
+          <tr><th><i class="rr-n">⑤</i> 물가가 깎는 몫</th><td class="mono" id="o-erode">0</td></tr>
+          <tr class="rr-sum"><th>⑥ 물가 반영 구매력</th><td class="mono" id="o-power">0</td></tr>
+        </tbody>
+      </table>
+
+      <p class="rr-rates">
+        세후 실질 이율 <strong class="mono" id="o-realrate">0%</strong> ·
+        손익분기 세전 이율 <strong class="mono" id="o-be">0%</strong>
+      </p>
+      <p class="rr-warn" id="o-warn" hidden></p>
+    </div>
+
+    <section class="rr-explain">
+      <h2 class="serif rr-h2">두 번 빼야 실제 수익이 보인다</h2>
+      <p>
+        예금 금리가 물가보다 높아 보여도 <strong>세금을 먼저 빼야</strong> 비교가 성립합니다.
+        연 {rateDefault}%와 물가 {cpiDefault}%를 나란히 놓으면 차이가 남는 것처럼 보이지만,
+        그 비교에는 이자소득세가 빠져 있습니다. 일반과세 15.4%는 이율의 약 15%를 그대로 가져가므로,
+        물가를 따라잡으려면 세전 이율이 <strong>물가 ÷ (1 − 세율)</strong> 이상이어야 합니다.
+        오늘 기준으로 그 값이 <strong>연 {breakEven}%</strong>입니다.
+      </p>
+      <p>
+        이 계산의 배경과 실제 사례는
+        <a href={url('/posts/deposit-real-return/')}>예금 1,000만원을 1년 맡기면</a>에 있습니다.
+        명목과 실질의 차이 자체가 궁금하시면
+        <a href={url('/posts/nominal-vs-real-rate/')}>명목금리와 실질금리</a>를 보십시오.
+      </p>
+
+      <h2 class="serif rr-h2">이 계산이 아닌 것</h2>
+      <p>
+        <strong>실제 상품의 만기 지급액이 아닙니다.</strong> 은행마다 이자 계산 방식과 지급 주기가
+        다르고, 중도해지 이율·우대 조건·예금자보호 한도가 따로 적용됩니다. 과세 방식도 가입 자격에
+        따라 달라지므로 <strong>세금우대와 비과세는 해당 요건을 갖춘 경우에만</strong> 선택하십시오.
+      </p>
+      <p>
+        물가 상승률은 <strong>앞으로도 같은 속도가 이어진다고 가정</strong>한 값입니다. 실제 물가는
+        매달 바뀌므로 이 계산은 미래 예측이 아니라 <strong>현재 조건이 유지될 때의 크기</strong>를
+        보여 줍니다. 기본값의 기준 시점은 금리 {ym(lastDep.d)}, 물가 {ym(lastCpi.d)}입니다.
+        모든 지표의 최신값은 <a href={url('/numbers/')}>오늘의 숫자</a>에 있습니다.
+      </p>
+    </section>
+  </section>
+
+  <script is:inline define:vars={{ rateDefault, cpiDefault }}>
+    (function () {
+      var ids = ['f-amt', 'f-rate', 'f-months', 'f-cpi', 'f-comp', 'f-tax'];
+      var el = {};
+      ids.forEach(function (i) { el[i] = document.getElementById(i); });
+      var out = {};
+      ['p', 'i', 'tax', 'after', 'erode', 'power', 'real', 'realrate', 'be', 'verdict', 'warn'].forEach(function (k) {
+        out[k] = document.getElementById('o-' + k);
+      });
+      var won = function (n) { return Math.round(n).toLocaleString('ko-KR') + '원'; };
+      var pct = function (n) { return (n >= 0 ? '+' : '') + n.toFixed(2) + '%'; };
+      var num = function (i) { var v = parseFloat(el[i].value); return isFinite(v) && v >= 0 ? v : 0; };
+
+      function render() {
+        var P = num('f-amt');
+        var r = num('f-rate');
+        var m = Math.max(1, Math.round(num('f-months')));
+        var cpi = num('f-cpi');
+        var taxRate = parseFloat(el['f-tax'].value) / 100;
+        var years = m / 12;
+
+        // 세전 이자 — 단리는 원금에만, 월복리는 매달 이자가 원금에 더해진다
+        var gross = el['f-comp'].value === 'monthly'
+          ? P * (Math.pow(1 + r / 100 / 12, m) - 1)
+          : P * (r / 100) * years;
+        var tax = gross * taxRate;
+        var after = P + gross - tax;
+        // 물가는 기간에 비례해 복리로 깎는다
+        var power = after / Math.pow(1 + cpi / 100, years);
+        var real = power - P;
+
+        out.p.textContent = won(P);
+        out.i.textContent = '+' + won(gross);
+        out.tax.textContent = '-' + won(tax);
+        out.after.textContent = won(after);
+        out.erode.textContent = '-' + won(after - power);
+        out.power.textContent = won(power);
+        out.real.textContent = (real >= 0 ? '+' : '') + won(real);
+        out.real.className = 'rr-big mono ' + (real >= 0 ? 'is-up' : 'is-down');
+
+        // 연 환산 실질 이율과 손익분기 세전 이율
+        var realRate = (Math.pow(power / P, 1 / years) - 1) * 100;
+        out.realrate.textContent = isFinite(realRate) ? pct(realRate) : '-';
+        var be = cpi / (1 - taxRate);
+        out.be.textContent = be.toFixed(2) + '%';
+
+        out.verdict.textContent = real >= 0
+          ? '물가를 이겼습니다'
+          : '물가를 이기지 못했습니다';
+        out.verdict.className = 'rr-verdict ' + (real >= 0 ? 'is-up' : 'is-down');
+
+        if (P > 100000000) {
+          out.warn.hidden = false;
+          out.warn.textContent = '예치 금액이 1억원을 넘습니다. 예금자보호 한도는 금융회사별로 적용되므로 나누어 맡기는 편이 안전합니다.';
+        } else {
+          out.warn.hidden = true;
+        }
+      }
+      ids.forEach(function (i) { el[i].addEventListener('input', render); el[i].addEventListener('change', render); });
+      document.getElementById('rr-form').addEventListener('submit', function (e) { e.preventDefault(); });
+      render();
+    })();
+  </script>
+</Base>
+
+<style>
+  .rr { max-width: 780px; margin: 0 auto; padding-bottom: 40px; }
+  .rr-head { border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
+  .rr-title { font-size: 27px; margin: 2px 0 0; letter-spacing: -0.01em; }
+  .rr-sub { margin: 8px 0 0; font-size: 14.5px; color: var(--sub); line-height: 1.7; word-break: keep-all; }
+  .rr-be {
+    margin: 10px 0 0; padding: 9px 13px; font-size: 13.5px; word-break: keep-all; color: var(--ink);
+    border-left: 3px solid var(--accent); background: var(--surface); border-radius: 3px;
+  }
+  .rr-form { margin-top: 20px; }
+  .rr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 18px; }
+  .rr-f { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 8px; }
+  .rr-l { grid-column: 1 / -1; font-size: 12.5px; color: var(--sub); font-weight: 600; }
+  .rr-l em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 4px; }
+  .rr-f input, .rr-f select {
+    font-family: var(--font-mono); font-size: 15px; padding: 8px 10px;
+    border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink); width: 100%;
+  }
+  .rr-f input { text-align: right; }
+  .rr-sel { grid-template-columns: 1fr; }
+  .rr-f input:focus, .rr-f select:focus { outline: none; border-color: var(--accent); }
+  .rr-u { font-size: 12px; color: var(--muted); }
+
+  .rr-out { margin-top: 24px; border: 1px solid var(--hair); border-radius: 4px; padding: 16px 18px; background: var(--surface); }
+  .rr-verdict { font-size: 12.5px; font-weight: 700; letter-spacing: 0.02em; }
+  .rr-big { font-size: 30px; font-weight: 700; margin-top: 4px; letter-spacing: -0.02em; }
+  .rr-cs { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .rr-t { width: 100%; border-collapse: collapse; margin-top: 14px; }
+  .rr-t th, .rr-t td { padding: 7px 0; font-size: 13px; border-bottom: 1px solid var(--hair2); }
+  .rr-t th { text-align: left; font-weight: 400; color: var(--sub); }
+  .rr-t td { text-align: right; }
+  .rr-n { font-style: normal; color: var(--muted); margin-right: 4px; }
+  .rr-t .rr-sum th, .rr-t .rr-sum td { font-weight: 700; color: var(--ink); border-bottom: none; padding-top: 9px; }
+  .rr-rates { margin: 12px 0 0; font-size: 12.5px; color: var(--sub); }
+  .rr-warn { margin: 10px 0 0; font-size: 12.5px; color: var(--accent); word-break: keep-all; }
+  .is-up { color: var(--up); }
+  .is-down { color: var(--down); }
+
+  .rr-explain { margin-top: 34px; }
+  .rr-h2 { font-size: 18px; margin: 24px 0 8px; letter-spacing: -0.01em; }
+  .rr-explain p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.8; color: var(--sub); word-break: keep-all; }
+  .rr-explain a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--hair); }
+  .rr-explain a:hover { border-color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .rr-grid { grid-template-columns: 1fr; gap: 10px; }
+    .rr-title { font-size: 23px; }
+    .rr-big { font-size: 25px; }
+  }
+</style>
