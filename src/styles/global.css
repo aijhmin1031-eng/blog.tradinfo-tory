@@ -195,13 +195,20 @@ img { max-width: 100%; height: auto; }
 
 .tori-idle { animation: tori-bob 3.4s ease-in-out infinite; transform-origin: 50% 90%; }
 
+/* ★ 이 세 줄의 선택자 앞머리를 반드시 `:root.js` 로 맞출 것 (2026-08-31 사고).
+   숨기는 규칙이 `:root.js .reveal` (명시도 0,3,0)인데 드러내는 규칙을 `.stagger.is-visible`
+   (0,2,0)로 쓰면 **숨기는 쪽이 이긴다.** 평범한 `.reveal` 은 애니메이션이 캐스케이드보다
+   위에 있어 우연히 살아났지만, `.stagger` 는 `animation: none` 이라 그 구제가 없어
+   **「오늘의 숫자」와 「도구」 구획이 영영 투명한 채로 발행됐다**(자리는 차지하므로
+   홈 위쪽에 434px 짜리 빈 칸으로 보였다). 빌드·게이트는 전부 통과한다 —
+   `getComputedStyle(el).opacity` 를 찍어야만 갈린다. */
 :root.js .reveal { opacity: 0; } /* JS 미작동 환경에서는 항상 표시 */
-.reveal.is-visible { animation: fade-up 0.46s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+:root.js .reveal.is-visible { opacity: 1; animation: fade-up 0.46s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
 /* 차례로 드는 진입 — 칸이 여럿인 구획(오늘의 숫자·도구)에서 쓴다.
    구획 자체는 움직이지 않고 **칸만** 35ms 씩 어긋나 든다. 한 번에 다 뜨는 것보다
    눈이 왼쪽부터 따라가기 쉽고, 지연이 짧아 기다린다는 느낌은 나지 않는다. */
-.stagger.is-visible { animation: none; opacity: 1; }
+:root.js .stagger.is-visible { animation: none; opacity: 1; }
 .stagger.is-visible > ul > li {
   animation: fade-up 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   animation-delay: calc(var(--i, 0) * 35ms);
