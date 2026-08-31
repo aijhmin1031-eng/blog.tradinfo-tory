@@ -44,7 +44,9 @@
 - Astro 5 정적 사이트. base `/blog.tradinfo-tory`, site `https://aijhmin1031-eng.github.io`
 - 기사: `src/content/posts/*.mdx` — frontmatter에 three(세 줄 요약)/toriNote/dataAsOf/chart/topics/topicRole
 - **주 7일 발행 + 예약 발행**: pubDate가 KST 오늘 이후인 글은 빌드에서 제외(`lib/site.ts isPublished`) — 미래 일자로 미리 써 두면 그날 아침 빌드가 자동 발행한다
-- **하루 발행량 = 일반 기사 1편 + 특집 기사 1편**(소유주 지시, 2026-08-22부터). 특집 기사는 `topics`+`topicRole` 태그로 허브에 자동 입고
+- **하루 발행량 = 1편**(소유주 지시, 2026-08-31 변경. 그전에는 일반 1+특집 1 = 2편이었다).
+  **줄인 이유**: 114편을 써서 외부 방문자가 7일에 7명이었다. 기사 한 편의 유입 기여가 측정되지 않는다.
+  **남는 시간은 도구(계산기)에 쓴다** — `docs/traffic.md` 「전략 전환」. 특집 기사는 `topics`+`topicRole` 태그로 허브에 자동 입고
 - 컴포넌트: `KeyStat`(큰 수치) `PointCards`(아이콘 요점 카드) `LineChart`(마크·라벨 차트) `Term`(용어 메모 칩) `Spark`(고저 라벨 스파크라인) `CorpPanel` `TradePanel` `Ticker`(기준일 고정 칩)
 - 용어 사전: `src/lib/glossary.ts` + `src/lib/pictograms.ts` → 본문 `<Term t="용어" />`, `/glossary/` 페이지 자동
 - 특집: `src/lib/topics.ts` 등록부 → 내비 드롭다운·`/topics/` 인덱스 자동. **개설·유지 기준은 `docs/topics-standard.md` 필수 준수**
