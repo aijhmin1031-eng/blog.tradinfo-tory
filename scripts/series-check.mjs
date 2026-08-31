@@ -19,7 +19,25 @@ const arg = (f, d) => {
 const MAX_AGE_D = arg('max-age', 10); // 일별 계열 기준. 월별은 따로 본다.
 const MAX_AGE_M = 70; // 월별은 공표 지연이 커서 두 달까지는 정상으로 본다.
 
-const defs = JSON.parse(readFileSync(join(ROOT, 'data/sources.json'), 'utf8')).series;
+const SRC = JSON.parse(readFileSync(join(ROOT, 'data/sources.json'), 'utf8'));
+const defs = [...SRC.series];
+
+// ★ 무역 계열도 함께 본다(2026-08-31 신설).
+// 그전까지 이 점검기는 ECOS·FRED 정의 24개만 봤고, `trade_*` 는 **점검 밖**이었다.
+// 그래서 `hs8542_HK` 가 8/22 이후 갱신이 끊긴 채로 아흐레를 조용히 지났다 — 그 값을 쓰는
+// 기사들이 낡은 숫자를 보여 주고 있었는데 아무 경보도 울리지 않았다.
+// 관세청 API 는 코드가 틀려도 오류가 아니라 **빈 목록**을 주므로, 계열이 빈 채로 남는 것이
+// 유일한 증상이다. 여기서 잡지 않으면 아무 데서도 못 잡는다.
+//   · 주기는 월간(M)이고, 통관 통계는 확정까지 시간이 걸리므로 기본 월간 기준(70일)을 따른다.
+for (const c of SRC.trade.countries) {
+  defs.push({ id: `trade_${c.cc}`, name: `${c.name} 수출입`, cycle: 'M', source: '관세청', item: c.cc });
+}
+for (const it of SRC.trade.items) {
+  defs.push({ id: `trade_${it.id}`, name: it.name, cycle: 'M', source: '관세청', item: `HS ${it.hs}` });
+}
+for (const ic of SRC.trade.itemCountries) {
+  defs.push({ id: `trade_${ic.id}`, name: ic.name, cycle: 'M', source: '관세청', item: `HS ${ic.hs}/${ic.cc}` });
+}
 
 // 파생 계열은 sources.json 에 없다(수집이 아니라 계산으로 만들어진다).
 // 그래도 **없으면 기사를 못 쓰는 것은 마찬가지**이므로 함께 점검한다.
@@ -60,7 +78,8 @@ console.log(`\n시계열 점검 · ${today} KST · 정의 ${defs.length}개\n`);
 if (missing.length) {
   console.log(`${C.r}✗ 파일이 없거나 비어 있음 ${missing.length}개 — API 코드가 틀렸을 가능성이 크다${C.x}`);
   for (const d of missing) {
-    console.log(`    ${d.id} (${d.source} ${d.fred ?? `${d.stat}/${d.item}`})${d.note ? ` ${C.d}· ${d.note}${C.x}` : ''}`);
+    const code = d.fred ?? (d.stat ? `${d.stat}/${d.item}` : d.item);
+    console.log(`    ${d.id} (${d.source} ${code})${d.note ? ` ${C.d}· ${d.note}${C.x}` : ''}`);
   }
   console.log('');
 }
@@ -70,7 +89,7 @@ if (stale.length) {
   console.log('');
 }
 console.log(`${C.g}✓ 정상 ${ok.length}개${C.x}`);
-for (const o of ok) console.log(`    ${C.d}${o.def.id.padEnd(12)} 최신 ${o.last} · ${o.n}개${C.x}`);
+for (const o of ok) console.log(`    ${C.d}${o.def.id.padEnd(18)} 최신 ${o.last} · ${o.n}개${C.x}`);
 console.log('');
 
 if (missing.length) {

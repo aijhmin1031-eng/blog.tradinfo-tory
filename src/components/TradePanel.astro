@@ -4,6 +4,13 @@ import trade from '../data/trade.json';
 
 const fmt = (v: number) =>
   v.toLocaleString('ko-KR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+// 카드는 **상위 6개국만** 보여 준다. 2026-08-31 에 수집 대상이 4개국에서 15개국으로 늘어
+// 그대로 두면 사이드바 카드가 15줄이 된다. 전체는 시계열 파일에 그대로 쌓인다.
+// 순위는 **자료가 정한다**(교역액 = 수출+수입) — 정의서 순서를 믿으면 실제 순위가 바뀌었을 때 어긋난다.
+const TOP = 6;
+const shown = [...trade.rows].sort((a, b) => b.exp + b.imp - (a.exp + a.imp)).slice(0, TOP);
+const more = trade.rows.length - shown.length;
 ---
 
 <div class="trade-panel">
@@ -16,7 +23,7 @@ const fmt = (v: number) =>
         <div class="trade-cols mono">
           <span></span><span>수출</span><span>수입</span><span>수지</span>
         </div>
-        {trade.rows.map((r) => (
+        {shown.map((r) => (
           <div class="trade-row">
             <span class="trade-name">{r.name}</span>
             <span class="mono trade-num">{fmt(r.exp)}</span>
@@ -27,7 +34,8 @@ const fmt = (v: number) =>
           </div>
         ))}
         <div class="trade-asof mono">
-          {trade.asOf} 통관 기준 · 단위 억 달러 · 최근 월은 잠정치 · 자료: 관세청 수출입무역통계
+          {trade.asOf} 통관 기준 · 단위 억 달러 · 교역액 상위 {shown.length}개국
+          {more > 0 && ` (외 ${more}개국)`} · 최근 월은 잠정치 · 자료: 관세청 수출입무역통계
         </div>
       </>
     )

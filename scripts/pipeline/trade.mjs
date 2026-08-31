@@ -10,34 +10,29 @@ const ROOT = new URL('../../', import.meta.url);
 const SERIES_DIR = new URL('data/series/', ROOT);
 const OUT = new URL('src/data/trade.json', ROOT);
 
-const COUNTRIES = [
-  { cc: 'US', name: '미국' },
-  { cc: 'CN', name: '중국' },
-  { cc: 'JP', name: '일본' },
-  { cc: 'VN', name: '베트남' },
-];
+// 수집 대상은 **정의서 한 곳**에서 온다 — `data/sources.json` 의 `trade` 절.
+//   2026-08-31 이전에는 이 파일 안에 목록이 박혀 있었고, 그래서 손으로 심은 계열이
+//   파이프라인에 등록되지 않은 채 조용히 멈추는 사고가 났다(`hs8542_HK`).
+//   이제 수집기와 점검기(`series-check.mjs`)가 같은 파일을 읽으므로,
+//   **한쪽만 고쳐 어긋나는 일이 구조적으로 불가능하다**(forms.json 과 같은 원칙).
 const MONTHS_BACK = 4; // 이번 달 포함 최근 4개월 재조회 (잠정치 갱신 겸용)
 // 목표 이력 길이. 계열이 이보다 짧으면 **모자란 달만** 함께 받아 채운다(자가 치유).
 //   2026-08-31 신설. 국가별 4종이 3개월치뿐이었다(품목별은 13개월). 버그가 아니라
 //   **과거 씨앗을 안 심어서**였고, MONTHS_BACK 이 4라 한 달에 하나씩만 늘고 있었다.
 //   매번 13개월을 받으면 호출이 3배가 되므로, **부족할 때만** 채운다.
-//   첫 실행에서만 비용이 들고 그 뒤로는 평소대로 4개월만 돈다.
 const SEED_MONTHS = 13;
-// 품목 시계열 — 반도체·AI 허브 등에서 사용
-const ITEMS = [
-  { hs: '8542', id: 'hs8542', name: '반도체(전자집적회로)' },
-  { hs: '8486', id: 'hs8486', name: '반도체 제조 장비' },
-];
-// 품목 × 국가 — 반도체 특집의 국가별 지도(중화권 경로)에서 쓴다.
-//   ★ 2026-08-31 추가. 이 세 계열은 **파이프라인에 아예 없었다.** 과거에 손으로 한 번
-//   심어 두고 그 뒤로 갱신이 끊겨 있었다(`hs8542_HK` 최종 갱신 8/22, 품목별은 8/29).
-//   그 데이터를 쓰는 기사들이 낡은 숫자를 보여 주고 있었다.
-//   **손으로 심은 계열은 반드시 파이프라인에 등록할 것.** 안 하면 조용히 멈춘다.
-const ITEM_COUNTRIES = [
-  { hs: '8542', cc: 'CN', id: 'hs8542_CN', name: '반도체 對중국' },
-  { hs: '8542', cc: 'HK', id: 'hs8542_HK', name: '반도체 對홍콩' },
-  { hs: '8542', cc: 'TW', id: 'hs8542_TW', name: '반도체 對대만' },
-];
+// 한 번의 실행에서 **씨앗(과거 채우기)으로 쓸 수 있는 호출 수**.
+//   최근 달 갱신은 잠정치 정확도에 직결되므로 예산에서 빼지 않고 언제나 먼저 돈다.
+//   왜 필요한가: 계열이 38개로 늘면서 첫 씨앗이 400회를 넘는다. 일 한도(개발계정 10,000)에는
+//   여유가 있지만 **순차 호출이라 CI 가 길어지고, 도중에 끊기면 그 실행이 통째로 헛돈다.**
+//   예산을 두면 못 채운 만큼은 다음 실행이 이어서 채운다(자가 치유가 이미 그렇게 동작한다).
+const SEED_BUDGET = Number(process.env.TRADE_SEED_BUDGET ?? 500);
+let seedLeft = SEED_BUDGET;
+
+const REG = JSON.parse(await readFile(new URL('data/sources.json', ROOT), 'utf8')).trade;
+const COUNTRIES = REG.countries;
+const ITEMS = REG.items;
+const ITEM_COUNTRIES = REG.itemCountries;
 
 const yymm = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
 const tag = (xml, name) => {
@@ -103,7 +98,9 @@ async function monthsFor(id, recent, seed) {
     //   이렇게 두면 스키마를 넓힐 때마다 다음 실행이 스스로 메운다.
     have = new Set((j.points ?? []).filter((p) => p.expWgt != null).map((p) => p.d));
   } catch {}
-  const missing = seed.filter((m) => !have.has(m));
+  // 예산이 남은 만큼만 과거를 채운다. 최근 달(recent)은 예산과 무관하게 언제나 받는다.
+  const missing = seed.filter((m) => !have.has(m)).slice(0, Math.max(0, seedLeft));
+  seedLeft -= missing.length;
   return [...new Set([...recent, ...missing])].sort();
 }
 
@@ -149,54 +146,67 @@ async function main() {
     out = JSON.parse(await readFile(OUT, 'utf8'));
   } catch {}
 
-  try {
-    const rows = [];
-    for (const c of COUNTRIES) {
-      const months = await monthsFor(c.cc, recent, seed);
+  const empty = [];
+  const broke = [];
+
+  /** 계열 하나를 받아 누적한다.
+   *  ★ **한 계열의 실패가 나머지를 죽이지 않는다.** 계열이 38개가 되면서 이 격리가 필수가 됐다 —
+   *  예전 4개짜리 코드는 하나가 던지면 바깥 catch 로 빠져 **그 뒤 계열을 전부 건너뛰었다.**
+   *  그리고 **값이 하나도 안 온 계열은 크게 찍는다**: 코드가 틀리면 API 가 오류 대신
+   *  「빈 목록」을 주므로, 조용히 빈 파일만 남는다(2026-08-25 `gold` 과 같은 계열의 사고). */
+  const runOne = async (id, label, cc, hs = '') => {
+    try {
+      const months = await monthsFor(id, recent, seed);
       if (months.length > MONTHS_BACK) {
-        console.log(`[trade] ${c.name}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
+        console.log(`[trade] ${label}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
       }
-      const fresh = await fetchMonths(c.name, months, c.cc);
-      const stored = await accumulate(c.cc, c.name, fresh);
+      const fresh = await fetchMonths(label, months, cc, hs);
+      const stored = await accumulate(id, label, fresh);
+      if (!stored.points.length) {
+        empty.push(`${id}(${label})`);
+        console.log(`[trade] ${label}: ⚠ 값이 하나도 없다 — 코드(${hs || cc})가 틀렸을 가능성이 크다`);
+        return null;
+      }
       const last = stored.points[stored.points.length - 1];
-      if (!last) continue;
-      rows.push({
-        cc: c.cc,
-        name: c.name,
-        month: `${last.d.slice(0, 4)}.${last.d.slice(4)}`,
-        exp: +eok(last.exp).toFixed(1),
-        imp: +eok(last.imp).toFixed(1),
-        bal: +eok(last.bal).toFixed(1),
-      });
-      console.log(`[trade] ${c.name}: ${stored.points.length}개월 누적, 최신 ${last.d}`);
+      console.log(`[trade] ${label}: ${stored.points.length}개월 누적, 최신 ${last.d}`);
+      return stored;
+    } catch (e) {
+      broke.push(`${id}(${label}): ${e.message}`);
+      console.log(`[trade] ${label} 실패: ${e.message}`);
+      return null;
     }
-    if (rows.length) {
-      out.rows = rows;
-      out.asOf = rows[0].month;
-    }
-    // 품목 시계열 (반도체 등)
-    for (const it of ITEMS) {
-      const months = await monthsFor(it.id, recent, seed);
-      if (months.length > MONTHS_BACK) {
-        console.log(`[trade] ${it.name}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
-      }
-      const fresh = await fetchMonths(it.name, months, '', it.hs);
-      const stored = await accumulate(it.id, it.name, fresh);
-      console.log(`[trade] ${it.name}: ${stored.points.length}개월 누적`);
-    }
-    // 품목 × 국가
-    for (const ic of ITEM_COUNTRIES) {
-      const months = await monthsFor(ic.id, recent, seed);
-      if (months.length > MONTHS_BACK) {
-        console.log(`[trade] ${ic.name}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
-      }
-      const fresh = await fetchMonths(ic.name, months, ic.cc, ic.hs);
-      const stored = await accumulate(ic.id, ic.name, fresh);
-      console.log(`[trade] ${ic.name}: ${stored.points.length}개월 누적`);
-    }
-  } catch (e) {
-    console.log(`[trade] 수집 건너뜀(기존 유지): ${e.message}`);
+  };
+
+  const rows = [];
+  for (const c of COUNTRIES) {
+    const stored = await runOne(c.cc, c.name, c.cc);
+    if (!stored) continue;
+    const last = stored.points[stored.points.length - 1];
+    rows.push({
+      cc: c.cc,
+      name: c.name,
+      month: `${last.d.slice(0, 4)}.${last.d.slice(4)}`,
+      exp: +eok(last.exp).toFixed(1),
+      imp: +eok(last.imp).toFixed(1),
+      bal: +eok(last.bal).toFixed(1),
+    });
   }
+  if (rows.length) {
+    out.rows = rows;
+    out.asOf = rows[0].month;
+  }
+  // 품목 시계열 (반도체·승용차·원유 등)
+  for (const it of ITEMS) await runOne(it.id, it.name, '', it.hs);
+  // 품목 × 국가 (반도체의 중화권 경로)
+  for (const ic of ITEM_COUNTRIES) await runOne(ic.id, ic.name, ic.cc, ic.hs);
+
+  const usedSeed = SEED_BUDGET - seedLeft;
+  console.log(
+    `[trade] 씨앗 ${usedSeed}/${SEED_BUDGET} 사용` +
+      (seedLeft <= 0 ? ' — 예산을 다 썼다. 남은 과거는 다음 실행이 이어서 채운다' : '')
+  );
+  if (empty.length) console.log(`[trade] ⚠ 값이 비어 있는 계열 ${empty.length}개: ${empty.join(', ')}`);
+  if (broke.length) console.log(`[trade] ⚠ 실패한 계열 ${broke.length}개: ${broke.join(' | ')}`);
 
   await writeFile(OUT, JSON.stringify(out, null, 2) + '\n');
   console.log('[trade] trade.json 갱신');
