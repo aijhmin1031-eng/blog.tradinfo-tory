@@ -437,36 +437,48 @@ const jsonLd = {
   .hero-side { display: flex; flex-direction: column; gap: 26px; }
   .hero-side :global(.three) { margin-bottom: 0; }
 
-  .list { padding-top: 52px; }
+  .list { padding-top: 44px; }
   .list-head { border-bottom: 1px solid var(--ink); margin-bottom: 4px; }
   .list-title { font-size: 25px; font-weight: 900; margin: 0 0 14px 0; }
+  /* 홈에서 가장 큰 구획이 「이번 주」 목록이었다(1,140px, 히어로보다 크다).
+     하루 1편 체제로 줄인 뒤 홈의 중심은 도구·숫자이므로 목록은 훑는 자리로 낮춘다.
+     썸네일 148→120px · 상하 여백 22→15px · 설명 1줄 고정. */
   .row {
     display: grid;
-    grid-template-columns: 148px 1fr auto;
-    gap: 22px;
+    grid-template-columns: 120px 1fr auto;
+    gap: 18px;
     align-items: center;
-    padding: 22px 0;
+    padding: 15px 0;
     border-bottom: 1px solid var(--hair2);
   }
   .row-thumb {
-    width: 148px;
+    width: 120px;
     aspect-ratio: 16 / 9;
     border: 1px solid var(--hair);
     background: var(--surface);
     overflow: hidden;
   }
   .row-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
-  .row:hover .row-thumb img { transform: scale(1.05); }
+  /* ★ 스코프 CSS 함정 ① — 맨 img 로는 <Pic> 안에 닿지 않아 이 확대가 여태 죽어 있었다. */
+  .row:hover .row-thumb :global(img) { transform: scale(1.05); }
   .row-title {
-    font-size: 19px;
+    font-size: 18px;
     font-weight: 700;
-    line-height: 1.5;
+    line-height: 1.45;
     transition: color 0.15s ease, transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .row:hover .row-title { color: var(--accent); transform: translateX(6px); }
-  .row .row-no { transition: color 0.2s ease; }
-  .row:hover .row-no { color: var(--accent); }
-  .row-dek { font-size: 14px; color: var(--sub); line-height: 1.7; margin-top: 6px; }
+  /* 설명은 한 줄까지만 — 두 줄이 되는 순간 행이 썸네일보다 커져 목록이 늘어진다. */
+  .row-dek {
+    font-size: 13.5px;
+    color: var(--sub);
+    line-height: 1.6;
+    margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
   .row-meta {
     display: flex;
     flex-direction: column;
@@ -478,20 +490,17 @@ const jsonLd = {
   @media (max-width: 640px) {
     /* 작은 썸네일(16:9=54px)이 긴 본문 옆 세로 가운데에 떠서 위아래 여백이 크게 보이던 문제.
        이미지를 키우고(4:3) 제목 위쪽에 맞춰 정렬하고, 설명은 3줄로 줄여 행 높이를 낮춘다. */
-    .row { grid-template-columns: 124px 1fr; gap: 14px; align-items: start; }
+    .row { grid-template-columns: 108px 1fr; gap: 13px; align-items: start; padding: 13px 0; }
     /* 원본 비율(16:9)을 지킨다. 4:3 으로 맞추면 흰 띠가 생긴다(2026-08-26). */
-    .row-thumb { width: 124px; aspect-ratio: 16 / 9; }
-    /* 목록에서 설명 세 줄은 제목을 밀어내기만 한다. 모바일은 제목·날짜만 둔다(소유주 지시). */
+    .row-thumb { width: 108px; aspect-ratio: 16 / 9; }
+    /* 목록에서 설명 세 줄은 제목을 밀어내기만 한다. 모바일은 제목·날짜만 둔다(소유주 지시).
+       ★ 이 규칙은 2026-08-31 까지 죽어 있었다 — 여덟 줄 아래에 같은 선택자가 다시 있어
+       `display: -webkit-box` 가 덮었다. 그래서 설명이 계속 나왔고 한 행이 258px 였다.
+       같은 미디어쿼리 안에 같은 선택자를 두 번 쓰지 말 것. */
     .row-dek { display: none; }
+    .row-title { font-size: 16px; line-height: 1.45; }
     .row-body { grid-column: 2; }
-    .row-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: flex-start; margin-top: 10px; }
-    .row-dek {
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-top: 5px;
-    }
+    .row-meta { grid-column: 2; flex-direction: row; align-items: center; justify-content: flex-start; margin-top: 8px; }
   }
 
   #tori-greet {
@@ -510,6 +519,11 @@ const jsonLd = {
     padding-bottom: 16px;
   }
   #tori-greet.show { transform: translateY(0); }
+  /* ★ ID 선택자의 `display: flex` 가 UA 의 `[hidden] { display: none }` 을 이긴다.
+     그래서 `hidden` 을 걸어도 토리가 계속 떠 있었다 — 좁은 화면에서 안 띄우기로 한
+     규칙(8/31)도, 5초 뒤 내리는 것도 실제로는 화면에서 사라지지 않았다.
+     `hidden` 을 쓰는 요소에 display 를 주면 반드시 이 짝을 같이 쓸 것. */
+  #tori-greet[hidden] { display: none; }
   #tg-close { pointer-events: auto; }
   /* ★ ID 선택자도 스코프를 탄다 — `<Pic>` 안의 img 에 닿지 않아 88px 그림이 210px 로 나왔다
      (2026-08-27 감사에서 발견). 오늘 만난 세 번째 변종이다: 자손 선택자·전달 클래스·ID. */
