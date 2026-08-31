@@ -8,7 +8,7 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "fetch-data": "node scripts/pipeline/collect.mjs",
-    "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/corp.mjs && node scripts/pipeline/trade.mjs && node scripts/pipeline/brief.mjs",
+    "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/corp.mjs && node scripts/pipeline/trade.mjs && node scripts/pipeline/customs-fx.mjs && node scripts/pipeline/brief.mjs",
     "check-quality": "node scripts/check-quality.mjs",
     "audit": "node scripts/audit.mjs",
     "quality": "node scripts/quality-metrics.mjs --trend",

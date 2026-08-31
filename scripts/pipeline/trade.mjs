@@ -62,7 +62,16 @@ async function fetchMonth(cc, month, hsSgn = '') {
   const exp = Number(tag(item, 'expDlr'));
   const imp = Number(tag(item, 'impDlr'));
   if (!exp && !imp) return null;
-  return { d: month, exp, imp, bal: Number(tag(item, 'balPayments')) };
+  // 중량(kg)도 함께 받는다 — 2026-08-31 추가.
+  //   금액만 받고 있어서 **kg당 단가(달러/kg)를 계산할 수 없었다.**
+  //   단가는 원자료에 없고 우리가 나눠서 만드는 값이라, 「우리가 계산한 값」에 해당한다.
+  //   (`semi-export-unit-value` 기사의 차트가 이것 때문에 하드코딩으로 남아 있었다 — 미결 8번)
+  const expWgt = Number(tag(item, 'expWgt'));
+  const impWgt = Number(tag(item, 'impWgt'));
+  const row = { d: month, exp, imp, bal: Number(tag(item, 'balPayments')) };
+  if (Number.isFinite(expWgt) && expWgt > 0) row.expWgt = expWgt;
+  if (Number.isFinite(impWgt) && impWgt > 0) row.impWgt = impWgt;
+  return row;
 }
 
 async function accumulate(cc, name, fresh) {
@@ -89,7 +98,10 @@ async function monthsFor(id, recent, seed) {
     // 파일명은 accumulate() 와 같은 규칙이어야 한다. 여기서 접두사를 빠뜨리면
     // 저장분을 못 찾아 **매일 13개월을 받게 된다**(2026-08-31 작성 중 실제로 냈던 실수).
     const j = JSON.parse(await readFile(new URL(`trade_${id}.json`, SERIES_DIR), 'utf8'));
-    have = new Set((j.points ?? []).map((p) => p.d));
+    // 「있는 달」의 기준은 날짜가 아니라 **필요한 필드까지 채워졌는가**다.
+    //   중량을 나중에 받기 시작했으므로, 금액만 있는 옛 점은 아직 덜 찬 것으로 본다.
+    //   이렇게 두면 스키마를 넓힐 때마다 다음 실행이 스스로 메운다.
+    have = new Set((j.points ?? []).filter((p) => p.expWgt != null).map((p) => p.d));
   } catch {}
   const missing = seed.filter((m) => !have.has(m));
   return [...new Set([...recent, ...missing])].sort();
