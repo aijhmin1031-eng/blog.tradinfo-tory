@@ -81,7 +81,10 @@ const items = PICK.map((id) => {
 </section>
 
 <style>
-  .hn { margin-top: 22px; }
+  .hn { margin-top: 20px; }
+  /* 「오늘의 숫자 → 다음 분기점」은 한 덩어리로 읽혀야 한다(1분 대시보드).
+     사이를 벌리면 따로 놓인 두 구획으로 보인다. */
+  .hn + :global(.nx) { margin-top: 0; }
   .hn-head { display: flex; align-items: baseline; justify-content: space-between;
     border-bottom: 2px solid var(--ink); padding-bottom: 7px; margin-bottom: 0; }
   .hn-t { font-size: 15px; margin: 0; letter-spacing: -.01em; }

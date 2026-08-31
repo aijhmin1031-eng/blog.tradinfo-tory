@@ -1,7 +1,6 @@
 ---
 import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
-import StatTiles from '../components/StatTiles.astro';
 import HomeNumbers from '../components/HomeNumbers.astro';
 import HomeTools from '../components/HomeTools.astro';
 import NextEvents from '../components/NextEvents.astro';
@@ -101,6 +100,8 @@ const jsonLd = {
   {
     featured && (
       <HomeNumbers />
+      <NextEvents />
+      <HomeTools />
 
       <section class="hero wrap">
         <div class="hero-main">
@@ -157,15 +158,10 @@ const jsonLd = {
               next={featured.data.three.next}
             />
           )}
-          <StatTiles />
         </aside>
       </section>
     )
   }
-
-  <NextEvents />
-
-  <HomeTools />
 
   {
     weekPosts.length > 0 && (
@@ -375,12 +371,15 @@ const jsonLd = {
   .sb-card:hover .sb-card-title { color: var(--accent); }
   .sb-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
+  /* ★ 2026-08-31 축소. 머리기사가 1,267px 로 첫 화면을 독점했고 그림만 410px 였다.
+     홈을 도구 진열형으로 잡은 이상 기사는 보조다. 위 여백을 절반으로 줄이고
+     그림에 상한을 걸어 **폴드 안에 대시보드가 먼저 들어오게** 했다. */
   .hero {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 40px;
-    padding-top: 52px;
-    padding-bottom: 52px;
+    gap: 34px;
+    padding-top: 26px;
+    padding-bottom: 40px;
     border-bottom: 1px solid var(--ink);
   }
   @media (min-width: 960px) {
@@ -407,7 +406,12 @@ const jsonLd = {
     background: var(--surface);
     overflow: hidden;
   }
-  .hero-image :global(img) { display: block; width: 100%; height: auto; transition: transform 0.4s ease; }
+  /* 그림 높이 상한 — 없으면 1200px 원본이 비율대로 410px 를 먹는다.
+     `object-fit: cover` 라 가로는 채우고 위아래만 잘린다. */
+  .hero-image :global(img) {
+    display: block; width: 100%; height: auto; max-height: 260px; object-fit: cover;
+    transition: transform 0.4s ease;
+  }
   .hero-image:hover img { transform: scale(1.02); }
   .hero-chart { width: 100%; }
   .hero-chart :global(.chart) { margin: 6px 0 0 0; max-width: none; }
