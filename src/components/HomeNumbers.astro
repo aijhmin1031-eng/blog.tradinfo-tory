@@ -1,0 +1,122 @@
+---
+// 홈 「오늘의 숫자」 스트립 — 첫 화면에서 숫자를 먼저 보여 준다.
+//
+// 왜 만들었나 (2026-08-31, 소유주 지시 「홈에 힘이 없다, 정보 임팩트가 부족하다」):
+//   실측해 보니 첫 화면 900px 중 361px(41%)이 브랜딩·내비·티커였고, 폴드 안에서 독자가
+//   얻는 정보는 머리기사 제목 하나뿐이었다. **계열 73종을 가진 데이터 블로그인데
+//   홈이 기사 블로그처럼 생겼다.** 티커는 흐르므로 읽으려면 기다려야 하고,
+//   우측 「오늘의 지표」는 3개뿐이었다.
+//   → 핵심 지표 여덟을 **고정된 자리에** 값·전일 대비·미니 곡선으로 편다.
+//
+// 값은 `data/series/*.json` 을 빌드 시점에 읽어 **매일 아침 자동으로 갱신**된다.
+import { url } from '../lib/site';
+import defs from '../../data/sources.json';
+
+const series = import.meta.glob('../../data/series/*.json', { eager: true });
+const load = (id: string): any => (series[`../../data/series/${id}.json`] as any)?.default;
+
+// 여덟 칸. 「환율·금리·증시·원자재」를 골라 하루의 그림이 한 줄에 서게 했다.
+//
+// ★ **일간 계열만 고른다.** 처음에 구리(`copper`)를 넣었더니 기준일이 07.01 로 찍혔다.
+//   월간 계열은 7월치가 최신인 것이 정상이지만(8월 통계는 9월에 나온다),
+//   **「오늘의 숫자」라는 제목과 두 달 전 값은 어긋난다.** 월간 지표는 `/numbers/` 가 맡는다.
+//   (일간: usdkrw·jpy100·dxy·baserate·ktb10y·us2y·us10y·us10y2y·fedfunds·kospi·wti·natgas
+//    월간: deposit1y·brent·copper·cpi_*·ppi_kr·unrate_*·trade_* 등)
+const PICK = ['usdkrw', 'jpy100', 'dxy', 'baserate', 'ktb10y', 'us10y', 'kospi', 'wti'];
+
+const meta = new Map<string, any>((defs.series as any[]).map((d) => [d.id, d]));
+const fmt = (v: number, frac?: number) => {
+  const f = frac ?? (Math.abs(v) >= 10000 ? 0 : Math.abs(v) >= 100 ? 1 : 2);
+  return v.toLocaleString('ko-KR', { minimumFractionDigits: f, maximumFractionDigits: f });
+};
+
+const items = PICK.map((id) => {
+  const s = load(id);
+  if (!s?.points?.length) return null;
+  const pts = s.points.slice(-24);
+  const last = pts[pts.length - 1];
+  const prev = pts[pts.length - 2];
+  const m = meta.get(id);
+  const diff = prev ? last.v - prev.v : 0;
+  // 색 규약: 오른 것은 빨강, 내린 것은 파랑 — 한국 금융 관례.
+  const dir = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+  const vals = pts.map((p: any) => p.v);
+  const lo = Math.min(...vals), hi = Math.max(...vals), span = hi - lo || 1;
+  const W = 92, H = 26;
+  const d = vals
+    .map((v: number, i: number) =>
+      `${i ? 'L' : 'M'}${(i * W / (vals.length - 1)).toFixed(1)} ${(H - 2 - ((v - lo) / span) * (H - 4)).toFixed(1)}`)
+    .join(' ');
+  return {
+    id, name: s.name, dir, d, W, H,
+    value: fmt(last.v, m?.frac),
+    unit: m?.unit ?? s.unit ?? '',
+    diff: (diff > 0 ? '+' : '') + fmt(diff, m?.frac),
+    asOf: String(last.d).length === 8
+      ? `${String(last.d).slice(4, 6)}.${String(last.d).slice(6, 8)}`
+      : `${String(last.d).slice(0, 4)}.${String(last.d).slice(4, 6)}`,
+  };
+}).filter(Boolean) as any[];
+---
+
+<section class="hn wrap">
+  <div class="hn-head">
+    <h2 class="hn-t">오늘의 숫자</h2>
+    <a class="hn-more" href={url('/numbers/')}>지표 30종 전부 <span aria-hidden="true">→</span></a>
+  </div>
+  <ul class="hn-grid">
+    {items.map((t) => (
+      <li class={`hn-c is-${t.dir}`}>
+        <span class="hn-n">{t.name}</span>
+        <span class="hn-v mono">{t.value}<em>{t.unit}</em></span>
+        <span class="hn-d mono">{t.diff}</span>
+        <svg class="hn-s" viewBox={`0 0 ${t.W} ${t.H}`} width={t.W} height={t.H} aria-hidden="true">
+          <path d={t.d} fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linejoin="round" stroke-linecap="round" />
+        </svg>
+        <span class="hn-a mono">{t.asOf}</span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .hn { margin-top: 22px; }
+  .hn-head { display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 2px solid var(--ink); padding-bottom: 7px; margin-bottom: 0; }
+  .hn-t { font-size: 15px; margin: 0; letter-spacing: -.01em; }
+  .hn-more { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .hn-more:hover { text-decoration: underline; }
+  .hn-grid { list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(4, 1fr); }
+  .hn-c { display: grid; grid-template-columns: 1fr auto; grid-template-areas:
+      'n n' 'v s' 'd a';
+    gap: 1px 8px; padding: 12px 14px; border-bottom: 1px solid var(--hair2);
+    border-right: 1px solid var(--hair2); min-width: 0;
+    /* 값이 바뀌면 눈에 띄게 — 카드가 살짝 떠오른다. 움직임은 한 번, 짧게. */
+    transition: background .18s ease; }
+  .hn-c:hover { background: var(--paper); }
+  .hn-c:nth-child(4n) { border-right: none; }
+  .hn-c:nth-child(n+5) { border-bottom: none; }
+  .hn-n { grid-area: n; font-size: 12px; color: var(--sub); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .hn-v { grid-area: v; font-size: 19px; font-weight: 700; letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums; }
+  .hn-v em { font-style: normal; font-size: 11px; font-weight: 400; color: var(--muted); margin-left: 3px; }
+  .hn-d { grid-area: d; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .hn-a { grid-area: a; font-size: 10.5px; color: var(--muted); text-align: right; }
+  .hn-s { grid-area: s; align-self: center; width: 92px; height: 26px; }
+  .is-up { color: var(--up); }
+  .is-down { color: var(--down); }
+  .is-flat { color: var(--muted); }
+  .hn-c .hn-n, .hn-c .hn-v, .hn-c .hn-a { color: var(--ink); }
+  .hn-c .hn-n, .hn-c .hn-a { color: var(--sub); }
+  @media (max-width: 900px) {
+    .hn-grid { grid-template-columns: repeat(2, 1fr); }
+    .hn-c:nth-child(4n) { border-right: 1px solid var(--hair2); }
+    .hn-c:nth-child(2n) { border-right: none; }
+    .hn-c:nth-child(n+5) { border-bottom: 1px solid var(--hair2); }
+    .hn-c:nth-child(n+7) { border-bottom: none; }
+    .hn-s { width: 64px; }
+  }
+</style>

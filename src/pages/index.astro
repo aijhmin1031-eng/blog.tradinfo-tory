@@ -2,6 +2,8 @@
 import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
 import StatTiles from '../components/StatTiles.astro';
+import HomeNumbers from '../components/HomeNumbers.astro';
+import HomeTools from '../components/HomeTools.astro';
 import NextEvents from '../components/NextEvents.astro';
 import ThreeLines from '../components/ThreeLines.astro';
 import LineChart from '../components/LineChart.astro';
@@ -98,6 +100,8 @@ const jsonLd = {
 
   {
     featured && (
+      <HomeNumbers />
+
       <section class="hero wrap">
         <div class="hero-main">
           <div class:list={['kicker', CATEGORIES[featured.data.category].cls]}>
@@ -160,6 +164,8 @@ const jsonLd = {
   }
 
   <NextEvents />
+
+  <HomeTools />
 
   {
     weekPosts.length > 0 && (

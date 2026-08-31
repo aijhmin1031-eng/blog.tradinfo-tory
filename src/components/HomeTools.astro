@@ -1,0 +1,104 @@
+---
+// 홈 「도구」 진열 — 2026-08-31 신설.
+//
+// 소유주 결정으로 홈을 **도구 진열형**으로 잡았다. 근거는 `docs/traffic.md` 「전략 전환」이다.
+//   기사 114편의 외부 유입 기여가 측정되지 않았고, 수익으로 닿는 길은 도구뿐이라고 정했다.
+//   그런데 8/31 점검에서 **계산기 둘이 홈에도 내비에도 없었다.** 만들어 놓고 숨겨 둔 셈이다.
+//
+// 「도구」를 계산기로만 세면 둘뿐이라 빈약해 보이지만, **찾아보는 것도 도구다.**
+//   계산기 2 + 데이터 데스크 + 오늘의 숫자 + 사전 = 다섯. 진열할 것은 충분하다.
+import { url } from '../lib/site';
+import { PICTOGRAMS } from '../lib/pictograms';
+import { GLOSSARY } from '../lib/glossary';
+
+const series = import.meta.glob('../../data/series/*.json', { eager: true });
+const nSeries = Object.values(series).filter((s: any) => s?.default?.points?.length).length;
+
+// 숫자는 손으로 적지 않는다 — 세어서 쓴다. 손으로 적으면 늘어난 뒤에도 옛 수가 남는다.
+const TOOLS = [
+  {
+    key: 'real-return', icon: 'coin', tag: '계산기',
+    name: '실질금리 계산기',
+    desc: '예금 이자에서 세금과 물가를 빼면 얼마가 남는가. 손익분기 금리를 함께 낸다.',
+    meta: '금리·물가 기본값 자동',
+  },
+  {
+    key: 'import-cost', icon: 'ship', tag: '계산기',
+    name: '수입원가 계산기',
+    desc: '과세가격에서 관세·부가세까지 순서대로. FTA 적용과 미적용을 나란히 비교한다.',
+    meta: '관세청 과세환율 자동',
+  },
+  {
+    key: 'desk', icon: 'chartline', tag: '자료',
+    name: '데이터 데스크',
+    desc: '지표·국가별 무역·품목별 무역·주가·관세환율의 시계열을 표와 그래프로 판다.',
+    meta: `계열 ${nSeries}종 · 매일 갱신`,
+  },
+  {
+    key: 'numbers', icon: 'benchmark', tag: '자료',
+    name: '오늘의 숫자',
+    desc: '환율·금리·물가·원자재·대외 거래·증시를 현재값과 기준일로 한 화면에.',
+    meta: '지표 30종',
+  },
+  {
+    key: 'glossary', icon: 'doc', tag: '자료',
+    name: '용어 도토리',
+    desc: '기사에 나오는 무역·경제 용어를 낱장으로. 본문의 점선 밑줄을 누르면 열린다.',
+    meta: `용어 ${Object.keys(GLOSSARY).length}개`,
+  },
+];
+---
+
+<section class="ht wrap">
+  <div class="ht-head">
+    <h2 class="ht-t">도토리 창고, 직접 써 보는 것들</h2>
+    <a class="ht-more" href={url('/warehouse/')}>창고 전체 <span aria-hidden="true">→</span></a>
+  </div>
+  <ul class="ht-grid">
+    {TOOLS.map((t) => (
+      <li class="ht-c">
+        <a href={url(`/${t.key}/`)} class="ht-a">
+          <span class="ht-ic" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" set:html={PICTOGRAMS[t.icon] ?? ''} />
+          </span>
+          <span class="ht-tag">{t.tag}</span>
+          <span class="ht-n">{t.name}</span>
+          <span class="ht-d">{t.desc}</span>
+          <span class="ht-m mono">{t.meta}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .ht { margin-top: 34px; }
+  .ht-head { display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 2px solid var(--ink); padding-bottom: 7px; }
+  .ht-t { font-size: 15px; margin: 0; letter-spacing: -.01em; }
+  .ht-more { font-size: 12.5px; color: var(--accent); text-decoration: none; }
+  .ht-more:hover { text-decoration: underline; }
+  .ht-grid { list-style: none; margin: 14px 0 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+  .ht-a { display: grid; grid-template-columns: auto 1fr; grid-template-areas:
+      'ic tag' 'n n' 'd d' 'm m';
+    gap: 3px 8px; height: 100%; padding: 14px 15px 13px;
+    border: 1px solid var(--hair); border-radius: 7px; background: var(--surface);
+    text-decoration: none; color: inherit;
+    /* 가벼운 움직임 하나 — 살짝 떠오르고 테두리가 액센트로 바뀐다.
+       움직임을 줄여 달라는 설정을 존중한다(아래 미디어 쿼리). */
+    transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease; }
+  .ht-a:hover, .ht-a:focus-visible {
+    transform: translateY(-2px); border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(0,0,0,.07); outline: none; }
+  .ht-ic { grid-area: ic; color: var(--accent); display: flex; }
+  .ht-tag { grid-area: tag; align-self: center; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .04em; color: var(--muted); }
+  .ht-n { grid-area: n; margin-top: 5px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .ht-d { grid-area: d; font-size: 12.5px; line-height: 1.6; color: var(--sub); word-break: keep-all; }
+  .ht-m { grid-area: m; margin-top: 7px; font-size: 11px; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) {
+    .ht-a { transition: none; }
+    .ht-a:hover, .ht-a:focus-visible { transform: none; }
+  }
+</style>
