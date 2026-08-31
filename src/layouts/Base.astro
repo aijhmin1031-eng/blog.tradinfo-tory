@@ -107,15 +107,25 @@ const navItems: {
     ],
   },
   {
-    // 창고는 유입이 큰 코너를 위로 둔다(무료 이미지·용어 사전).
+    // ★ 2026-08-31 재편(소유주 지시 「창고 그룹핑을 다시 하자」).
+    //   그전에는 **평면 8항목**이었고 성격이 섞여 있어 무엇을 하는 곳인지 갈리지 않았다.
+    //   더 나쁜 것은 **계산기 둘과 「오늘의 숫자」가 메뉴에 아예 없었다**는 점이다 —
+    //   수익으로 닿는 유일한 길이라고 정해 놓은 도구가 내비에서 빠져 있었다.
+    //   또 `/warehouse/` 가 착지이면서 항목으로도 들어가 같은 주소가 두 번 나왔다(중복 제거).
+    //   이제 성격으로 셋으로 가른다: **계산 → 자료 → 함께·안내.** 도구가 맨 위다.
     key: 'warehouse',
     name: '도토리 창고',
     href: url('/warehouse/'),
     children: [
-      { key: 'desk', name: '데이터 데스크', href: url('/desk/'), desc: '지표·국가별·품목별 시계열 전부를 표와 그래프로' },
-      { key: 'pack', name: '도토리 그림함', href: url('/pack/'), desc: '무료 이미지 나눔 · 출처 표기 시 상업적 이용 가능' },
+      { group: '계산해 보기' },
+      { key: 'real-return', name: '실질금리 계산기', href: url('/real-return/'), desc: '세금과 물가를 빼면 예금에 얼마가 남는가 · 손익분기 금리' },
+      { key: 'import-cost', name: '수입원가 계산기', href: url('/import-cost/'), desc: '관세·부가세와 FTA 적용 여부 비교 · 관세청 과세환율 자동' },
+      { group: '자료 찾기' },
+      { key: 'desk', name: '데이터 데스크', href: url('/desk/'), desc: '계열 73종의 시계열을 표와 그래프로' },
+      { key: 'numbers', name: '오늘의 숫자', href: url('/numbers/'), desc: '지표 30종의 현재값·직전 대비·기준일을 한 화면에' },
       { key: 'glossary', name: '용어 도토리', href: url('/glossary/'), desc: '무역·경제 용어 사전' },
-      { key: 'warehouse', name: '오늘의 지표', href: url('/warehouse/'), desc: '환율·금리·관련주·무역수지 대시보드' },
+      { key: 'pack', name: '도토리 그림함', href: url('/pack/'), desc: '무료 이미지 나눔 · 출처 표기 시 상업적 이용 가능' },
+      { group: '함께·안내' },
       { key: 'galimgil', name: '토리의 갈림길', href: url('/galimgil/'), desc: '주간 전망 연재·공개 채점 아카이브' },
       { key: 'board', name: '도토리 광장', href: url('/board/'), desc: '자유 의견·주제 제안·제보 게시판' },
       { key: 'method', name: '숫자를 다루는 방법', href: url('/method/'), desc: '데이터 출처와 검증 원칙' },
@@ -378,10 +388,14 @@ const isActive = (n: (typeof navItems)[number]) =>
                 </a>
                 <div class="nav-panel" role="menu">
                   {n.children.map((c) => (
-                    <a href={c.href} class:list={['nav-sub', { active: activeNav === c.key }]} role="menuitem">
-                      <span class="nav-sub-name">{c.name}</span>
-                      {c.desc && <span class="nav-sub-desc">{c.desc}</span>}
-                    </a>
+                    c.group ? (
+                      <p class="nav-grp" role="presentation">{c.group}</p>
+                    ) : (
+                      <a href={c.href} class:list={['nav-sub', { active: activeNav === c.key }]} role="menuitem">
+                        <span class="nav-sub-name">{c.name}</span>
+                        {c.desc && <span class="nav-sub-desc">{c.desc}</span>}
+                      </a>
+                    )
                   ))}
                 </div>
               </div>
@@ -412,10 +426,14 @@ const isActive = (n: (typeof navItems)[number]) =>
                 </button>
               </div>
               {n.children!.map((c) => (
-                <a href={c.href} class:list={['nav-sheet-item', { active: activeNav === c.key }]}>
-                  <span class="nav-sheet-name">{c.name}</span>
-                  {c.desc && <span class="nav-sheet-desc">{c.desc}</span>}
-                </a>
+                c.group ? (
+                  <p class="nav-grp nav-grp-m">{c.group}</p>
+                ) : (
+                  <a href={c.href} class:list={['nav-sheet-item', { active: activeNav === c.key }]}>
+                    <span class="nav-sheet-name">{c.name}</span>
+                    {c.desc && <span class="nav-sheet-desc">{c.desc}</span>}
+                  </a>
+                )
               ))}
             </div>
           ))
@@ -711,6 +729,13 @@ const isActive = (n: (typeof navItems)[number]) =>
     color: var(--muted);
     display: none;
   }
+  /* 드롭다운 그룹 머리글 — 항목이 아니라 **구획 이름**이라 누를 수 없게 둔다.
+     평면 목록이던 창고를 「계산 → 자료 → 함께·안내」로 가르는 표지다. */
+  .nav-grp {
+    margin: 0; padding: 10px 12px 4px; font-size: 11px; font-weight: 700;
+    letter-spacing: .06em; color: var(--muted); text-transform: none;
+  }
+  .nav-grp + .nav-sub, .nav-grp + .nav-sheet-item { border-top: none; }
   .nav-panel { display: none; }
   @media (min-width: 860px) {
     .nav-caret { display: inline; }
