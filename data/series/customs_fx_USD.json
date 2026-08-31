@@ -1,0 +1,13 @@
+{
+ "id": "customs_fx_USD",
+ "name": "관세환율(수입) USD",
+ "unit": "KRW",
+ "cycle": "W",
+ "points": [
+  {
+   "d": "20260830",
+   "v": 1382.44
+  }
+ ],
+ "updatedAt": "2026-08-31"
+}

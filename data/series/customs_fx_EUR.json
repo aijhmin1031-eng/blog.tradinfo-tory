@@ -1,0 +1,13 @@
+{
+ "id": "customs_fx_EUR",
+ "name": "관세환율(수입) EUR",
+ "unit": "KRW",
+ "cycle": "W",
+ "points": [
+  {
+   "d": "20260830",
+   "v": 1612.63
+  }
+ ],
+ "updatedAt": "2026-08-31"
+}

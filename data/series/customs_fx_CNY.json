@@ -1,0 +1,13 @@
+{
+ "id": "customs_fx_CNY",
+ "name": "관세환율(수입) CNY",
+ "unit": "KRW",
+ "cycle": "W",
+ "points": [
+  {
+   "d": "20260830",
+   "v": 205.55
+  }
+ ],
+ "updatedAt": "2026-08-31"
+}
