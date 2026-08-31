@@ -254,7 +254,11 @@ const jsonLd = {
     try {
       const KEY = 'tori-greeted';
       const greet = document.getElementById('tori-greet');
-      if (greet && !sessionStorage.getItem(KEY)) {
+      // ★ 2026-08-31: 좁은 화면에서는 아예 띄우지 않는다.
+      //   홈을 대시보드로 바꾼 뒤 이 팝업이 **9.5초 동안 우측 정보를 덮고 있었다**(실측).
+      //   390px 에서는 덮는 비율이 더 크다. 토리는 브랜드라 없애지 않되, 가리는 비용을 줄인다.
+      const roomy = innerWidth >= 900;
+      if (greet && roomy && !sessionStorage.getItem(KEY)) {
         const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
         const show = () => {
           greet.hidden = false;
@@ -265,7 +269,8 @@ const jsonLd = {
           setTimeout(() => (greet.hidden = true), 700);
         };
         setTimeout(show, reduce ? 400 : 1300);
-        const autoHide = setTimeout(hide, 9500);
+        // 9.5초는 길다 — 인사는 눈에 띄면 끝난 것이다. 5초로 줄였다.
+        const autoHide = setTimeout(hide, 5000);
         sessionStorage.setItem(KEY, '1');
         document.getElementById('tg-close')?.addEventListener('click', () => {
           clearTimeout(autoHide);
@@ -494,6 +499,8 @@ const jsonLd = {
     right: 20px;
     bottom: 0;
     z-index: 90;
+    /* 떠 있는 동안 아래 내용의 클릭을 삼키지 않게 한다. 닫기 단추만 되살린다. */
+    pointer-events: none;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -503,6 +510,7 @@ const jsonLd = {
     padding-bottom: 16px;
   }
   #tori-greet.show { transform: translateY(0); }
+  #tg-close { pointer-events: auto; }
   /* ★ ID 선택자도 스코프를 탄다 — `<Pic>` 안의 img 에 닿지 않아 88px 그림이 210px 로 나왔다
      (2026-08-27 감사에서 발견). 오늘 만난 세 번째 변종이다: 자손 선택자·전달 클래스·ID. */
   #tori-greet :global(img) {

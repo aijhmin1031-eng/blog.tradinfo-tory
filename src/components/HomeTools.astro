@@ -49,14 +49,14 @@ const TOOLS = [
 ];
 ---
 
-<section class="ht wrap">
+<section class="ht wrap reveal stagger">
   <div class="ht-head">
     <h2 class="ht-t">도토리 창고, 직접 써 보는 것들</h2>
     <a class="ht-more" href={url('/warehouse/')}>창고 전체 <span aria-hidden="true">→</span></a>
   </div>
   <ul class="ht-grid">
-    {TOOLS.map((t) => (
-      <li class="ht-c">
+    {TOOLS.map((t, i) => (
+      <li class="ht-c" style={`--i:${i}`}>
         <a href={url(`/${t.key}/`)} class="ht-a">
           <span class="ht-ic" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" set:html={PICTOGRAMS[t.icon] ?? ''} />

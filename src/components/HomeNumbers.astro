@@ -59,14 +59,14 @@ const items = PICK.map((id) => {
 }).filter(Boolean) as any[];
 ---
 
-<section class="hn wrap">
+<section class="hn wrap reveal stagger">
   <div class="hn-head">
     <h2 class="hn-t">오늘의 숫자</h2>
     <a class="hn-more" href={url('/numbers/')}>지표 30종 전부 <span aria-hidden="true">→</span></a>
   </div>
   <ul class="hn-grid">
-    {items.map((t) => (
-      <li class={`hn-c is-${t.dir}`}>
+    {items.map((t, i) => (
+      <li class={`hn-c is-${t.dir}`} style={`--i:${i}`}>
         <span class="hn-n">{t.name}</span>
         <span class="hn-v mono">{t.value}<em>{t.unit}</em></span>
         <span class="hn-d mono">{t.diff}</span>

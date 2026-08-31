@@ -176,8 +176,16 @@ img { max-width: 100%; height: auto; }
   0%, 100% { transform: translateY(0) rotate(-0.5deg); }
   50% { transform: translateY(-8px) rotate(0.5deg); }
 }
+/* ── 움직임 규칙 (2026-08-31 명문화) ─────────────────────────────
+   「전혀 AI스럽지 않게, 종이 신문의 격조」가 절대 규칙이다. 움직임도 그 규칙을 받는다.
+     ① **짧고 한 번만.** 진입 0.4~0.5초, hover 0.15~0.2초. 0.8초는 느려서 끌려 보인다.
+     ② **위치 이동은 10px 이내.** 크게 미끄러지면 시선이 글자가 아니라 움직임을 좇는다.
+     ③ **반복 애니메이션은 캐릭터에만.** 데이터·숫자는 절대 흔들지 않는다
+        (움직이는 숫자는 읽는 것을 방해하고, 신뢰를 깎는다).
+     ④ **`prefers-reduced-motion` 은 예외 없이 존중한다**(아래 미디어 쿼리가 전부 끈다).
+   ─────────────────────────────────────────────────────────── */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes draw-line {
@@ -188,7 +196,16 @@ img { max-width: 100%; height: auto; }
 .tori-idle { animation: tori-bob 3.4s ease-in-out infinite; transform-origin: 50% 90%; }
 
 :root.js .reveal { opacity: 0; } /* JS 미작동 환경에서는 항상 표시 */
-.reveal.is-visible { animation: fade-up 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.reveal.is-visible { animation: fade-up 0.46s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* 차례로 드는 진입 — 칸이 여럿인 구획(오늘의 숫자·도구)에서 쓴다.
+   구획 자체는 움직이지 않고 **칸만** 35ms 씩 어긋나 든다. 한 번에 다 뜨는 것보다
+   눈이 왼쪽부터 따라가기 쉽고, 지연이 짧아 기다린다는 느낌은 나지 않는다. */
+.stagger.is-visible { animation: none; opacity: 1; }
+.stagger.is-visible > ul > li {
+  animation: fade-up 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
 
 /* 이스터에그 — 도토리 비 */
 .acorn-drop {
