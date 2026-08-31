@@ -1,17 +1,17 @@
 {
-  "asOf": "2026-08-28",
+  "asOf": "2026-08-31",
   "note": "ECOS·FRED 자동 수집 — data/series/ 에 장기 축적",
   "ticker": [
     {
       "label": "USD/KRW",
-      "value": "1,380.30",
-      "delta": "0.31%",
+      "value": "1,376.50",
+      "delta": "0.28%",
       "dir": "down"
     },
     {
       "label": "JPY100",
-      "value": "866.12",
-      "delta": "0.38%",
+      "value": "859.27",
+      "delta": "0.79%",
       "dir": "down"
     },
     {
@@ -42,22 +42,22 @@
   "tiles": [
     {
       "label": "원/달러 환율",
-      "value": "1,380.30",
-      "delta": "0.31%",
+      "value": "1,376.50",
+      "delta": "0.28%",
       "dir": "down",
       "spark": [
         4,
-        7,
-        12,
-        18,
-        24,
-        26,
-        24,
+        9,
+        15,
+        21,
         23,
+        22,
+        21,
+        24,
         26
       ],
-      "sparkHi": "1,415",
-      "sparkLo": "1,380"
+      "sparkHi": "1,411",
+      "sparkLo": "1,377"
     },
     {
       "label": "한·미 금리차 (10Y)",
