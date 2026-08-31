@@ -87,23 +87,33 @@ const navItems: {
   href: string;
   children?: { key: string; name: string; href: string; desc?: string }[];
 }[] = [
-  { key: 'home', name: '오늘의 도토리', href: url('/') },
+  // ★ 2026-08-31 개명(소유주 결정). 바로 위 워드마크 「도토리경제」가 이미 홈 링크이므로
+  //   (스크롤 뒤 압축 헤더에도 남는다) 이 칸은 **두 번째 홈 링크**다. 브랜드를 또 얹을
+  //   이유가 없고, 첫 칸의 일은 길 안내 하나뿐이라 가장 짧고 오해 없는 말로 둔다.
+  //   부수 효과로 칸 폭이 109px → 30px 대로 줄어 둘째 칸에 여유가 생긴다.
+  { key: 'home', name: '홈', href: url('/') },
   {
     // 읽을거리(기사)는 전부 '숲' 아래로. 카테고리를 상단에 평평하게 늘어놓으면
     // 도구 모음인 창고와 같은 층으로 보여 위계가 사라진다.
     key: 'forest',
-    name: '기사',
+    name: '분석',
     href: url('/forest/'),
     children: [
+      // ★ 묶음 머리글을 둔 이유(2026-08-31). 칸 이름이 「분석」인데 이 안에는 카툰도 있어
+      //   이름과 내용이 어긋난다. 창고와 같은 방식으로 성격을 갈라, 무엇이 분석이고
+      //   무엇이 읽을거리인지 패널 자체가 말하게 했다.
+      { group: '분야별' },
       ...Object.values(CATEGORIES).map((c) => ({
         key: c.slug,
         name: c.name,
         href: url(`/category/${c.slug}/`),
         desc: c.desc,
       })),
+      { group: '연중 특집' },
       ...TOPICS.map((t) => ({ key: t.key, name: `${t.name} 특집`, href: url(t.href), desc: t.desc })),
+      { group: '그 밖에' },
       { key: 'story', name: '토리 이야기', href: url('/story/'), desc: '토리를 그린 카툰 연재 · 화별로 읽기' },
-      { key: 'forest', name: '숲 전체 보기', href: url('/forest/'), desc: '분야·특집·최신 기사를 한 화면에서' },
+      { key: 'forest', name: '전체 보기', href: url('/forest/'), desc: '분야·특집·최신 기사를 한 화면에서' },
     ],
   },
   {

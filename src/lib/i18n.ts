@@ -91,7 +91,7 @@ export const T: Record<Lang, Dict> = {
     description:
       '도토리경제는 무역, 환율, 금리, 관세 등 돈이 움직이는 모든 거래의 데이터를 차트 한 장과 세 줄 요약으로 전하는 경제 브리핑 블로그입니다.',
     navHome: '오늘의 도토리',
-    navArticles: '기사',
+    navArticles: '분석',
     navTracker: '오늘의 지표',
     navGlossary: '용어 도토리',
     navAbout: '소개',
