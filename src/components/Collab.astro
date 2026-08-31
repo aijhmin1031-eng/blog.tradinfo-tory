@@ -16,13 +16,27 @@ const { variant = 'footer', source = 'site' } = Astro.props;
   <div class="cb-body">
     <div class="cb-title serif">협업 문의</div>
     <p class="cb-sub">
-      도토리경제는 매일 아침 스스로 지표를 거둬 기사와 대시보드로 바꾸는 구조로 굴러갑니다.
-      그 과정에서 쌓인 것이 도움이 될 만한 자리가 있다면 편하게 말씀해 주십시오.
-      강의든 자문이든 같이 만드는 일이든 좋습니다.
+      매일 아침 스스로 지표를 거둬 기사와 대시보드로 바꾸는 구조로 굴러갑니다.
+      그 과정에서 쌓인 것이 쓸 만한 자리가 있다면 메일 한 통이면 됩니다.
     </p>
+    {/* ★ 2026-08-31: 주소를 그대로 드러낸다. 그전에는 `/contact/` 로 한 번 보내야
+        주소가 보였고, 그 클릭 하나가 문의를 잃는 자리였다.
+        주소는 스팸 수집기를 피해 런타임에 조립한다(contact.astro 와 같은 방식). */}
+    <p class="cb-mail"><span class="cb-mail-slot" data-mail /></p>
   </div>
-  <a class="cb-cta" href={url('/contact/')}>협업 문의하기</a>
+  <a class="cb-cta" href={url('/contact/')}>협업 안내 보기</a>
 </div>
+
+<script>
+  // 스팸 수집기 회피를 위해 주소를 런타임에 조립한다(정적 HTML 에 문자열로 남기지 않는다).
+  var addr = ['dotori', 'workroom'].join('.') + '@' + ['gmail', 'com'].join('.');
+  document.querySelectorAll('[data-mail]').forEach(function (slot) {
+    var a = document.createElement('a');
+    a.href = 'mailto:' + addr + '?subject=' + encodeURIComponent('[도토리경제] 협업 문의');
+    a.textContent = addr;
+    slot.appendChild(a);
+  });
+</script>
 
 <style>
   .cb { border-radius: 14px; padding: 26px 28px; display: flex; gap: 28px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
@@ -32,6 +46,15 @@ const { variant = 'footer', source = 'site' } = Astro.props;
   .cb-title { font-size: 18px; font-weight: 900; color: var(--ink); letter-spacing: -0.01em; }
   .cb.footer .cb-title { color: #fff; }
   .cb-sub { font-size: 13px; line-height: 1.85; color: var(--sub); margin-top: 8px; word-break: keep-all; }
+  .cb-mail { margin: 12px 0 0; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+  /* ★ 스코프 CSS 함정의 넷째 얼굴 — **JS 로 만든 요소에는 스코프 클래스가 없다.**
+     Astro 는 `.cb-mail a` 를 `.cb-mail a:where(.astro-…)` 로 컴파일하는데, 이 `<a>` 는
+     스팸 회피 때문에 런타임에 만들어지므로 그 클래스가 없어 **색 규칙이 통째로 죽는다.**
+     빌드도 통과하고 주소도 보여서, 계산값(color)을 찍어야만 갈렸다. `:global()` 로 감싼다. */
+  .cb-mail :global(a) { color: var(--brand); border-bottom: 1px solid transparent; }
+  .cb-mail :global(a:hover) { border-bottom-color: var(--brand); }
+  .cb.footer .cb-mail :global(a) { color: #fff; }
+  .cb.footer .cb-mail :global(a:hover) { border-bottom-color: rgba(255, 255, 255, 0.6); }
   .cb.footer .cb-sub { color: rgba(255, 255, 255, 0.72); }
   .cb-list { list-style: none; padding: 0; margin: 12px 0 0; }
   .cb-list li { font-size: 12.5px; line-height: 1.85; color: var(--sub); word-break: keep-all; }

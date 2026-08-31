@@ -4,6 +4,7 @@ import LineChart from '../../components/LineChart.astro';
 import Delta from '../../components/Delta.astro';
 import { getCollection } from 'astro:content';
 import { url } from '../../lib/site';
+import Share from '../../components/Share.astro';
 
 export async function getStaticPaths() {
   const briefs = await getCollection('briefs');
@@ -41,6 +42,8 @@ const { title, date, summary, movers, chart } = brief.data;
     </div>
 
     {chart && <LineChart {...chart} height={220} />}
+
+    <Share title={title} lines={summary} />
 
     <div class="br-foot">
       <a href={url('/warehouse/')}>← 도토리 창고에서 지난 브리핑 보기</a>

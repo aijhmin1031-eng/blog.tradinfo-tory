@@ -23,6 +23,16 @@ export const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 export const url = (path: string) => `${base}${path.startsWith('/') ? path : `/${path}`}`;
 
+// 정본 주소. Base.astro 의 canonical 과 공유 링크가 **같은 곳에서 나와야** 어긋나지 않는다
+// (2026-08-31, 공유 줄을 만들며 한 곳으로 모았다).
+export const CANONICAL_ORIGIN = 'https://dotoriecon.com';
+
+/** 현재 페이지 주소(base 접두어 포함)를 정본 도메인 기준 절대 주소로 바꾼다. */
+export const canonicalUrl = (pathname: string) => {
+  const p = base && pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
+  return new URL(p || '/', CANONICAL_ORIGIN).href;
+};
+
 // heroFor 는 2026-08-26 에 제거했다. 대표 이미지는 이제 `public/` 이 아니라 `src/assets/` 에 있고
 // URL 문자열이 아니라 ImageMetadata 로 다룬다(빌드가 리사이즈·WebP 를 맡는다).
 // 대신 `lib/images.ts` 의 heroMeta()/metaByPath() 와 `components/Pic.astro` 를 쓸 것.

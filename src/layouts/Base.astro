@@ -4,7 +4,7 @@ import Ticker from '../components/Ticker.astro';
 import Collab from '../components/Collab.astro';
 import { TOPICS } from '../lib/topics';
 import Acorn from '../components/Acorn.astro';
-import { SITE, CATEGORIES, url, fmtDate, shortDateIn, shortDateEnIn, todayIn, TZ_KST, TZ_ET } from '../lib/site';
+import { SITE, CATEGORIES, url, fmtDate, shortDateIn, shortDateEnIn, todayIn, TZ_KST, TZ_ET, canonicalUrl, CANONICAL_ORIGIN } from '../lib/site';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import { ADSENSE_PUB_ID, adsenseOn } from '../lib/adsense';
 import { T, HTML_LANG, OG_LOCALE, HREFLANG, localizedPath, type Lang } from '../lib/i18n';
@@ -56,12 +56,9 @@ const etLine = _isEnDate ? shortDateEnIn(TZ_ET, now) : shortDateIn(TZ_ET, now);
 const kstYear = todayIn(TZ_KST, now).slice(0, 4);
 // 정본 주소는 커스텀 도메인 한 곳이다. GitHub Pages 미러도 canonical은 이 도메인을 가리켜
 // 색인 신호가 둘로 갈리지 않게 한다(중복 페이지는 noindex가 아니라 canonical로 합치는 것이 권장 방식).
-const CANONICAL_ORIGIN = 'https://dotoriecon.com';
+// 값은 `lib/site.ts` 한 곳에 있다 — 공유 줄이 만드는 링크와 어긋나지 않게 하기 위해서다.
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
-const canonicalPath = (basePath && Astro.url.pathname.startsWith(basePath)
-  ? Astro.url.pathname.slice(basePath.length)
-  : Astro.url.pathname) || '/';
-const canonical = new URL(canonicalPath, CANONICAL_ORIGIN).href;
+const canonical = canonicalUrl(Astro.url.pathname);
 
 // ── hreflang (2026-08-26) ────────────────────────────────────────────
 // 같은 내용의 두 언어판이 **서로를 가리킬 때만** 구글이 hreflang 을 인정한다.
