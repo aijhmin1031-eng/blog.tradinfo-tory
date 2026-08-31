@@ -17,10 +17,26 @@ const COUNTRIES = [
   { cc: 'VN', name: '베트남' },
 ];
 const MONTHS_BACK = 4; // 이번 달 포함 최근 4개월 재조회 (잠정치 갱신 겸용)
+// 목표 이력 길이. 계열이 이보다 짧으면 **모자란 달만** 함께 받아 채운다(자가 치유).
+//   2026-08-31 신설. 국가별 4종이 3개월치뿐이었다(품목별은 13개월). 버그가 아니라
+//   **과거 씨앗을 안 심어서**였고, MONTHS_BACK 이 4라 한 달에 하나씩만 늘고 있었다.
+//   매번 13개월을 받으면 호출이 3배가 되므로, **부족할 때만** 채운다.
+//   첫 실행에서만 비용이 들고 그 뒤로는 평소대로 4개월만 돈다.
+const SEED_MONTHS = 13;
 // 품목 시계열 — 반도체·AI 허브 등에서 사용
 const ITEMS = [
   { hs: '8542', id: 'hs8542', name: '반도체(전자집적회로)' },
   { hs: '8486', id: 'hs8486', name: '반도체 제조 장비' },
+];
+// 품목 × 국가 — 반도체 특집의 국가별 지도(중화권 경로)에서 쓴다.
+//   ★ 2026-08-31 추가. 이 세 계열은 **파이프라인에 아예 없었다.** 과거에 손으로 한 번
+//   심어 두고 그 뒤로 갱신이 끊겨 있었다(`hs8542_HK` 최종 갱신 8/22, 품목별은 8/29).
+//   그 데이터를 쓰는 기사들이 낡은 숫자를 보여 주고 있었다.
+//   **손으로 심은 계열은 반드시 파이프라인에 등록할 것.** 안 하면 조용히 멈춘다.
+const ITEM_COUNTRIES = [
+  { hs: '8542', cc: 'CN', id: 'hs8542_CN', name: '반도체 對중국' },
+  { hs: '8542', cc: 'HK', id: 'hs8542_HK', name: '반도체 對홍콩' },
+  { hs: '8542', cc: 'TW', id: 'hs8542_TW', name: '반도체 對대만' },
 ];
 
 const yymm = (d) => `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -65,19 +81,56 @@ async function accumulate(cc, name, fresh) {
 
 const eok = (v) => v / 1e8; // 억 달러
 
+/** 이 계열이 이번 실행에서 받아야 할 달 목록.
+ *  = 최근 MONTHS_BACK 개월(잠정치 갱신) ∪ SEED_MONTHS 안에서 아직 없는 달(씨앗 채우기) */
+async function monthsFor(id, recent, seed) {
+  let have = new Set();
+  try {
+    // 파일명은 accumulate() 와 같은 규칙이어야 한다. 여기서 접두사를 빠뜨리면
+    // 저장분을 못 찾아 **매일 13개월을 받게 된다**(2026-08-31 작성 중 실제로 냈던 실수).
+    const j = JSON.parse(await readFile(new URL(`trade_${id}.json`, SERIES_DIR), 'utf8'));
+    have = new Set((j.points ?? []).map((p) => p.d));
+  } catch {}
+  const missing = seed.filter((m) => !have.has(m));
+  return [...new Set([...recent, ...missing])].sort();
+}
+
+/** 달 하나가 실패해도 나머지를 포기하지 않는다.
+ *  다만 **한 계열이 통째로 실패하면** 키·권한 문제일 수 있으므로 위로 던진다. */
+async function fetchMonths(label, months, cc, hs = '') {
+  const fresh = [];
+  let failed = 0;
+  for (const m of months) {
+    try {
+      const p = await fetchMonth(cc, m, hs);
+      if (p) fresh.push(p);
+    } catch (e) {
+      failed++;
+      console.log(`[trade] ${label} ${m} 실패: ${e.message}`);
+    }
+  }
+  if (!fresh.length && failed) throw new Error(`${label}: ${failed}개월 전부 실패`);
+  return fresh;
+}
+
 async function main() {
   if (!KEY) {
     console.log('[trade] DATA_GO_KR_KEY 미설정 — 건너뜀');
     return;
   }
   await mkdir(SERIES_DIR, { recursive: true });
-  const months = [];
-  for (let i = 0; i < MONTHS_BACK; i++) {
-    const d = new Date();
-    d.setDate(1);
-    d.setMonth(d.getMonth() - i);
-    months.push(yymm(d));
-  }
+  const monthList = (n) => {
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const d = new Date();
+      d.setDate(1);
+      d.setMonth(d.getMonth() - i);
+      out.push(yymm(d));
+    }
+    return out;
+  };
+  const recent = monthList(MONTHS_BACK);
+  const seed = monthList(SEED_MONTHS);
 
   let out = { asOf: null, rows: [] };
   try {
@@ -87,11 +140,11 @@ async function main() {
   try {
     const rows = [];
     for (const c of COUNTRIES) {
-      const fresh = [];
-      for (const m of months) {
-        const p = await fetchMonth(c.cc, m);
-        if (p) fresh.push(p);
+      const months = await monthsFor(c.cc, recent, seed);
+      if (months.length > MONTHS_BACK) {
+        console.log(`[trade] ${c.name}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
       }
+      const fresh = await fetchMonths(c.name, months, c.cc);
       const stored = await accumulate(c.cc, c.name, fresh);
       const last = stored.points[stored.points.length - 1];
       if (!last) continue;
@@ -111,13 +164,23 @@ async function main() {
     }
     // 품목 시계열 (반도체 등)
     for (const it of ITEMS) {
-      const fresh = [];
-      for (const m of months) {
-        const p = await fetchMonth('', m, it.hs);
-        if (p) fresh.push(p);
+      const months = await monthsFor(it.id, recent, seed);
+      if (months.length > MONTHS_BACK) {
+        console.log(`[trade] ${it.name}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
       }
+      const fresh = await fetchMonths(it.name, months, '', it.hs);
       const stored = await accumulate(it.id, it.name, fresh);
       console.log(`[trade] ${it.name}: ${stored.points.length}개월 누적`);
+    }
+    // 품목 × 국가
+    for (const ic of ITEM_COUNTRIES) {
+      const months = await monthsFor(ic.id, recent, seed);
+      if (months.length > MONTHS_BACK) {
+        console.log(`[trade] ${ic.name}: 이력이 짧아 ${months.length - MONTHS_BACK}개월 씨앗을 함께 받는다`);
+      }
+      const fresh = await fetchMonths(ic.name, months, ic.cc, ic.hs);
+      const stored = await accumulate(ic.id, ic.name, fresh);
+      console.log(`[trade] ${ic.name}: ${stored.points.length}개월 누적`);
     }
   } catch (e) {
     console.log(`[trade] 수집 건너뜀(기존 유지): ${e.message}`);
