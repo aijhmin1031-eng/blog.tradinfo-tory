@@ -205,6 +205,17 @@ const ld = {
     .dk-pv-c dt { font-size: 10px; color: var(--muted); margin-bottom: 2px; }
     .dk-pv-c dd { margin: 0; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .dk-pv-chart { border: 1px solid var(--hair2); border-radius: 6px; padding: 8px; margin-bottom: 12px; }
+    /* 축 글자 — 실측 8.07px 이던 것을 11px 로 올렸다. 차트 설명문(10.5px)보다 작으면 안 된다.
+       배경색 테두리를 깔아 격자선·곡선 위에서도 읽히게 한다(다크 모드에서 함께 뒤집힌다). */
+    .dk-ax { font-size: 11px; fill: var(--muted); stroke: var(--surface); stroke-width: 2.5px;
+             paint-order: stroke; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+    .dk-ch-wrap { position: relative; }
+    .dk-ch { display: block; width: 100%; height: auto; cursor: crosshair; }
+    .dk-ch-tip { position: absolute; pointer-events: none; z-index: 2; background: var(--surface);
+      border: 1px solid var(--hair); border-radius: 4px; padding: 4px 7px; font-size: 12px;
+      line-height: 1.35; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.10); }
+    .dk-ch-tip b { display: block; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .dk-ch-tip span { color: var(--muted); font-size: 11px; }
     .dk-pv-chart svg { display: block; width: 100%; height: auto; }
     .dk-pv-note { font-size: 10.5px; color: var(--muted); line-height: 1.65; }
     .dk-pv-links { margin: 12px 0 0; padding: 11px 0 0; border-top: 1px solid var(--hair2); }
@@ -302,71 +313,142 @@ const ld = {
 
       // ── 시계열 그림 ───────────────────────────────────────
       // 색 규약: 오른 것은 빨강(--up), 내린 것은 파랑(--down) — 한국 금융 관례.
-      // scale: 원자료 단위를 화면 단위로 낮춘다(관세청은 달러 원단위로 와서 아홉 자리가 찍힌다).
-      //   표는 억 달러인데 차트만 원 단위였다 — 같은 화면에서 단위가 갈리면 독자가 값을 잘못 읽는다.
-      // 날짜 키(YYYYMMDD 8자리 · YYYYMM 6자리)를 축 라벨로 줄인다.
+      //
+      // ★ 2026-08-31 재설계. 소유주 지시(「그래프가 제일 중요하다, 블로그 얼굴이다」)로
+      //   실측해 보니 결함이 여럿이었다.
+      //   ① **글자가 8.07px 로 페이지에서 가장 작았다.** viewBox 를 뷰포트에 맞춰 늘리니
+      //      `font-size:9px` 가 배율을 타서, **데스크톱(0.95배)이 모바일(1.086배)보다 더 작게**
+      //      나오는 역전까지 있었다. → **컨테이너의 실제 픽셀 폭으로 그린다**(배율 1). 축 11px.
+      //   ② 세로축이 없어 중간값을 읽을 수 없었다. → 격자 3줄 + 눈금.
+      //   ③ 가로축이 양끝뿐이었다. → 3~4개로 늘렸다.
+      //   ④ 0선이 **점선**이었다(점선 격자는 안티패턴이다). → 실선 헤어라인.
+      //   ⑤ 선 차트에 hover 가 없었다. → 십자선·초점점·툴팁.
+      //   마크 규격: 선 2px · 끝점 지름 9px(r 4.5) + 표면색 2px 링 · 격자 1px 실선.
+      var CH = null; // 지금 그려진 차트의 상태(hover 가 쓴다)
+
       function dlab(d) {
         d = String(d || '');
-        if (d.length === 8) return d.slice(2, 4) + '.' + d.slice(4, 6);
-        if (d.length === 6) return d.slice(2, 4) + '.' + d.slice(4, 6);
+        return d.length >= 6 ? d.slice(2, 4) + '.' + d.slice(4, 6) : d;
+      }
+      function dfull(d) {
+        d = String(d || '');
+        if (d.length === 8) return d.slice(0, 4) + '.' + d.slice(4, 6) + '.' + d.slice(6, 8);
+        if (d.length === 6) return d.slice(0, 4) + '.' + d.slice(4, 6);
         return d;
       }
+      // 눈금은 깔끔한 수로 떨어뜨린다(1 / 2 / 2.5 / 5 의 배수).
+      function niceStep(raw) {
+        var e = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), f = raw / e;
+        return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * e;
+      }
 
-      function chart(pts, field, scale, frac) {
-        // 여백을 위·아래로 갈랐다. 아래는 가로축 날짜가 들어갈 자리다.
-        var W = 280, H = 112, PL = 6, PT = 13, PB = 17, k = scale || 1;
+      function drawChart(host, pts, field, scale, frac, caption) {
+        var k = scale || 1;
         var rows = pts.map(function (p) {
             var v = field ? p[field] : p.v;
             return { d: p.d, v: typeof v === 'number' ? v / k : null };
           }).filter(function (r) { return r.v !== null; });
-        if (rows.length < 2) return '<p class="dk-pv-note">그릴 점이 모자랍니다.</p>';
+        if (rows.length < 2) { host.innerHTML = '<p class="dk-pv-note">그릴 점이 모자랍니다.</p>'; return; }
+
+        // 컨테이너의 실제 폭으로 그린다 — 이래야 글자 크기가 화면 폭에 휘둘리지 않는다.
+        var W = Math.max(240, Math.round(host.clientWidth) - 16);
+        var H = 172, PL = 8, PR = 10, PT = 18, PB = 28;
         var vals = rows.map(function (r) { return r.v; });
-        var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals), span = hi - lo || 1;
-        var iHi = vals.indexOf(hi), iLo = vals.indexOf(lo);
-        var x = function (i) { return PL + (i * (W - PL * 2)) / (vals.length - 1); };
+        var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+        if (lo === hi) { lo -= 1; hi += 1; }
+        var pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+        // 눈금이 깔끔한 수로 떨어지도록 **정의역 자체를 눈금 경계까지 넓힌다.**
+        // 이렇게 안 하면 위아래 끝이 눈금 사이에 끼어 격자가 두 줄밖에 안 남는다(실측).
+        var st0 = niceStep((hi - lo) / 3.2);
+        lo = Math.floor(lo / st0) * st0;
+        hi = Math.ceil(hi / st0) * st0;
+        var span = hi - lo;
+        var x = function (i) { return PL + (i * (W - PL - PR)) / (vals.length - 1); };
         var y = function (v) { return H - PB - ((v - lo) / span) * (H - PT - PB); };
-        var d = vals.map(function (v, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
         var up = vals[vals.length - 1] >= vals[0];
         var col = up ? 'var(--up)' : 'var(--down)';
 
-        // 라벨이 그림 밖으로 나가지 않게 끝에서는 정렬을 바꾼다.
-        function tx(px, s, dy, cls) {
-          var a = px < 34 ? 'start' : px > W - 34 ? 'end' : 'middle';
-          var ax = px < 34 ? PL : px > W - 34 ? W - PL : px;
-          // 최고·최저 라벨은 곡선 위에 얹히는 자리가 많다(장기 계열에서 실제로 겹쳤다).
-          // 글자 뒤에 배경색 테두리를 깔아 선 위에서도 읽히게 한다. `--surface` 는
-          // 다크 모드에서 함께 뒤집히므로 두 테마 모두에서 맞는다.
-          return '<text x="' + ax.toFixed(1) + '" y="' + dy.toFixed(1) + '" text-anchor="' + a +
-            '" style="font-size:9px;fill:var(--' + (cls || 'muted') + ');stroke:var(--surface);' +
-            'stroke-width:2.5px;paint-order:stroke;stroke-linejoin:round">' + s + '</text>';
+        // ── 세로 눈금: 깔끔한 수로 3~4줄 ──
+        var step = st0, grid = '';
+        // 눈금 자릿수는 **값이 아니라 눈금 간격**이 정한다. 1,200.00 처럼 소수점이 붙으면
+        // 축이 시끄러워진다(축은 깔끔한 수여야 한다).
+        var tf = step >= 10 ? 0 : step >= 1 ? 1 : Math.min(frac || 2, 2);
+        for (var t = lo; t <= hi + 1e-9; t += step) {
+          var gy = y(t);
+          if (gy < PT - 2 || gy > H - PB + 2) continue;
+          grid += '<line x1="' + PL + '" y1="' + gy.toFixed(1) + '" x2="' + (W - PR) + '" y2="' + gy.toFixed(1) +
+            '" stroke="var(--hair2)" stroke-width="1"/>' +
+            '<text x="' + PL + '" y="' + (gy - 4).toFixed(1) + '" class="dk-ax">' + fmt(t, tf) + '</text>';
         }
-
-        // ★ 0선. 무역수지처럼 **부호가 뒤집히는 계열**에서 이것이 없으면
-        //   적자와 흑자가 한 선으로 뭉개진다. 있을 때만 그린다(0을 지나지 않으면 군더더기다).
-        var zero = '';
+        // 0 은 부호가 갈리는 자리라 한 단계 진하게 긋는다(무역수지의 적자·흑자 경계).
         if (lo < 0 && hi > 0) {
-          var zy = y(0);
-          zero = '<line x1="' + PL + '" y1="' + zy.toFixed(1) + '" x2="' + (W - PL) + '" y2="' + zy.toFixed(1) +
-            '" stroke="var(--hair)" stroke-width="1" stroke-dasharray="3 3"/>' +
-            '<text x="' + (W - PL) + '" y="' + (zy - 2.5).toFixed(1) +
-            '" text-anchor="end" style="font-size:8.5px;fill:var(--muted)">0</text>';
+          grid += '<line x1="' + PL + '" y1="' + y(0).toFixed(1) + '" x2="' + (W - PR) + '" y2="' + y(0).toFixed(1) +
+            '" stroke="var(--hair)" stroke-width="1"/>';
         }
 
-        return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">' +
-          zero +
-          '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>' +
-          '<circle cx="' + x(vals.length - 1).toFixed(1) + '" cy="' + y(vals[vals.length - 1]).toFixed(1) + '" r="3" fill="' + col + '"/>' +
-          // 최고·최저는 **실제로 그 값이 난 자리**에 붙인다. 예전에는 왼쪽 위아래에 고정돼 있어
-          // 어느 지점이 최고인지 그림에서 읽을 수 없었다.
-          tx(x(iHi), fmt(hi, frac), Math.max(9, y(hi) - 5)) +
-          // 최저 라벨은 **그림 안에** 둔다. 점 아래로 내리면 가로축 날짜와 겹치므로
-          // (실측에서 -18.3 이 25.08 을 덮었다) 자리가 없으면 점 위로 올린다.
-          tx(x(iLo), fmt(lo, frac), y(lo) + 10 > H - PB - 2 ? Math.max(9, y(lo) - 5) : y(lo) + 10) +
-          // 가로축 — 언제부터 언제까지인지 그림 안에서 읽히게 한다.
-          '<text x="' + PL + '" y="' + (H - 3) + '" style="font-size:8.5px;fill:var(--muted)">' + dlab(rows[0].d) + '</text>' +
-          '<text x="' + (W - PL) + '" y="' + (H - 3) + '" text-anchor="end" style="font-size:8.5px;fill:var(--muted)">' +
-            dlab(rows[rows.length - 1].d) + '</text>' +
-          '</svg>';
+        // ── 가로 눈금: 3~4개 ──
+        var nX = W < 300 ? 3 : 4, xs = '';
+        for (var i = 0; i < nX; i++) {
+          var idx = Math.round((i * (rows.length - 1)) / (nX - 1));
+          var px = x(idx), anc = i === 0 ? 'start' : i === nX - 1 ? 'end' : 'middle';
+          xs += '<text x="' + px.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anc + '" class="dk-ax">' +
+            dlab(rows[idx].d) + '</text>';
+        }
+
+        var d = vals.map(function (v, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
+        var lx = x(vals.length - 1).toFixed(1), ly = y(vals[vals.length - 1]).toFixed(1);
+
+        host.innerHTML =
+          '<div class="dk-ch-wrap">' +
+          '<svg class="dk-ch" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(caption) + '">' +
+            grid + xs +
+            '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+            '<line class="dk-ch-cross" x1="0" y1="' + PT + '" x2="0" y2="' + (H - PB) + '" stroke="var(--hair)" stroke-width="1" style="display:none"/>' +
+            '<circle class="dk-ch-focus" r="4.5" fill="' + col + '" stroke="var(--surface)" stroke-width="2" style="display:none"/>' +
+            // 끝점은 표면색 2px 링을 둘러 선 위에서도 떨어져 보이게 한다.
+            '<circle cx="' + lx + '" cy="' + ly + '" r="4.5" fill="' + col + '" stroke="var(--surface)" stroke-width="2"/>' +
+            '<rect class="dk-ch-hit" x="0" y="0" width="' + W + '" height="' + H + '" fill="transparent"/>' +
+          '</svg>' +
+          '<div class="dk-ch-tip" hidden></div>' +
+          '</div>' +
+          '<p class="dk-pv-note">' + esc(caption) + '</p>';
+
+        CH = { rows: rows, W: W, H: H, PL: PL, PR: PR, PT: PT, PB: PB, x: x, y: y, frac: frac };
+        wireHover(host);
+      }
+
+      // 선 차트는 hover 를 기본으로 단다. 값 하나하나를 라벨로 박으면 그림이 죽으므로,
+      // 직접 라벨은 끝점만 두고 나머지는 이 층이 맡는다.
+      function wireHover(host) {
+        var svg = host.querySelector('.dk-ch'), tip = host.querySelector('.dk-ch-tip');
+        if (!svg || !tip) return;
+        var cross = svg.querySelector('.dk-ch-cross'), focus = svg.querySelector('.dk-ch-focus');
+        function move(ev) {
+          if (!CH) return;
+          var b = svg.getBoundingClientRect();
+          var px = (ev.clientX - b.left) * (CH.W / b.width);
+          var i = Math.round(((px - CH.PL) * (CH.rows.length - 1)) / (CH.W - CH.PL - CH.PR));
+          i = Math.max(0, Math.min(CH.rows.length - 1, i));
+          var r = CH.rows[i], cx = CH.x(i), cy = CH.y(r.v);
+          cross.setAttribute('x1', cx); cross.setAttribute('x2', cx); cross.style.display = '';
+          focus.setAttribute('cx', cx); focus.setAttribute('cy', cy); focus.style.display = '';
+          tip.hidden = false;
+          tip.innerHTML = '<b>' + fmt(r.v, CH.frac) + '</b><span>' + dfull(r.d) + '</span>';
+          // 툴팁이 초점 점을 덮지 않게 점 위로 띄운다. 위쪽에 자리가 없으면 아래로 내린다.
+          var tw = tip.offsetWidth, th = tip.offsetHeight;
+          var left = (cx / CH.W) * b.width - tw / 2;
+          var py = (cy / CH.H) * b.height;
+          var top = py - th - 12;
+          if (top < 0) top = py + 12;
+          tip.style.left = Math.max(0, Math.min(b.width - tw, left)) + 'px';
+          tip.style.top = Math.min(b.height - th, Math.max(0, top)) + 'px';
+        }
+        function out() { cross.style.display = 'none'; focus.style.display = 'none'; tip.hidden = true; }
+        svg.addEventListener('mousemove', move);
+        svg.addEventListener('mouseleave', out);
+        svg.addEventListener('touchstart', function (e) { move(e.touches[0]); }, { passive: true });
+        svg.addEventListener('touchmove', function (e) { move(e.touches[0]); }, { passive: true });
+        svg.addEventListener('touchend', out);
       }
 
       function preview(id) {
@@ -405,9 +487,8 @@ const ld = {
           .then(function (j) {
             var el = $('dk-chart');
             var isTrade = r.exp !== undefined;
-            if (el) el.innerHTML = chart(j.points, isTrade ? 'bal' : null, isTrade ? 1e8 : 1, isTrade ? 1 : r.frac) +
-              '<p class="dk-pv-note">' + (isTrade ? '무역수지 · 억 달러' : esc(r.name) + ' · ' + esc(r.unit)) +
-              ' · ' + j.n + '개 관측</p>';
+            var cap = (isTrade ? '무역수지 · 억 달러' : r.name + ' · ' + r.unit) + ' · ' + j.n + '개 관측';
+            if (el) drawChart(el, j.points, isTrade ? 'bal' : null, isTrade ? 1e8 : 1, isTrade ? 1 : r.frac, cap);
           })
           .catch(function () {
             var el = $('dk-chart');
