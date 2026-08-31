@@ -72,6 +72,26 @@ for (const def of defs) {
   else ok.push({ def, last, age, n: pts.length });
 }
 
+// ★ 「그럴듯한 값」 대조 (2026-08-31 신설).
+// 빈 계열은 위에서 잡힌다. 잡히지 않는 것은 **값은 왔는데 엉뚱한 값인 경우**다.
+// 실제로 났던 사고: 관세청 질의가 품목코드만 싣고 국가코드를 빠뜨려, 「반도체 對중국·對홍콩·
+// 對대만」 세 계열이 전부 HS 8542 **총계**로 채워졌다. 파일도 있고 날짜도 최신이라 점검기는
+// 통과라고 말했고, 그 값을 쓰는 발행 기사가 자기 본문과 어긋난 차트를 보였다.
+// 판별은 간단하다 — **부분이 전체와 똑같을 수는 없다.**
+const sameAsParent = [];
+for (const ic of (SRC.trade?.itemCountries ?? [])) {
+  const child = join(ROOT, 'data/series', `trade_${ic.id}.json`);
+  const parent = join(ROOT, 'data/series', `trade_hs${ic.hs}.json`);
+  if (!existsSync(child) || !existsSync(parent)) continue;
+  try {
+    const c = JSON.parse(readFileSync(child, 'utf8')).points.at(-1);
+    const p = JSON.parse(readFileSync(parent, 'utf8')).points.at(-1);
+    if (c && p && c.d === p.d && c.exp === p.exp && c.imp === p.imp) {
+      sameAsParent.push({ id: `trade_${ic.id}`, hs: ic.hs, cc: ic.cc, exp: c.exp });
+    }
+  } catch {}
+}
+
 const C = { r: '\x1b[31m', y: '\x1b[33m', g: '\x1b[32m', d: '\x1b[2m', x: '\x1b[0m' };
 console.log(`\n시계열 점검 · ${today} KST · 정의 ${defs.length}개\n`);
 
@@ -92,7 +112,17 @@ console.log(`${C.g}✓ 정상 ${ok.length}개${C.x}`);
 for (const o of ok) console.log(`    ${C.d}${o.def.id.padEnd(18)} 최신 ${o.last} · ${o.n}개${C.x}`);
 console.log('');
 
-if (missing.length) {
-  console.log(`${C.r}정의만 있고 자료가 없는 계열이 있다. 그 계열을 쓰는 기사는 쓸 수 없다.${C.x}\n`);
+if (sameAsParent.length) {
+  console.log(`${C.r}✗ 부분이 전체와 같은 계열 ${sameAsParent.length}개 — 국가코드가 질의에서 빠졌을 때 나는 증상이다${C.x}`);
+  for (const s2 of sameAsParent) {
+    console.log(`    ${s2.id}: HS ${s2.hs} 총계와 값이 같다(${(s2.exp / 1e8).toFixed(1)}억 달러). ${s2.cc} 만의 값이 아니다.`);
+  }
+  console.log('');
+}
+
+if (missing.length || sameAsParent.length) {
+  if (missing.length) console.log(`${C.r}정의만 있고 자료가 없는 계열이 있다. 그 계열을 쓰는 기사는 쓸 수 없다.${C.x}`);
+  if (sameAsParent.length) console.log(`${C.r}값은 있으나 엉뚱한 값인 계열이 있다. 빈 계열보다 위험하다 — 그럴듯해서 그대로 발행된다.${C.x}`);
+  console.log('');
   process.exit(1);
 }

@@ -44,7 +44,14 @@ async function fetchMonth(cc, month, hsSgn = '') {
   const url =
     `https://apis.data.go.kr/1220000/nitemtrade/getNitemtradeList` +
     `?serviceKey=${KEY}&strtYymm=${month}&endYymm=${month}` +
-    (hsSgn ? `&hsSgn=${hsSgn}` : `&cntyCd=${cc}`) +
+    // ★ 둘 다 있으면 **둘 다 보낸다**(2026-08-31 수리).
+    //   예전 코드는 `hsSgn ? hsSgn : cntyCd` 라 품목코드가 있으면 국가코드를 아예 안 실었다.
+    //   그래서 「반도체 對중국·對홍콩·對대만」 세 계열이 전부 **HS 8542 총계**로 채워졌고
+    //   (327.2억으로 셋이 똑같았다), 그 값을 쓰는 발행 기사가 자기 본문과 어긋난 차트를 보였다
+    //   (semi-hongkong-route 는 홍콩 수출 43.7억을 제목에 걸어 두고 차트는 327.2억을 그렸다).
+    //   ★ 이 종류는 **빈 계열이 아니라 「그럴듯한 값」으로 오므로 점검기가 못 잡는다.**
+    //   갈래가 다른 계열끼리 값이 같으면 의심할 것.
+    (hsSgn ? `&hsSgn=${hsSgn}` : '') + (cc ? `&cntyCd=${cc}` : '') +
     `&numOfRows=1&pageNo=1`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`관세청 ${cc} ${month} HTTP ${res.status}`);
