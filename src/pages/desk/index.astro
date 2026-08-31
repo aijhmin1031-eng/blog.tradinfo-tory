@@ -326,9 +326,16 @@ const ld = {
       //   마크 규격: 선 2px · 끝점 지름 9px(r 4.5) + 표면색 2px 링 · 격자 1px 실선.
       var CH = null; // 지금 그려진 차트의 상태(hover 가 쓴다)
 
-      function dlab(d) {
-        d = String(d || '');
-        return d.length >= 6 ? d.slice(2, 4) + '.' + d.slice(4, 6) : d;
+      // 가로축 표기는 **기간이 정한다.**
+      //   `16.08` 한 형식으로만 찍으면 「2016년 8월」인지 「8월 16일」인지 갈리지 않고,
+      //   10년짜리 일간 계열과 12개월짜리 월간 계열이 같은 모양이 되어 더 헷갈린다.
+      //   3년을 넘으면 연도(2016)만, 그 안쪽이면 연·월(25.08)로 찍는다.
+      function axisFmt(rows) {
+        var a = String(rows[0].d), b = String(rows[rows.length - 1].d);
+        var years = (+b.slice(0, 4)) - (+a.slice(0, 4));
+        return years >= 3
+          ? function (d) { return String(d).slice(0, 4); }
+          : function (d) { d = String(d); return d.length >= 6 ? d.slice(2, 4) + '.' + d.slice(4, 6) : d; };
       }
       function dfull(d) {
         d = String(d || '');
@@ -387,12 +394,15 @@ const ld = {
         }
 
         // ── 가로 눈금: 3~4개 ──
-        var nX = W < 300 ? 3 : 4, xs = '';
+        var nX = W < 300 ? 3 : 4, xs = '', xf = axisFmt(rows), seen = {};
         for (var i = 0; i < nX; i++) {
           var idx = Math.round((i * (rows.length - 1)) / (nX - 1));
+          var lbl = xf(rows[idx].d);
+          if (seen[lbl]) continue;   // 연도만 찍을 때 같은 해가 두 번 나오는 것을 막는다
+          seen[lbl] = 1;
           var px = x(idx), anc = i === 0 ? 'start' : i === nX - 1 ? 'end' : 'middle';
           xs += '<text x="' + px.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anc + '" class="dk-ax">' +
-            dlab(rows[idx].d) + '</text>';
+            lbl + '</text>';
         }
 
         var d = vals.map(function (v, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); }).join(' ');
