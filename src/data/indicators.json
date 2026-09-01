@@ -22,19 +22,19 @@
     },
     {
       "label": "KOSPI",
-      "value": "6,788.88",
-      "delta": "1.79%",
-      "dir": "down"
+      "value": "6,820.02",
+      "delta": "0.46%",
+      "dir": "up"
     },
     {
       "label": "美 10Y",
-      "value": "4.67%",
-      "delta": "1bp",
+      "value": "4.73%",
+      "delta": "6bp",
       "dir": "up"
     },
     {
       "label": "국고채 10Y",
-      "value": "4.28%",
+      "value": "4.31%",
       "delta": "",
       "dir": "up"
     }
@@ -61,30 +61,29 @@
     },
     {
       "label": "한·미 금리차 (10Y)",
-      "value": "-0.43%p",
-      "delta": "6bp",
+      "value": "-0.45%p",
+      "delta": "2bp",
       "dir": "down",
       "spark": [
-        15,
-        8,
+        7,
         4,
-        15,
         13,
-        15,
+        12,
+        13,
         6,
-        15,
+        13,
+        23,
         26
       ],
       "sparkHi": "-0.31",
-      "sparkLo": "-0.43"
+      "sparkLo": "-0.45"
     },
     {
       "label": "KOSPI",
-      "value": "6,788.88",
-      "delta": "1.79%",
-      "dir": "down",
+      "value": "6,820.02",
+      "delta": "0.46%",
+      "dir": "up",
       "spark": [
-        6,
         26,
         7,
         4,
@@ -92,7 +91,8 @@
         12,
         9,
         4,
-        10
+        10,
+        9
       ],
       "sparkHi": "6,913",
       "sparkLo": "6,471"
