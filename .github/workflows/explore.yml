@@ -5,6 +5,9 @@ on: { workflow_dispatch: }
 jobs:
   explore:
     runs-on: ubuntu-latest
+    # ★ 시간 제한을 반드시 둔다. 2판을 제한 없이 돌렸다가 22분간 어디에 있는지 몰라
+    #   취소했다(기본값은 6시간이다).
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
