@@ -163,5 +163,38 @@ for (const [name, stock] of WATCH.slice(0, 3)) {
   } catch { log(`   JSON 파싱 실패: ${String(body).slice(0, 160)}`); }
 }
 
+// ── ⑥ 고친 corp.mjs 의 fetchDart 를 그대로 돌려 본다 ──────────────────
+//   ⑤ 는 curl 로 확인한 것이고, 파이프라인은 **node fetch** 로 부른다.
+//   내일 아침 실행에 걸기 전에 같은 코드·같은 호출 방식으로 결과를 본다.
+const CORPS = JSON.parse(readFileSync(new URL('../src/data/dart-corp.json', import.meta.url), 'utf8')).companies;
+const PERIODIC = /^\[?(기재정정)?\]?\s*(사업보고서|반기보고서|분기보고서)/;
+const ymd2 = (x) => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
+console.log('');
+log('── ⑥ corp.mjs fetchDart 재현 (node fetch · 30일 · 6종목)');
+try {
+  const end2 = new Date(); const bgn2 = new Date(); bgn2.setDate(bgn2.getDate() - 30);
+  const out = [];
+  for (const c of CORPS) {
+    const res = await fetch(
+      `https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${c.corpCode}` +
+      `&bgn_de=${ymd2(bgn2)}&end_de=${ymd2(end2)}&page_count=100`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.status === '013') { log(`   ${c.name}: 013 (30일 내 공시 없음)`); continue; }
+    if (data.status !== '000') throw new Error(`${data.status} ${data.message}`);
+    const rows = (data.list ?? []).map((r) => ({
+      date: r.rcept_dt, corp: c.name, title: r.report_nm.trim(),
+      periodic: PERIODIC.test(r.report_nm.trim()),
+    }));
+    log(`   ${c.name}: ${rows.length}건 · 정기보고서 ${rows.filter((r) => r.periodic).length}건`);
+    out.push(...rows);
+  }
+  out.sort((a, b) => Number(b.periodic) - Number(a.periodic) || b.date.localeCompare(a.date));
+  log(`   ★ 합계 ${out.length}건 → 화면에 나갈 상위 10건:`);
+  for (const r of out.slice(0, 10)) log(`     ${r.date} ${r.periodic ? '[정기]' : '     '} ${r.corp} · ${r.title}`);
+} catch (e) {
+  log(`   ★ ⑥ 실패: ${e.message}`);
+}
+
 console.log('');
 log('탐색 끝. 키 값은 출력하지 않았다.');
