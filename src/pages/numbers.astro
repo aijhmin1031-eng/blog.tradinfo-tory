@@ -14,21 +14,10 @@
 //   매일 아침 파이프라인이 갱신하면 이 페이지도 함께 최신이 된다.
 import Base from '../layouts/Base.astro';
 import { url, TZ_KST, todayIn } from '../lib/site';
-import defs from '../../data/sources.json';
+// ★ 지표 묶음은 `lib/numbers.ts` 한 곳에 있다(2026-09-01). llms.txt 가 같은 목록을 읽는다 —
+//   예전처럼 손으로 베껴 두면 계열이 늘 때 한쪽만 낡는다(실제로 llms.txt 가 「25종」에 묶여 있었다).
+import { GROUPS, loadSeries as load, META as meta } from '../lib/numbers';
 
-const series = import.meta.glob('../../data/series/*.json', { eager: true });
-const load = (id: string): any => (series[`../../data/series/${id}.json`] as any)?.default;
-
-const GROUPS: { name: string; ids: string[]; note: string }[] = [
-  { name: '환율', ids: ['usdkrw', 'jpy100', 'dxy'], note: '원화의 값과 달러 자체의 강약을 함께 본다' },
-  { name: '금리', ids: ['baserate', 'ktb10y', 'deposit1y', 'fedfunds', 'us2y', 'us10y', 'us10y2y'], note: '정책금리와 시장금리는 따로 움직인다' },
-  { name: '물가·고용', ids: ['cpi_kr', 'cpi_kr_yoy', 'ppi_kr', 'cpi_us', 'unrate_kr', 'unrate_us'], note: '한국 물가는 지수, 미국은 상승률로 온다' },
-  { name: '원자재', ids: ['wti', 'brent', 'natgas', 'copper'], note: '우리 수입 원유는 WTI 보다 브렌트에 가깝다' },
-  { name: '대외 거래', ids: ['exports_kr', 'balance_goods_kr', 'reserves_kr', 'prod_kr'], note: '환율의 구조적 배경이 여기 있다' },
-  { name: '증시', ids: ['kospi'], note: '' },
-];
-
-const meta = new Map<string, any>((defs.series as any[]).map((d) => [d.id, d]));
 // 자릿수는 **정의서의 `frac` 이 우선**이다. 크기로만 정하면 환율 1,380.30 이 1,380 으로 잘린다
 // (1,000 이상은 정수로 반올림하게 짜 두었더니 실제로 그렇게 나왔다). 환율은 소수 둘째 자리가 의미 있다.
 const fmt = (v: number, frac?: number) => {
