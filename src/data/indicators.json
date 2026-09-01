@@ -6,37 +6,43 @@
       "label": "USD/KRW",
       "value": "1,376.50",
       "delta": "0.28%",
-      "dir": "down"
+      "dir": "down",
+      "asOf": "2026-08-31"
     },
     {
       "label": "JPY100",
       "value": "859.27",
       "delta": "0.79%",
-      "dir": "down"
+      "dir": "down",
+      "asOf": "2026-08-31"
     },
     {
       "label": "WTI",
       "value": "$83.90",
       "delta": "2.83%",
-      "dir": "down"
+      "dir": "down",
+      "asOf": "2026-08-25"
     },
     {
       "label": "KOSPI",
       "value": "6,820.02",
       "delta": "0.46%",
-      "dir": "up"
+      "dir": "up",
+      "asOf": "2026-08-31"
     },
     {
       "label": "美 10Y",
       "value": "4.73%",
       "delta": "6bp",
-      "dir": "up"
+      "dir": "up",
+      "asOf": "2026-08-28"
     },
     {
       "label": "국고채 10Y",
       "value": "4.31%",
       "delta": "",
-      "dir": "up"
+      "dir": "up",
+      "asOf": "2026-08-31"
     }
   ],
   "tiles": [

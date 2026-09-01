@@ -157,15 +157,24 @@ async function main() {
 
   const indicators = JSON.parse(await readFile(INDICATORS, 'utf8'));
   const t = lastV(acc.usdkrw).d;
+  // ★ `asOf` 는 **원/달러 하나의 최신일**이다(2026-09-01 확인). 그런데 화면에서는
+  //   티커 여섯 항목 전부의 기준일인 것처럼 「기준 08.31 종가」로 나가고 있었다.
+  //   실제로는 WTI 08.25 · 美 10Y 08.28 처럼 며칠씩 다르다(FRED 계열은 늦게 온다).
+  //   그래서 항목마다 자기 날짜를 함께 싣는다. 이 값은 「가장 최근에 갱신된 날」이라는
+  //   뜻으로만 남긴다(다른 화면이 참조하고 있다).
   indicators.asOf = `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}`;
+  const asOfOf = (s) => {
+    const d = lastV(s).d;
+    return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
+  };
   indicators.note = 'ECOS·FRED 자동 수집 — data/series/ 에 장기 축적';
   indicators.ticker = [
-    { label: 'USD/KRW', value: fmtNum(lastV(acc.usdkrw).v), delta: `${Math.abs(d.krw).toFixed(2)}%`, dir: dir(d.krw) },
-    { label: 'JPY100', value: fmtNum(lastV(acc.jpy100).v), delta: `${Math.abs(d.jpy).toFixed(2)}%`, dir: dir(d.jpy) },
-    { label: 'WTI', value: `$${fmtNum(lastV(acc.wti).v)}`, delta: `${Math.abs(d.wti).toFixed(2)}%`, dir: dir(d.wti) },
-    { label: 'KOSPI', value: fmtNum(lastV(acc.kospi).v), delta: `${Math.abs(d.kospi).toFixed(2)}%`, dir: dir(d.kospi) },
-    { label: '美 10Y', value: `${fmtNum(lastV(acc.us10y).v)}%`, delta: `${Math.abs(d.us10bp)}bp`, dir: dir(d.us10bp) },
-    { label: '국고채 10Y', value: `${fmtNum(lastV(acc.ktb10y).v)}%`, delta: '', dir: 'up' },
+    { label: 'USD/KRW', value: fmtNum(lastV(acc.usdkrw).v), delta: `${Math.abs(d.krw).toFixed(2)}%`, dir: dir(d.krw), asOf: asOfOf(acc.usdkrw) },
+    { label: 'JPY100', value: fmtNum(lastV(acc.jpy100).v), delta: `${Math.abs(d.jpy).toFixed(2)}%`, dir: dir(d.jpy), asOf: asOfOf(acc.jpy100) },
+    { label: 'WTI', value: `$${fmtNum(lastV(acc.wti).v)}`, delta: `${Math.abs(d.wti).toFixed(2)}%`, dir: dir(d.wti), asOf: asOfOf(acc.wti) },
+    { label: 'KOSPI', value: fmtNum(lastV(acc.kospi).v), delta: `${Math.abs(d.kospi).toFixed(2)}%`, dir: dir(d.kospi), asOf: asOfOf(acc.kospi) },
+    { label: '美 10Y', value: `${fmtNum(lastV(acc.us10y).v)}%`, delta: `${Math.abs(d.us10bp)}bp`, dir: dir(d.us10bp), asOf: asOfOf(acc.us10y) },
+    { label: '국고채 10Y', value: `${fmtNum(lastV(acc.ktb10y).v)}%`, delta: '', dir: 'up', asOf: asOfOf(acc.ktb10y) },
   ];
   indicators.tiles = [
     { label: '원/달러 환율', value: fmtNum(lastV(acc.usdkrw).v), delta: `${Math.abs(d.krw).toFixed(2)}%`, dir: dir(d.krw), spark: spark(acc.usdkrw), ...sparkHiLo(acc.usdkrw) },

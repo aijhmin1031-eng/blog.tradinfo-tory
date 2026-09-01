@@ -59,6 +59,11 @@ async function main() {
     { id: 'kospi', label: 'KOSPI', unit: '', s: kospi, frac: 2 },
     { id: 'wti', label: 'WTI 유가', unit: '달러', s: wti, frac: 2 },
   ];
+  // ★ 계열마다 최신일이 다르다(2026-09-01 수리). ECOS 계열은 어제 종가까지 오지만
+  //   FRED 계열은 며칠 늦는다 — 실측으로 WTI 가 엿새 뒤처져 있었다.
+  //   그런데 브리핑은 **모든 값에 기준일 하나(환율 최신일)를 붙이고** 있었고,
+  //   그래서 「8월 31일 … 가장 크게 움직인 것은 WTI, 2.83% 내린 83.90달러」라고 썼다.
+  //   그 83.90달러는 **8월 25일 종가**다. 절대 규칙 2(기준 시점 명기) 위반이다.
   const movers = items.map((it) => {
     const p = pct(it.s);
     return {
@@ -66,10 +71,16 @@ async function main() {
       value: `${fmtNum(last(it.s).v, it.frac)}${it.unit === '달러' ? '달러' : it.unit}`,
       delta: `${Math.abs(p).toFixed(2)}%`,
       dir: p >= 0 ? 'up' : 'down',
+      asOf: iso(last(it.s).d),
+      stale: last(it.s).d !== date,
       pct: p,
     };
   });
-  const top = [...movers].sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))[0];
+  // 「그날 가장 크게 움직인 것」은 **그날 값이 있는 계열끼리만** 겨룰 수 있다.
+  // 뒤처진 계열을 끼우면 다른 날의 등락률을 오늘 것으로 말하게 된다.
+  const sameDay = movers.filter((m) => !m.stale);
+  const pool = sameDay.length ? sameDay : movers;
+  const top = [...pool].sort((a, b) => Math.abs(b.pct) - Math.abs(a.pct))[0];
 
   const summary = [
     // 「가장 큰 움직임은 WTI 유가였습니다」는 주어와 술어가 어긋난다(움직임 = 유가?).
@@ -80,10 +91,15 @@ async function main() {
         fmtNum(last(items.find((i) => i.label === top.label).s).v) +
         (top.label.includes('환율') ? '원' : top.label === 'WTI 유가' ? '달러' : '');
       const move = top.dir === 'up' ? '오른' : '내린';
-      return `${kdate(date)} 시장에서 가장 크게 움직인 것은 ${top.label}입니다. 전일 대비 ${top.delta} ${move} ${closing}${roSuffix(closing)} 마감했습니다.`;
+      // 날짜는 그 계열 자신의 것을 쓴다. 대개 기준일과 같지만 뒤처진 계열이 뽑히면
+      // (그날 값이 있는 계열이 하나도 없을 때) 그 계열의 날짜가 나가야 맞다.
+      return `${kdate(top.asOf.replace(/-/g, ''))} 시장에서 가장 크게 움직인 것은 ${top.label}입니다. 전일 대비 ${top.delta} ${move} ${closing}${roSuffix(closing)} 마감했습니다.`;
     })(),
     `원/달러 환율은 ${fmtNum(last(krw).v)}원으로 전일 대비 ${moveWord(pct(krw))}. 원/100엔 환율은 ${fmtNum(last(jpy).v)}원을 기록했습니다.`,
-    `금리는 국고채 10년 ${fmtNum(last(ktb).v)}%, 미 국채 10년 ${fmtNum(last(us10).v)}%, 한·미 격차는 ${gap > 0 ? '+' : ''}${fmtNum(gap)}%p입니다.`,
+    // 미 국채는 FRED 라 하루 이상 늦을 수 있다. 늦으면 그 날짜를 밝힌다.
+    `금리는 국고채 10년 ${fmtNum(last(ktb).v)}%, 미 국채 10년 ${fmtNum(last(us10).v)}%${
+      last(us10).d !== date ? `(${kdate(last(us10).d)} 기준)` : ''
+    }, 한·미 격차는 ${gap > 0 ? '+' : ''}${fmtNum(gap)}%p입니다.`,
   ];
 
   const chartPoints = krw.points.slice(-20);

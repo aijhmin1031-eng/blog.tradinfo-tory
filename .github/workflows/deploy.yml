@@ -1,11 +1,12 @@
 name: Deploy to GitHub Pages
 
+# ★ schedule 은 2026-09-01 에 `pipeline.yml` 로 옮겼다.
+#   이 워크플로는 `cancel-in-progress: true` 라 **푸시가 실행 중인 것을 죽인다.**
+#   배포는 그래도 되지만 **데이터 수집은 그러면 그날 값을 잃는다**(8/28 에 실제로 취소됐다).
+#   수집은 별도 워크플로가 하고, 그 커밋백이 여기 push 를 일으켜 배포가 이어진다.
 on:
   push:
     branches: [main, 'claude/**']
-  schedule:
-    # 매일 아침 KST 06:50 (UTC 21:50 전일) — 지표 수집·브리핑 발행·그날 예약 기사 자동 발행·배포
-    - cron: '50 21 * * *'
   workflow_dispatch:
 
 permissions:
@@ -72,28 +73,7 @@ jobs:
           cache: npm
       - run: npm ci
 
-      - name: Run data pipeline (collect + daily brief)
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        env:
-          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
-          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
-        run: npm run pipeline
-
-      - name: Commit accumulated data back to repo
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        run: |
-          git config user.name "tori-pipeline"
-          git config user.email "actions@users.noreply.github.com"
-          git add data src/data src/content/briefs
-          if git diff --cached --quiet; then
-            echo "변경 없음 — 커밋 생략"
-          else
-            git commit -m "데이터 파이프라인: 지표 수집·브리핑 발행 ($(date -u +%F))"
-            git push
-          fi
-
+      # 지표 수집·커밋백은 `pipeline.yml` 이 한다(2026-09-01 분리). 여기서는 짓기만 한다.
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
@@ -105,7 +85,9 @@ jobs:
   indexnow:
     name: 색인 알림 (네이버·Bing)
     needs: deploy
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # 파이프라인이 커밋백으로 일으킨 push 일 때만 제출한다. 사람이 코드를 고쳐 푸시할
+    # 때마다 색인 알림을 쏘면 의미 없는 제출이 하루에도 여러 번 나간다.
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '데이터 파이프라인')
     runs-on: ubuntu-latest
     # 색인 알림이 실패해도 그날 발행은 이미 끝났다. 배포를 실패로 물들이지 않는다.
     continue-on-error: true

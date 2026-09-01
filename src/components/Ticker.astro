@@ -16,9 +16,19 @@ const EN_LABEL: Record<string, string> = {
   '美 10Y': 'US 10Y',
   '국고채 10Y': 'KTB 10Y',
 };
-const items = indicators.ticker.map((t) => ({ ...t, label: isEn ? (EN_LABEL[t.label] ?? t.label) : t.label }));
-// 기준일은 오른쪽에 고정 표시, 흐르는 항목 사이에 끼우면 지나갈 때만 보인다.
-const asofShort = indicators.asOf.slice(5).replace('-', '.');
+// ★ 기준일은 **항목마다 다르다**(2026-09-01 수리). 그전에는 오른쪽에 고정 칩으로
+//   「기준 08.31 종가」 하나만 띄웠는데, 그 08.31 은 **원/달러 하나의 최신일**이었다.
+//   실측하면 WTI 08.25 · 美 10Y 08.28 로 며칠씩 다르다(FRED 계열이 늦게 온다).
+//   여섯 값에 남의 날짜를 붙여 놓고 「종가」라고 부른 셈이라 절대 규칙 2 위반이었다.
+//   이제 값 옆에 자기 날짜를 붙이고 고정 칩은 없앤다.
+//   `asOf` 가 없는 옛 데이터로 빌드해도 깨지지 않게 전체 기준일로 물러선다
+//   (파이프라인이 한 번 더 돌면 항목마다 채워진다).
+const short = (d?: string) => (d ? d.slice(5).replace('-', '.') : '');
+const items = indicators.ticker.map((t: any) => ({
+  ...t,
+  label: isEn ? (EN_LABEL[t.label] ?? t.label) : t.label,
+  asOfShort: short(t.asOf ?? indicators.asOf),
+}));
 ---
 
 <div class="ticker" aria-label={isEn ? 'Market snapshot' : '주요 시세'}>
@@ -32,6 +42,7 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
                 <span class="tk-label">{t.label}</span>
                 <span class="tk-value">{t.value}</span>
                 <Delta dir={t.dir as 'up' | 'down'} text={t.delta} onDark lang={lang} />
+                <span class="tk-asof">{t.asOfShort}</span>
               </span>
             ))}
           </div>
@@ -39,12 +50,8 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
       }
     </div>
   </div>
-  <div class="tk-fixed mono" title={isEn ? `Data as of ${indicators.asOf}` : `데이터 기준일 ${indicators.asOf}`}>
-    {isEn ? (
-      <><span class="tk-fixed-label">close</span> {asofShort}</>
-    ) : (
-      <><span class="tk-fixed-label">기준</span> {asofShort} 종가</>
-    )}
+  <div class="tk-fixed mono" title={isEn ? 'Each figure carries its own reference date' : '숫자마다 기준일이 다릅니다'}>
+    <span class="tk-fixed-label">{isEn ? 'close' : '종가'}</span>
   </div>
 </div>
 
@@ -92,6 +99,8 @@ const asofShort = indicators.asOf.slice(5).replace('-', '.');
   .tk { display: inline-flex; align-items: center; gap: 6px; }
   .tk-label { color: var(--dark-band-sub); }
   .tk-value { font-weight: 500; }
+  /* 값이 어느 날 것인지 바로 옆에 붙인다. 흐르는 띠라 항목과 떨어지면 짝이 안 보인다. */
+  .tk-asof { color: var(--dark-band-sub); font-size: 10px; letter-spacing: 0.02em; }
   .tk-fixed {
     flex: none;
     display: flex;

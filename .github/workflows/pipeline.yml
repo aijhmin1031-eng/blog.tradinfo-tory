@@ -1,0 +1,91 @@
+name: 데이터 파이프라인
+
+# ── 왜 deploy.yml 에서 떼어 냈나 (2026-09-01) ─────────────────────────────
+# 2026-09-01 아침, 소유주가 「지표가 최신화가 안 되어 있다」고 잡았다. 재어 보니
+# **그날 06:50 KST 실행이 아예 오지 않았다.** 실행 기록을 세어 보니 원인이 둘이었다.
+#
+# ① GitHub 의 schedule 은 정시를 보장하지 않는다. 8/22~8/30 실측 지연이
+#    11분 ~ **8시간**으로 들쭉날쭉했고, 아예 안 온 날도 있다.
+#    → **하루 세 번 건다.** 파이프라인은 멱등이라(같은 값이면 커밋이 안 생긴다)
+#      두 번 더 도는 비용이 값싸다. 게다가 앞 실행이 성공했으면 가드가 건너뛴다.
+#
+# ② **푸시가 파이프라인을 취소하고 있었다.** deploy.yml 은 `group: pages` +
+#    `cancel-in-progress: true` 라 schedule 실행 도중 아무나 푸시하면 그 실행이
+#    죽는다(8/28 슬롯이 실제로 그렇게 취소됐다). 배포는 겹치면 최신 것만 남는 게
+#    맞지만 **데이터 수집은 겹쳐도 취소하면 안 된다** — 그날 값을 잃는다.
+#    → 그룹을 갈랐고 `cancel-in-progress: false` 다.
+#
+# 커밋백이 push 를 일으키므로 배포는 deploy.yml 이 이어서 한다(변경 없음).
+
+on:
+  schedule:
+    - cron: '50 21 * * *' # 06:50 KST — 정규
+    - cron: '50 23 * * *' # 08:50 KST — 1차가 지연·누락됐을 때
+    - cron: '50 2 * * *'  # 11:50 KST — 마지막 안전망
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    name: 지표 수집·브리핑 발행
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 오늘(KST) 이미 수집해 커밋했으면 재시도 슬롯은 조용히 넘어간다.
+      # 값이 안 바뀌어 커밋이 없던 날은 이 판정이 false 가 되어 한 번 더 도는데,
+      # 그것은 낭비가 아니라 재확인이다.
+      - name: 오늘 이미 수집했는지 본다
+        id: guard
+        run: |
+          TODAY=$(TZ=Asia/Seoul date +%F)
+          LAST=$(TZ=Asia/Seoul git log -1 --grep='^데이터 파이프라인' --format=%cd --date=format-local:%F || true)
+          echo "오늘(KST) $TODAY · 마지막 수집 커밋 ${LAST:-없음}"
+          if [ "$LAST" = "$TODAY" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+        if: steps.guard.outputs.skip != 'true'
+
+      - name: 지표 수집 + 아침 브리핑
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+        run: npm run pipeline
+
+      - name: 계열 점검 (실패해도 커밋은 한다)
+        if: steps.guard.outputs.skip != 'true'
+        continue-on-error: true
+        run: npm run series-check
+
+      # 날짜는 KST 로 적는다. UTC 로 적으면 06:50 KST 실행이 **전날 날짜**로 남아
+      # 가드와 일지가 서로 다른 날을 가리킨다.
+      - name: 누적 데이터 커밋백
+        if: steps.guard.outputs.skip != 'true'
+        run: |
+          git config user.name "tori-pipeline"
+          git config user.email "actions@users.noreply.github.com"
+          git add data src/data src/content/briefs
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 커밋 생략"
+          else
+            git commit -m "데이터 파이프라인: 지표 수집·브리핑 발행 ($(TZ=Asia/Seoul date +%F))"
+            git push
+          fi
