@@ -5,6 +5,12 @@
 // 사용: DART_API_KEY=... DATA_GO_KR_KEY=... node scripts/pipeline/corp.mjs
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
+// ★ 날짜는 KST 로 찍는다(2026-09-01 소유주 지시 「모든 일자는 한국 표준시로」).
+// `new Date().toISOString()` 은 **UTC** 라, 06:50 KST 실행이 21:50 UTC 전날이므로
+// **하루 전 날짜로 찍힌다.** 이 저장소의 모든 날짜는 KST 가 기준이다.
+const todayKST = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
+
+
 const DART = process.env.DART_API_KEY;
 const DATAGO = process.env.DATA_GO_KR_KEY;
 const ROOT = new URL('../../', import.meta.url);
@@ -66,7 +72,7 @@ async function accumulateStock(item, fresh) {
   const map = new Map(stored.points.map((p) => [p.d, p.v]));
   for (const p of fresh) map.set(p.d, p.v);
   stored.points = [...map.entries()].map(([d, v]) => ({ d, v })).sort((a, b) => a.d.localeCompare(b.d));
-  stored.updatedAt = new Date().toISOString().slice(0, 10);
+  stored.updatedAt = todayKST();
   await writeFile(file, JSON.stringify(stored, null, 1) + '\n');
   return stored;
 }

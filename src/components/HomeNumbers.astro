@@ -64,6 +64,12 @@ const items = PICK.map((id) => {
     <h2 class="hn-t">오늘의 숫자</h2>
     <a class="hn-more" href={url('/numbers/')}>지표 30종 전부 <span aria-hidden="true">→</span></a>
   </div>
+  {/* ★ 2026-09-01 소유주 물음(「오늘이 9월 1일인데 왜 최신이 8월 31일인가」)으로 추가.
+      값은 정확했다 — 그날 장이 닫히기 전에는 직전 영업일 종가가 최신이다. 틀린 것은
+      **이름이 만든 기대**였다. 「오늘의 숫자」를 보고 오늘 날짜를 기대하는 것이 자연스럽다.
+      이름은 브랜드라 두고, 한 줄로 규칙을 밝힌다. 소유주가 헷갈렸다면 독자는 반드시 헷갈린다. */}
+  <p class="hn-note">모두 <strong>종가</strong> 기준입니다. 장이 닫히기 전에는 직전 영업일 값이 최신이고,
+    해외 지표는 며칠 늦게 옵니다. 기준일은 숫자마다 따로 적었습니다.</p>
   <ul class="hn-grid">
     {items.map((t, i) => (
       <li class={`hn-c is-${t.dir}`} style={`--i:${i}`}>
@@ -88,6 +94,8 @@ const items = PICK.map((id) => {
   .hn-head { display: flex; align-items: baseline; justify-content: space-between;
     border-bottom: 2px solid var(--ink); padding-bottom: 7px; margin-bottom: 0; }
   .hn-t { font-size: 15px; margin: 0; letter-spacing: -.01em; }
+  .hn-note { font-size: 12px; line-height: 1.75; color: var(--muted); margin: 0 0 12px; word-break: keep-all; }
+  .hn-note strong { color: var(--sub); font-weight: 700; }
   .hn-more { font-size: 12.5px; color: var(--accent); text-decoration: none; }
   .hn-more:hover { text-decoration: underline; }
   .hn-grid { list-style: none; margin: 0; padding: 0;
