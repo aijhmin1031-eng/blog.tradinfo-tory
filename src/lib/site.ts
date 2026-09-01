@@ -27,6 +27,18 @@ export const url = (path: string) => `${base}${path.startsWith('/') ? path : `/$
 // (2026-08-31, 공유 줄을 만들며 한 곳으로 모았다).
 export const CANONICAL_ORIGIN = 'https://dotoriecon.com';
 
+// ── 공유용 블로그 소개 3줄 (2026-09-01 소유주 지시) ──────────────────────
+// 그전에는 붙여넣기 덩어리에 **그 기사의 세 줄 요약**을 담았다. 그런데 메신저가
+// 링크를 카드로 펴면 **제목·설명·그림이 이미 카드에 나온다.** 같은 말을 두 번 쓴 셈이고,
+// 정작 「이 블로그가 무엇인가」는 아무 데도 없었다. 한 번 읽고 마는 사람에게
+// 남겨야 할 것은 기사 요약이 아니라 **다시 올 이유**다.
+// 수는 손으로 적지 않는다 — 쓰는 쪽에서 세어 넣는다(HomeTools 와 같은 방식).
+export const sharePitch = (nSeries: number) => [
+  '무역·환율·금리·수출입 숫자를 매일 아침 공식 통계에서 직접 거둡니다.',
+  `계열 ${nSeries}종의 오늘 값과 기준일을 한 화면에서 확인합니다.`,
+  '실질금리 계산기와 수입원가 계산기를 무료로 공개합니다.',
+];
+
 /** 현재 페이지 주소(base 접두어 포함)를 정본 도메인 기준 절대 주소로 바꾼다. */
 export const canonicalUrl = (pathname: string) => {
   const p = base && pathname.startsWith(base) ? pathname.slice(base.length) : pathname;

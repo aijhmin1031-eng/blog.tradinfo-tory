@@ -43,7 +43,7 @@ const { title, date, summary, movers, chart } = brief.data;
 
     {chart && <LineChart {...chart} height={220} />}
 
-    <Share title={title} lines={summary} />
+    <Share title={title} />
 
     <div class="br-foot">
       <a href={url('/warehouse/')}>← 도토리 창고에서 지난 브리핑 보기</a>
