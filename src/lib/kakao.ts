@@ -17,7 +17,7 @@
 //   ③ 앱 → 제품 링크 관리 → 웹 도메인에 https://dotoriecon.com
 // **비즈니스 앱 전환은 필요 없다.** 공유 문서의 사전 설정에 들어 있지 않다.
 // (채널 메시지·친구 목록 같은 「추가 기능」에만 비즈니스 정보 심사가 붙는다.)
-export const KAKAO_JS_KEY = '';
+export const KAKAO_JS_KEY = '26a5ed4dc9a53f842dc46f0e66d1f79f';
 
 /** 32자리 소문자 16진수인지. 오타로 잘못된 키가 전 페이지에 박히는 것을 막는다. */
 export const kakaoOn = /^[0-9a-f]{32}$/.test(KAKAO_JS_KEY);
