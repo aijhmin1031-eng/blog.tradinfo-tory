@@ -15,21 +15,30 @@ import { execFileSync } from 'node:child_process';
 const KEY = process.env.DART_API_KEY ?? '';
 console.log(`DART 키: ${KEY ? `있음(길이 ${KEY.length})` : '★ 없음 — Actions Secrets 확인 필요'}`);
 
-function get(url, label, { binary = false } = {}) {
+// ★ 한 호출이 실패해도 나머지를 포기하지 않는다. 그리고 **큰 파일은 시간을 넉넉히 준다** —
+//   corpCode.xml 은 3.6MB 인데 첫 실행은 7초, 두 번째는 40초에 걸려 끊겼다(DART 쪽이 들쭉날쭉하다).
+//   여기서 죽으면 뒤의 재무제표 확인을 아예 못 한다.
+function get(url, label, { binary = false, timeout = 60 } = {}) {
   console.log(`\n── ${label}`);
-  const out = execFileSync('curl', [
-    '-sS', '--max-time', '40', '-o', binary ? '/tmp/resp.bin' : '/tmp/resp.txt',
+  let out = '';
+  try {
+    out = execFileSync('curl', [
+    '-sS', '--max-time', String(timeout), '--retry', '2', '--retry-delay', '3',
+    '-o', binary ? '/tmp/resp.bin' : '/tmp/resp.txt',
     '-w', 'HTTP %{http_code} · total %{time_total}s · size %{size_download} · type %{content_type}',
     url,
-  ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    ], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  } catch (e) {
+    console.log(`   ★ 실패: ${String(e.stdout ?? '').trim()} | ${String(e.stderr ?? '').trim().slice(0, 160)}`);
+    return null;
+  }
   console.log(`   ${out}`);
   if (binary) return null;
-  const body = execFileSync('cat', ['/tmp/resp.txt'], { encoding: 'utf8' });
-  return body;
+  try { return execFileSync('cat', ['/tmp/resp.txt'], { encoding: 'utf8' }); } catch { return null; }
 }
 
 // ── ① 고유번호 (ZIP 으로 온다. 여기서는 응답 형태만 본다) ──────────────
-get(`https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${KEY}`, '① corpCode.xml (고유번호 목록, ZIP)', { binary: true });
+get(`https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${KEY}`, '① corpCode.xml (고유번호 목록, 3.6MB ZIP)', { binary: true, timeout: 180 });
 // ★ 파싱은 Node 에서 직접 한다. 첫 판은 셸 heredoc 안에 파이썬을 넣었다가
 //   이스케이프가 네 겹으로 꼬여 **정규식이 아무것도 못 잡았다**(API 문제가 아니라 내 문제였다).
 //   중첩 heredoc 을 쓰지 말 것.
