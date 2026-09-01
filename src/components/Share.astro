@@ -21,9 +21,14 @@
 // **그 안에 카카오톡이 들어 있다.** 먼저 되는 것부터 낸다.
 interface Props {
   title: string;
+  /** 카카오 카드에 넣을 대표 이미지(사이트 내 경로). 없으면 카드 없이 공유 시트만 쓴다. */
+  image?: string;
+  /** 카드 설명. 없으면 소개 첫 줄을 쓴다. */
+  desc?: string;
 }
-const { title } = Astro.props;
+const { title, image, desc } = Astro.props;
 import { CANONICAL_ORIGIN, canonicalUrl, SITE, sharePitch } from '../lib/site';
+import { KAKAO_JS_KEY, kakaoOn, KAKAO_SDK_SRC, KAKAO_SDK_INTEGRITY } from '../lib/kakao';
 // 계열 수는 손으로 적지 않고 **세어서** 넣는다(HomeTools 와 같은 방식).
 const series = import.meta.glob('../../data/series/*.json', { eager: true });
 const nSeries = Object.values(series).filter((s: any) => s?.default?.points?.length).length;
@@ -35,18 +40,28 @@ const abs = canonicalUrl(Astro.url.pathname);
 // 제목이 그 몫을 한다. 어느 쪽이든 **소개 세 줄은 남는다.**
 const pitch = sharePitch(nSeries);
 const block = [title, abs, '', `[${SITE.name}]`, ...pitch.map((l) => `· ${l}`), CANONICAL_ORIGIN].join('\n');
+// 카카오 카드용. 이미지는 절대 주소여야 한다(카카오 서버가 우리 서버에서 직접 받아 간다).
+// ★ `new URL(image, CANONICAL_ORIGIN)` 로 쓰면 안 된다(2026-09-01 실측으로 잡았다).
+//   `heroImg` 에는 base 접두어가 붙어 있어(`/blog.tradinfo-tory/_astro/…`) 정본 도메인에
+//   그대로 이으면 **`https://dotoriecon.com/blog.tradinfo-tory/…` 라는 없는 주소**가 된다.
+//   카카오는 조용히 빈 카드를 내보낸다. base 를 벗기는 `canonicalUrl()` 을 써야 한다.
+const cardImage = image ? canonicalUrl(image) : '';
+const cardDesc = (desc ?? pitch[0]).slice(0, 100);
 ---
 
 <section class="sh" aria-labelledby="sh-h">
   <h2 id="sh-h" class="sh-h">공유</h2>
   <div class="sh-row">
-    <button type="button" class="sh-btn sh-primary" data-share>단톡방·메신저로 보내기</button>
+    <button type="button" class="sh-btn sh-primary" data-share>{kakaoOn ? '카카오톡으로 보내기' : '단톡방·메신저로 보내기'}</button>
     <button type="button" class="sh-btn" data-copy>요약과 주소 복사</button>
   </div>
   <p class="sh-note" data-note>제목과 주소에 도토리경제 소개 세 줄을 함께 담습니다.</p>
+  {kakaoOn && (
+    <script is:inline async src={KAKAO_SDK_SRC} integrity={KAKAO_SDK_INTEGRITY} crossorigin="anonymous" />
+  )}
 </section>
 
-<script define:vars={{ block, abs, title, sheetText: [`[${SITE.name}] ${SITE.taglineSub}`, ...pitch].join('\n') }}>
+<script define:vars={{ block, abs, title, kakaoOn, KAKAO_JS_KEY, cardImage, cardDesc, sheetText: [`[${SITE.name}] ${SITE.taglineSub}`, ...pitch].join('\n') }}>
   // ★ 이 안에는 날 JS 를 그대로 쓴다(CLAUDE.md 함정 — 템플릿 리터럴로 감싸면 조용히 죽는다).
   var root = document.currentScript.previousElementSibling;
   var note = root.querySelector('[data-note]');
@@ -64,7 +79,8 @@ const block = [title, abs, '', `[${SITE.name}]`, ...pitch.map((l) => `· ${l}`),
       say('이 브라우저에서는 복사가 지원되지 않습니다. 주소창의 주소를 직접 복사해 주십시오.');
     }
   }
-  root.querySelector('[data-share]').addEventListener('click', function () {
+  // 공유 시트 → 없으면 복사. 카카오가 실패해도 여기로 떨어진다.
+  function shareFallback() {
     if (navigator.share) {
       // 취소(AbortError)는 실패가 아니므로 아무 말도 하지 않는다.
       navigator.share({ title: title, text: sheetText, url: abs }).catch(function () {});
@@ -72,6 +88,36 @@ const block = [title, abs, '', `[${SITE.name}]`, ...pitch.map((l) => `· ${l}`),
       // 데스크톱에는 공유 시트가 없다. 붙여넣을 수 있게 덩어리째 넘긴다.
       copy(block, '복사했습니다. 단톡방에 붙여넣으시면 됩니다.');
     }
+  }
+  // ★ SDK 는 async 로 받으므로 누를 때 아직 안 왔을 수 있다. **없으면 기다리지 않고**
+  //   바로 폴백으로 간다 — 단추를 눌렀는데 아무 일도 안 일어나는 것이 가장 나쁘다.
+  function kakaoReady() {
+    if (!kakaoOn || !window.Kakao) return false;
+    try {
+      if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_JS_KEY);
+      return !!(window.Kakao.Share && window.Kakao.Share.sendDefault);
+    } catch (e) { return false; }
+  }
+  root.querySelector('[data-share]').addEventListener('click', function () {
+    if (kakaoReady() && cardImage) {
+      try {
+        window.Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: title,
+            description: cardDesc,
+            imageUrl: cardImage,
+            link: { mobileWebUrl: abs, webUrl: abs },
+          },
+          buttons: [{ title: '기사 보기', link: { mobileWebUrl: abs, webUrl: abs } }],
+        });
+        return;
+      } catch (e) {
+        // 도메인 미등록·키 오류 등. 조용히 죽이지 말고 되는 길로 보낸다.
+        say('카카오톡 공유가 되지 않아 다른 방법으로 넘깁니다.');
+      }
+    }
+    shareFallback();
   });
   root.querySelector('[data-copy]').addEventListener('click', function () {
     copy(block, '복사했습니다.');
