@@ -30,45 +30,38 @@ function get(url, label, { binary = false } = {}) {
 
 // ── ① 고유번호 (ZIP 으로 온다. 여기서는 응답 형태만 본다) ──────────────
 get(`https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${KEY}`, '① corpCode.xml (고유번호 목록, ZIP)', { binary: true });
-try {
-  const t = execFileSync('bash', ['-lc', 'file -b /tmp/resp.bin | head -c 80'], { encoding: 'utf8' });
-  console.log(`   파일 형식: ${t.trim()}`);
-  const n = execFileSync('bash', ['-lc',
-    'cd /tmp && rm -rf cc && mkdir cc && (unzip -o -q resp.bin -d cc 2>/dev/null || true) && ls cc | head -3 && wc -c cc/* 2>/dev/null | tail -1'
-  ], { encoding: 'utf8' });
-  console.log(`   압축 풀기: ${n.trim().replace(/\n/g, ' · ')}`);
-  const s = execFileSync('bash', ['-lc',
-    `grep -o '<list>[^!]*</list>' /tmp/cc/*.xml 2>/dev/null | head -1 | head -c 400`
-  ], { encoding: 'utf8' });
-  if (s.trim()) console.log(`   첫 항목: ${s.trim()}`);
-  const samsung = execFileSync('bash', ['-lc',
-    `python3 - <<'PY'
-import re,glob
-for f in glob.glob('/tmp/cc/*.xml'):
-    t=open(f,encoding='utf-8',errors='ignore').read()
-    for name,code in [('삼성전자','005930'),('SK하이닉스','000660'),('HMM','011200')]:
-        m=re.search(r'<list>\\\\s*<corp_code>(\\\\d{8})</corp_code>\\\\s*<corp_name>'+name+r'</corp_name>\\\\s*<corp_eng_name>[^<]*</corp_eng_name>\\\\s*<stock_code>'+code, t)
-        print(f'  {name}({code}) 고유번호:', m.group(1) if m else '못 찾음')
-    break
-PY`
-  ], { encoding: 'utf8' });
-  console.log(samsung.trimEnd());
-} catch (e) { console.log(`   (압축 처리 실패: ${e.message.slice(0, 120)})`); }
+// ★ 파싱은 Node 에서 직접 한다. 첫 판은 셸 heredoc 안에 파이썬을 넣었다가
+//   이스케이프가 네 겹으로 꼬여 **정규식이 아무것도 못 잡았다**(API 문제가 아니라 내 문제였다).
+//   중첩 heredoc 을 쓰지 말 것.
+import { readFileSync, readdirSync } from 'node:fs';
 
-// ── ②③④ 재무제표 주요계정 ─────────────────────────────────────────
-// 삼성전자 고유번호는 위에서 확인되면 그 값을 쓴다. 알려진 값은 하드코딩하지 않는다.
 let CORP = '';
+let XML = '';
 try {
-  CORP = execFileSync('bash', ['-lc',
-    `python3 - <<'PY'
-import re,glob
-for f in glob.glob('/tmp/cc/*.xml'):
-    t=open(f,encoding='utf-8',errors='ignore').read()
-    m=re.search(r'<corp_code>(\\\\d{8})</corp_code>\\\\s*<corp_name>삼성전자</corp_name>', t)
-    print(m.group(1) if m else '')
-    break
-PY`], { encoding: 'utf8' }).trim();
-} catch {}
+  execFileSync('bash', ['-lc', 'cd /tmp && rm -rf cc && mkdir cc && unzip -o -q resp.bin -d cc'], { stdio: 'ignore' });
+  const f = readdirSync('/tmp/cc').find((x) => /\.xml$/i.test(x));
+  console.log(`   압축 풀기: ${f}`);
+  XML = readFileSync(`/tmp/cc/${f}`, 'utf8');
+  console.log(`   XML 길이: ${XML.length.toLocaleString()}자`);
+  const first = XML.match(/<list>[\s\S]{0,300}?<\/list>/);
+  if (first) console.log(`   첫 항목: ${first[0].replace(/\s+/g, ' ')}`);
+
+  // 종목코드로 찾는다. 이름은 표기가 갈릴 수 있으나 종목코드는 하나다.
+  for (const [name, stock] of [['삼성전자', '005930'], ['SK하이닉스', '000660'], ['HMM', '011200']]) {
+    const re = new RegExp(`<list>(?:(?!</list>)[\\s\\S])*?<stock_code>${stock}</stock_code>(?:(?!</list>)[\\s\\S])*?</list>`);
+    const m = XML.match(re);
+    const code = m ? (m[0].match(/<corp_code>(\d{8})<\/corp_code>/) || [])[1] : null;
+    const nm = m ? (m[0].match(/<corp_name>([^<]*)<\/corp_name>/) || [])[1] : null;
+    console.log(`   ${name}(${stock}) → 고유번호 ${code ?? '못 찾음'}${nm ? ` · 등록명 「${nm}」` : ''}`);
+    if (stock === '005930' && code) CORP = code;
+  }
+  const listed = (XML.match(/<stock_code>\d{6}<\/stock_code>/g) || []).length;
+  const all = (XML.match(/<list>/g) || []).length;
+  console.log(`   전체 ${all.toLocaleString()}곳 중 상장(종목코드 있음) ${listed.toLocaleString()}곳`);
+} catch (e) {
+  console.log(`   ★ 실패: ${e.message.slice(0, 200)}`);
+}
+
 console.log(`\n삼성전자 고유번호: ${CORP || '(못 얻음 — 아래는 건너뜀)'}`);
 
 if (CORP) {
