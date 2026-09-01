@@ -120,9 +120,34 @@ if (sameAsParent.length) {
   console.log('');
 }
 
-if (missing.length || sameAsParent.length) {
+// ── 경제 일정 등록부 고갈 감지 (2026-09-01 신설, 미결 30) ──────────────
+// 일정이 떨어지면 홈 「다음 분기점」 밴드가 **조용히 사라진다.** 아무도 오류를 안 보고,
+// 화면에서 구획 하나가 없어진 것만 남는다. 이 저장소에서 반복해서 사고를 낸 유형이다
+// (`gold` 계열이 파일조차 없이 남았고, 방문 계측 스크립트는 실행조차 안 되고 있었다).
+// **남은 일정이 셋 미만이면 실패로 세운다** — 등록부는 손으로 채워야 하므로
+// 경고만 띄우면 지나간다. 발표 기관 공식 페이지에서 확인해 `verifiedAt` 과 함께 넣을 것.
+let calendarLow = false;
+try {
+  const cal = JSON.parse(readFileSync(join(ROOT, 'src/data/calendar.json'), 'utf8'));
+  const upcoming = (cal.events ?? []).filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  const LOW = 3;
+  if (upcoming.length < LOW) {
+    calendarLow = true;
+    console.log(`${C.r}✗ 경제 일정이 ${upcoming.length}건 남았다 (기준 ${LOW}건) — 떨어지면 홈 「다음 분기점」 밴드가 조용히 사라진다${C.x}`);
+    console.log(`    발표 기관 공식 페이지에서 확인해 src/data/calendar.json 에 verifiedAt 과 함께 넣을 것.`);
+    console.log(`    ${C.d}확인 못 한 일정은 넣지 않는다 — 빈 것이 틀린 것보다 낫다.${C.x}\n`);
+  } else {
+    console.log(`${C.g}✓ 경제 일정 ${upcoming.length}건 남음${C.x} ${C.d}· 다음 ${upcoming[0].date} ${upcoming[0].org} ${upcoming[0].name}${C.x}\n`);
+  }
+} catch (e) {
+  calendarLow = true;
+  console.log(`${C.r}✗ 경제 일정 등록부를 읽지 못했다: ${e.message}${C.x}\n`);
+}
+
+if (missing.length || sameAsParent.length || calendarLow) {
   if (missing.length) console.log(`${C.r}정의만 있고 자료가 없는 계열이 있다. 그 계열을 쓰는 기사는 쓸 수 없다.${C.x}`);
   if (sameAsParent.length) console.log(`${C.r}값은 있으나 엉뚱한 값인 계열이 있다. 빈 계열보다 위험하다 — 그럴듯해서 그대로 발행된다.${C.x}`);
+  if (calendarLow) console.log(`${C.r}일정 등록부가 바닥났다. 갈림형 기사는 판별 시점을 여기서 가져오므로 함께 막힌다.${C.x}`);
   console.log('');
   process.exit(1);
 }
