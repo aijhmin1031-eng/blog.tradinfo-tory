@@ -1,0 +1,13 @@
+{
+  "note": "DART 고유번호(corp_code) 표. 모든 DART 호출의 열쇠다. corpCode.xml(3.6MB ZIP, 118,820곳)에서 뽑아 CI 에서 실호출로 확인했다. 종목코드로 찾은 값이므로 이름 표기가 갈려도 안전하다. 회사가 바뀌지 않는 한 고정값이라 매일 3.6MB 를 받지 않는다.",
+  "verifiedAt": "2026-09-01",
+  "source": "https://opendart.fss.or.kr/api/corpCode.xml",
+  "companies": [
+    { "stock": "005930", "corpCode": "00126380", "name": "삼성전자", "dartName": "삼성전자", "sector": "반도체" },
+    { "stock": "000660", "corpCode": "00164779", "name": "SK하이닉스", "dartName": "SK하이닉스", "sector": "반도체" },
+    { "stock": "005380", "corpCode": "00164742", "name": "현대차", "dartName": "현대자동차", "sector": "자동차" },
+    { "stock": "011200", "corpCode": "00164645", "name": "HMM", "dartName": "HMM", "sector": "해운" },
+    { "stock": "005490", "corpCode": "00155319", "name": "POSCO홀딩스", "dartName": "POSCO홀딩스", "sector": "철강" },
+    { "stock": "373220", "corpCode": "01515323", "name": "LG에너지솔루션", "dartName": "LG에너지솔루션", "sector": "배터리" }
+  ]
+}

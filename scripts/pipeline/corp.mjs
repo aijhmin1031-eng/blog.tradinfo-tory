@@ -26,8 +26,12 @@ const WATCHLIST = [
   { code: '005490', name: 'POSCO홀딩스', sector: '철강' },
   { code: '373220', name: 'LG에너지솔루션', sector: '배터리' },
 ];
-// DART corp_name 은 공시 서식 명칭 기준
-const DART_NAMES = new Set(WATCHLIST.map((w) => w.name));
+// ★ DART 고유번호 표는 `src/data/dart-corp.json` 한 곳에만 있다.
+//   이름이 아니라 고유번호로 부른다 — 이름 표기는 갈리지만(현대차/현대자동차)
+//   고유번호는 하나다. 값은 corpCode.xml 에서 뽑아 CI 실호출로 확인했다(2026-09-01).
+const DART_CORPS = JSON.parse(
+  await readFile(new URL('src/data/dart-corp.json', ROOT), 'utf8'),
+).companies;
 
 const ymd = (d) =>
   `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
@@ -84,31 +88,46 @@ const spark = (points, n = 9) => {
   return tail.map((v) => Math.round(26 - ((v - lo) / (hi - lo || 1)) * 22));
 };
 
+// ★ 2026-09-01 재작성. 이 함수는 **줄곧 0건**을 돌려주고 있었다. 이유가 둘이었다.
+//   ⓐ 코스피 전체 정기공시를 **100건만** 받아 그중에서 우리 6종목을 골랐다.
+//      최근 7일 코스피 공시는 수백 건이라 우리 종목이 그 100건 안에 들 이유가 없다.
+//   ⓑ 이름으로 걸렀는데 **DART 등록명이 다르다** — 우리는 「현대차」, DART 는 「현대자동차」다.
+//   둘 다 `corp_code` 로 종목별로 부르면 사라진다(고유번호는 이름 표기와 무관하다).
+//   CI 실호출로 확인했다(2026-09-01): 삼성전자 90일 858건 · SK하이닉스 71건 · 현대차 40건.
+//
+// 그리고 **정기보고서를 따로 표시한다.** 공시 목록의 대부분은
+// 「임원ㆍ주요주주특정증권등소유상황보고서」라 「보고서」로 거르면 그것만 걸린다.
+// 우리가 보는 것은 사업·반기·분기보고서 셋이다(2026-09-01 현재 최신은 8/14 제출 반기보고서).
+const PERIODIC = /^\[?(기재정정)?\]?\s*(사업보고서|반기보고서|분기보고서)/;
+
 async function fetchDart() {
   const end = new Date();
   const begin = new Date();
-  begin.setDate(begin.getDate() - 7);
+  begin.setDate(begin.getDate() - 30);
   const out = [];
-  for (const ty of ['A', 'B']) {
-    // A=정기공시, B=주요사항보고
+  for (const c of DART_CORPS) {
     const url =
       `https://opendart.fss.or.kr/api/list.json?crtfc_key=${DART}` +
-      `&bgn_de=${ymd(begin)}&end_de=${ymd(end)}&corp_cls=Y&pblntf_ty=${ty}&page_count=100`;
+      `&corp_code=${c.corpCode}&bgn_de=${ymd(begin)}&end_de=${ymd(end)}&page_count=100`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`DART HTTP ${res.status}`);
     const data = await res.json();
-    if (data.status !== '000' && data.status !== '013') throw new Error(`DART ${data.status} ${data.message}`);
+    // 013 = 조회된 데이터 없음. 그 회사만 조용한 것이므로 나머지는 계속한다.
+    if (data.status === '013') continue;
+    if (data.status !== '000') throw new Error(`DART ${data.status} ${data.message}`);
     for (const r of data.list ?? []) {
-      if (!DART_NAMES.has(r.corp_name)) continue;
+      const title = r.report_nm.trim();
       out.push({
         date: r.rcept_dt,
-        corp: r.corp_name,
-        title: r.report_nm.trim(),
+        corp: c.name, // 우리 표기로 통일한다(DART 등록명은 「현대자동차」다)
+        title,
+        periodic: PERIODIC.test(title),
         url: `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${r.rcept_no}`,
       });
     }
   }
-  out.sort((a, b) => b.date.localeCompare(a.date));
+  // 정기보고서를 앞에 세우고, 그다음 최신순.
+  out.sort((a, b) => Number(b.periodic) - Number(a.periodic) || b.date.localeCompare(a.date));
   return out.slice(0, 10);
 }
 

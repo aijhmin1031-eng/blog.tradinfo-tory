@@ -41,17 +41,20 @@ const fmtDate = (d: string) => `${d.slice(4, 6)}.${d.slice(6, 8)}`;
   <div class="corp-head kicker">관심 종목 공시</div>
   {
     corp.disclosures.length === 0 ? (
-      <p class="corp-empty">최근 7일 사이 관심 종목의 정기·주요사항 공시가 없습니다.</p>
+      <p class="corp-empty">최근 30일 사이 관심 종목의 공시가 없습니다.</p>
     ) : (
       <>
         {corp.disclosures.map((d) => (
           <a class="dart-row" href={d.url} target="_blank" rel="noopener">
             <span class="dart-date mono">{fmtDate(d.date)}</span>
             <span class="dart-corp">{d.corp}</span>
-            <span class="dart-title">{d.title}</span>
+            <span class="dart-title">
+              {d.periodic && <span class="dart-tag">정기보고서</span>}
+              {d.title}
+            </span>
           </a>
         ))}
-        <div class="corp-asof mono">최근 7일 · 유가증권시장 정기·주요사항 공시 · 자료: 금융감독원 DART</div>
+        <div class="corp-asof mono">최근 30일 · 관심 종목 6곳의 공시 · 자료: 금융감독원 DART</div>
       </>
     )
   }
@@ -102,4 +105,11 @@ const fmtDate = (d: string) => `${d.slice(4, 6)}.${d.slice(6, 8)}`;
   .dart-corp { font-size: 13px; font-weight: 700; color: var(--ink); flex: none; }
   .dart-title { font-size: 13px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dart-row:hover .dart-title { color: var(--accent); }
+  /* 정기보고서(사업·반기·분기)는 나머지 공시와 성격이 다르므로 표시해 둔다.
+     목록의 대부분은 임원 소유상황 보고서라 이것이 없으면 묻힌다. */
+  .dart-tag {
+    display: inline-block; margin-right: 5px; padding: 1px 5px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: .02em;
+    color: #fff; background: var(--brand); border-radius: 3px; vertical-align: 1px;
+  }
 </style>
