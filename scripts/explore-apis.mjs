@@ -130,9 +130,38 @@ for (const [code, name] of [['11013', '1분기'], ['11012', '반기'], ['11014',
         log(`     ${(r.fs_nm ?? '').padEnd(4)} ${(r.sj_nm ?? '').padEnd(9)} ${(r.account_nm ?? '').padEnd(12)} 당기 ${String(r.thstrm_amount ?? '').padStart(18)}`);
       }
       log(`   ★ ③ 항목 이름 전부: ${[...new Set(list.map((x) => x.account_nm))].join(', ')}`);
+      // ★ 분기 손익계산서가 **그 분기만**인지 **누적**인지 갈라야 한다. 여기서 틀리면
+      //   「3분기 매출」이라고 쓴 것이 실은 9개월 합계가 된다(절대 규칙 2 위반).
+      for (const r of list.filter((x) => x.sj_nm === '손익계산서' && x.fs_nm === '연결재무제표' && /매출액|영업이익/.test(x.account_nm))) {
+        log(`     [손익] ${r.account_nm} · 당기 ${r.thstrm_amount} · 당기누적 ${r.thstrm_add_amount ?? '(필드 없음)'} · 전기 ${r.frmtrm_amount ?? ''} · 전기누적 ${r.frmtrm_add_amount ?? '(필드 없음)'}`);
+      }
     }
     if (/"status":"000"/.test(body)) break; // 그 연도가 있으면 이전 연도는 안 본다
   }
 }
+// ── ⑤ 공시 목록을 corp_code 로 좁혀 부를 수 있는가 ────────────────────
+//   `corp.mjs` 는 지금 **전체 코스피 정기공시를 100건만 받아 이름으로 거른다.**
+//   그래서 0건이다. 종목별로 부르면 그 회사 것만 온다 — 그것을 확인한다.
+const pad = (n) => String(n).padStart(2, '0');
+const d = new Date(); const bgn = new Date(d.getTime() - 90 * 86400000);
+const ymd = (x) => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
+for (const [name, stock] of WATCH.slice(0, 3)) {
+  const cc = found.get(name)?.corp_code;
+  if (!cc) { log(`⑤ ${name}: 고유번호 없음 — 건너뜀`); continue; }
+  const body = get(
+    `https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${cc}` +
+    `&bgn_de=${ymd(bgn)}&end_de=${ymd(d)}&page_count=100`,
+    `⑤ ${name} 공시 목록 (corp_code=${cc}, 최근 90일)`
+  );
+  if (!body) continue;
+  try {
+    const j = JSON.parse(body);
+    log(`   status=${j.status} · 총 ${j.total_count ?? 0}건 · 받은 ${(j.list ?? []).length}건`);
+    for (const r of (j.list ?? []).slice(0, 6)) log(`     ${r.rcept_dt} ${r.corp_name} · ${r.report_nm.trim()}`);
+    const periodic = (j.list ?? []).filter((r) => /보고서/.test(r.report_nm) && !/첨부|정정/.test(r.report_nm));
+    log(`   ★ 「보고서」가 든 것 ${periodic.length}건: ${periodic.map((r) => `${r.rcept_dt} ${r.report_nm.trim()}`).join(' | ') || '없음'}`);
+  } catch { log(`   JSON 파싱 실패: ${String(body).slice(0, 160)}`); }
+}
+
 console.log('');
 log('탐색 끝. 키 값은 출력하지 않았다.');
