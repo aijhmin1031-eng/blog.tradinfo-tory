@@ -39,10 +39,45 @@ const postLastmod = (() => {
   return map;
 })();
 
+// ── 표 감싸기 (2026-08-31) ──────────────────────────────────────────────
+// 마크다운으로 쓴 표(`| … |`)는 아무것도 감싸지 않은 채 `<table>` 로 나간다.
+// `.prose table` 은 `width: 100%` 지만 그것으로는 **넘침을 막지 못한다** — 칼럼 내용이
+// 넓으면 표가 문서를 밀어내고 **390px 에서 페이지 전체에 가로 스크롤**이 생긴다
+// (기사 낱장에서 18px 밀렸다). 2026-08-26 에 영문 기사에서 같은 사고가 났을 때
+// `.table-scroll`(overflow-x + min-width) 규칙을 만들어 뒀으므로, 그 껍데기를
+// **빌드 때 자동으로 씌운다.** 손으로 감싸는 규약은 새 기사에서 반드시 잊힌다.
+const rehypeWrapTables = () => (tree) => {
+  const isWrap = (n) =>
+    n.type === 'element' &&
+    n.tagName === 'div' &&
+    []
+      .concat(n.properties?.className ?? [])
+      .includes('table-scroll');
+  const walk = (node) => {
+    if (!Array.isArray(node.children)) return;
+    // 이미 감싸인 표는 건드리지 않는다(영문 기사들이 손으로 감싸 두었다).
+    const skip = isWrap(node);
+    node.children = node.children.map((c) => {
+      walk(c);
+      if (!skip && c.type === 'element' && c.tagName === 'table') {
+        return {
+          type: 'element',
+          tagName: 'div',
+          properties: { className: ['table-scroll'] },
+          children: [c],
+        };
+      }
+      return c;
+    });
+  };
+  walk(tree);
+};
+
 export default defineConfig({
   site: onVercel ? CANONICAL_ORIGIN : 'https://aijhmin1031-eng.github.io',
   base: onVercel ? '/' : '/blog.tradinfo-tory',
   trailingSlash: 'always',
+  markdown: { rehypePlugins: [rehypeWrapTables] },
   integrations: [
     mdx(),
     sitemap({

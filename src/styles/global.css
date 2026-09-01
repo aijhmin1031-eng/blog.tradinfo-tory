@@ -276,6 +276,9 @@ img { max-width: 100%; height: auto; }
    폭을 억지로 줄이지 않고 min-width 를 주어 상자 안에서 밀게 한다. */
 .prose .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.6em 0; }
 .prose .table-scroll table { margin: 0; min-width: 420px; }
+/* 안전망 — 어떤 경로로든 감싸이지 않은 표가 남으면 스스로 넘침을 가둔다.
+   평소에는 `rehypeWrapTables`(astro.config.mjs)가 빌드 때 전부 감싸므로 걸리지 않는다. */
+.prose > table { display: block; max-width: 100%; overflow-x: auto; }
 .prose th, .prose td { border: 1px solid var(--hair); padding: 9px 12px; text-align: left; }
 .prose th { background: var(--surface); font-weight: 700; }
 .prose code {
