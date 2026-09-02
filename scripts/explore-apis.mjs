@@ -51,116 +51,51 @@ function get(url, label, { binary = false, timeout = 30 } = {}) {
   try { return readFileSync('/tmp/resp.txt', 'utf8'); } catch { return null; }
 }
 
-// ── ① 고유번호 (ZIP 3.6MB) ──────────────────────────────────────────
-// 시간을 90초로 잡았다. 1판은 7초, 2판은 40초에 못 받았다 — DART 쪽이 들쭉날쭉하다.
-get(`https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${KEY}`,
-  '① corpCode.xml (고유번호 목록, 3.6MB ZIP)', { binary: true, timeout: 90 });
+// ★ 7판. 소유주 물음: **「보고서 원문을 진짜로 받을 수 있느냐」**
+//   지금까지 증명한 것은 주요계정 14종(숫자)뿐이다. 원문과 전체계정은 안 때려 봤다.
+//   여기서 둘을 확인한다. 넘겨짚지 않는다.
+//     ⑨ `document.xml` — 기업이 제출한 보고서 **원문 파일**
+//     ⑩ `fnlttSinglAcntAll` — **전체 계정**(주요계정 14종이 아니라 수백 항목)
+import { readFileSync as rf, readdirSync as rd, statSync } from 'node:fs';
 
-// 우리 관심 종목. 종목코드로 찾는다(이름 표기는 갈릴 수 있으나 종목코드는 하나다).
-const WATCH = [
-  ['삼성전자', '005930'], ['SK하이닉스', '000660'], ['현대차', '005380'],
-  ['HMM', '011200'], ['POSCO홀딩스', '005490'], ['LG에너지솔루션', '373220'],
-];
-const found = new Map();
-
+// ⑨ 원문. 삼성전자 2026 반기보고서 접수번호(우리 공시 수집분에서 나온 값이다).
+const RCEPT = '20260814003699';
+get(`https://opendart.fss.or.kr/api/document.xml?crtfc_key=${KEY}&rcept_no=${RCEPT}`,
+  `⑨ document.xml — 삼성전자 반기보고서 원문 (rcept_no=${RCEPT})`, { binary: true, timeout: 120 });
 try {
-  execFileSync('bash', ['-lc', 'cd /tmp && rm -rf cc && mkdir cc && unzip -o -q resp.bin -d cc'], { stdio: 'ignore', timeout: 60000 });
-  const f = readdirSync('/tmp/cc').find((x) => /\.xml$/i.test(x));
-  log(`   압축 풀기: ${f}`);
-  const XML = readFileSync(`/tmp/cc/${f}`, 'utf8');
-  log(`   XML 길이: ${XML.length.toLocaleString()}자`);
-
-  // ★ 통째로 정규식을 걸지 않는다. 항목 단위로 갈라 한 번만 훑는다(선형).
-  const chunks = XML.split('</list>');
-  log(`   항목 ${chunks.length.toLocaleString()}개로 분할`);
-  let listed = 0;
-  for (const c of chunks) {
-    const sc = (c.match(/<stock_code>\s*(\d{6})\s*<\/stock_code>/) || [])[1];
-    if (!sc) continue;
-    listed++;
-    const hit = WATCH.find(([, code]) => code === sc);
-    if (!hit) continue;
-    const cc = (c.match(/<corp_code>\s*(\d{8})\s*<\/corp_code>/) || [])[1];
-    const nm = (c.match(/<corp_name>\s*([^<]*?)\s*<\/corp_name>/) || [])[1];
-    if (cc) found.set(hit[0], { corp_code: cc, name: nm, stock: sc });
-  }
-  log(`   전체 ${chunks.length.toLocaleString()}곳 중 상장(종목코드 있음) ${listed.toLocaleString()}곳`);
-  for (const [name, code] of WATCH) {
-    const v = found.get(name);
-    log(`   ${name}(${code}) → 고유번호 ${v ? `${v.corp_code} · 등록명 「${v.name}」` : '못 찾음'}`);
-  }
-  if (found.size) {
-    log(`   ★ 그대로 옮겨 쓸 표: ${JSON.stringify(Object.fromEntries([...found].map(([k, v]) => [v.stock, v.corp_code])))}`);
-  }
-} catch (e) {
-  log(`   ★ ① 실패: ${e.message.slice(0, 200)}`);
-}
-
-// ⓑ ①이 안 되어도 ②③④는 본다. 알려진 값으로 되돌아가되 **응답의 회사명으로 검증**한다.
-const FALLBACK = '00126380'; // 삼성전자로 알려진 고유번호 — 아래에서 corp_name 으로 확인한다
-const CORP = found.get('삼성전자')?.corp_code ?? FALLBACK;
-const viaFallback = !found.has('삼성전자');
-console.log('');
-log(`삼성전자 고유번호: ${CORP}${viaFallback ? ' (★ ①이 실패해 알려진 값으로 되돌아감 — 아래 응답의 corp_name 으로 검증한다)' : ''}`);
-
-let verified = false;
-for (const [code, name] of [['11013', '1분기'], ['11012', '반기'], ['11014', '3분기'], ['11011', '사업(연간)']]) {
-  for (const year of ['2026', '2025']) {
-    const body = get(
-      `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${KEY}&corp_code=${CORP}&bsns_year=${year}&reprt_code=${code}`,
-      `② ${year} ${name} (reprt_code=${code})`
-    );
-    if (!body) continue;
-    let j;
-    try { j = JSON.parse(body); }
-    catch { log(`   JSON 파싱 실패: ${String(body).replace(/\s+/g, ' ').slice(0, 200)}`); continue; }
-    log(`   status=${j.status} message=${j.message}`);
-    const list = j.list ?? [];
-    log(`   계정 수: ${list.length}`);
-    if (list.length) {
-      if (!verified) {
-        const nm = list[0].corp_code === CORP ? '고유번호 일치' : '★ 고유번호 불일치';
-        log(`   ★ 검증: ${nm} · 응답 회사코드 ${list[0].corp_code} · 통화 ${list[0].currency ?? '?'}`);
-        verified = true;
-      }
-      log(`   재무제표 구분(④ 연결/별도): ${[...new Set(list.map((x) => x.fs_nm))].join(' / ')}`);
-      log(`   보고서 구분: ${[...new Set(list.map((x) => x.sj_nm))].join(' / ')}`);
-      log(`   기간: 당기 ${list[0].thstrm_nm ?? '?'} · 전기 ${list[0].frmtrm_nm ?? '?'} · 전전기 ${list[0].bfefrmtrm_nm ?? '?'}`);
-      for (const r of list.slice(0, 8)) {
-        log(`     ${(r.fs_nm ?? '').padEnd(4)} ${(r.sj_nm ?? '').padEnd(9)} ${(r.account_nm ?? '').padEnd(12)} 당기 ${String(r.thstrm_amount ?? '').padStart(18)}`);
-      }
-      log(`   ★ ③ 항목 이름 전부: ${[...new Set(list.map((x) => x.account_nm))].join(', ')}`);
-      // ★ 분기 손익계산서가 **그 분기만**인지 **누적**인지 갈라야 한다. 여기서 틀리면
-      //   「3분기 매출」이라고 쓴 것이 실은 9개월 합계가 된다(절대 규칙 2 위반).
-      for (const r of list.filter((x) => x.sj_nm === '손익계산서' && x.fs_nm === '연결재무제표' && /매출액|영업이익/.test(x.account_nm))) {
-        log(`     [손익] ${r.account_nm} · 당기 ${r.thstrm_amount} · 당기누적 ${r.thstrm_add_amount ?? '(필드 없음)'} · 전기 ${r.frmtrm_amount ?? ''} · 전기누적 ${r.frmtrm_add_amount ?? '(필드 없음)'}`);
-      }
+  execFileSync('bash', ['-lc', 'cd /tmp && rm -rf doc && mkdir doc && unzip -o -q resp.bin -d doc'], { stdio: 'ignore', timeout: 60000 });
+  const files = rd('/tmp/doc');
+  log(`   압축 안: ${files.length}개 — ${files.map((f) => `${f}(${statSync(`/tmp/doc/${f}`).size.toLocaleString()}B)`).join(', ')}`);
+  const big = files.map((f) => [f, statSync(`/tmp/doc/${f}`).size]).sort((a, b) => b[1] - a[1])[0];
+  if (big) {
+    const raw = rf(`/tmp/doc/${big[0]}`, 'utf8');
+    log(`   가장 큰 파일 ${big[0]} · ${raw.length.toLocaleString()}자`);
+    // 태그를 벗겨 사람이 읽는 글이 나오는지 본다
+    const text = raw.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
+    log(`   태그 벗긴 본문 ${text.length.toLocaleString()}자`);
+    log(`   앞머리 300자: ${text.slice(0, 300)}`);
+    // 우리가 쓸 만한 절이 실제로 들어 있는가
+    for (const k of ['사업의 내용', '위험', '주요 제품', '연구개발', '매출', '원재료', '시장점유율', '주주']) {
+      const i = text.indexOf(k);
+      log(`   「${k}」 ${i >= 0 ? `있음(${i.toLocaleString()}자 지점)` : '없음'}`);
     }
-    if (/"status":"000"/.test(body)) break; // 그 연도가 있으면 이전 연도는 안 본다
   }
-}
-// ── ⑦ 응답 필드 이름을 통째로 본다 (수집기를 쓰기 전에 날짜 필드를 확정한다) ──
-//   기간 끝 날짜를 12월 결산이라고 **가정하지 않는다.** API 가 주는 필드로 정한다.
-{
-  const body = get(
-    `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${KEY}&corp_code=${CORP}&bsns_year=2026&reprt_code=11012`,
-    '⑦ 2026 반기 — 필드 이름 전수');
-  try {
-    const list = JSON.parse(body).list ?? [];
-    const bs = list.find((x) => x.sj_nm === '재무상태표' && x.fs_nm === '연결재무제표');
-    const is = list.find((x) => x.sj_nm === '손익계산서' && x.fs_nm === '연결재무제표');
-    log(`   재무상태표 키: ${Object.keys(bs ?? {}).join(', ')}`);
-    log(`   손익계산서 키: ${Object.keys(is ?? {}).join(', ')}`);
-    log(`   재무상태표 한 행 전문: ${JSON.stringify(bs)}`);
-    log(`   손익계산서 한 행 전문: ${JSON.stringify(is)}`);
-  } catch (e) { log(`   ★ ⑦ 실패: ${e.message}`); }
-}
+} catch (e) { log(`   ★ ⑨ 압축 풀기 실패: ${e.message.slice(0, 200)}`); }
 
-// ── ⑧ 몇 해까지 거슬러 올라가는가 (첫 수집의 백필 범위를 정한다) ──
-for (const y of ['2022', '2020', '2018']) {
-  const b = get(`https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${KEY}&corp_code=${CORP}&bsns_year=${y}&reprt_code=11011`,
-    `⑧ ${y} 사업보고서`);
-  try { const j = JSON.parse(b); log(`   status=${j.status} · 계정 ${(j.list ?? []).length}`); } catch {}
+// ⑩ 전체 계정
+for (const div of ['CFS', 'OFS']) {
+  const b = get(`https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?crtfc_key=${KEY}&corp_code=00126380&bsns_year=2026&reprt_code=11012&fs_div=${div}`,
+    `⑩ fnlttSinglAcntAll — 2026 반기 ${div}`);
+  try {
+    const j = JSON.parse(b);
+    const list = j.list ?? [];
+    log(`   status=${j.status} · 계정 ${list.length}개`);
+    log(`   보고서 구분: ${[...new Set(list.map((x) => x.sj_nm))].join(' / ')}`);
+    const is = list.filter((x) => x.sj_nm === '손익계산서');
+    log(`   손익계산서 항목 ${is.length}개: ${is.slice(0, 25).map((x) => x.account_nm).join(', ')}`);
+    log(`   한 행 키: ${Object.keys(list[0] ?? {}).join(', ')}`);
+    log(`   한 행 전문: ${JSON.stringify(list[0])}`);
+  } catch (e) { log(`   JSON 파싱 실패: ${String(b).replace(/\s+/g, ' ').slice(0, 200)}`); }
 }
 
 console.log('');
