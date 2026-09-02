@@ -51,14 +51,21 @@ function get(url, label, { binary = false, timeout = 30 } = {}) {
   try { return readFileSync('/tmp/resp.txt', 'utf8'); } catch { return null; }
 }
 
-// ★ 9판. 5G 시총 1위는 SK텔레콤(017670) · 20.32조원(2026-09-01 실측)으로 갈렸다.
-//   기업 분석 대상으로 세우려면 **고유번호**가 필요하다. corpCode.xml 은 3.6MB 인데
-//   DART 처리량이 오늘 15KB/초 수준이라 90초로는 못 받는다(8판 직전 실행이 그래서 죽었다).
-//   **여기서만 300초를 준다.** 받고 나면 표에 고정하므로 다시 받을 일이 없다.
+// ★ 10판. 소유주가 분석 대상을 정했다(2026-09-02):
+//   **대한광통신(010170) · 서진시스템(178320)** — 둘 다 5G 관련 시총 상위권이다.
+//   서진시스템은 「최근 증자를 많이 해서 욕을 먹는다」는 이야기가 있는데,
+//   **들은 이야기를 그대로 쓰지 않는다.** 증자 공시·자본금·주식수로 실제를 확인한다.
+//
+//   확인할 것 —
+//     ① 두 회사 고유번호 (corpCode.xml 3.6MB, 오늘 DART 가 느려 300초를 준다)
+//     ② 결산월 (기간 종료일을 12월 결산으로 가정하지 않기 위해서다)
+//     ③ 전체계정이 도는가 · 누적 필드가 오는가
+//     ④ 증자 흔적 — 유상증자·증권발행실적·전환사채 공시가 실제로 몇 건인가
+//     ⑤ 주식총수 API 로 주식수 변화를 볼 수 있는가 (희석을 계산하려면 필요하다)
 import { readFileSync as rf, readdirSync as rd } from 'node:fs';
 
-const TARGET = ['SK텔레콤', '017670'];
-let corpCode = null;
+const TARGETS = [['대한광통신', '010170'], ['서진시스템', '178320'], ['SK텔레콤', '017670']];
+const codes = new Map();
 
 get(`https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${KEY}`,
   '① corpCode.xml (3.6MB · 시간 300초)', { binary: true, timeout: 300 });
@@ -68,43 +75,70 @@ try {
   const XML = rf(`/tmp/cc/${f}`, 'utf8');
   log(`   ${f} · ${XML.length.toLocaleString()}자`);
   for (const c of XML.split('</list>')) {
-    if (!c.includes(`<stock_code>${TARGET[1]}</stock_code>`)) continue;
-    corpCode = (c.match(/<corp_code>\s*(\d{8})\s*<\/corp_code>/) || [])[1];
+    const sc = (c.match(/<stock_code>\s*(\d{6})\s*<\/stock_code>/) || [])[1];
+    const hit = TARGETS.find(([, code]) => code === sc);
+    if (!hit) continue;
+    const cc = (c.match(/<corp_code>\s*(\d{8})\s*<\/corp_code>/) || [])[1];
     const nm = (c.match(/<corp_name>\s*([^<]*?)\s*<\/corp_name>/) || [])[1];
-    log(`   ★ ${TARGET[0]}(${TARGET[1]}) → 고유번호 ${corpCode} · 등록명 「${nm}」`);
-    break;
+    codes.set(hit[0], cc);
+    log(`   ★ ${hit[0]}(${sc}) → 고유번호 ${cc} · 등록명 「${nm}」`);
   }
-  if (!corpCode) log(`   ★ 못 찾음`);
+  log(`   ★ 그대로 옮겨 쓸 표: ${JSON.stringify(Object.fromEntries(TARGETS.filter(([n]) => codes.has(n)).map(([n, sc]) => [sc, codes.get(n)])))}`);
 } catch (e) { log(`   ★ 실패: ${e.message.slice(0, 200)}`); }
 
-if (corpCode) {
-  // ② 이 회사도 반기보고서가 나와 있는가
-  const pad2 = (n) => String(n).padStart(2, '0');
-  const d = new Date(); const b = new Date(d.getTime() - 120 * 86400000);
-  const ymd = (x) => `${x.getFullYear()}${pad2(x.getMonth() + 1)}${pad2(x.getDate())}`;
-  const lb = get(`https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${corpCode}&bgn_de=${ymd(b)}&end_de=${ymd(d)}&page_count=100`,
-    '② 공시 목록 (최근 120일)');
+const pad2 = (n) => String(n).padStart(2, '0');
+const ymd = (x) => `${x.getFullYear()}${pad2(x.getMonth() + 1)}${pad2(x.getDate())}`;
+
+for (const [name, stock] of TARGETS.slice(0, 2)) {
+  const cc = codes.get(name);
+  if (!cc) { log(`\n★ ${name}: 고유번호가 없어 건너뜀`); continue; }
+
+  // ② 결산월
+  const cb = get(`https://opendart.fss.or.kr/api/company.json?crtfc_key=${KEY}&corp_code=${cc}`, `② ${name} 기업개황`);
   try {
-    const j = JSON.parse(lb);
-    const per = (j.list ?? []).filter((r) => /^\[?(기재정정)?\]?\s*(사업보고서|반기보고서|분기보고서)/.test(r.report_nm.trim()));
-    log(`   총 ${j.total_count}건 · 정기보고서 ${per.length}건: ${per.map((r) => `${r.rcept_dt} ${r.report_nm.trim()}`).join(' | ') || '없음'}`);
+    const j = JSON.parse(cb);
+    log(`   결산월 ${j.acc_mt}월 · 업종 ${j.induty_code} · 설립 ${j.est_dt} · 상장 ${j.stock_name}`);
+    log(`   한 행 키: ${Object.keys(j).join(', ')}`);
   } catch { log(`   파싱 실패`); }
 
-  // ③ 전체계정이 도는가 — 소유주가 「전체계정까지」로 정했다
-  for (const [year, code, nm] of [['2026', '11012', '반기'], ['2025', '11011', '사업(연간)']]) {
-    const b2 = get(`https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?crtfc_key=${KEY}&corp_code=${corpCode}&bsns_year=${year}&reprt_code=${code}&fs_div=CFS`,
-      `③ 전체계정 ${year} ${nm} CFS`);
-    try {
-      const j = JSON.parse(b2); const list = j.list ?? [];
-      log(`   status=${j.status} · 계정 ${list.length}개 · 구분: ${[...new Set(list.map((x) => x.sj_nm))].join(' / ')}`);
-      const is = list.filter((x) => x.sj_nm === '손익계산서');
-      log(`   손익 ${is.length}개: ${is.map((x) => x.account_nm).join(', ')}`);
-      // ★ 전체계정에도 누적 필드가 오는가 — 주요계정에는 왔다. 여기서 갈려야 분기 값을 못 틀린다.
-      const rev = is.find((x) => x.account_nm === '매출액');
-      if (rev) log(`   ★ 매출액 행 전문: ${JSON.stringify(rev)}`);
-      log(`   ★ 누적 필드(thstrm_add_amount) 존재: ${is.some((x) => 'thstrm_add_amount' in x) ? '있다' : '없다 — 분기 값은 주요계정 API 로 받아야 한다'}`);
-    } catch { log(`   파싱 실패: ${String(b2).replace(/\s+/g, ' ').slice(0, 200)}`); }
-  }
+  // ③ 전체계정
+  const ab = get(`https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?crtfc_key=${KEY}&corp_code=${cc}&bsns_year=2026&reprt_code=11012&fs_div=CFS`,
+    `③ ${name} 전체계정 2026 반기 CFS`);
+  try {
+    const j = JSON.parse(ab); const list = j.list ?? [];
+    log(`   status=${j.status} · 계정 ${list.length}개 · 구분 ${[...new Set(list.map((x) => x.sj_nm))].join(' / ')}`);
+    const is = list.filter((x) => x.sj_nm === '손익계산서');
+    log(`   손익 ${is.length}개: ${is.map((x) => x.account_nm).join(', ')}`);
+    const rev = is.find((x) => x.account_nm === '매출액');
+    if (rev) log(`   ★ 매출액 행: ${JSON.stringify(rev)}`);
+    log(`   ★ 누적 필드: ${is.some((x) => 'thstrm_add_amount' in x) ? '있다' : '없다 — 주요계정 API 로 메워야 한다'}`);
+    const cap = list.find((x) => x.account_nm === '자본금');
+    if (cap) log(`   자본금: 당기 ${cap.thstrm_amount} · 전기 ${cap.frmtrm_amount}`);
+  } catch { log(`   파싱 실패: ${String(ab).replace(/\s+/g, ' ').slice(0, 200)}`); }
+
+  // ④ 증자 흔적 — 3년치 공시에서 자본 조달 관련만 센다
+  const d2 = new Date(); const b2 = new Date(d2.getTime() - 1095 * 86400000);
+  const lb = get(`https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${cc}&bgn_de=${ymd(b2)}&end_de=${ymd(d2)}&page_count=100&page_no=1`,
+    `④ ${name} 공시 목록 (3년)`);
+  try {
+    const j = JSON.parse(lb);
+    const rows = j.list ?? [];
+    log(`   총 ${j.total_count}건 · 전체 ${j.total_page}쪽 · 이번 쪽 ${rows.length}건`);
+    const RAISE = /유상증자|무상증자|전환사채|신주인수권|교환사채|증권발행실적|주주배정|제3자배정|자본감소/;
+    const hits = rows.filter((r) => RAISE.test(r.report_nm));
+    log(`   ★ 자본조달 관련 ${hits.length}건(첫 쪽 기준): ${hits.map((r) => `${r.rcept_dt} ${r.report_nm.trim()}`).join(' | ') || '없음'}`);
+    const per = rows.filter((r) => /^\[?(기재정정)?\]?\s*(사업보고서|반기보고서|분기보고서)/.test(r.report_nm.trim()));
+    log(`   정기보고서 ${per.length}건: ${per.map((r) => `${r.rcept_dt} ${r.report_nm.trim()}`).join(' | ')}`);
+  } catch { log(`   파싱 실패`); }
+
+  // ⑤ 주식총수 — 희석을 계산하려면 주식수가 필요하다
+  const sb = get(`https://opendart.fss.or.kr/api/stockTotqySttus.json?crtfc_key=${KEY}&corp_code=${cc}&bsns_year=2026&reprt_code=11012`,
+    `⑤ ${name} 주식총수 2026 반기`);
+  try {
+    const j = JSON.parse(sb);
+    log(`   status=${j.status} · ${(j.list ?? []).length}행`);
+    for (const r of (j.list ?? []).slice(0, 4)) log(`     ${JSON.stringify(r)}`);
+  } catch { log(`   파싱 실패: ${String(sb).replace(/\s+/g, ' ').slice(0, 200)}`); }
 }
 
 console.log('');
