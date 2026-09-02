@@ -51,52 +51,63 @@ function get(url, label, { binary = false, timeout = 30 } = {}) {
   try { return readFileSync('/tmp/resp.txt', 'utf8'); } catch { return null; }
 }
 
-// ★ 7판. 소유주 물음: **「보고서 원문을 진짜로 받을 수 있느냐」**
-//   지금까지 증명한 것은 주요계정 14종(숫자)뿐이다. 원문과 전체계정은 안 때려 봤다.
-//   여기서 둘을 확인한다. 넘겨짚지 않는다.
-//     ⑨ `document.xml` — 기업이 제출한 보고서 **원문 파일**
-//     ⑩ `fnlttSinglAcntAll` — **전체 계정**(주요계정 14종이 아니라 수백 항목)
-import { readFileSync as rf, readdirSync as rd, statSync } from 'node:fs';
+// ★ 8판. 소유주 지시(2026-09-02): 「종목을 다른 것으로 할거야 — 5G 관련 종목으로
+//   시총 상위기업 1개만 찾아봐.」
+//
+//   ★ 시총을 기억으로 답하지 않는다(절대 규칙 2). 금융위 주식시세 API 의 `mrktTotAmt`
+//     를 실제로 받아 순위를 매긴다. 후보는 내가 고르지만 **순위는 데이터가 정한다.**
+//
+//   후보 고른 기준 — 「5G 관련」을 셋으로 갈랐다.
+//     ⓐ 망을 운영하는 통신사   ⓑ 기지국·중계기 장비   ⓒ 광트랜시버·RF 부품
+//   삼성전자는 세계 5G 장비 점유율 상위 업체지만 **5G 관련주로 부르지 않는다**(사업의 대부분이
+//   반도체·스마트폰이다). 그래도 순위를 투명하게 보려고 참고로 함께 넣고 표시한다.
+const DATAGO = process.env.DATA_GO_KR_KEY ?? '';
+log(`공공데이터 키: ${DATAGO ? `있음(길이 ${DATAGO.length})` : '★ 없음'}`);
 
-// ⑨ 원문. 삼성전자 2026 반기보고서 접수번호(우리 공시 수집분에서 나온 값이다).
-const RCEPT = '20260814003699';
-get(`https://opendart.fss.or.kr/api/document.xml?crtfc_key=${KEY}&rcept_no=${RCEPT}`,
-  `⑨ document.xml — 삼성전자 반기보고서 원문 (rcept_no=${RCEPT})`, { binary: true, timeout: 120 });
-try {
-  execFileSync('bash', ['-lc', 'cd /tmp && rm -rf doc && mkdir doc && unzip -o -q resp.bin -d doc'], { stdio: 'ignore', timeout: 60000 });
-  const files = rd('/tmp/doc');
-  log(`   압축 안: ${files.length}개 — ${files.map((f) => `${f}(${statSync(`/tmp/doc/${f}`).size.toLocaleString()}B)`).join(', ')}`);
-  const big = files.map((f) => [f, statSync(`/tmp/doc/${f}`).size]).sort((a, b) => b[1] - a[1])[0];
-  if (big) {
-    const raw = rf(`/tmp/doc/${big[0]}`, 'utf8');
-    log(`   가장 큰 파일 ${big[0]} · ${raw.length.toLocaleString()}자`);
-    // 태그를 벗겨 사람이 읽는 글이 나오는지 본다
-    const text = raw.replace(/<[^>]+>/g, ' ').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ' ').trim();
-    log(`   태그 벗긴 본문 ${text.length.toLocaleString()}자`);
-    log(`   앞머리 300자: ${text.slice(0, 300)}`);
-    // 우리가 쓸 만한 절이 실제로 들어 있는가
-    for (const k of ['사업의 내용', '위험', '주요 제품', '연구개발', '매출', '원재료', '시장점유율', '주주']) {
-      const i = text.indexOf(k);
-      log(`   「${k}」 ${i >= 0 ? `있음(${i.toLocaleString()}자 지점)` : '없음'}`);
-    }
-  }
-} catch (e) { log(`   ★ ⑨ 압축 풀기 실패: ${e.message.slice(0, 200)}`); }
+const CANDIDATES = [
+  ['SK텔레콤',      '017670', 'ⓐ 통신사'],
+  ['KT',            '030200', 'ⓐ 통신사'],
+  ['LG유플러스',    '032640', 'ⓐ 통신사'],
+  ['케이엠더블유',  '032500', 'ⓑ 기지국 장비'],
+  ['에이스테크',    '088800', 'ⓑ 기지국 안테나'],
+  ['다산네트웍스',  '039560', 'ⓑ 네트워크 장비'],
+  ['유비쿼스',      '264450', 'ⓑ 네트워크 장비'],
+  ['서진시스템',    '178320', 'ⓑ 통신장비 함체'],
+  ['이노와이어리스','073490', 'ⓑ 계측·스몰셀'],
+  ['RFHIC',         '218410', 'ⓒ RF 반도체'],
+  ['오이솔루션',    '138080', 'ⓒ 광트랜시버'],
+  ['대한광통신',    '010170', 'ⓒ 광섬유'],
+  ['삼성전자',      '005930', '(참고) 5G 장비 겸업'],
+];
 
-// ⑩ 전체 계정
-for (const div of ['CFS', 'OFS']) {
-  const b = get(`https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?crtfc_key=${KEY}&corp_code=00126380&bsns_year=2026&reprt_code=11012&fs_div=${div}`,
-    `⑩ fnlttSinglAcntAll — 2026 반기 ${div}`);
+const pad2 = (n) => String(n).padStart(2, '0');
+const ymdOf = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
+const bgn = new Date(); bgn.setDate(bgn.getDate() - 12);
+
+const rank = [];
+for (const [name, code, kind] of CANDIDATES) {
+  const body = get(
+    `https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo` +
+    `?serviceKey=${DATAGO}&resultType=json&numOfRows=30&likeSrtnCd=${code}&beginBasDt=${ymdOf(bgn)}`,
+    `${name} (${code}) ${kind}`);
+  if (!body) continue;
   try {
-    const j = JSON.parse(b);
-    const list = j.list ?? [];
-    log(`   status=${j.status} · 계정 ${list.length}개`);
-    log(`   보고서 구분: ${[...new Set(list.map((x) => x.sj_nm))].join(' / ')}`);
-    const is = list.filter((x) => x.sj_nm === '손익계산서');
-    log(`   손익계산서 항목 ${is.length}개: ${is.slice(0, 25).map((x) => x.account_nm).join(', ')}`);
-    log(`   한 행 키: ${Object.keys(list[0] ?? {}).join(', ')}`);
-    log(`   한 행 전문: ${JSON.stringify(list[0])}`);
-  } catch (e) { log(`   JSON 파싱 실패: ${String(b).replace(/\s+/g, ' ').slice(0, 200)}`); }
+    const rows = (JSON.parse(body)?.response?.body?.items?.item ?? []).filter((r) => r.srtnCd === code);
+    if (!rows.length) { log(`   ★ 행 없음`); continue; }
+    const last = rows.sort((a, b) => a.basDt.localeCompare(b.basDt)).at(-1);
+    const cap = Number(last.mrktTotAmt);
+    rank.push({ name, code, kind, cap, clpr: Number(last.clpr), basDt: last.basDt, itmsNm: last.itmsNm });
+    log(`   ${last.basDt} · ${last.itmsNm} · 종가 ${Number(last.clpr).toLocaleString()}원 · 시총 ${(cap / 1e12).toFixed(2)}조원`);
+  } catch (e) { log(`   파싱 실패: ${String(body).replace(/\s+/g, ' ').slice(0, 160)}`); }
 }
+
+console.log('');
+log('★★ 시가총액 순위 (실측) ★★');
+rank.sort((a, b) => b.cap - a.cap);
+rank.forEach((r, i) => log(`   ${String(i + 1).padStart(2)}. ${r.name.padEnd(9)} ${r.kind.padEnd(16)} ${(r.cap / 1e12).toFixed(2)}조원  (기준일 ${r.basDt})`));
+const pick = rank.find((r) => !r.kind.startsWith('(참고)'));
+console.log('');
+log(`★ 5G 관련 시총 1위: ${pick ? `${pick.name}(${pick.code}) · ${(pick.cap / 1e12).toFixed(2)}조원 · 기준일 ${pick.basDt}` : '못 정함'}`);
 
 console.log('');
 log('탐색 끝. 키 값은 출력하지 않았다.');
