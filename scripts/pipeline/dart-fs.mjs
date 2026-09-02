@@ -34,9 +34,16 @@ const REPORTS = [
 // 계열로 뽑을 대표 항목. 전체계정은 아카이브에 다 있고, 차트가 읽는 것은 이 셋이다.
 // (계열을 항목마다 만들면 회사 하나에 수백 개가 된다 — 쌓기만 하고 아무도 안 보는 것을
 //  이미 겪었다. `/numbers/` 신설 때 계열 40개 중 화면에 나오는 것이 9개뿐이었다.)
+// ★ **이름이 아니라 IFRS 계정 ID로 찾는다**(2026-09-02 실측으로 갈렸다).
+//   이름은 회사마다 해마다 다르다 — 실제로 세어 보니
+//     영업이익: 「영업이익(손실)」 38건 · 「영업이익」 6건  → 이름으로 맞추면 **44건 중 6건**만 잡힌다
+//     매출액  : 「매출액」 22건 · 「수익(매출액)」 21건      → 절반이 사라진다
+//   계정 ID 는 IFRS 분류체계라 표기가 흔들리지 않는다. 첫 판이 이름을 썼다가
+//   서진시스템 영업이익 계열이 4개짜리로 나왔다.
 const HEADLINE = [
-  { key: 'revenue', account: '매출액', name: '매출액' },
-  { key: 'opinc', account: '영업이익', name: '영업이익' },
+  { key: 'revenue', id: 'ifrs-full_Revenue', name: '매출액' },
+  { key: 'opinc', id: 'dart_OperatingIncomeLoss', name: '영업이익' },
+  { key: 'netinc', id: 'ifrs-full_ProfitLoss', name: '당기순이익' },
 ];
 
 // 손익 보고서인가. 이름이 아니라 구분코드로 가른다(위 함정 참조).
@@ -177,7 +184,7 @@ async function writeSeries(c, store) {
     const points = [];
     for (const r of store.reports) {
       const row = (r.accounts.CFS ?? r.accounts.OFS ?? []).find(
-        (x) => x.nm === h.account && isIncome(x),
+        (x) => x.id === h.id && isIncome(x),
       );
       if (!row) continue;
       // 사업보고서의 당기는 한 해 전체다. 4분기만 떼려면 3분기 누적을 빼야 하는데,
