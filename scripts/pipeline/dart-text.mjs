@@ -61,34 +61,37 @@ const strip = (xml) =>
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-// ★ **목차를 본문으로 착각하지 않는다**(2026-09-02 사고). 정기보고서 앞머리에는
-//   「II. 사업의 내용 ----------- 12」 같은 차례가 있어, 절 이름이 문서에 **두 번**
-//   나온다. 첫 판이 그 첫 번째(차례)를 잡아 「주주에 관한 사항」이 46자로 잘렸다.
-//   차례 구간은 긴 점선(-----)으로 알아볼 수 있으므로, **그 뒤부터** 찾는다.
-function tocEnd(text) {
-  const head = text.slice(0, Math.max(6000, Math.floor(text.length * 0.05)));
-  let last = 0;
-  const g = /-{10,}/g;
+// ★ **목차를 본문으로 착각하지 않는다**(2026-09-02 사고 두 번).
+//   정기보고서 앞머리에는 「II. 사업의 내용 ----------- 12」 같은 차례가 있어
+//   절 이름이 문서에 여러 번 나온다. 게다가 **절 이름이 쪽 머리글로도 반복된다.**
+//   1판: 첫 번째(차례)를 잡아 「주주에 관한 사항」이 46자로 잘렸다.
+//   2판: 차례 구간을 길이 비율로 건너뛰었더니 **진짜 시작점을 지나쳐** 서진시스템이
+//        「신용평가에 관한 사항」부터 시작했다(구간을 추측한 것이 잘못이었다).
+//   3판: 구간을 추측하지 않고 **차례 줄 자체를 알아본다** — 차례는 이름 뒤 120자
+//        안에 긴 점선이 따라온다. 그런 자리는 건너뛰고 첫 번째 본문 자리를 쓴다.
+const isTocLine = (text, i) => /-{10,}/.test(text.slice(i, i + 120));
+
+function findAll(text, re) {
+  const g = new RegExp(re.source, 'g');
+  const out = [];
   let m;
-  while ((m = g.exec(head))) last = m.index + m[0].length;
-  return last;
+  while ((m = g.exec(text)) !== null && out.length < 500) {
+    out.push(m.index);
+    if (g.lastIndex === m.index) g.lastIndex++;
+  }
+  return out;
 }
 
 function cut(text, sec) {
-  const base = tocEnd(text);
-  const body = text.slice(base);
-  const a = body.search(sec.from);
-  if (a < 0) return { found: false, why: '시작 표지를 못 찾았다(차례 뒤에서)' };
-  const rest = body.slice(a);
-  const b = rest.search(sec.to);
-  if (b < 0) return { found: false, why: '끝 표지를 못 찾았다' };
-  const out = rest.slice(0, b).trim();
-  // 그래도 차례를 물었으면(점선이 여러 줄) 자르지 않고 알린다. 빈 것이 틀린 것보다 낫다.
-  if ((out.slice(0, 800).match(/-{10,}/g) || []).length >= 3) {
-    return { found: false, why: '차례를 물었다 — 경계 규칙을 손볼 것' };
-  }
+  const starts = findAll(text, sec.from).filter((i) => !isTocLine(text, i));
+  if (!starts.length) return { found: false, why: '시작 표지가 차례 밖에 없다' };
+  const a = starts[0];
+  const ends = findAll(text, sec.to).filter((i) => i > a + 300 && !isTocLine(text, i));
+  if (!ends.length) return { found: false, why: '끝 표지를 못 찾았다' };
+  const out = text.slice(a, ends[0]).trim();
+  // 자르지 않고 알리는 편이 낫다 — 엉뚱하게 잘린 글을 기사 재료로 쓰면 절대 규칙 2 가 무너진다.
   if (out.length < 300) return { found: false, why: `잘린 글이 너무 짧다(${out.length}자)` };
-  return { found: true, at: base + a, text: out };
+  return { found: true, at: a, text: out, headerRepeats: starts.length };
 }
 
 async function main() {
@@ -124,7 +127,7 @@ async function main() {
         for (const sec of SECTIONS) {
           const got = cut(text, sec);
           doc.sections[sec.key] = got.found
-            ? { name: sec.name, chars: got.text.length, text: got.text }
+            ? { name: sec.name, chars: got.text.length, headerRepeats: got.headerRepeats, text: got.text }
             : { name: sec.name, chars: 0, missing: got.why };
           console.log(`[dart-text] ${c.name} ${r.label} · ${sec.name}: ${got.found ? `${got.text.length.toLocaleString()}자` : `★ ${got.why}`}`);
         }
