@@ -27,9 +27,27 @@ const OUT_DIR = new URL('data/corp-text/', ROOT);
 // ★ 경계를 못 찾으면 **자르지 않고 못 찾았다고 남긴다.** 엉뚱한 데서 잘린 글을
 //   기사 재료로 쓰면 절대 규칙 2 가 무너진다. 빈 것이 틀린 것보다 낫다.
 const SECTIONS = [
-  { key: 'business', name: '사업의 내용', from: /(?:^|\s)(?:II|Ⅱ|2)\s*[.．]?\s*사업의\s*내용/, to: /(?:^|\s)(?:III|Ⅲ|3)\s*[.．]?\s*재무에\s*관한\s*사항/ },
-  { key: 'mdna', name: '이사의 경영진단 및 분석의견', from: /(?:^|\s)(?:IV|Ⅳ|4)\s*[.．]?\s*이사의\s*경영진단/, to: /(?:^|\s)(?:V|Ⅴ|5)\s*[.．]?\s*회계감사인/ },
-  { key: 'shareholders', name: '주주에 관한 사항', from: /(?:^|\s)(?:VII|Ⅶ|7)\s*[.．]?\s*주주에\s*관한\s*사항/, to: /(?:^|\s)(?:VIII|Ⅷ|8)\s*[.．]?\s*임원\s*및\s*직원/ },
+  // ★ 서진시스템 본문에는 「II. 사업의 내용」 제목이 없고 머리글로만 나온다(2026-09-02 실측).
+  //   그래서 시작 표지를 여럿 두고 **먼저 걸리는 것**을 쓴다. 「1. 사업의 개요」가 되돌아갈 자리다.
+  { key: 'business', name: '사업의 내용',
+    from: [/(?:^|\s)(?:II|Ⅱ)\s*[.．]\s*사업의\s*내용/, /(?:^|\s)1\s*[.．]\s*사업의\s*개요/],
+    to: /(?:^|\s)(?:III|Ⅲ)\s*[.．]\s*재무에\s*관한\s*사항/ },
+  { key: 'mdna', name: '이사의 경영진단 및 분석의견',
+    from: [/(?:^|\s)(?:IV|Ⅳ)\s*[.．]\s*이사의\s*경영진단/],
+    to: /(?:^|\s)(?:V|Ⅴ)\s*[.．]\s*회계감사인/ },
+  { key: 'shareholders', name: '주주에 관한 사항',
+    from: [/(?:^|\s)(?:VII|Ⅶ)\s*[.．]\s*주주에\s*관한\s*사항/],
+    to: /(?:^|\s)(?:VIII|Ⅷ)\s*[.．]\s*임원\s*및\s*직원/ },
+];
+
+// ★ 추측을 반복하지 않기 위해, 후보 표지가 문서 어디에 몇 번 나오는지 함께 남긴다.
+//   text-parsing 은 눈으로 봐야 알 수 있고, CI 왕복은 한 번에 4분이 든다.
+const ANCHORS = [
+  ['II.사업의내용', /(?:^|\s)(?:II|Ⅱ)\s*[.．]\s*사업의\s*내용/],
+  ['1.사업의개요', /(?:^|\s)1\s*[.．]\s*사업의\s*개요/],
+  ['2.주요제품', /(?:^|\s)2\s*[.．]\s*주요\s*제품/],
+  ['III.재무에관한사항', /(?:^|\s)(?:III|Ⅲ)\s*[.．]\s*재무에\s*관한\s*사항/],
+  ['VII.주주에관한사항', /(?:^|\s)(?:VII|Ⅶ)\s*[.．]\s*주주에\s*관한\s*사항/],
 ];
 
 async function fetchDoc(rceptNo) {
@@ -83,7 +101,13 @@ function findAll(text, re) {
 }
 
 function cut(text, sec) {
-  const starts = findAll(text, sec.from).filter((i) => !isTocLine(text, i));
+  // 시작 표지 여럿 중 **먼저 걸리는 것**을 쓴다.
+  let starts = [];
+  let usedFrom = -1;
+  for (let k = 0; k < sec.from.length; k++) {
+    const hit = findAll(text, sec.from[k]).filter((i) => !isTocLine(text, i));
+    if (hit.length) { starts = hit; usedFrom = k; break; }
+  }
   if (!starts.length) return { found: false, why: '시작 표지가 차례 밖에 없다' };
   const a = starts[0];
   const ends = findAll(text, sec.to).filter((i) => i > a + 300 && !isTocLine(text, i));
@@ -91,7 +115,7 @@ function cut(text, sec) {
   const out = text.slice(a, ends[0]).trim();
   // 자르지 않고 알리는 편이 낫다 — 엉뚱하게 잘린 글을 기사 재료로 쓰면 절대 규칙 2 가 무너진다.
   if (out.length < 300) return { found: false, why: `잘린 글이 너무 짧다(${out.length}자)` };
-  return { found: true, at: a, text: out, headerRepeats: starts.length };
+  return { found: true, at: a, text: out, headerRepeats: starts.length, usedFrom };
 }
 
 async function main() {
@@ -123,11 +147,14 @@ async function main() {
           fetchedAt: todayKST(),
           zipBytes, rawChars: raw.length, textChars: text.length,
           sections: {},
+          anchors: Object.fromEntries(ANCHORS.map(([nm, re]) => [nm,
+            findAll(text, re).slice(0, 8).map((i) => ({ at: i, toc: isTocLine(text, i), ctx: text.slice(i, i + 70).replace(/\s+/g, ' ') })),
+          ])),
         };
         for (const sec of SECTIONS) {
           const got = cut(text, sec);
           doc.sections[sec.key] = got.found
-            ? { name: sec.name, chars: got.text.length, headerRepeats: got.headerRepeats, text: got.text }
+            ? { name: sec.name, chars: got.text.length, headerRepeats: got.headerRepeats, usedFrom: got.usedFrom, text: got.text }
             : { name: sec.name, chars: 0, missing: got.why };
           console.log(`[dart-text] ${c.name} ${r.label} · ${sec.name}: ${got.found ? `${got.text.length.toLocaleString()}자` : `★ ${got.why}`}`);
         }
