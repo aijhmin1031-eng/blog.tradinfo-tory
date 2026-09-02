@@ -139,61 +139,28 @@ for (const [code, name] of [['11013', '1분기'], ['11012', '반기'], ['11014',
     if (/"status":"000"/.test(body)) break; // 그 연도가 있으면 이전 연도는 안 본다
   }
 }
-// ── ⑤ 공시 목록을 corp_code 로 좁혀 부를 수 있는가 ────────────────────
-//   `corp.mjs` 는 지금 **전체 코스피 정기공시를 100건만 받아 이름으로 거른다.**
-//   그래서 0건이다. 종목별로 부르면 그 회사 것만 온다 — 그것을 확인한다.
-const pad = (n) => String(n).padStart(2, '0');
-const d = new Date(); const bgn = new Date(d.getTime() - 90 * 86400000);
-const ymd = (x) => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
-for (const [name, stock] of WATCH.slice(0, 3)) {
-  const cc = found.get(name)?.corp_code;
-  if (!cc) { log(`⑤ ${name}: 고유번호 없음 — 건너뜀`); continue; }
+// ── ⑦ 응답 필드 이름을 통째로 본다 (수집기를 쓰기 전에 날짜 필드를 확정한다) ──
+//   기간 끝 날짜를 12월 결산이라고 **가정하지 않는다.** API 가 주는 필드로 정한다.
+{
   const body = get(
-    `https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${cc}` +
-    `&bgn_de=${ymd(bgn)}&end_de=${ymd(d)}&page_count=100`,
-    `⑤ ${name} 공시 목록 (corp_code=${cc}, 최근 90일)`
-  );
-  if (!body) continue;
+    `https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${KEY}&corp_code=${CORP}&bsns_year=2026&reprt_code=11012`,
+    '⑦ 2026 반기 — 필드 이름 전수');
   try {
-    const j = JSON.parse(body);
-    log(`   status=${j.status} · 총 ${j.total_count ?? 0}건 · 받은 ${(j.list ?? []).length}건`);
-    for (const r of (j.list ?? []).slice(0, 6)) log(`     ${r.rcept_dt} ${r.corp_name} · ${r.report_nm.trim()}`);
-    const periodic = (j.list ?? []).filter((r) => /보고서/.test(r.report_nm) && !/첨부|정정/.test(r.report_nm));
-    log(`   ★ 「보고서」가 든 것 ${periodic.length}건: ${periodic.map((r) => `${r.rcept_dt} ${r.report_nm.trim()}`).join(' | ') || '없음'}`);
-  } catch { log(`   JSON 파싱 실패: ${String(body).slice(0, 160)}`); }
+    const list = JSON.parse(body).list ?? [];
+    const bs = list.find((x) => x.sj_nm === '재무상태표' && x.fs_nm === '연결재무제표');
+    const is = list.find((x) => x.sj_nm === '손익계산서' && x.fs_nm === '연결재무제표');
+    log(`   재무상태표 키: ${Object.keys(bs ?? {}).join(', ')}`);
+    log(`   손익계산서 키: ${Object.keys(is ?? {}).join(', ')}`);
+    log(`   재무상태표 한 행 전문: ${JSON.stringify(bs)}`);
+    log(`   손익계산서 한 행 전문: ${JSON.stringify(is)}`);
+  } catch (e) { log(`   ★ ⑦ 실패: ${e.message}`); }
 }
 
-// ── ⑥ 고친 corp.mjs 의 fetchDart 를 그대로 돌려 본다 ──────────────────
-//   ⑤ 는 curl 로 확인한 것이고, 파이프라인은 **node fetch** 로 부른다.
-//   내일 아침 실행에 걸기 전에 같은 코드·같은 호출 방식으로 결과를 본다.
-const CORPS = JSON.parse(readFileSync(new URL('../src/data/dart-corp.json', import.meta.url), 'utf8')).companies;
-const PERIODIC = /^\[?(기재정정)?\]?\s*(사업보고서|반기보고서|분기보고서)/;
-const ymd2 = (x) => `${x.getFullYear()}${pad(x.getMonth() + 1)}${pad(x.getDate())}`;
-console.log('');
-log('── ⑥ corp.mjs fetchDart 재현 (node fetch · 30일 · 6종목)');
-try {
-  const end2 = new Date(); const bgn2 = new Date(); bgn2.setDate(bgn2.getDate() - 30);
-  const out = [];
-  for (const c of CORPS) {
-    const res = await fetch(
-      `https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${c.corpCode}` +
-      `&bgn_de=${ymd2(bgn2)}&end_de=${ymd2(end2)}&page_count=100`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (data.status === '013') { log(`   ${c.name}: 013 (30일 내 공시 없음)`); continue; }
-    if (data.status !== '000') throw new Error(`${data.status} ${data.message}`);
-    const rows = (data.list ?? []).map((r) => ({
-      date: r.rcept_dt, corp: c.name, title: r.report_nm.trim(),
-      periodic: PERIODIC.test(r.report_nm.trim()),
-    }));
-    log(`   ${c.name}: ${rows.length}건 · 정기보고서 ${rows.filter((r) => r.periodic).length}건`);
-    out.push(...rows);
-  }
-  out.sort((a, b) => Number(b.periodic) - Number(a.periodic) || b.date.localeCompare(a.date));
-  log(`   ★ 합계 ${out.length}건 → 화면에 나갈 상위 10건:`);
-  for (const r of out.slice(0, 10)) log(`     ${r.date} ${r.periodic ? '[정기]' : '     '} ${r.corp} · ${r.title}`);
-} catch (e) {
-  log(`   ★ ⑥ 실패: ${e.message}`);
+// ── ⑧ 몇 해까지 거슬러 올라가는가 (첫 수집의 백필 범위를 정한다) ──
+for (const y of ['2022', '2020', '2018']) {
+  const b = get(`https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?crtfc_key=${KEY}&corp_code=${CORP}&bsns_year=${y}&reprt_code=11011`,
+    `⑧ ${y} 사업보고서`);
+  try { const j = JSON.parse(b); log(`   status=${j.status} · 계정 ${(j.list ?? []).length}`); } catch {}
 }
 
 console.log('');
