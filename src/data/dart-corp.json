@@ -3,11 +3,70 @@
   "verifiedAt": "2026-09-01",
   "source": "https://opendart.fss.or.kr/api/corpCode.xml",
   "companies": [
-    { "stock": "005930", "corpCode": "00126380", "name": "삼성전자", "dartName": "삼성전자", "sector": "반도체" },
-    { "stock": "000660", "corpCode": "00164779", "name": "SK하이닉스", "dartName": "SK하이닉스", "sector": "반도체" },
-    { "stock": "005380", "corpCode": "00164742", "name": "현대차", "dartName": "현대자동차", "sector": "자동차" },
-    { "stock": "011200", "corpCode": "00164645", "name": "HMM", "dartName": "HMM", "sector": "해운" },
-    { "stock": "005490", "corpCode": "00155319", "name": "POSCO홀딩스", "dartName": "POSCO홀딩스", "sector": "철강" },
-    { "stock": "373220", "corpCode": "01515323", "name": "LG에너지솔루션", "dartName": "LG에너지솔루션", "sector": "배터리" }
-  ]
+    {
+      "stock": "005930",
+      "corpCode": "00126380",
+      "name": "삼성전자",
+      "dartName": "삼성전자",
+      "sector": "반도체"
+    },
+    {
+      "stock": "000660",
+      "corpCode": "00164779",
+      "name": "SK하이닉스",
+      "dartName": "SK하이닉스",
+      "sector": "반도체"
+    },
+    {
+      "stock": "005380",
+      "corpCode": "00164742",
+      "name": "현대차",
+      "dartName": "현대자동차",
+      "sector": "자동차"
+    },
+    {
+      "stock": "011200",
+      "corpCode": "00164645",
+      "name": "HMM",
+      "dartName": "HMM",
+      "sector": "해운"
+    },
+    {
+      "stock": "005490",
+      "corpCode": "00155319",
+      "name": "POSCO홀딩스",
+      "dartName": "POSCO홀딩스",
+      "sector": "철강"
+    },
+    {
+      "stock": "373220",
+      "corpCode": "01515323",
+      "name": "LG에너지솔루션",
+      "dartName": "LG에너지솔루션",
+      "sector": "배터리"
+    }
+  ],
+  "analysis": [
+    {
+      "stock": "010170",
+      "corpCode": "00113261",
+      "name": "대한광통신",
+      "dartName": "대한광통신",
+      "theme": "5G",
+      "role": "광섬유",
+      "marketCapTn": 2.07,
+      "capAsOf": "2026-09-01"
+    },
+    {
+      "stock": "178320",
+      "corpCode": "00838005",
+      "name": "서진시스템",
+      "dartName": "서진시스템",
+      "theme": "5G",
+      "role": "통신장비 함체",
+      "marketCapTn": 2.34,
+      "capAsOf": "2026-09-01"
+    }
+  ],
+  "analysisNote": "기업 분석 대상(2026-09-02 소유주 결정). 관심 종목(companies)과 다른 목록이다 — companies 는 주가 타일·공시용 무역·수출 대표 업종이고, 이쪽은 분석 기사 대상이다. 시가총액은 금융위 주식시세 API mrktTotAmt 실측값(조원). 고유번호는 corpCode.xml 에서 종목코드로 찾았다."
 }

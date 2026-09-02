@@ -10,6 +10,10 @@
 // ★ 재무상태표의 「전기」는 전년 **동기가 아니라 전년 말**이다(제58기 반기말 ↔ 제57기말).
 // ★ 응답에 **기간 종료일 필드가 없다.** 12월 결산이라고 가정하지 말 것 —
 //   기업개황(`company.json`)의 `acc_mt`(결산월)를 받아 계산한다.
+// ★ **손익 보고서의 이름이 회사마다 다르다**(2026-09-02 실측). 삼성전자는 「손익계산서」와
+//   「포괄손익계산서」를 따로 내는데 **서진시스템은 「포괄손익계산서」 하나만 낸다.**
+//   `sj_nm === '손익계산서'` 로만 거르면 **그 회사 매출이 통째로 사라진다.**
+//   `sj_div` 로 가르는 것이 안전하다 — IS(손익계산서)·CIS(포괄손익계산서) 둘 다 받는다.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 const todayKST = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
@@ -34,6 +38,10 @@ const HEADLINE = [
   { key: 'revenue', account: '매출액', name: '매출액' },
   { key: 'opinc', account: '영업이익', name: '영업이익' },
 ];
+
+// 손익 보고서인가. 이름이 아니라 구분코드로 가른다(위 함정 참조).
+const isIncome = (r) => r.sj === 'IS' || r.sj === 'CIS'
+  || r.sjNm === '손익계산서' || r.sjNm === '포괄손익계산서';
 
 const num = (v) => {
   if (v == null || v === '' || v === '-') return null;
@@ -135,7 +143,9 @@ async function collectCompany(c) {
           const cum = num(r.thstrm_add_amount);
           if (cum == null) continue;
           const div = r.fs_nm === '연결재무제표' ? 'CFS' : 'OFS';
-          const hit = (all[div] ?? []).find((x) => x.nm === r.account_nm && x.sjNm === r.sj_nm);
+          // 주요계정은 「손익계산서」로 오는데 전체계정은 「포괄손익계산서」일 수 있다.
+          // 이름을 맞추지 말고 **손익이면 이름만** 맞춘다.
+          const hit = (all[div] ?? []).find((x) => x.nm === r.account_nm && isIncome(x));
           if (hit) { hit.cum = cum; hit.cumFrom = '주요계정'; }
         }
       }
@@ -167,7 +177,7 @@ async function writeSeries(c, store) {
     const points = [];
     for (const r of store.reports) {
       const row = (r.accounts.CFS ?? r.accounts.OFS ?? []).find(
-        (x) => x.nm === h.account && (x.sjNm === '손익계산서' || x.sjNm === '포괄손익계산서'),
+        (x) => x.nm === h.account && isIncome(x),
       );
       if (!row) continue;
       // 사업보고서의 당기는 한 해 전체다. 4분기만 떼려면 3분기 누적을 빼야 하는데,
