@@ -1,0 +1,111 @@
+---
+/**
+ * 기업 분석 착지 — `/corp/`. 2026-09-02 신설(소유주 결정, 「분석」 드롭다운이 흡수한다).
+ *
+ * 목록이 카드 하나에 **한눈 카드의 앞 넷**을 그대로 얹는 이유는, 이 방에 들어온 사람이
+ * 찾는 것이 「어떤 회사가 있나」가 아니라 **「그 회사의 지금 숫자가 무엇인가」**이기 때문이다.
+ * 제목만 늘어놓으면 한 번 더 눌러야 알 수 있고, 그 한 번에서 대부분이 떠난다.
+ */
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { url, canonicalUrl } from '../../lib/site';
+
+const corps = (await getCollection('corps', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.updated.valueOf() - a.data.updated.valueOf()
+);
+
+const fmtDate = (x: Date) => `${x.getFullYear()}년 ${x.getMonth() + 1}월 ${x.getDate()}일`;
+
+const listLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: '도토리경제 기업 분석',
+  itemListElement: corps.map((c, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: c.data.name,
+    url: canonicalUrl(`/corp/${c.id}/`),
+  })),
+};
+---
+
+<Base
+  title="기업 분석"
+  description="공시된 숫자를 해부합니다. 시장이 붙인 이름표와 회사가 제출한 매출 구성표를 나란히 놓고, 어긋나는 자리를 찾습니다. 종목 추천이 아닙니다."
+  compact
+  activeNav="corp"
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(listLd)} />
+
+  <section class="wrap">
+    <header class="cp-head">
+      <div class="kicker-en" style="color: var(--accent);">COMPANY</div>
+      <h1 class="serif cp-title">기업 분석</h1>
+      <p class="cp-sub">
+        회사가 금융감독원에 <strong>직접 제출한 보고서 원문</strong>과 전체계정 재무제표를 받아 해부합니다.
+        시장이 붙인 이름표와 회사가 적은 매출 구성표를 나란히 놓고, 어긋나는 자리를 찾는 것이 이 방이 하는 일입니다.
+      </p>
+      <p class="cp-line">
+        <strong>종목 추천·목표주가·매수매도 의견은 쓰지 않습니다.</strong>
+        지표는 계산해 보이되 「저평가」·「고평가」 판정은 붙이지 않습니다. 판단은 읽는 분의 몫입니다.
+      </p>
+    </header>
+
+    {corps.length === 0 ? (
+      <p class="cp-empty">아직 공개된 낱장이 없습니다.</p>
+    ) : (
+      <ul class="cp-list">
+        {corps.map((c) => (
+          <li class="card cp-card">
+            <a class="cp-link" href={url(`/corp/${c.id}/`)}>
+              <div class="cp-id mono">
+                <span>{c.data.market}</span><span class="dot"></span><span>{c.data.stock}</span>
+                {c.data.label && (<><span class="dot"></span><span>「{c.data.label}」</span></>)}
+              </div>
+              <h2 class="cp-name serif">{c.data.name}</h2>
+              <p class="cp-desc">{c.data.description}</p>
+            </a>
+            <dl class="cp-glance">
+              {c.data.glance.slice(0, 4).map((g) => (
+                <div>
+                  <dt>{g.k}</dt>
+                  <dd class="mono">{g.v}</dd>
+                </div>
+              ))}
+            </dl>
+            <div class="cp-foot mono">갱신 {fmtDate(c.data.updated)} · 데이터 기준 {c.data.dataAsOf}</div>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Base>
+
+<style>
+  .wrap { padding-bottom: 72px; }
+  .cp-head { max-width: 760px; margin: 34px auto 0; }
+  .cp-title { font-size: clamp(1.8rem, 5vw, 2.4rem); margin: 6px 0 0; }
+  .cp-sub { margin: 14px 0 0; font-size: 1rem; line-height: 1.76; color: var(--sub); word-break: keep-all; }
+  .cp-sub strong { color: var(--body-ink); font-weight: 600; }
+  .cp-line { margin: 12px 0 0; font-size: 0.86rem; line-height: 1.7; color: var(--sub); word-break: keep-all; border-left: 2px solid var(--hair); padding-left: 12px; }
+  .cp-line strong { color: var(--body-ink); font-weight: 600; }
+  .cp-empty { max-width: 760px; margin: 30px auto 0; color: var(--sub); }
+
+  .cp-list { max-width: 760px; margin: 30px auto 0; padding: 0; list-style: none; display: grid; gap: 16px; }
+  .cp-card { padding: 20px 22px 16px; }
+  .cp-link { display: block; text-decoration: none; color: inherit; }
+  .cp-id { font-size: 0.76rem; color: var(--sub); display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+  .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--hair); display: inline-block; }
+  .cp-name { margin: 6px 0 0; font-size: 1.44rem; letter-spacing: -0.01em; }
+  .cp-link:hover .cp-name { color: var(--brand-hover); }
+  .cp-desc { margin: 8px 0 0; font-size: 0.9rem; line-height: 1.7; color: var(--sub); word-break: keep-all; }
+
+  .cp-glance { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--hair2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .cp-glance dt { font-size: 0.72rem; color: var(--sub); word-break: keep-all; }
+  .cp-glance dd { margin: 3px 0 0; font-size: 0.98rem; font-weight: 700; color: var(--body-ink); letter-spacing: -0.01em; }
+  .cp-foot { margin: 14px 0 0; font-size: 0.72rem; color: var(--sub); }
+
+  @media (max-width: 560px) {
+    .cp-glance { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+  }
+</style>

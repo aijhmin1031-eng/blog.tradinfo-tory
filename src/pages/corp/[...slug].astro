@@ -1,0 +1,16 @@
+---
+import { getCollection, render } from 'astro:content';
+import CorpLayout from '../../layouts/CorpLayout.astro';
+
+export async function getStaticPaths() {
+  const corps = await getCollection('corps', ({ data }) => !data.draft);
+  return corps.map((corp) => ({ params: { slug: corp.id }, props: { corp } }));
+}
+
+const { corp } = Astro.props;
+const { Content } = await render(corp);
+---
+
+<CorpLayout corp={corp}>
+  <Content />
+</CorpLayout>

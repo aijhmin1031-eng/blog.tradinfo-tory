@@ -7,7 +7,7 @@ export interface GlossaryEntry {
   label: string;
   def: string;
   icon: string;
-  group: 'money' | 'fx' | 'trade' | 'tariff' | 'stat' | 'industry';
+  group: 'money' | 'fx' | 'trade' | 'tariff' | 'stat' | 'industry' | 'corp';
 }
 
 export const GLOSSARY: Record<string, GlossaryEntry> = {
@@ -281,6 +281,46 @@ export const GLOSSARY: Record<string, GlossaryEntry> = {
     icon: 'provisional',
     group: 'stat',
   },
+
+  // ── 기업 재무 (2026-09-02 신설, `/corp/` 개설과 함께) ─────────────
+  // 이 분류를 따로 세운 이유: 재무제표 용어는 「통계·지표」와 성격이 다르다.
+  // 앞엣것은 한 회사가 스스로 제출한 값이고, 뒤엣것은 기관이 집계한 값이다.
+  영업활동현금흐름: {
+    label: '영업활동현금흐름',
+    def: '본업으로 실제 오간 현금. 영업이익은 아직 받지 못한 외상 매출도 이익으로 잡지만, 이 값은 돈이 들어와야 늘어난다. 둘이 오래 어긋나면 이익의 질을 따져 볼 자리가 된다.',
+    icon: 'coin',
+    group: 'corp',
+  },
+  운전자본: {
+    label: '운전자본',
+    def: '사업을 굴리는 데 묶여 있는 돈. 재고와 아직 받지 못한 외상 매출에서 아직 주지 않은 외상 매입을 뺀 값이다. 매출이 빠르게 늘면 이 자리에 현금이 묶인다.',
+    icon: 'scale',
+    group: 'corp',
+  },
+  부채비율: {
+    label: '부채비율',
+    def: '부채총계를 자본총계로 나눈 값. 자기 돈 대비 남의 돈이 얼마나 되는지를 나타내며, 같은 업종 안에서 견주어 보는 것이 보통이다.',
+    icon: 'scale',
+    group: 'corp',
+  },
+  유동비율: {
+    label: '유동비율',
+    def: '1년 안에 현금이 되는 자산을 1년 안에 갚아야 할 빚으로 나눈 값. 100% 아래면 단기 상환 부담을 다른 자금으로 메워야 한다는 뜻이다.',
+    icon: 'liquidity',
+    group: 'corp',
+  },
+  ROE: {
+    label: 'ROE(자기자본이익률)',
+    def: '순이익을 자기자본으로 나눈 값. 주주가 맡긴 돈으로 얼마를 벌었는지를 나타낸다. 적자이면 음수가 되고, 자본이 크게 늘어난 직후에는 낮게 나온다.',
+    icon: 'chartline',
+    group: 'corp',
+  },
+  PBR: {
+    label: 'PBR(주가순자산비율)',
+    def: '시가총액을 자본총계로 나눈 값. 장부에 적힌 순자산의 몇 배로 시장이 값을 매기고 있는지를 나타내는 배수이며, 그 자체로 비싸고 싸다를 뜻하지는 않는다.',
+    icon: 'price',
+    group: 'corp',
+  },
 };
 
 export const GLOSSARY_GROUPS: Record<GlossaryEntry['group'], string> = {
@@ -290,4 +330,5 @@ export const GLOSSARY_GROUPS: Record<GlossaryEntry['group'], string> = {
   tariff: '관세·통상',
   stat: '통계·지표',
   industry: '산업·기술',
+  corp: '기업 재무',
 };

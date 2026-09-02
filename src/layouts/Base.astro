@@ -106,6 +106,12 @@ const navItems: {
         href: url(`/category/${c.slug}/`),
         desc: c.desc,
       })),
+      // ★ 2026-09-02 신설(소유주 결정). **다섯 번째 칸을 만들지 않고 드롭다운이 흡수한다** —
+      //   390px 에서 4칸이 355px 라 여유가 35px 뿐이다. 규약대로 여기로 들어온다.
+      //   분야별(기사) 바로 아래에 두는 이유는, 이것도 읽을거리이지만 **기사가 아니기** 때문이다.
+      //   회사 낱장은 분기마다 다시 쓰이므로 분야 목록에 섞으면 날짜 순서가 어긋난다.
+      { group: '기업 분석' },
+      { key: 'corp', name: '기업 분석', href: url('/corp/'), desc: '공시 원문과 전체계정으로 회사를 해부합니다 · 종목 추천 아님' },
       { group: '연중 특집' },
       ...TOPICS.map((t) => ({ key: t.key, name: `${t.name} 특집`, href: url(t.href), desc: t.desc })),
       { group: '그 밖에' },
@@ -164,7 +170,7 @@ const navItemsEn: typeof navItems = [
 const nav = isEn ? navItemsEn : navItems;
 
 // 'about' 을 뺐다: 소개가 최상위 칸이 되면서, 남겨 두면 /about/ 에서 숲과 소개가 함께 강조된다.
-const FOREST_KEYS = new Set(['forest', 'topics', 'story', ...Object.values(CATEGORIES).map((c) => c.slug), ...TOPICS.map((t) => t.key)]);
+const FOREST_KEYS = new Set(['forest', 'topics', 'story', 'corp', ...Object.values(CATEGORIES).map((c) => c.slug), ...TOPICS.map((t) => t.key)]);
 const isActive = (n: (typeof navItems)[number]) =>
   activeNav === n.key ||
   (n.children?.some((c) => c.key === activeNav) ?? false) ||

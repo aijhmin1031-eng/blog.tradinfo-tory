@@ -1,0 +1,258 @@
+---
+/**
+ * 기업 분석 낱장 — `/corp/<슬러그>/`. 2026-09-02 신설.
+ *
+ * **기사 조판(PostLayout)을 쓰지 않는 이유**는 이 페이지가 기사가 아니기 때문이다.
+ * 기사는 「그날 무슨 일이 있었나」를 발행일에 못 박지만, 이 낱장은 **분기마다 다시 쓰인다.**
+ * 그래서 머리에 발행일·읽기 시간 대신 **갱신일·데이터 기준일**이 오고,
+ * 세 줄 요약 자리에는 **한눈 카드**(사실만)가 온다.
+ *
+ * 기계 인용을 노린 자리가 둘이다 — 한눈 카드의 `<dl>` 과 head 의 JSON-LD.
+ * 둘은 **같은 프런트매터에서 나온다.** 베껴 들면 한쪽만 고치는 사고가 나므로 그러지 않았다.
+ */
+import type { CollectionEntry } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Base from './Base.astro';
+import Pic from '../components/Pic.astro';
+import { metaByPath } from '../lib/images';
+import { dedupeSources } from '../lib/sources';
+import { url, canonicalUrl } from '../lib/site';
+
+interface Props { corp: CollectionEntry<'corps'> }
+const { corp } = Astro.props;
+const d = corp.data;
+const sources = dedupeSources(d.sources ?? []);
+
+const heroMeta = d.hero ? metaByPath(d.hero) : undefined;
+const heroImg = heroMeta ? (await getImage({ src: heroMeta, width: 1200, format: 'jpeg' })).src : undefined;
+
+const fmtDate = (x: Date) =>
+  `${x.getFullYear()}년 ${x.getMonth() + 1}월 ${x.getDate()}일`;
+
+const pagePath = `/corp/${corp.id}/`;
+
+// 기계가 읽는 자리. Article 이 아니라 **Dataset 을 함께 낸다** — 한눈 카드는 서술이 아니라
+// 값의 묶음이고, 인용하는 쪽이 찾는 것도 그 값이다(`/numbers/` 에서 같은 판단을 했다).
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: d.title,
+  description: d.description,
+  inLanguage: 'ko',
+  dateModified: d.updated.toISOString(),
+  mainEntityOfPage: canonicalUrl(pagePath),
+  author: { '@type': 'Organization', name: '도토리경제' },
+  about: {
+    '@type': 'Corporation',
+    name: d.name,
+    tickerSymbol: `${d.market}:${d.stock}`,
+    identifier: [
+      { '@type': 'PropertyValue', propertyID: '종목코드', value: d.stock },
+      { '@type': 'PropertyValue', propertyID: 'DART 고유번호', value: d.corpCode },
+    ],
+  },
+  ...(sources.length ? { citation: sources.map((s) => `${s.org} ${s.name}`).join(', ') } : {}),
+};
+const datasetLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: `${d.name} 한눈 카드`,
+  description: `${d.name}(${d.market} ${d.stock})의 공시 기준 주요 수치. ${d.dataAsOf} 기준.`,
+  inLanguage: 'ko',
+  dateModified: d.updated.toISOString(),
+  isAccessibleForFree: true,
+  creator: { '@type': 'Organization', name: '도토리경제' },
+  variableMeasured: d.glance.map((g) => ({
+    '@type': 'PropertyValue',
+    name: g.k,
+    value: g.v,
+    description: g.note,
+  })),
+};
+const crumbsLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '홈', item: canonicalUrl('/') },
+    { '@type': 'ListItem', position: 2, name: '기업 분석', item: canonicalUrl('/corp/') },
+    { '@type': 'ListItem', position: 3, name: d.name, item: canonicalUrl(pagePath) },
+  ],
+};
+---
+
+<Base
+  title={d.title}
+  description={d.description}
+  compact
+  activeNav="corp"
+  footerNewsletter={false}
+  ogImage={heroImg}
+  ogType="article"
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(datasetLd)} />
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(crumbsLd)} />
+
+  <article class="wrap">
+    <header class="corp-head">
+      <div class="kicker">기업 분석</div>
+      <h1 class="corp-name serif">{d.name}</h1>
+      <div class="corp-id mono">
+        <span>{d.market}</span><span class="sep"></span><span>{d.stock}</span>
+        {d.label && (<><span class="sep"></span><span class="corp-label">시장의 이름표 「{d.label}」</span></>)}
+      </div>
+      <p class="corp-dek">{d.description}</p>
+      <div class="corp-meta">
+        <span>갱신 <time datetime={d.updated.toISOString()}>{fmtDate(d.updated)}</time></span>
+        <span class="sep"></span>
+        <span class="mono">데이터 기준 {d.dataAsOf}</span>
+      </div>
+    </header>
+
+    {d.hero && (
+      <figure class="corp-hero">
+        <Pic path={d.hero} alt={`${d.name} 분석 대표 이미지`} width={1200} height={675} eager />
+      </figure>
+    )}
+
+    {/* 한눈 카드 — 해석 없이 사실만. 기계가 집어 가는 자리이기도 하다. */}
+    <section class="glance" aria-labelledby="glance-h">
+      <h2 id="glance-h" class="glance-h">한눈 카드</h2>
+      <dl class="glance-grid">
+        {d.glance.map((g) => (
+          <div class="glance-item">
+            <dt>{g.k}</dt>
+            <dd class="glance-v mono">{g.v}</dd>
+            <dd class="glance-note">{g.note}</dd>
+          </div>
+        ))}
+      </dl>
+      <p class="glance-foot">
+        모두 공시·공공 API 에서 가져온 값이며 항목마다 기준 시점을 적었다.
+        <strong>해석은 아래 본문에서 시작한다.</strong>
+      </p>
+    </section>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    {d.watch && d.watch.length > 0 && (
+      <section class="watch" aria-labelledby="watch-h">
+        <h2 id="watch-h" class="watch-h">무엇을 보면 아는가</h2>
+        <p class="watch-lead">
+          이 낱장의 읽기가 맞는지는 다음 공시에서 갈린다. <strong>예측이 아니라 판별 조건이다.</strong>
+        </p>
+        <div class="table-scroll">
+          <table class="watch-table">
+            <thead>
+              <tr><th>볼 것</th><th>지금</th><th>갈리는 선</th><th>언제</th></tr>
+            </thead>
+            <tbody>
+              {d.watch.map((w) => (
+                <tr>
+                  <th scope="row">{w.metric}</th>
+                  <td class="mono">{w.now}</td>
+                  <td class="mono">{w.line}</td>
+                  <td>{w.when}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    )}
+
+    {d.toriNote && (
+      <aside class="tori-note">
+        <div class="tn-h">토리의 노트</div>
+        <p>{d.toriNote}</p>
+      </aside>
+    )}
+
+    {sources.length > 0 && (
+      <section class="sources" aria-labelledby="sources-h">
+        <h2 id="sources-h" class="sources-h">자료</h2>
+        <ul class="sources-list">
+          {sources.map((s) => (
+            <li>
+              <span class="src-org">{s.org}</span>
+              {s.url ? (
+                <a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a>
+              ) : (
+                <span>{s.name}</span>
+              )}
+              {s.note && <span class="src-note-inline">{s.note}</span>}
+            </li>
+          ))}
+        </ul>
+        <p class="sources-foot">
+          공시된 숫자를 해부한 것이며 <strong>종목 추천·목표주가·매수매도 의견이 아니다.</strong>
+          수치는 발표 기관이 사후 정정할 수 있다.
+        </p>
+      </section>
+    )}
+
+    <p class="back"><a href={url('/corp/')}>← 기업 분석 전체 보기</a></p>
+  </article>
+</Base>
+
+<style>
+  .wrap { padding-bottom: 72px; }
+  .corp-head { max-width: var(--w-prose); margin: 34px auto 0; }
+  .corp-name { font-size: clamp(1.9rem, 5.2vw, 2.6rem); line-height: 1.25; margin: 8px 0 0; letter-spacing: -0.01em; }
+  .corp-id { margin-top: 10px; font-size: 0.82rem; color: var(--sub); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .corp-label { font-family: inherit; }
+  .corp-dek { margin: 14px 0 0; font-size: 1.02rem; line-height: 1.72; color: var(--sub); word-break: keep-all; }
+  .corp-meta { margin-top: 14px; font-size: 0.8rem; color: var(--sub); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--hair); display: inline-block; }
+
+  .corp-hero { max-width: var(--w-prose); margin: 26px auto 0; }
+  .corp-hero :global(img) { border-radius: 6px; border: 1px solid var(--hair); }
+
+  .glance { max-width: var(--w-prose); margin: 30px auto 0; border: 1px solid var(--hair); border-radius: 8px; padding: 20px 22px 16px; background: var(--surface); }
+  .glance-h { margin: 0 0 14px; font-size: 0.78rem; letter-spacing: 0.08em; color: var(--sub); font-weight: 700; }
+  .glance-grid { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 22px; }
+  .glance-item { min-width: 0; }
+  .glance-item dt { font-size: 0.8rem; color: var(--sub); }
+  .glance-v { margin: 3px 0 0; font-size: 1.24rem; font-weight: 700; color: var(--body-ink); letter-spacing: -0.01em; }
+  .glance-note { margin: 3px 0 0; font-size: 0.74rem; line-height: 1.5; color: var(--sub); word-break: keep-all; }
+  .glance-foot { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--hair2); font-size: 0.76rem; line-height: 1.6; color: var(--sub); word-break: keep-all; }
+  .glance-foot strong { color: var(--body-ink); font-weight: 600; }
+
+  .watch { max-width: var(--w-prose); margin: 46px auto 0; }
+  .watch-h { font-size: 1.24rem; margin: 0 0 8px; }
+  .watch-lead { margin: 0 0 14px; font-size: 0.92rem; line-height: 1.7; color: var(--sub); word-break: keep-all; }
+  .watch-lead strong { color: var(--body-ink); font-weight: 600; }
+  /* ★ `.table-scroll` 의 규칙은 `global.css` 에서 **`.prose` 아래에만** 있다.
+     이 표는 `.prose` 밖이므로 그대로 쓰면 클래스만 있고 규칙이 없는 껍데기가 된다
+     (2026-08-26 에 영문 기사에서 실제로 터졌던 사고다). 여기서 직접 든다. */
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .watch-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 460px; }
+  .watch-table th, .watch-table td { padding: 9px 10px; border-bottom: 1px solid var(--hair2); text-align: left; vertical-align: top; word-break: keep-all; }
+  .watch-table thead th { font-size: 0.76rem; color: var(--sub); border-bottom: 1px solid var(--hair); white-space: nowrap; }
+  .watch-table tbody th { font-weight: 600; }
+
+  .tori-note { max-width: var(--w-prose); margin: 40px auto 0; border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; }
+  .tn-h { font-size: 0.76rem; letter-spacing: 0.08em; color: var(--accent); font-weight: 700; }
+  .tori-note p { margin: 6px 0 0; font-size: 0.95rem; line-height: 1.78; color: var(--sub); word-break: keep-all; }
+
+  .sources { max-width: var(--w-prose); margin: 46px auto 0; border-top: 1px solid var(--hair); padding-top: 18px; }
+  .sources-h { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--sub); font-weight: 700; margin: 0 0 10px; }
+  .sources-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  .sources-list li { font-size: 0.82rem; line-height: 1.6; color: var(--sub); word-break: keep-all; }
+  .src-org { color: var(--body-ink); font-weight: 600; margin-right: 6px; }
+  .src-note-inline { display: block; font-size: 0.76rem; color: var(--sub); }
+  .sources-list a { color: var(--brand); }
+  .sources-list a:hover { color: var(--brand-hover); }
+  .sources-foot { margin: 14px 0 0; font-size: 0.76rem; line-height: 1.6; color: var(--sub); word-break: keep-all; }
+  .sources-foot strong { color: var(--body-ink); font-weight: 600; }
+
+  .back { max-width: var(--w-prose); margin: 40px auto 0; font-size: 0.86rem; }
+  .back a { color: var(--brand); }
+
+  @media (max-width: 560px) {
+    .glance-grid { grid-template-columns: 1fr; gap: 14px; }
+    .glance { padding: 16px 16px 14px; }
+  }
+</style>
