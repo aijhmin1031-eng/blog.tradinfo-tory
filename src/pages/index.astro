@@ -1,6 +1,7 @@
 ---
 import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
+import CorpPromo from '../components/CorpPromo.astro';
 import HomeNumbers from '../components/HomeNumbers.astro';
 import HomeTools from '../components/HomeTools.astro';
 import NextEvents from '../components/NextEvents.astro';
@@ -96,6 +97,11 @@ const jsonLd = {
       </a>
     )
   }
+
+  {/* ★ 2026-09-03 소유주 결정 — 기업 분석을 홈 맨 위에 둔다.
+      브리핑 띠 바로 아래, 지표·도구보다 앞이다. 「블로그를 살릴 핵심 콘텐츠」라는
+      판단이고, 그렇다면 처음 들어온 사람이 가장 먼저 보는 자리를 주어야 한다. */}
+  <CorpPromo compact />
 
   {
     featured && (

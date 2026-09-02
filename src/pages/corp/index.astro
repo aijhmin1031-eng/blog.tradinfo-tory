@@ -7,6 +7,7 @@
  * 제목만 늘어놓으면 한 번 더 눌러야 알 수 있고, 그 한 번에서 대부분이 떠난다.
  */
 import Base from '../../layouts/Base.astro';
+import Pic from '../../components/Pic.astro';
 import { getCollection } from 'astro:content';
 import { url, canonicalUrl } from '../../lib/site';
 
@@ -51,6 +52,13 @@ const listLd = {
       </p>
     </header>
 
+    {/* 착지에 그림을 한 장 둔다(2026-09-03). 이 방이 하는 일이 그림 하나로 설명된다 —
+        겉은 다 같은 도토리인데 하나를 갈라 보면 속이 고르지 않다. */}
+    <figure class="cp-art">
+      <Pic path="corp-banner.jpg" alt="같은 모양의 도토리 일곱 개가 표본처럼 나란히 놓여 있고 가운데 하나만 세로로 갈려 단면을 보인다. 갈린 도토리의 속은 두께가 서로 다른 다섯 층으로 나뉘어 있고 그중 가장 얇은 한 층만 다른 색이다." width={1000} height={563} />
+      <figcaption>겉은 모두 같은 모양이지만, 열어 보면 안은 고르지 않습니다.</figcaption>
+    </figure>
+
     {corps.length === 0 ? (
       <p class="cp-empty">아직 공개된 낱장이 없습니다.</p>
     ) : (
@@ -90,6 +98,10 @@ const listLd = {
   .cp-line { margin: 12px 0 0; font-size: 0.86rem; line-height: 1.7; color: var(--sub); word-break: keep-all; border-left: 2px solid var(--hair); padding-left: 12px; }
   .cp-line strong { color: var(--body-ink); font-weight: 600; }
   .cp-empty { max-width: 760px; margin: 30px auto 0; color: var(--sub); }
+
+  .cp-art { max-width: 760px; margin: 26px auto 0; }
+  .cp-art :global(img) { width: 100%; height: auto; display: block; border: 1px solid var(--hair); border-radius: 4px; }
+  .cp-art figcaption { margin-top: 8px; font-size: 0.8rem; color: var(--sub); text-align: right; word-break: keep-all; }
 
   .cp-list { max-width: 760px; margin: 30px auto 0; padding: 0; list-style: none; display: grid; gap: 16px; }
   .cp-card { padding: 20px 22px 16px; }

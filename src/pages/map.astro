@@ -10,6 +10,8 @@ import { ALL_ITEMS } from '../data/pack';
 import { EPISODES } from '../data/story';
 
 const posts = await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate));
+// 기업 분석 낱장도 읽을거리다(2026-09-03). 세지 않으면 지도가 사이트 모양을 틀리게 그린다.
+const corpPages = (await getCollection('corps', ({ data }) => !data.draft)).length;
 const total = posts.length;
 
 type Kind = 'topic' | 'series' | 'data' | 'guide';
@@ -148,7 +150,7 @@ const kpis = [
 // 단위를 '페이지 수'로 통일해 두 갈래의 굵기를 정직하게 비교한다.
 const galimgilCount = posts.filter((p) => ((p as { slug?: string; id: string }).slug ?? p.id).startsWith('tori-galimgil')).length;
 const storyPages = openEpisodes.length + 1; // 화별 낱장 + 목차
-const forestPages = total + catKeys.length + TOPICS.length + storyPages + 1;
+const forestPages = total + catKeys.length + TOPICS.length + storyPages + 1 + corpPages + 1; // +corpPages 낱장, +1 착지 /corp/
 const forestCorners = [
   ...catKeys.map((k) => ({
     name: CATEGORIES[k].name,
