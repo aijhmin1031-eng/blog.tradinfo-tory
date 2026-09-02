@@ -1,0 +1,107 @@
+---
+/**
+ * 구성 변화 — 100% 가로 스택 바를 기간별로 쌓는다.
+ * 「부분과 전체」와 「시간에 따른 변화」를 한 그림에서 보이는 형식이다.
+ *
+ * ★ 조각마다 이름과 수치를 직접 적는다. 검증에서 밝은 모드 대비가 WARN 이라
+ *   라벨이 필수다(색만으로 식별하게 두지 않는다).
+ * ★ 조각 사이에 2px 표면 틈을 둔다.
+ */
+interface Row { label: string; parts: { name: string; value: number; pct: number }[]; total: string }
+interface Props {
+  title: string; unit?: string; rows: Row[]; order: string[];
+  highlight?: string; source: string; note?: string;
+}
+const { title, unit = '', rows, order, highlight, source, note } = Astro.props as Props;
+const W = 760, LEFT = 148, RIGHT = 10, BAR = 46, GAP = 30;
+const plot = W - LEFT - RIGHT;
+const H = 34 + rows.length * (BAR + GAP);
+const slot = (n: string) => order.indexOf(n);
+---
+
+<figure class="fig">
+  <figcaption class="fig-t">{title}{unit && <span class="fig-u"> · {unit}</span>}</figcaption>
+
+  <div class="fig-legend">
+    {order.map((n) => (
+      <span class="fig-lg"><i class={`sw s${slot(n)}`} />{n}</span>
+    ))}
+  </div>
+
+  <div class="fig-scroll">
+    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${title}. ${rows.map((r) => `${r.label} ${r.parts.map((p) => `${p.name} ${p.pct}%`).join(', ')}`).join(' / ')}`}>
+      {rows.map((r, ri) => {
+        const y = 20 + ri * (BAR + GAP);
+        let x = LEFT;
+        return (
+          <g>
+            <text class="rowlab" x={LEFT - 12} y={y + BAR / 2} text-anchor="end" dominant-baseline="middle">{r.label}</text>
+            <text class="rowtot" x={LEFT - 12} y={y + BAR / 2 + 15} text-anchor="end" dominant-baseline="middle">{r.total}</text>
+            {r.parts.map((p) => {
+              const w = (p.pct / 100) * plot;
+              const gx = x; x += w;
+              const wide = w > 74;
+              const hi = highlight === p.name;
+              return (
+                <g>
+                  <rect x={gx + 1} y={y} width={Math.max(w - 2, 1)} height={BAR} rx="3"
+                        class={`seg s${slot(p.name)} ${hi ? 'hi' : ''}`} />
+                  {wide && (
+                    <text class="inlab" x={gx + w / 2} y={y + BAR / 2} text-anchor="middle" dominant-baseline="middle">
+                      {p.pct.toFixed(1)}%
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+            {r.parts.filter((p) => (p.pct / 100) * plot <= 74).map((p) => {
+              const i = r.parts.indexOf(p);
+              const before = r.parts.slice(0, i).reduce((a, b) => a + b.pct, 0);
+              const cx = LEFT + ((before + p.pct / 2) / 100) * plot;
+              return <text class="outlab" x={cx} y={y - 6} text-anchor="middle">{p.pct.toFixed(1)}%</text>;
+            })}
+          </g>
+        );
+      })}
+    </svg>
+  </div>
+
+  <p class="fig-s">{note && <span class="fig-note">{note} · </span>}자료: {source}</p>
+</figure>
+
+<style>
+  .fig { margin: 26px 0; }
+  .fig-t { font-weight: 700; font-size: 15px; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 8px; word-break: keep-all; }
+  .fig-u { font-weight: 500; color: var(--muted); font-size: 13px; }
+  .fig-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 12px; }
+  .fig-lg { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--sub); white-space: nowrap; }
+  .sw { width: 11px; height: 11px; border-radius: 2.5px; display: inline-block; }
+  .fig-scroll { overflow-x: auto; }
+  .fig-scroll svg { width: 100%; min-width: 460px; height: auto; display: block; }
+  .rowlab { font-size: 13.5px; font-weight: 700; fill: var(--ink); }
+  .rowtot { font-size: 11.5px; fill: var(--muted); }
+  .inlab { font-size: 13px; font-weight: 700; fill: #fff; }
+  .outlab { font-size: 11.5px; font-weight: 700; fill: var(--sub); }
+  .seg.hi { stroke: var(--ink); stroke-width: 1.6; }
+  /* 검증 통과 색 — 순서 고정. 밝은 모드 */
+  .s0, .sw.s0 { fill: #2a78d6; background: #2a78d6; }
+  .s1, .sw.s1 { fill: #eb6834; background: #eb6834; }
+  .s2, .sw.s2 { fill: #1baf7a; background: #1baf7a; }
+  .s3, .sw.s3 { fill: #eda100; background: #eda100; }
+  .s4, .sw.s4 { fill: #e87ba4; background: #e87ba4; }
+  .fig-s { font-size: 11.5px; color: var(--muted); margin-top: 10px; line-height: 1.55; word-break: keep-all; }
+  .fig-note { color: var(--sub); }
+  :root[data-theme='dark'] .s0, :root[data-theme='dark'] .sw.s0 { fill: #3987e5; background: #3987e5; }
+  :root[data-theme='dark'] .s1, :root[data-theme='dark'] .sw.s1 { fill: #d95926; background: #d95926; }
+  :root[data-theme='dark'] .s2, :root[data-theme='dark'] .sw.s2 { fill: #199e70; background: #199e70; }
+  :root[data-theme='dark'] .s3, :root[data-theme='dark'] .sw.s3 { fill: #c98500; background: #c98500; }
+  :root[data-theme='dark'] .s4, :root[data-theme='dark'] .sw.s4 { fill: #d55181; background: #d55181; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .s0, :root:not([data-theme='light']) .sw.s0 { fill: #3987e5; background: #3987e5; }
+    :root:not([data-theme='light']) .s1, :root:not([data-theme='light']) .sw.s1 { fill: #d95926; background: #d95926; }
+    :root:not([data-theme='light']) .s2, :root:not([data-theme='light']) .sw.s2 { fill: #199e70; background: #199e70; }
+    :root:not([data-theme='light']) .s3, :root:not([data-theme='light']) .sw.s3 { fill: #c98500; background: #c98500; }
+    :root:not([data-theme='light']) .s4, :root:not([data-theme='light']) .sw.s4 { fill: #d55181; background: #d55181; }
+  }
+  @media (max-width: 480px) { .rowlab { font-size: 12.5px; } .inlab { font-size: 12px; } }
+</style>

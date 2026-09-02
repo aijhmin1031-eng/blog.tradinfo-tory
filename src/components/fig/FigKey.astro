@@ -1,0 +1,58 @@
+---
+/**
+ * 한눈 카드 — 기업 분석 기사의 머리에 놓는 **사실만의 판**.
+ *
+ * docs/corp-analysis.md 8절이 정한 자리다. 해석을 넣지 않는다.
+ * 두괄식 규약과 기계 인용(LLM 위키)을 여기서 함께 만족시킨다 —
+ * 사람은 한눈에 규모를 잡고, 기계는 기준일과 출처가 붙은 수치를 가져간다.
+ *
+ * ★ 모든 값에 **기준일**을 붙인다. 붙이지 못할 값은 넣지 않는다(절대 규칙 2).
+ */
+interface Stat { label: string; value: string; unit?: string; note?: string; tone?: 'up' | 'down' | 'plain' }
+interface Props { company: string; ticker: string; sector: string; asOf: string; stats: Stat[]; source: string }
+const { company, ticker, sector, asOf, stats, source } = Astro.props as Props;
+---
+
+<figure class="key">
+  <header class="key-h">
+    <div>
+      <p class="key-n">{company}<span class="key-t">{ticker}</span></p>
+      <p class="key-s">{sector}</p>
+    </div>
+    <p class="key-a">기준 {asOf}</p>
+  </header>
+  <dl class="key-g">
+    {stats.map((s) => (
+      <div class="key-c">
+        <dt>{s.label}</dt>
+        <dd class={s.tone ?? 'plain'}>{s.value}{s.unit && <span class="u">{s.unit}</span>}</dd>
+        {s.note && <p class="key-note">{s.note}</p>}
+      </div>
+    ))}
+  </dl>
+  <p class="key-src">자료: {source}</p>
+</figure>
+
+<style>
+  /* ★ 카드 제목을 h2 로 두지 않는다. 소제목 목록·목차에 섞이고
+     .prose h2 의 윗줄(border-top)이 네이비 머리 위로 새어 들어온다. */
+  .key { margin: 0 0 30px; border: 1px solid var(--hair); border-radius: 9px; overflow: hidden; background: var(--surface); }
+  .key-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    padding: 15px 18px; background: var(--brand); }
+  .key-n { margin: 0; font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.02em; line-height: 1.3; }
+  .key-t { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.72); margin-left: 8px; font-variant-numeric: tabular-nums; }
+  .key-s { margin: 3px 0 0; font-size: 12px; color: rgba(255,255,255,.78); word-break: keep-all; }
+  .key-a { margin: 0; font-size: 11px; color: rgba(255,255,255,.72); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .key-g { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--hair2); margin: 0; }
+  .key-c { background: var(--surface); padding: 13px 14px 14px; }
+  .key-c dt { font-size: 11px; color: var(--muted); margin-bottom: 5px; word-break: keep-all; }
+  .key-c dd { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink);
+    font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .key-c dd.up { color: var(--up); } .key-c dd.down { color: var(--down); }
+  .key-c dd .u { font-size: 12px; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
+  .key-note { margin: 5px 0 0; font-size: 10.5px; color: var(--muted); line-height: 1.5; word-break: keep-all; }
+  .key-src { margin: 0; padding: 10px 14px; font-size: 10.5px; color: var(--muted);
+    border-top: 1px solid var(--hair2); background: var(--paper); word-break: keep-all; line-height: 1.5; }
+  @media (max-width: 700px) { .key-g { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 380px) { .key-c dd { font-size: 19px; } }
+</style>

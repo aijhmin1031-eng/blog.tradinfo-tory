@@ -1,0 +1,69 @@
+---
+/**
+ * 판별표 — 「무엇을 언제 보면 이 기사가 맞는지 아는가」를 그림으로 못 박는다.
+ *
+ * ★ 이 그림이 6장의 뼈대다. 예측을 적는 자리가 아니라 **반증 조건**을 적는 자리다.
+ *   지금 값과 문턱, 그리고 확인 시점을 한 화면에 둔다.
+ */
+interface Watch { metric: string; now: string; nowNote?: string; threshold: string; ifUp: string; ifDown: string }
+interface Props { title: string; asOf: string; checkAt: string; checkNote?: string; items: Watch[]; source: string }
+const { title, asOf, checkAt, checkNote, items, source } = Astro.props as Props;
+---
+
+<figure class="fig">
+  <figcaption class="fig-t">{title}</figcaption>
+  <div class="wt-rail">
+    <div class="wt-pt done"><span class="wt-d">{asOf}</span><span class="wt-l">지금 · 반기보고서</span></div>
+    <div class="wt-line" aria-hidden="true" />
+    <div class="wt-pt next"><span class="wt-d">{checkAt}</span><span class="wt-l">{checkNote ?? '다음 확인'}</span></div>
+  </div>
+  {items.map((w, i) => (
+    <div class="wt-card">
+      <div class="wt-h"><span class="wt-no">{i + 1}</span><span class="wt-m">{w.metric}</span></div>
+      <div class="wt-now">
+        <span class="wt-nl">지금</span>
+        <strong>{w.now}</strong>
+        {w.nowNote && <em>{w.nowNote}</em>}
+      </div>
+      <div class="wt-th">문턱 <b>{w.threshold}</b></div>
+      <div class="wt-br">
+        <div class="wt-b up"><span>넘으면</span><p>{w.ifUp}</p></div>
+        <div class="wt-b down"><span>못 넘으면</span><p>{w.ifDown}</p></div>
+      </div>
+    </div>
+  ))}
+  <p class="fig-s">자료: {source}</p>
+</figure>
+
+<style>
+  .fig { margin: 26px 0; }
+  .fig-t { font-weight: 700; font-size: 15px; color: var(--ink); margin-bottom: 12px; word-break: keep-all; }
+  .wt-rail { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .wt-pt { display: flex; flex-direction: column; gap: 1px; padding-left: 13px; position: relative; }
+  .wt-pt::before { content: ''; position: absolute; left: 0; top: 5px; width: 9px; height: 9px; border-radius: 50%; }
+  .wt-pt.done::before { background: var(--brand); }
+  .wt-pt.next::before { background: var(--surface); border: 2px solid var(--accent); }
+  .wt-d { font-size: 12.5px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .wt-l { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+  .wt-line { flex: 1; height: 2px; background: linear-gradient(90deg, var(--brand), var(--accent)); opacity: 0.35; min-width: 24px; }
+  .wt-card { border: 1px solid var(--hair); border-radius: 7px; padding: 13px 14px; margin-bottom: 10px; background: var(--surface); }
+  .wt-h { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .wt-no { width: 19px; height: 19px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; flex: none; }
+  .wt-m { font-size: 13.5px; font-weight: 700; color: var(--ink); word-break: keep-all; }
+  .wt-now { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; margin-bottom: 6px; }
+  .wt-nl { font-size: 10.5px; color: var(--muted); }
+  .wt-now strong { font-size: 19px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .wt-now em { font-style: normal; font-size: 11.5px; color: var(--muted); }
+  .wt-th { font-size: 11.5px; color: var(--sub); margin-bottom: 10px; }
+  .wt-th b { color: var(--accent); font-size: 12.5px; }
+  .wt-br { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .wt-b { border-radius: 5px; padding: 8px 10px; }
+  .wt-b span { font-size: 10.5px; font-weight: 700; display: block; margin-bottom: 3px; }
+  .wt-b p { font-size: 12px; margin: 0; color: var(--body-ink); line-height: 1.55; word-break: keep-all; }
+  .wt-b.up { background: color-mix(in srgb, var(--up) 8%, transparent); }
+  .wt-b.up span { color: var(--up); }
+  .wt-b.down { background: color-mix(in srgb, var(--down) 8%, transparent); }
+  .wt-b.down span { color: var(--down); }
+  .fig-s { font-size: 11.5px; color: var(--muted); margin-top: 10px; }
+  @media (max-width: 480px) { .wt-br { grid-template-columns: 1fr; } }
+</style>
