@@ -89,6 +89,15 @@ const strip = (xml) =>
 //        안에 긴 점선이 따라온다. 그런 자리는 건너뛰고 첫 번째 본문 자리를 쓴다.
 const isTocLine = (text, i) => /-{10,}/.test(text.slice(i, i + 120));
 
+// ★ **상호참조를 절 제목으로 착각하지 않는다**(2026-09-02, 표지 위치를 찍어 보고 갈렸다).
+//   서진시스템 2026 반기에서 「II. 사업의 내용」이 세 곳에 나왔다 —
+//     748   차례      「II. 사업의 내용 -------- 12」
+//     2,879 상호참조  「II. 사업의 내용 ]을 참조하시기 바랍니다」  ← 3판이 이걸 잡았다
+//     10,791 본문     「II. 사업의 내용 1. 사업의 개요 당사는 글로벌 메탈 플랫폼…」
+//   가르는 표는 **바로 뒤에 하위 첫 항목 「1.」이 오는가**다. 상호참조는 「]」나 「-」가 따라온다.
+const isRealHeading = (text, i) =>
+  /^[^\]\-]{0,30}?\s1\s*[.．]\s*[가-힣]/.test(text.slice(i, i + 80).replace(/\s+/g, ' '));
+
 function findAll(text, re) {
   const g = new RegExp(re.source, 'g');
   const out = [];
@@ -105,12 +114,12 @@ function cut(text, sec) {
   let starts = [];
   let usedFrom = -1;
   for (let k = 0; k < sec.from.length; k++) {
-    const hit = findAll(text, sec.from[k]).filter((i) => !isTocLine(text, i));
+    const hit = findAll(text, sec.from[k]).filter((i) => !isTocLine(text, i) && isRealHeading(text, i));
     if (hit.length) { starts = hit; usedFrom = k; break; }
   }
   if (!starts.length) return { found: false, why: '시작 표지가 차례 밖에 없다' };
   const a = starts[0];
-  const ends = findAll(text, sec.to).filter((i) => i > a + 300 && !isTocLine(text, i));
+  const ends = findAll(text, sec.to).filter((i) => i > a + 300 && !isTocLine(text, i) && isRealHeading(text, i));
   if (!ends.length) return { found: false, why: '끝 표지를 못 찾았다' };
   const out = text.slice(a, ends[0]).trim();
   // 자르지 않고 알리는 편이 낫다 — 엉뚱하게 잘린 글을 기사 재료로 쓰면 절대 규칙 2 가 무너진다.
