@@ -51,63 +51,61 @@ function get(url, label, { binary = false, timeout = 30 } = {}) {
   try { return readFileSync('/tmp/resp.txt', 'utf8'); } catch { return null; }
 }
 
-// ★ 8판. 소유주 지시(2026-09-02): 「종목을 다른 것으로 할거야 — 5G 관련 종목으로
-//   시총 상위기업 1개만 찾아봐.」
-//
-//   ★ 시총을 기억으로 답하지 않는다(절대 규칙 2). 금융위 주식시세 API 의 `mrktTotAmt`
-//     를 실제로 받아 순위를 매긴다. 후보는 내가 고르지만 **순위는 데이터가 정한다.**
-//
-//   후보 고른 기준 — 「5G 관련」을 셋으로 갈랐다.
-//     ⓐ 망을 운영하는 통신사   ⓑ 기지국·중계기 장비   ⓒ 광트랜시버·RF 부품
-//   삼성전자는 세계 5G 장비 점유율 상위 업체지만 **5G 관련주로 부르지 않는다**(사업의 대부분이
-//   반도체·스마트폰이다). 그래도 순위를 투명하게 보려고 참고로 함께 넣고 표시한다.
-const DATAGO = process.env.DATA_GO_KR_KEY ?? '';
-log(`공공데이터 키: ${DATAGO ? `있음(길이 ${DATAGO.length})` : '★ 없음'}`);
+// ★ 9판. 5G 시총 1위는 SK텔레콤(017670) · 20.32조원(2026-09-01 실측)으로 갈렸다.
+//   기업 분석 대상으로 세우려면 **고유번호**가 필요하다. corpCode.xml 은 3.6MB 인데
+//   DART 처리량이 오늘 15KB/초 수준이라 90초로는 못 받는다(8판 직전 실행이 그래서 죽었다).
+//   **여기서만 300초를 준다.** 받고 나면 표에 고정하므로 다시 받을 일이 없다.
+import { readFileSync as rf, readdirSync as rd } from 'node:fs';
 
-const CANDIDATES = [
-  ['SK텔레콤',      '017670', 'ⓐ 통신사'],
-  ['KT',            '030200', 'ⓐ 통신사'],
-  ['LG유플러스',    '032640', 'ⓐ 통신사'],
-  ['케이엠더블유',  '032500', 'ⓑ 기지국 장비'],
-  ['에이스테크',    '088800', 'ⓑ 기지국 안테나'],
-  ['다산네트웍스',  '039560', 'ⓑ 네트워크 장비'],
-  ['유비쿼스',      '264450', 'ⓑ 네트워크 장비'],
-  ['서진시스템',    '178320', 'ⓑ 통신장비 함체'],
-  ['이노와이어리스','073490', 'ⓑ 계측·스몰셀'],
-  ['RFHIC',         '218410', 'ⓒ RF 반도체'],
-  ['오이솔루션',    '138080', 'ⓒ 광트랜시버'],
-  ['대한광통신',    '010170', 'ⓒ 광섬유'],
-  ['삼성전자',      '005930', '(참고) 5G 장비 겸업'],
-];
+const TARGET = ['SK텔레콤', '017670'];
+let corpCode = null;
 
-const pad2 = (n) => String(n).padStart(2, '0');
-const ymdOf = (d) => `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
-const bgn = new Date(); bgn.setDate(bgn.getDate() - 12);
+get(`https://opendart.fss.or.kr/api/corpCode.xml?crtfc_key=${KEY}`,
+  '① corpCode.xml (3.6MB · 시간 300초)', { binary: true, timeout: 300 });
+try {
+  execFileSync('bash', ['-lc', 'cd /tmp && rm -rf cc && mkdir cc && unzip -o -q resp.bin -d cc'], { stdio: 'ignore', timeout: 60000 });
+  const f = rd('/tmp/cc').find((x) => /\.xml$/i.test(x));
+  const XML = rf(`/tmp/cc/${f}`, 'utf8');
+  log(`   ${f} · ${XML.length.toLocaleString()}자`);
+  for (const c of XML.split('</list>')) {
+    if (!c.includes(`<stock_code>${TARGET[1]}</stock_code>`)) continue;
+    corpCode = (c.match(/<corp_code>\s*(\d{8})\s*<\/corp_code>/) || [])[1];
+    const nm = (c.match(/<corp_name>\s*([^<]*?)\s*<\/corp_name>/) || [])[1];
+    log(`   ★ ${TARGET[0]}(${TARGET[1]}) → 고유번호 ${corpCode} · 등록명 「${nm}」`);
+    break;
+  }
+  if (!corpCode) log(`   ★ 못 찾음`);
+} catch (e) { log(`   ★ 실패: ${e.message.slice(0, 200)}`); }
 
-const rank = [];
-for (const [name, code, kind] of CANDIDATES) {
-  const body = get(
-    `https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo` +
-    `?serviceKey=${DATAGO}&resultType=json&numOfRows=30&likeSrtnCd=${code}&beginBasDt=${ymdOf(bgn)}`,
-    `${name} (${code}) ${kind}`);
-  if (!body) continue;
+if (corpCode) {
+  // ② 이 회사도 반기보고서가 나와 있는가
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const d = new Date(); const b = new Date(d.getTime() - 120 * 86400000);
+  const ymd = (x) => `${x.getFullYear()}${pad2(x.getMonth() + 1)}${pad2(x.getDate())}`;
+  const lb = get(`https://opendart.fss.or.kr/api/list.json?crtfc_key=${KEY}&corp_code=${corpCode}&bgn_de=${ymd(b)}&end_de=${ymd(d)}&page_count=100`,
+    '② 공시 목록 (최근 120일)');
   try {
-    const rows = (JSON.parse(body)?.response?.body?.items?.item ?? []).filter((r) => r.srtnCd === code);
-    if (!rows.length) { log(`   ★ 행 없음`); continue; }
-    const last = rows.sort((a, b) => a.basDt.localeCompare(b.basDt)).at(-1);
-    const cap = Number(last.mrktTotAmt);
-    rank.push({ name, code, kind, cap, clpr: Number(last.clpr), basDt: last.basDt, itmsNm: last.itmsNm });
-    log(`   ${last.basDt} · ${last.itmsNm} · 종가 ${Number(last.clpr).toLocaleString()}원 · 시총 ${(cap / 1e12).toFixed(2)}조원`);
-  } catch (e) { log(`   파싱 실패: ${String(body).replace(/\s+/g, ' ').slice(0, 160)}`); }
-}
+    const j = JSON.parse(lb);
+    const per = (j.list ?? []).filter((r) => /^\[?(기재정정)?\]?\s*(사업보고서|반기보고서|분기보고서)/.test(r.report_nm.trim()));
+    log(`   총 ${j.total_count}건 · 정기보고서 ${per.length}건: ${per.map((r) => `${r.rcept_dt} ${r.report_nm.trim()}`).join(' | ') || '없음'}`);
+  } catch { log(`   파싱 실패`); }
 
-console.log('');
-log('★★ 시가총액 순위 (실측) ★★');
-rank.sort((a, b) => b.cap - a.cap);
-rank.forEach((r, i) => log(`   ${String(i + 1).padStart(2)}. ${r.name.padEnd(9)} ${r.kind.padEnd(16)} ${(r.cap / 1e12).toFixed(2)}조원  (기준일 ${r.basDt})`));
-const pick = rank.find((r) => !r.kind.startsWith('(참고)'));
-console.log('');
-log(`★ 5G 관련 시총 1위: ${pick ? `${pick.name}(${pick.code}) · ${(pick.cap / 1e12).toFixed(2)}조원 · 기준일 ${pick.basDt}` : '못 정함'}`);
+  // ③ 전체계정이 도는가 — 소유주가 「전체계정까지」로 정했다
+  for (const [year, code, nm] of [['2026', '11012', '반기'], ['2025', '11011', '사업(연간)']]) {
+    const b2 = get(`https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?crtfc_key=${KEY}&corp_code=${corpCode}&bsns_year=${year}&reprt_code=${code}&fs_div=CFS`,
+      `③ 전체계정 ${year} ${nm} CFS`);
+    try {
+      const j = JSON.parse(b2); const list = j.list ?? [];
+      log(`   status=${j.status} · 계정 ${list.length}개 · 구분: ${[...new Set(list.map((x) => x.sj_nm))].join(' / ')}`);
+      const is = list.filter((x) => x.sj_nm === '손익계산서');
+      log(`   손익 ${is.length}개: ${is.map((x) => x.account_nm).join(', ')}`);
+      // ★ 전체계정에도 누적 필드가 오는가 — 주요계정에는 왔다. 여기서 갈려야 분기 값을 못 틀린다.
+      const rev = is.find((x) => x.account_nm === '매출액');
+      if (rev) log(`   ★ 매출액 행 전문: ${JSON.stringify(rev)}`);
+      log(`   ★ 누적 필드(thstrm_add_amount) 존재: ${is.some((x) => 'thstrm_add_amount' in x) ? '있다' : '없다 — 분기 값은 주요계정 API 로 받아야 한다'}`);
+    } catch { log(`   파싱 실패: ${String(b2).replace(/\s+/g, ' ').slice(0, 200)}`); }
+  }
+}
 
 console.log('');
 log('탐색 끝. 키 값은 출력하지 않았다.');
