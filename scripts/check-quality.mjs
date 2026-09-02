@@ -44,6 +44,12 @@ const BASE_REF = process.env.QUALITY_BASE_REF || 'origin/main';
 // site.ts readingMinutesOf 와 같은 규칙: 한글 글자수만 센다(500자/분).
 const KO_CHARS_PER_MIN = 500;
 const koChars = (s) => (s.match(/[가-힣]/g)?.length ?? 0);
+// 컴포넌트에 넘긴 대체 텍스트(alt="…")를 본문에서 걷어 낸다. 마크다운 이미지의
+// ![대체 텍스트](경로) 도 같이 걷는다.
+const stripAlt = (b) =>
+  b.replace(/\balt\s*=\s*"[^"]*"/g, ' ')
+   .replace(/\balt\s*=\s*'[^']*'/g, ' ')
+   .replace(/!\[[^\]]*\]\(/g, '![](');
 const readingMinutes = (body) => Math.max(1, Math.round(koChars(body) / KO_CHARS_PER_MIN));
 
 // --- 파싱 도우미 ---------------------------------------------------------
@@ -110,8 +116,13 @@ function check(slug) {
   // 영어는 단어수로 세고, 한글 1,500자 내외에 해당하는 분량을 단어로 환산해 기준을 잡는다
   // (한글 500자/분 · 영어 220단어/분 → 1,500자 ≈ 3분 ≈ 660단어).
   const enWords = (b) => (b.replace(/<[^>]+>/g, ' ').match(/[A-Za-z][A-Za-z'-]*/g) ?? []).length;
-  const chars = isEn ? enWords(body) : koChars(body);
-  const mins = isEn ? Math.max(1, Math.round(chars / 220)) : readingMinutes(body);
+  // ★ **대체 텍스트는 본문이 아니다**(2026-09-02). 그림 안의 글자를 못 보는 독자에게
+  //   옮겨 주는 접근성 장치이므로 길수록 좋고, 분량·물타기 검사에 세면 안 된다.
+  //   alt 를 성실히 채운 기사가 「출처 없이 분량만 늘었다」로 걸리는 사고가 실제로 났다.
+  //   `readingMinutes` 도 같은 본문을 쓰므로 함께 뺀다(alt 를 읽는 시간은 없다).
+  const prose = stripAlt(body);
+  const chars = isEn ? enWords(prose) : koChars(prose);
+  const mins = isEn ? Math.max(1, Math.round(chars / 220)) : readingMinutes(prose);
   const unit = isEn ? '단어' : '자';
   const THIN = isEn ? 570 : 1300; // 기준(660단어 / 1,500자)의 약 87%
   const sources = countSources(front);

@@ -22,9 +22,10 @@ const cats = import.meta.glob<{ default: ImageMetadata }>('../assets/cat/*.{jpg,
   eager: true,
 });
 // 카툰·캐릭터·그림함 썸네일도 같은 방식으로 최적화한다(2026-08-26).
+// `fig` 는 기업 분석 인포그래픽이다(2026-09-02). 절마다 한 장씩 들어간다.
 // 그림함 **원본**은 내려받기 대상이라 `public/` 에 그대로 둔다. 여기 있는 것은 화면용 썸네일뿐이다.
 const others = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/{story,poses,tori,packthumb}/*.{jpg,jpeg,png}',
+  '../assets/{story,poses,tori,packthumb,fig}/*.{jpg,jpeg,png}',
   { eager: true }
 );
 

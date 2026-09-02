@@ -1,0 +1,51 @@
+---
+/**
+ * 인포그래픽 한 장 — 기업 분석 기사의 절마다 하나씩 들어간다.
+ *
+ * 그림 안에 제목·수치·자료가 모두 박혀 있으므로 화면에는 캡션을 따로 두지 않는다.
+ * 다만 **대체 텍스트(alt)는 반드시 채운다** — 그림을 못 보는 독자와 검색엔진에게는
+ * 그림 안의 글자가 존재하지 않는 것과 같다.
+ *
+ * ★ **원본을 열 수 있어야 한다**(2026-09-02 실측으로 갈렸다). 원본이 1440px 인데
+ *   390px 화면에서는 354px 로 들어간다 — 그림 안의 글자가 4분의 1로 줄어 읽히지 않는다.
+ *   본문 그림은 대개 「보면 되는」 것이지만 이 그림은 **읽어야 하는** 것이라 다르다.
+ *   그래서 그림 자체를 원본으로 가는 링크로 감쌌다. 자바스크립트 확대창을 쓰지 않은 이유는
+ *   그것이 기기·브라우저마다 달리 굴고, 링크는 어디서나 같게 굴기 때문이다.
+ */
+import { getImage } from 'astro:assets';
+import Pic from '../Pic.astro';
+import { metaByPath } from '../../lib/images';
+
+interface Props { src: string; alt: string }
+const { src, alt } = Astro.props as Props;
+
+// 원본 폭 그대로 한 장 더 뽑아 링크 대상으로 쓴다(화면용은 Pic 이 별도로 줄인다).
+const meta = metaByPath(src);
+const full = meta ? await getImage({ src: meta, format: 'webp', quality: 82 }) : undefined;
+---
+<figure class="figimg">
+  {
+    full ? (
+      <a href={full.src} target="_blank" rel="noopener" aria-label={`원본 크기로 보기: ${alt}`}>
+        <Pic path={src} alt={alt} width={1440} height={1080} />
+      </a>
+    ) : (
+      <Pic path={src} alt={alt} width={1440} height={1080} />
+    )
+  }
+  <figcaption>그림을 누르면 원본 크기로 열립니다.</figcaption>
+</figure>
+<style>
+  .figimg { margin: 28px 0; }
+  .figimg a { display: block; }
+  .figimg :global(img) {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--hair); border-radius: 6px;
+  }
+  .figimg figcaption {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: var(--muted, #6B6B6B);
+    text-align: right;
+  }
+</style>
