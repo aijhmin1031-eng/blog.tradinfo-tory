@@ -117,7 +117,12 @@ export function priceDistribution(reserves, draw) {
   for (;;) {
     let sum = 0;
     for (let i = 0; i < draw; i += 1) sum += reserves[idx[i]];
-    out.push(sum / draw);
+    // ★ 조합 평균은 반드시 ROUND_DIGITS 자리에서 정규화한다. 같은 수학적
+    // 값이라도 더하는 순서에 따라 마지막 비트가 갈리고(파이썬 sum 과 이 루프가
+    // 실제로 갈렸다), 그 오차가 투찰금액 경계에 얹히면 조합이 통째로 뒤집힌다.
+    // 표준 사례에서 4개 조합이 999,999,999.99999988 로 떨어져
+    // 파이썬 717 / 자바스크립트 713 으로 어긋났다. 지우지 말 것.
+    out.push(roundTo(sum / draw, ROUND_DIGITS));
     let i = draw - 1;
     while (i >= 0 && idx[i] === n - draw + i) i -= 1;
     if (i < 0) break;

@@ -15,10 +15,10 @@
       },
       "expected": {
         "combinations": 1365,
-        "minPrice": 984285714.2857144,
-        "maxPrice": 1015714285.7142857,
-        "minRatePct": 98.42857142857144,
-        "maxRatePct": 101.57142857142858,
+        "minPrice": 984285714.285714,
+        "maxPrice": 1015714285.714286,
+        "minRatePct": 98.4285714285714,
+        "maxRatePct": 101.5714285714286,
         "curve": [
           {
             "rate": 86.0,
@@ -63,7 +63,7 @@
           {
             "rate": 100.0,
             "amount": 1000000000.0,
-            "probability": 0.5223443223443224
+            "probability": 0.5252747252747253
           },
           {
             "rate": 102.0,
@@ -86,10 +86,10 @@
       },
       "expected": {
         "combinations": 1365,
-        "minPrice": 984285714.2857144,
-        "maxPrice": 1015714285.7142857,
-        "minRatePct": 98.42857142857144,
-        "maxRatePct": 101.57142857142858,
+        "minPrice": 984285714.285714,
+        "maxPrice": 1015714285.714286,
+        "minRatePct": 98.4285714285714,
+        "maxRatePct": 101.5714285714286,
         "curve": [
           {
             "rate": 88.0,
@@ -137,10 +137,10 @@
       },
       "expected": {
         "combinations": 1365,
-        "minPrice": 48821428.57142857,
-        "maxPrice": 51178571.42857143,
-        "minRatePct": 97.64285714285712,
-        "maxRatePct": 102.35714285714286,
+        "minPrice": 48821428.571429,
+        "maxPrice": 51178571.428571,
+        "minRatePct": 97.64285714285799,
+        "maxRatePct": 102.357142857142,
         "curve": [
           {
             "rate": 87.0,
