@@ -214,6 +214,11 @@ const ld = {
           <label class="br-chk" id="w-rgnduty" hidden>
             <input type="checkbox" id="f-rgnduty" /> 지역의무공동도급만
           </label>
+          {/* 낙찰방법 문구로 갈린다. 요구 실적 금액까지는 알 수 없으므로
+              「제외」까지만 두고, 상세에서 그 사실을 밝힌다. */}
+          <label class="br-chk">
+            <input type="checkbox" id="f-noperf" /> 실적제한 공고 제외
+          </label>
         </div>
         <div class="br-active" id="br-active" hidden></div>
       </div>
@@ -326,6 +331,13 @@ const ld = {
               <td><strong>구분합니다.</strong> 지역 업체를 일정 비율 이상 공동수급체에 포함하도록
                 의무화한 공고인지가 <strong>공고마다 제공됩니다</strong>(실측 100%). 타 지역 공고에
                 참여할 때 해당 지역 업체와 공동수급체를 구성해야 하는지를 이 항목으로 확인합니다.</td>
+            </tr>
+            <tr class="is-part">
+              <th>실적제한이 걸린 공고를 제외할 수 있는가</th>
+              <td><strong>제외할 수 있습니다.</strong> 낙찰방법에 「실적제한 아님」·「실적에 의한
+                경쟁입찰 이외」·「실적제한」으로 적혀 오므로 그 표기로 구분합니다.
+                다만 <strong>공고가 요구하는 실적 금액과 적격심사 세부 배점은 공고서 본문에</strong>
+                있어, 이 조건은 「실적제한 공고를 빼는 것」이지 「보유 실적으로 통과된다」가 아닙니다.</td>
             </tr>
             <tr class="is-no">
               <th>시공능력평가액으로 미달 공고를 선별하는가</th>
@@ -477,6 +489,29 @@ const ld = {
     const rgnDuty = (n) => String(field(n, 'rgn_duty_jntcontrct_yn', 'rgnDutyJntcontrctYn') || '').toUpperCase() === 'Y';
     const DIV_LABEL = { cnstwk: '공사', servc: '용역', thng: '물품', frgcpt: '외자', etc: '기타' };
 
+    /**
+     * 실적제한 공고인가.
+     *
+     * ★ 낙찰방법 문구에 그대로 적혀 온다(2026-09-04 실측, 827건 전수 검산).
+     *   「실적제한 아님」·「실적에 의한 경쟁입찰 이외」  → 제한 없음(명시) 83건
+     *   「실적제한」·「실적에 의한 경쟁입찰」            → 제한 있음        3건
+     *   「실적」이 아예 없음                              → 표기 없음      741건
+     * 공백을 지운 뒤 견주는 이유는 표기가 흔들려도 갈리게 하기 위해서다.
+     * 「이외」를 먼저 보아야 한다 — 「실적에 의한 경쟁입찰 이외」가
+     * 「실적에 의한 경쟁입찰」을 통째로 품고 있기 때문이다.
+     *
+     * ★ 여기까지가 정직한 범위다. **요구 실적 금액과 적격심사 세부 배점은
+     * 공고서 본문에 있어 API 로 오지 않는다.** 그래서 이 조건은
+     * 「실적제한이 걸린 공고를 빼는 것」이지 「내 실적으로 통과된다」가 아니다.
+     */
+    function perfLimit(n) {
+      const t = String(field(n, 'sucsfbid_mthd_nm', 'sucsfbidMthdNm') || '').replace(/\s+/g, '');
+      if (!t.includes('실적')) return 'none';
+      if (t.includes('실적제한아님') || t.includes('실적에의한경쟁입찰이외')) return 'free';
+      return 'limited';
+    }
+    const PERF_LABEL = { limited: '있음', free: '없음(공고에 명시)', none: '표기 없음' };
+
     const keyOfNotice = (n) => `${field(n, 'bid_ntce_no', 'bidNtceNo') || ''}-${field(n, 'bid_ntce_ord', 'bidNtceOrd') || '000'}`;
 
     // ★ 수집해 두고 화면에 안 쓰던 값들. 상세에서 처음으로 나온다.
@@ -523,6 +558,7 @@ const ld = {
       joint: $('f-joint').checked,
       main: $('f-main').checked,
       rgnduty: $('f-rgnduty').checked,
+      noperf: $('f-noperf').checked,
     });
 
     /** 기간 조건을 [시작, 끝] 밀리초로 편다. 조건이 없으면 null. */
@@ -582,6 +618,7 @@ const ld = {
         });
       }
       if (c.rgnduty) out = out.filter((r) => rgnDuty(r.notice));
+      if (c.noperf) out = out.filter((r) => perfLimit(r.notice) !== 'limited');
 
       // 아래 다섯은 **공고의 원값**으로 잰다. 표에 찍히는 값이 「5.7억」 같은 사람 표기라
       // 글자로 늘어놓으면 순서가 뒤집히기 때문이다. 나머지 열은 표시값을 해석해 정렬한다.
@@ -719,6 +756,7 @@ const ld = {
       if (c.joint) chips.push(['joint', '공동도급 가능만']);
       if (c.main) chips.push(['main', '주공종이 내 업종']);
       if (c.rgnduty) chips.push(['rgnduty', '지역의무공동도급']);
+      if (c.noperf) chips.push(['noperf', '실적제한 공고 제외']);
       if (sort.key) chips.push(['sort', `정렬: ${sort.key} ${sort.dir === 'desc' ? '내림' : '오름'}차순`]);
       const box = $('br-active');
       box.hidden = chips.length === 0;
@@ -743,11 +781,12 @@ const ld = {
       else if (key === 'joint') $('f-joint').checked = false;
       else if (key === 'main') $('f-main').checked = false;
       else if (key === 'rgnduty') $('f-rgnduty').checked = false;
+      else if (key === 'noperf') $('f-noperf').checked = false;
       else if (key === 'sort') sort = { key: '', dir: '' };
     }
 
     function clearAll() {
-      ['q', 'verdict', 'div', 'period', 'amt', 'org', 'joint', 'main', 'rgnduty', 'sort'].forEach(clearCond);
+      ['q', 'verdict', 'div', 'period', 'amt', 'org', 'joint', 'main', 'rgnduty', 'noperf', 'sort'].forEach(clearCond);
     }
 
     function setVerdict(v) {
@@ -892,6 +931,7 @@ const ld = {
       if (c.joint) why.push('「공동도급 가능만」 해제');
       if (c.main) why.push('「주공종이 내 업종인 공고만」 해제');
       if (c.rgnduty) why.push('「지역의무공동도급만」 해제');
+      if (c.noperf) why.push('「실적제한 공고 제외」 해제');
       if (!$('f-lic').value.trim()) why.push('보유 면허 선택');
       if ($('f-dist').value) why.push('시·군·구를 「광역 전체」로 되돌리기');
       const tip = why.length
@@ -959,6 +999,12 @@ const ld = {
           ? '있음(상세 미확보)' : ''), lic ? '' : '공고서에서 확인해야 합니다'),
         line('참가가능지역', esc(rgn)),
         line('지역제한 판단기준', esc(String(field(n, 'rgn_lmt_bid_locplc_jdgm_bss_nm', 'rgnLmtBidLocplcJdgmBssNm') || ''))),
+        line('실적제한', PERF_LABEL[perfLimit(n)],
+          perfLimit(n) === 'limited'
+            ? '낙찰방법에 실적제한이 명시된 공고입니다. 요구 실적 금액은 공고서에서 확인해야 합니다'
+            : perfLimit(n) === 'free'
+              ? '낙찰방법에 실적제한이 아니라고 적혀 있습니다'
+              : '낙찰방법에 실적 관련 표기가 없습니다. 공고서에서 확인하십시오'),
       ].join('');
 
       // ④ 공동도급 (joint-supply.js 판정 그대로)
@@ -1249,7 +1295,7 @@ const ld = {
     });
 
     ['f-div', 'f-amt', 'f-org'].forEach((id) => $(id).addEventListener('change', reset1(render)));
-    ['f-joint', 'f-main', 'f-rgnduty'].forEach((id) => $(id).addEventListener('change', reset1(render)));
+    ['f-joint', 'f-main', 'f-rgnduty', 'f-noperf'].forEach((id) => $(id).addEventListener('change', reset1(render)));
 
     // ── 기간 ─────────────────────────────────────────────────────────
     // 프리셋의 말이 기준에 따라 달라진다. 마감일은 「이레 안」(앞으로),
