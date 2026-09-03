@@ -941,7 +941,7 @@ const ld = {
     });
 
     ['f-div', 'f-amt', 'f-org'].forEach((id) => $(id).addEventListener('change', render));
-    $('f-joint').addEventListener('change', render);
+    ['f-joint', 'f-main', 'f-rgnduty'].forEach((id) => $(id).addEventListener('change', render));
 
     // ── 기간 ─────────────────────────────────────────────────────────
     // 프리셋의 말이 기준에 따라 달라진다. 마감일은 「이레 안」(앞으로),
@@ -1318,6 +1318,12 @@ const ld = {
       border: 1px solid var(--hair); border-radius: 3px; padding: 4px 9px; cursor: pointer; white-space: nowrap;
     }
     .br-reset:hover { border-color: var(--accent); color: var(--accent); }
+    /* ★ CSS 함정 ⑧ — 우리가 건 display 가 브라우저 기본 `[hidden]{display:none}` 을 이긴다
+       (2026-09-04, 눈으로 봐서 잡았다). `.br-dates`·`.br-chk` 에 display 를 주었더니
+       `hidden` 을 걸어도 화면에 그대로 남았다. **속성값만 확인하면 통과한다** —
+       실제로 `el.hidden === true` 인데 보였다. 이 블록 안에서는 hidden 을 늘 이기게 둔다. */
+    .br [hidden] { display: none !important; }
+
     .br-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
     .br-seg { display: inline-flex; border: 1px solid var(--hair); border-radius: 3px; overflow: hidden; }
     .br-sg {
