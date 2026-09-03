@@ -1,0 +1,436 @@
+---
+// 복수예가 투찰률 계산기 — 2026-09-03 신설.
+//
+// 왜 이것인가: 자리를 먼저 셌다(도구 규약). 「투찰가 계산기」는 이미 넷 이상이 잡고 있고
+// (디마툴즈·NAMO TOOL·최강입찰정보·모두비드) **넷 다 사정률을 사용자가 넣어야 한다.**
+// 즉 「얼마에 넣으면 되는가」를 이미 안다고 치는 계산기다. 비어 있는 자리는
+// **1365개 조합을 전수 전개해 투찰률 구간별 통과 비율을 곡선으로 보여 주는 것**이었다.
+//
+// 계산 정본은 입찰레이더 repo 의 `src/bid_price.py` 이고, 이 페이지는 같은 계산을
+// 브라우저에서 돌린다. 두 구현은 `src/data/bid-odds-vectors.json` 을 함께 통과한다
+// (`npm run check-bid-odds`). 서버도 인증키도 없다 — 전부 브라우저에서 계산한다.
+//
+// ★ 문구 규약: 이 페이지는 「낙찰 확률」이라는 말을 쓰지 않는다. 내는 값은
+//   「하한선 미달로 탈락하지 않을 조합의 비율」이다. 낙찰은 통과자 중 순위로 갈린다.
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: '복수예가 투찰률 계산기',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'All',
+  description:
+    '기초금액과 낙찰하한율로 복수예비가격 조합 1365가지를 전수 전개해, 투찰률 구간별로 적격심사 하한선을 통과하는 조합의 비율을 계산합니다. 참고용 통계입니다.',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  publisher: { '@type': 'Organization', name: '도토리경제' },
+};
+---
+
+<Base
+  title="복수예가 투찰률 계산기"
+  description="기초금액·낙찰하한율·A값으로 예정가격 조합 1365가지를 전수 전개합니다. 투찰률 구간별로 적격심사 하한선을 통과하는 조합의 비율을 곡선으로 봅니다. 참고용 통계이며 낙찰을 예측하지 않습니다."
+  compact
+  activeNav="warehouse"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
+
+  <section class="wrap bo">
+    <header class="bo-head">
+      <div class="kicker-en" style="color: var(--accent);">CALCULATOR</div>
+      <h1 class="serif bo-title">복수예가 투찰률 계산기</h1>
+      <p class="bo-sub">
+        적격심사 공사·용역의 예정가격은 복수예비가격 <strong>15개 중 4개의 평균</strong>으로
+        정해집니다. 고를 수 있는 조합은 <strong>1,365가지</strong>입니다. 이 계산기는 그
+        1,365가지를 모두 전개해, 투찰률마다 <strong>낙찰하한선 미달로 탈락하지 않는 조합이
+        몇 %인지</strong>를 냅니다.
+      </p>
+      <p class="bo-note">
+        사정률을 직접 넣는 계산이 아닙니다. 사정률의 분포 자체를 계산에서 만들어 냅니다.
+      </p>
+    </header>
+
+    <form class="bo-form" id="bo-form" autocomplete="off">
+      <div class="bo-grid">
+        <label class="bo-f bo-wide">
+          <span class="bo-l">기초금액 <em>공고 공개 금액</em></span>
+          <input type="number" id="f-base" inputmode="numeric" step="1" min="1" value="1000000000" />
+          <span class="bo-u" id="u-base">10억원</span>
+        </label>
+        <label class="bo-f">
+          <span class="bo-l">낙찰하한율 <em>sucsfbidLwltRate</em></span>
+          <input type="number" id="f-lwlt" inputmode="decimal" step="0.001" min="1" max="100" value="87.745" />
+          <span class="bo-u">%</span>
+        </label>
+        <label class="bo-f">
+          <span class="bo-l">A값 <em>법정경비, 없으면 0</em></span>
+          <input type="number" id="f-a" inputmode="numeric" step="1" min="0" value="0" />
+          <span class="bo-u" id="u-a">원</span>
+        </label>
+        <label class="bo-f">
+          <span class="bo-l">예비가격범위 <em>기초금액 대비</em></span>
+          <input type="number" id="f-range" inputmode="decimal" step="0.1" min="0.1" max="10" value="2" />
+          <span class="bo-u">± %</span>
+        </label>
+        <label class="bo-f">
+          <span class="bo-l">총예가개수 <em>totPrdprcNum</em></span>
+          <input type="number" id="f-tot" inputmode="numeric" step="1" min="2" max="20" value="15" />
+          <span class="bo-u">개</span>
+        </label>
+        <label class="bo-f">
+          <span class="bo-l">추첨개수 <em>drwtPrdprcNum</em></span>
+          <input type="number" id="f-draw" inputmode="numeric" step="1" min="1" max="8" value="4" />
+          <span class="bo-u">개</span>
+        </label>
+        <label class="bo-f bo-wide">
+          <span class="bo-l">내 투찰률 <em>기초금액 대비</em></span>
+          <input type="number" id="f-rate" inputmode="decimal" step="0.01" min="1" max="150" value="88.00" />
+          <span class="bo-u">%</span>
+        </label>
+      </div>
+      <p class="bo-err" id="bo-err" hidden></p>
+    </form>
+
+    <div class="bo-out">
+      <div class="bo-lead">
+        <div class="bo-ct">내 투찰금액</div>
+        <div class="bo-big mono" id="o-amount">0원</div>
+        <div class="bo-ct bo-ct2">하한 통과 조합</div>
+        <div class="bo-big bo-big2 mono" id="o-prob">0%</div>
+        <div class="bo-cs" id="o-hit">1,365가지 중 0가지</div>
+      </div>
+
+      <div class="bo-panels">
+        <div class="bo-panel">
+          <div class="bo-pt">예정가격이 놓이는 자리</div>
+          <table class="bo-t">
+            <tbody>
+              <tr><th>예비가격범위</th><td class="mono" id="o-range">-</td></tr>
+              <tr><th>예정가격 최저</th><td class="mono" id="o-pmin">-</td></tr>
+              <tr><th>예정가격 중앙</th><td class="mono" id="o-pmid">-</td></tr>
+              <tr><th>예정가격 최고</th><td class="mono" id="o-pmax">-</td></tr>
+              <tr><th>사정률 범위</th><td class="mono" id="o-rrate">-</td></tr>
+              <tr class="bo-sum"><th>전개한 조합</th><td class="mono" id="o-comb">-</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bo-panel">
+          <div class="bo-pt">통과 비율별 최저 투찰률</div>
+          <table class="bo-t bo-t2">
+            <thead>
+              <tr><th>통과 조합 비율</th><th>투찰률</th><th>투찰금액</th></tr>
+            </thead>
+            <tbody id="o-rec"></tbody>
+          </table>
+          <p class="bo-pn">
+            각 줄은 그 비율 이상이 되는 <strong>가장 낮은</strong> 투찰률입니다. 같은 비율이면
+            낮게 넣은 쪽이 순위에서 앞섭니다.
+          </p>
+        </div>
+      </div>
+
+      <figure class="bo-fig">
+        <figcaption class="bo-figcap">
+          투찰률별 하한 통과 조합 비율
+          <span class="bo-figsub">가로축 투찰률(%) · 세로축 1,365가지 중 통과 비율 · 옅게 칠한 구간이 실제 투찰이 몰리는 자리</span>
+        </figcaption>
+        <div class="bo-chartbox">
+          <svg id="bo-chart" viewBox="0 0 720 280" preserveAspectRatio="xMidYMid meet" role="img"
+               aria-label="투찰률에 따른 하한 통과 조합 비율 곡선"></svg>
+        </div>
+        <p class="bo-figread" id="o-read"></p>
+      </figure>
+    </div>
+
+    <section class="bo-explain">
+      <h2 class="serif bo-h2">이 확률이 아닌 것</h2>
+      <p>
+        위 수치는 <strong>낙찰 확률이 아닙니다.</strong> 투찰금액이 낙찰하한선에 미달해
+        탈락하지 않는 조합이 몇 %인지를 셀 뿐입니다. 낙찰자는 하한을 넘긴 업체들 가운데
+        순위로 갈리므로, 몇 곳이 들어오는지와 그들이 얼마를 넣는지에 달려 있습니다. 그것은
+        개찰 전에 알 수 없고, 알 수 있다고 말하는 계산은 계산이 아닙니다.
+      </p>
+      <p>
+        곡선의 오른쪽 평평한 구간이 그 사정을 그대로 보여 줍니다. 통과 비율만 보면 높게 넣을수록
+        안전하지만, 그 구간에서 실제로 낙찰되는 일은 거의 없습니다. 실무에서 투찰이 몰리는 자리는
+        곡선이 <strong>0에서 100으로 솟아오르는 왼쪽 구간</strong>입니다.
+      </p>
+
+      <h2 class="serif bo-h2">계산 구조</h2>
+      <p>
+        발주기관은 기초금액의 예비가격범위 안에서 복수예비가격을 총예가개수만큼 만듭니다.
+        투찰자들이 두 개씩 추첨한 결과 가장 많이 뽑힌 네 개의 산술평균이 예정가격이 됩니다.
+        15개에서 4개를 고르는 경우의 수가 1,365가지이고, 이 계산기는 그 전부를 펼쳐
+        예정가격이 놓일 수 있는 자리를 만듭니다.
+      </p>
+      <p>
+        적격심사 하한선은 <strong>(예정가격 − A값) × 낙찰하한율 + A값</strong> 입니다.
+        A값은 국민연금·건강보험·퇴직공제부금·산업안전보건관리비 같은 법정경비로,
+        여기에는 낙찰하한율을 곱하지 않습니다. A값을 0으로 두고 계산하면 하한선이
+        실제보다 낮게 나오고, 그 차이만큼 탈락합니다. 공고의 A값이 공개돼 있으면 반드시 넣으십시오.
+      </p>
+
+      <h2 class="serif bo-h2">두 가지 가정</h2>
+      <p>
+        첫째, <strong>1,365가지 조합을 같은 확률로 봅니다.</strong> 실제로는 투찰자들의 추첨이
+        한쪽으로 쏠리면 조합별 확률이 균등하지 않습니다. 둘째, 개찰 전에는 복수예비가격 15개의
+        실제 값을 알 수 없으므로 <strong>범위 안에 등간격으로 놓인 값</strong>으로 대신합니다.
+        실제 값은 난수여서 분포의 폭이 이 계산보다 넓어질 수 있습니다.
+      </p>
+      <p>
+        그래서 이 수치는 참고용 통계입니다. 예정가격은 추첨으로 정해지며, 어떤 계산도 그것을
+        예측하거나 보장하지 못합니다. 투찰가는 이 분포와 함께 공고서 조건, 원가, 현장 사정을
+        보고 정하는 것입니다.
+      </p>
+
+      <h2 class="serif bo-h2">숫자를 어디서 가져오는가</h2>
+      <p>
+        기초금액과 예비가격범위는 조달청 나라장터 입찰공고정보서비스의 기초금액 조회에서,
+        낙찰하한율·총예가개수·추첨개수는 입찰공고 목록조회에서, A값은 입찰가격산식 조회에서
+        공개됩니다. 공고문에도 같은 값이 적혀 있습니다. 이 페이지는 서버를 두지 않으므로
+        입력한 값은 어디에도 전송되지 않고 브라우저 안에서만 계산됩니다.
+      </p>
+      <p>
+        숫자를 다루는 원칙은 <a href={url('/method/')}>숫자를 다루는 방법</a>에 정리해 두었습니다.
+        다른 계산기는 <a href={url('/warehouse/')}>데이터·도구</a>에 있습니다.
+      </p>
+    </section>
+  </section>
+
+  <script>
+    import {
+      analyze, bidAmountForRate, passProbability, reserveRange,
+    } from '../lib/bid-odds.js';
+
+    const $ = (id) => document.getElementById(id);
+    const fields = ['f-base', 'f-lwlt', 'f-a', 'f-range', 'f-tot', 'f-draw', 'f-rate'];
+    const won = (n) => Math.round(n).toLocaleString('ko-KR') + '원';
+    const pct = (v, d = 2) => v.toFixed(d) + '%';
+
+    // 억·만 단위 사람 표기. 금액 칸이 아홉 자리라 자릿수를 눈으로 세게 두지 않는다.
+    function human(n) {
+      if (!isFinite(n) || n <= 0) return '0원';
+      if (n >= 100000000) return (n / 100000000).toFixed(n % 100000000 === 0 ? 0 : 1) + '억원';
+      if (n >= 10000) return Math.round(n / 10000).toLocaleString('ko-KR') + '만원';
+      return Math.round(n).toLocaleString('ko-KR') + '원';
+    }
+
+    const num = (id) => {
+      const v = parseFloat($(id).value);
+      return isFinite(v) ? v : 0;
+    };
+
+    let state = null;
+
+    function readParams() {
+      const range = Math.abs(num('f-range'));
+      return {
+        baseAmount: num('f-base'),
+        lowerLimitRate: num('f-lwlt'),
+        aValue: Math.max(num('f-a'), 0),
+        totalReserves: Math.round(num('f-tot')),
+        drawReserves: Math.round(num('f-draw')),
+        rangeBeginRate: -range,
+        rangeEndRate: range,
+      };
+    }
+
+    function validate(p) {
+      if (!(p.baseAmount > 0)) return '기초금액을 넣으십시오.';
+      if (!(p.lowerLimitRate > 0)) return '낙찰하한율을 넣으십시오.';
+      if (!(p.totalReserves >= 2)) return '총예가개수는 2 이상이어야 합니다.';
+      if (!(p.drawReserves >= 1 && p.drawReserves <= p.totalReserves)) {
+        return '추첨개수는 1 이상이면서 총예가개수 이하여야 합니다.';
+      }
+      if (p.aValue >= p.baseAmount) return 'A값이 기초금액보다 큽니다.';
+      return '';
+    }
+
+    function drawChart(p, res) {
+      const svg = $('bo-chart');
+      const W = 720, H = 280, L = 52, R = 16, T = 18, B = 34;
+      const lo = Math.max(res.minRatePct * (p.lowerLimitRate / 100) - 0.6, 0);
+      const hi = res.maxRatePct + 0.6;
+      const x = (r) => L + ((r - lo) / (hi - lo)) * (W - L - R);
+      const y = (v) => T + (1 - v) * (H - T - B);
+
+      const pts = [];
+      const steps = 480;
+      for (let i = 0; i <= steps; i += 1) {
+        const rate = lo + ((hi - lo) * i) / steps;
+        pts.push([rate, passProbability(bidAmountForRate(rate, p), res.distribution, p)]);
+      }
+      const path = pts.map(([r, v], i) => (i ? 'L' : 'M') + x(r).toFixed(1) + ' ' + y(v).toFixed(1)).join(' ');
+
+      // 격자와 축은 뒤로 물린다. 눈금은 네 줄이면 충분하다.
+      let g = '';
+      [0, 0.25, 0.5, 0.75, 1].forEach((v) => {
+        g += `<line x1="${L}" y1="${y(v)}" x2="${W - R}" y2="${y(v)}" stroke="var(--chart-grid)" stroke-width="1"/>`;
+        g += `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end" class="bo-axis">${v * 100}%</text>`;
+      });
+      const span = hi - lo;
+      const tickStep = span > 30 ? 10 : span > 14 ? 2 : span > 6 ? 1 : 0.5;
+      for (let r = Math.ceil(lo / tickStep) * tickStep; r <= hi; r += tickStep) {
+        const label = tickStep < 1 ? r.toFixed(1) : r.toFixed(0);
+        g += `<text x="${x(r)}" y="${H - 12}" text-anchor="middle" class="bo-axis">${label}</text>`;
+      }
+
+      // 실제 투찰이 몰리는 자리(곡선이 솟는 구간)를 옅게 깔아 위치를 알린다.
+      const climbStart = pts.find((q) => q[1] > 0);
+      const climbEnd = pts.find((q) => q[1] >= 0.999);
+      if (climbStart && climbEnd) {
+        g += `<rect x="${x(climbStart[0])}" y="${T}" width="${Math.max(x(climbEnd[0]) - x(climbStart[0]), 1)}" height="${H - T - B}" fill="var(--accent)" opacity="0.07"/>`;
+        // 띠에는 글자를 얹지 않는다. 곡선이 이 구간에서 바닥부터 꼭대기까지 지나가므로
+        // 어디에 놓아도 선과 겹친다. 무엇을 칠한 것인지는 그림 설명이 말한다.
+      }
+
+      const rate = num('f-rate');
+      const mine = passProbability(bidAmountForRate(rate, p), res.distribution, p);
+      let marker = '';
+      if (rate >= lo && rate <= hi) {
+        marker =
+          `<line x1="${x(rate)}" y1="${T}" x2="${x(rate)}" y2="${H - B}" stroke="var(--brand)" stroke-width="1" stroke-dasharray="3 3"/>` +
+          `<circle cx="${x(rate)}" cy="${y(mine)}" r="5" fill="var(--brand)" stroke="var(--surface)" stroke-width="2"/>` +
+          `<text x="${x(rate) + 7}" y="${Math.max(y(mine) - 9, T + 24)}" text-anchor="start" class="bo-mark">${(mine * 100).toFixed(1)}%</text>`;
+      }
+
+      svg.innerHTML =
+        g +
+        `<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>` +
+        marker +
+        `<line x1="${L}" y1="${y(0)}" x2="${W - R}" y2="${y(0)}" stroke="var(--chart-axis)" stroke-width="1"/>`;
+
+      state = { p, res, lo, hi, x, pts };
+    }
+
+    function render() {
+      const p = readParams();
+      const err = validate(p);
+      const errEl = $('bo-err');
+      errEl.textContent = err;
+      errEl.hidden = !err;
+      $('u-base').textContent = human(p.baseAmount);
+      $('u-a').textContent = p.aValue > 0 ? human(p.aValue) : '원';
+      if (err) return;
+
+      const res = analyze(p);
+      const [rlo, rhi] = reserveRange(p);
+      const amount = bidAmountForRate(num('f-rate'), p);
+      const prob = passProbability(amount, res.distribution, p);
+
+      $('o-amount').textContent = won(amount);
+      $('o-prob').textContent = (prob * 100).toFixed(1) + '%';
+      $('o-hit').textContent =
+        res.combinations.toLocaleString('ko-KR') + '가지 중 ' +
+        Math.round(prob * res.combinations).toLocaleString('ko-KR') + '가지';
+
+      $('o-range').textContent = human(rlo) + ' ~ ' + human(rhi);
+      $('o-pmin').textContent = won(res.minPrice);
+      $('o-pmid').textContent = won(res.medianPrice);
+      $('o-pmax').textContent = won(res.maxPrice);
+      $('o-rrate').textContent = pct(res.minRatePct, 3) + ' ~ ' + pct(res.maxRatePct, 3);
+      $('o-comb').textContent = res.combinations.toLocaleString('ko-KR') + '가지';
+
+      $('o-rec').innerHTML = res.recommended
+        .map((r) => {
+          const label = (r.target * 100).toFixed(0) + '%';
+          if (!r.point) return `<tr><th>${label}</th><td class="mono">해당 없음</td><td class="mono">-</td></tr>`;
+          return `<tr><th>${label}</th><td class="mono">${r.point.rate.toFixed(2)}%</td><td class="mono">${won(r.point.amount)}</td></tr>`;
+        })
+        .join('');
+
+      drawChart(p, res);
+      $('o-read').textContent =
+        '곡선 위에 커서를 올리면 그 투찰률의 통과 비율을 읽습니다. 세로 점선이 지금 넣은 투찰률입니다.';
+    }
+
+    // 곡선 읽기. 정적 그림이 아니라 값을 확인할 수 있어야 계산기다.
+    $('bo-chart').addEventListener('mousemove', (ev) => {
+      if (!state) return;
+      const box = ev.currentTarget.getBoundingClientRect();
+      const rate = state.lo + ((ev.clientX - box.left) / box.width) * (state.hi - state.lo);
+      if (rate < state.lo || rate > state.hi) return;
+      const prob = passProbability(bidAmountForRate(rate, state.p), state.res.distribution, state.p);
+      $('o-read').textContent =
+        '투찰률 ' + rate.toFixed(2) + '% (' + won(bidAmountForRate(rate, state.p)) + ') 에서 ' +
+        '통과 조합 ' + (prob * 100).toFixed(1) + '%';
+    });
+
+    fields.forEach((id) => {
+      $(id).addEventListener('input', render);
+      $(id).addEventListener('change', render);
+    });
+    render();
+  </script>
+
+  <style>
+    .bo { max-width: var(--measure-wide); padding-top: 26px; padding-bottom: 60px; }
+    .bo-head { padding-bottom: 14px; }
+    .bo-title { margin: 6px 0 0; font-size: clamp(26px, 4.4vw, 36px); letter-spacing: -.022em; }
+    .bo-sub { margin: 10px 0 0; font-size: 15px; color: var(--sub); line-height: 1.8; word-break: keep-all; max-width: 62ch; }
+    .bo-note { margin: 8px 0 0; font-size: 13px; color: var(--muted); word-break: keep-all; }
+
+    .bo-form { margin-top: 22px; }
+    .bo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 18px; }
+    .bo-f { display: grid; gap: 5px; }
+    .bo-wide { grid-column: span 1; }
+    .bo-l { font-size: 12.5px; color: var(--sub); font-weight: 600; }
+    .bo-l em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 5px; }
+    .bo-f input {
+      font-family: var(--font-mono); font-size: 15px; padding: 8px 10px; width: 100%;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .bo-f input:focus { outline: none; border-color: var(--accent); }
+    .bo-u { font-size: 12px; color: var(--muted); }
+    .bo-err { margin: 12px 0 0; font-size: 13px; color: var(--up); font-weight: 600; }
+
+    .bo-out { margin-top: 26px; }
+    .bo-lead {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px;
+      padding: 18px 20px; background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+    }
+    .bo-ct { font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+    .bo-ct2 { text-align: right; }
+    .bo-big { font-size: clamp(24px, 4vw, 34px); font-weight: 700; color: var(--ink); letter-spacing: -.02em; }
+    .bo-big2 { text-align: right; color: var(--accent); }
+    .bo-cs { grid-column: 1 / -1; text-align: right; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .bo-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }
+    .bo-panel { border: 1px solid var(--hair); border-radius: 4px; padding: 15px 17px; background: var(--surface); }
+    .bo-pt { font-size: 12.5px; font-weight: 700; color: var(--brand); letter-spacing: .01em; }
+    .bo-t { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .bo-t th, .bo-t td { padding: 7px 0; font-size: 13px; border-bottom: 1px solid var(--hair2); }
+    .bo-t th { text-align: left; font-weight: 400; color: var(--sub); }
+    .bo-t td { text-align: right; color: var(--ink); }
+    .bo-t .bo-sum th, .bo-t .bo-sum td { font-weight: 700; color: var(--ink); border-bottom: none; }
+    .bo-t2 thead th { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+    .bo-t2 thead th:not(:first-child) { text-align: right; }
+    .bo-pn { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+
+    .bo-fig { margin: 20px 0 0; }
+    .bo-figcap { font-size: 12.5px; font-weight: 700; color: var(--brand); }
+    .bo-figsub { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+    .bo-chartbox { margin-top: 8px; border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); padding: 6px 4px; }
+    .bo-chartbox svg { width: 100%; height: auto; display: block; }
+    .bo-figread { margin: 8px 0 0; font-size: 12.5px; color: var(--sub); min-height: 1.4em; word-break: keep-all; }
+    :global(.bo-axis) { font-size: 11px; fill: var(--muted); font-family: var(--font-mono); }
+    :global(.bo-mark) { font-size: 12px; fill: var(--brand); font-weight: 700; font-family: var(--font-mono); }
+
+    .bo-explain { margin-top: 34px; max-width: var(--measure); }
+    .bo-h2 { font-size: 19px; margin: 24px 0 8px; letter-spacing: -.022em; }
+    .bo-explain p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.85; color: var(--sub); word-break: keep-all; }
+    .bo-explain a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--hair); }
+    .bo-explain a:hover { border-color: var(--accent); }
+
+    @media (max-width: 760px) {
+      .bo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .bo-wide { grid-column: 1 / -1; }
+      .bo-panels { grid-template-columns: 1fr; }
+      .bo-lead { grid-template-columns: 1fr; gap: 2px; }
+      .bo-ct2, .bo-big2, .bo-cs { text-align: left; }
+      .bo-ct2 { margin-top: 12px; }
+    }
+  </style>
+</Base>

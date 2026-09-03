@@ -8,7 +8,7 @@
     "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "fetch-data": "node scripts/pipeline/collect.mjs",
-    "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/corp.mjs && node scripts/pipeline/dart-fs.mjs && node scripts/pipeline/trade.mjs && node scripts/pipeline/customs-fx.mjs && node scripts/pipeline/brief.mjs",
+    "pipeline": "node scripts/pipeline/collect.mjs && node scripts/pipeline/corp.mjs && node scripts/pipeline/dart-fs.mjs && node scripts/pipeline/trade.mjs && node scripts/pipeline/customs-fx.mjs && node scripts/pipeline/g2b.mjs && node scripts/pipeline/brief.mjs",
     "dart-fs": "node scripts/pipeline/dart-fs.mjs",
     "check-quality": "node scripts/check-quality.mjs",
     "audit": "node scripts/audit.mjs",
@@ -20,7 +20,10 @@
     "indexnow": "node scripts/indexnow.mjs",
     "check-images": "node scripts/check-images.mjs",
     "series-check": "node scripts/series-check.mjs",
-    "review": "node scripts/review.mjs"
+    "review": "node scripts/review.mjs",
+    "check-bid-odds": "node scripts/check-bid-odds.mjs",
+    "check-bid-radar": "node scripts/check-bid-radar.mjs",
+    "g2b": "node scripts/pipeline/g2b.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",

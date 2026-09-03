@@ -1,0 +1,211 @@
+{
+  "source": "sample",
+  "generatedAt": "2026-09-03T00:00:00.000Z",
+  "note": "화면 구성을 보여 주기 위한 예시 공고입니다. 실제 수집 데이터가 아니며, 나라장터 수집이 연결되면 자동으로 교체됩니다. 필드 이름·값 형식·공고번호 표기·원문 URL 형식은 2026-09-04 실호출로 확인한 조달청 입찰공고정보서비스 응답을 그대로 따랐습니다.",
+  "counts": {
+    "notices": 6,
+    "withLicense": 4,
+    "withRegion": 3,
+    "withBasis": 3
+  },
+  "notices": [
+    {
+      "work_div": "cnstwk",
+      "bid_ntce_no": "R26BK01710602",
+      "bid_ntce_ord": "000",
+      "bid_ntce_nm": "○○근린공원 조경식재 및 시설물 정비공사",
+      "ntce_instt_nm": "경상남도 ○○시",
+      "dminstt_nm": "경상남도 ○○시",
+      "cntrct_cncls_mthd_nm": "제한경쟁",
+      "sucsfbid_mthd_nm": "적격심사",
+      "bid_ntce_dt": "2026-09-03 09:20:11",
+      "bid_clse_dt": "2026-09-10 10:00:00",
+      "openg_dt": "2026-09-10 11:00:00",
+      "bid_qlfct_rgst_dt": "2026-09-09 18:00:00",
+      "presmpt_prce": 780000000,
+      "asign_bdgt_amt": 858000000,
+      "prearng_prce_dcsn_mthd_nm": "복수예가",
+      "tot_prdprc_num": 15,
+      "drwt_prdprc_num": 4,
+      "sucsfbid_lwlt_rate": 87.745,
+      "indstrety_lmt_yn": "Y",
+      "cmmn_spldmd_mthd_nm": "분담이행방식",
+      "cmmn_spldmd_corp_rgn_lmt_yn": "Y",
+      "rgn_lmt_bid_locplc_jdgm_bss_nm": "법인등기부상 본점소재지",
+      "licenseLimits": [
+        "조경식재공사업/2003",
+        "조경시설물설치공사업/2004"
+      ],
+      "possibleRegions": [
+        "경상남도"
+      ],
+      "basis": {
+        "bssamt": 858000000,
+        "rsrvtnPrceRngBgnRate": -2,
+        "rsrvtnPrceRngEndRate": 2,
+        "a_value": 41000000
+      },
+      "raw": {
+        "ntceSpecFileNm1": "설계내역서.pdf",
+        "ntceSpecFileNm2": "과업지시서.hwp"
+      },
+      "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01710602&bidPbancOrd=000",
+      "bid_ntce_url": ""
+    },
+    {
+      "work_div": "cnstwk",
+      "bid_ntce_no": "R26BK01704107",
+      "bid_ntce_ord": "000",
+      "bid_ntce_nm": "△△지구 진입도로 지반조성 및 포장공사",
+      "ntce_instt_nm": "한국토지주택공사",
+      "dminstt_nm": "한국토지주택공사",
+      "cntrct_cncls_mthd_nm": "일반경쟁",
+      "sucsfbid_mthd_nm": "적격심사",
+      "bid_ntce_dt": "2026-09-03 10:05:40",
+      "bid_clse_dt": "2026-09-12 10:00:00",
+      "openg_dt": "2026-09-12 11:00:00",
+      "presmpt_prce": 1450000000,
+      "asign_bdgt_amt": 1595000000,
+      "prearng_prce_dcsn_mthd_nm": "복수예가",
+      "tot_prdprc_num": 15,
+      "drwt_prdprc_num": 4,
+      "sucsfbid_lwlt_rate": 86.745,
+      "indstrety_lmt_yn": "Y",
+      "cmmn_spldmd_mthd_nm": "공동이행방식",
+      "licenseLimits": [
+        "지반조성포장공사업/1002"
+      ],
+      "possibleRegions": [],
+      "basis": {
+        "bssamt": 1595000000,
+        "rsrvtnPrceRngBgnRate": -3,
+        "rsrvtnPrceRngEndRate": 3,
+        "a_value": 78000000
+      },
+      "raw": {
+        "ntceSpecFileNm1": "공사시방서.pdf"
+      },
+      "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01704107&bidPbancOrd=000",
+      "bid_ntce_url": ""
+    },
+    {
+      "work_div": "cnstwk",
+      "bid_ntce_no": "R26BK01697810",
+      "bid_ntce_ord": "000",
+      "bid_ntce_nm": "□□군 하수도시설물 유지보수공사",
+      "ntce_instt_nm": "전라남도 □□군",
+      "dminstt_nm": "전라남도 □□군",
+      "cntrct_cncls_mthd_nm": "제한경쟁",
+      "sucsfbid_mthd_nm": "적격심사",
+      "bid_ntce_dt": "2026-09-03 11:15:02",
+      "bid_clse_dt": "2026-09-11 10:00:00",
+      "openg_dt": "2026-09-11 11:00:00",
+      "presmpt_prce": 320000000,
+      "prearng_prce_dcsn_mthd_nm": "복수예가",
+      "tot_prdprc_num": 15,
+      "drwt_prdprc_num": 4,
+      "sucsfbid_lwlt_rate": 87.745,
+      "indstrety_lmt_yn": "Y",
+      "cmmn_spldmd_mthd_nm": "공동수급불허",
+      "licenseLimits": [
+        "상·하수도설비공사업/1004"
+      ],
+      "possibleRegions": [
+        "전라남도"
+      ],
+      "basis": null,
+      "raw": {},
+      "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01697810&bidPbancOrd=000",
+      "bid_ntce_url": ""
+    },
+    {
+      "work_div": "cnstwk",
+      "bid_ntce_no": "R26BK01699539",
+      "bid_ntce_ord": "000",
+      "bid_ntce_nm": "◇◇천 생태하천 정비공사(2공구)",
+      "ntce_instt_nm": "경상남도",
+      "dminstt_nm": "경상남도",
+      "cntrct_cncls_mthd_nm": "제한경쟁",
+      "sucsfbid_mthd_nm": "적격심사",
+      "bid_ntce_dt": "2026-09-03 13:40:55",
+      "bid_clse_dt": "2026-09-15 10:00:00",
+      "openg_dt": "2026-09-15 11:00:00",
+      "presmpt_prce": 2100000000,
+      "prearng_prce_dcsn_mthd_nm": "복수예가",
+      "tot_prdprc_num": 15,
+      "drwt_prdprc_num": 4,
+      "sucsfbid_lwlt_rate": 86.745,
+      "indstrety_lmt_yn": "Y",
+      "cmmn_spldmd_mthd_nm": "공동이행방식,분담이행방식",
+      "licenseLimits": [],
+      "possibleRegions": [
+        "경상남도"
+      ],
+      "basis": {
+        "bssamt": 2310000000,
+        "rsrvtnPrceRngBgnRate": -2,
+        "rsrvtnPrceRngEndRate": 2
+      },
+      "raw": {},
+      "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01699539&bidPbancOrd=000",
+      "bid_ntce_url": ""
+    },
+    {
+      "work_div": "servc",
+      "bid_ntce_no": "R26BK01704419",
+      "bid_ntce_ord": "000",
+      "bid_ntce_nm": "2026년 도시공원 시설물 안전점검 용역",
+      "ntce_instt_nm": "경상남도 ○○시",
+      "dminstt_nm": "경상남도 ○○시",
+      "cntrct_cncls_mthd_nm": "일반경쟁",
+      "sucsfbid_mthd_nm": "협상에의한계약",
+      "bid_ntce_dt": "2026-09-03 14:02:18",
+      "bid_clse_dt": "2026-09-14 10:00:00",
+      "openg_dt": "2026-09-14 11:00:00",
+      "dcmtg_oprtn_dt": "2026-09-08 14:00:00",
+      "dcmtg_oprtn_plce": "○○시청 대회의실",
+      "presmpt_prce": 96000000,
+      "prearng_prce_dcsn_mthd_nm": "단일예가",
+      "indstrety_lmt_yn": "N",
+      "cmmn_spldmd_mthd_nm": "공동이행방식",
+      "licenseLimits": [],
+      "possibleRegions": [],
+      "basis": null,
+      "raw": {
+        "ntceSpecFileNm1": "제안요청서.hwp"
+      },
+      "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01704419&bidPbancOrd=000",
+      "bid_ntce_url": ""
+    },
+    {
+      "work_div": "servc",
+      "bid_ntce_no": "R26BK01712233",
+      "bid_ntce_ord": "000",
+      "bid_ntce_nm": "◎◎사업장 건설폐기물 수집·운반 용역",
+      "ntce_instt_nm": "부산광역시 ◎◎구",
+      "dminstt_nm": "부산광역시 ◎◎구",
+      "cntrct_cncls_mthd_nm": "제한경쟁",
+      "sucsfbid_mthd_nm": "적격심사",
+      "bid_ntce_dt": "2026-09-03 15:30:00",
+      "bid_clse_dt": "2026-09-11 10:00:00",
+      "openg_dt": "2026-09-11 11:00:00",
+      "presmpt_prce": 145000000,
+      "prearng_prce_dcsn_mthd_nm": "복수예가",
+      "tot_prdprc_num": 15,
+      "drwt_prdprc_num": 4,
+      "sucsfbid_lwlt_rate": 87.995,
+      "indstrety_lmt_yn": "Y",
+      "cmmn_spldmd_mthd_nm": "해당없음",
+      "licenseLimits": [
+        "건설폐기물 수집·운반업/8712"
+      ],
+      "possibleRegions": [
+        "부산광역시"
+      ],
+      "basis": null,
+      "raw": {},
+      "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01712233&bidPbancOrd=000",
+      "bid_ntce_url": ""
+    }
+  ]
+}

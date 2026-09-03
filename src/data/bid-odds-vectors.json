@@ -1,0 +1,589 @@
+{
+  "note": "투찰가 산정기 공유 테스트 벡터. 정본은 ai-bid-radar/src/bid_price.py 다.",
+  "generator": "tests/make_vectors.py",
+  "cases": [
+    {
+      "name": "표준 공사 (기초금액 10억 · 하한 87.745% · A값 없음)",
+      "params": {
+        "base_amount": 1000000000,
+        "lower_limit_rate": 87.745,
+        "a_value": 0,
+        "total_reserves": 15,
+        "draw_reserves": 4,
+        "range_begin_rate": -2.0,
+        "range_end_rate": 2.0
+      },
+      "expected": {
+        "combinations": 1365,
+        "minPrice": 984285714.285714,
+        "maxPrice": 1015714285.714286,
+        "minRatePct": 98.4285714285714,
+        "maxRatePct": 101.5714285714286,
+        "curve": [
+          {
+            "rate": 86.0,
+            "amount": 860000000.0,
+            "probability": 0.0
+          },
+          {
+            "rate": 87.0,
+            "amount": 870000000.0,
+            "probability": 0.06886446886446887
+          },
+          {
+            "rate": 87.745,
+            "amount": 877450000.0,
+            "probability": 0.5252747252747253
+          },
+          {
+            "rate": 88.0,
+            "amount": 880000000.0,
+            "probability": 0.7142857142857143
+          },
+          {
+            "rate": 88.5,
+            "amount": 885000000.0,
+            "probability": 0.947985347985348
+          },
+          {
+            "rate": 89.0,
+            "amount": 890000000.0,
+            "probability": 0.9985347985347985
+          },
+          {
+            "rate": 90.0,
+            "amount": 900000000.0,
+            "probability": 1.0
+          },
+          {
+            "rate": 95.0,
+            "amount": 950000000.0,
+            "probability": 1.0
+          },
+          {
+            "rate": 100.0,
+            "amount": 1000000000.0,
+            "probability": 0.5252747252747253
+          },
+          {
+            "rate": 102.0,
+            "amount": 1020000000.0,
+            "probability": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "A값 있는 공사 (A 1.2억)",
+      "params": {
+        "base_amount": 1000000000,
+        "lower_limit_rate": 87.745,
+        "a_value": 120000000,
+        "total_reserves": 15,
+        "draw_reserves": 4,
+        "range_begin_rate": -2.0,
+        "range_end_rate": 2.0
+      },
+      "expected": {
+        "combinations": 1365,
+        "minPrice": 984285714.285714,
+        "maxPrice": 1015714285.714286,
+        "minRatePct": 98.4285714285714,
+        "maxRatePct": 101.5714285714286,
+        "curve": [
+          {
+            "rate": 88.0,
+            "amount": 880000000.0,
+            "probability": 0.0029304029304029304
+          },
+          {
+            "rate": 88.5,
+            "amount": 885000000.0,
+            "probability": 0.06886446886446887
+          },
+          {
+            "rate": 89.0,
+            "amount": 890000000.0,
+            "probability": 0.3304029304029304
+          },
+          {
+            "rate": 89.5,
+            "amount": 895000000.0,
+            "probability": 0.7142857142857143
+          },
+          {
+            "rate": 90.0,
+            "amount": 900000000.0,
+            "probability": 0.947985347985348
+          },
+          {
+            "rate": 91.0,
+            "amount": 910000000.0,
+            "probability": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "소액 용역 (기초금액 5천만 · 하한 87.995% · 범위 ±3%)",
+      "params": {
+        "base_amount": 50000000,
+        "lower_limit_rate": 87.995,
+        "a_value": 0,
+        "total_reserves": 15,
+        "draw_reserves": 4,
+        "range_begin_rate": -3.0,
+        "range_end_rate": 3.0
+      },
+      "expected": {
+        "combinations": 1365,
+        "minPrice": 48821428.571429,
+        "maxPrice": 51178571.428571,
+        "minRatePct": 97.64285714285799,
+        "maxRatePct": 102.357142857142,
+        "curve": [
+          {
+            "rate": 87.0,
+            "amount": 43500000.0,
+            "probability": 0.08864468864468865
+          },
+          {
+            "rate": 88.0,
+            "amount": 44000000.0,
+            "probability": 0.5252747252747253
+          },
+          {
+            "rate": 89.0,
+            "amount": 44500000.0,
+            "probability": 0.9113553113553113
+          },
+          {
+            "rate": 90.0,
+            "amount": 45000000.0,
+            "probability": 0.9992673992673993
+          },
+          {
+            "rate": 91.0,
+            "amount": 45500000.0,
+            "probability": 1.0
+          }
+        ]
+      }
+    }
+  ],
+  "rules": {
+    "qualify": [
+      {
+        "profile": "조경·지반 (경남 창원)",
+        "profileValue": {
+          "name": "A",
+          "region": "경상남도 창원시",
+          "licenses": [
+            "조경식재공사업",
+            "조경시설물설치공사업",
+            "지반조성포장공사업"
+          ]
+        },
+        "case": "지역·면허 모두 통과",
+        "notice": {
+          "bid_ntce_no": "1",
+          "bid_ntce_nm": "공원 조경식재공사",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "조경식재공사업/2003"
+        ],
+        "possibleRegions": [
+          "경상남도"
+        ],
+        "expected": {
+          "verdict": "eligible",
+          "reasons": [
+            "지역 OK (내 '경상남도 창원시' ∈ ['경상남도'])",
+            "면허 OK (보유 ['조경식재공사업', '조경시설물설치공사업', '지반조성포장공사업'] ↔ 요구 ['조경식재공사업/2003'])"
+          ]
+        }
+      },
+      {
+        "profile": "조경·지반 (경남 창원)",
+        "profileValue": {
+          "name": "A",
+          "region": "경상남도 창원시",
+          "licenses": [
+            "조경식재공사업",
+            "조경시설물설치공사업",
+            "지반조성포장공사업"
+          ]
+        },
+        "case": "지역 불가(전남 제한)",
+        "notice": {
+          "bid_ntce_no": "2",
+          "bid_ntce_nm": "하수도시설물 유지보수",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "상·하수도설비공사업/1004"
+        ],
+        "possibleRegions": [
+          "전라남도"
+        ],
+        "expected": {
+          "verdict": "ineligible",
+          "reasons": [
+            "지역 불가 (내 '경상남도 창원시' ∉ ['전라남도'])",
+            "면허 불가 (보유 ['조경식재공사업', '조경시설물설치공사업', '지반조성포장공사업'] ↔ 요구 ['상·하수도설비공사업/1004'])"
+          ]
+        }
+      },
+      {
+        "profile": "조경·지반 (경남 창원)",
+        "profileValue": {
+          "name": "A",
+          "region": "경상남도 창원시",
+          "licenses": [
+            "조경식재공사업",
+            "조경시설물설치공사업",
+            "지반조성포장공사업"
+          ]
+        },
+        "case": "약칭 보정(경남 ↔ 경상남도)",
+        "notice": {
+          "bid_ntce_no": "3",
+          "bid_ntce_nm": "도로 포장공사",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "지반조성포장공사업/1002"
+        ],
+        "possibleRegions": [
+          "경남"
+        ],
+        "expected": {
+          "verdict": "eligible",
+          "reasons": [
+            "지역 OK (내 '경상남도 창원시' ∈ ['경남'])",
+            "면허 OK (보유 ['조경식재공사업', '조경시설물설치공사업', '지반조성포장공사업'] ↔ 요구 ['지반조성포장공사업/1002'])"
+          ]
+        }
+      },
+      {
+        "profile": "조경·지반 (경남 창원)",
+        "profileValue": {
+          "name": "A",
+          "region": "경상남도 창원시",
+          "licenses": [
+            "조경식재공사업",
+            "조경시설물설치공사업",
+            "지반조성포장공사업"
+          ]
+        },
+        "case": "업종제한 Y 인데 면허 상세 없음 → 불확실",
+        "notice": {
+          "bid_ntce_no": "4",
+          "bid_ntce_nm": "생태하천 정비공사",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [],
+        "possibleRegions": [],
+        "expected": {
+          "verdict": "unknown",
+          "reasons": [
+            "지역 제한 없음",
+            "업종제한 있음(indstrytyLmtYn=Y)이나 면허 상세 미확보 → 확인 필요"
+          ]
+        }
+      },
+      {
+        "profile": "조경·지반 (경남 창원)",
+        "profileValue": {
+          "name": "A",
+          "region": "경상남도 창원시",
+          "licenses": [
+            "조경식재공사업",
+            "조경시설물설치공사업",
+            "지반조성포장공사업"
+          ]
+        },
+        "case": "제한 없음 → 통과",
+        "notice": {
+          "bid_ntce_no": "5",
+          "bid_ntce_nm": "시설물 안전점검 용역",
+          "indstrety_lmt_yn": "N"
+        },
+        "licenseLimits": [],
+        "possibleRegions": [],
+        "expected": {
+          "verdict": "eligible",
+          "reasons": [
+            "지역 제한 없음",
+            "면허/업종 제한 없음"
+          ]
+        }
+      },
+      {
+        "profile": "조경·지반 (경남 창원)",
+        "profileValue": {
+          "name": "A",
+          "region": "경상남도 창원시",
+          "licenses": [
+            "조경식재공사업",
+            "조경시설물설치공사업",
+            "지반조성포장공사업"
+          ]
+        },
+        "case": "면허 불가",
+        "notice": {
+          "bid_ntce_no": "6",
+          "bid_ntce_nm": "건설폐기물 수집·운반",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "건설폐기물 수집·운반업/8712"
+        ],
+        "possibleRegions": [],
+        "expected": {
+          "verdict": "ineligible",
+          "reasons": [
+            "지역 제한 없음",
+            "면허 불가 (보유 ['조경식재공사업', '조경시설물설치공사업', '지반조성포장공사업'] ↔ 요구 ['건설폐기물 수집·운반업/8712'])"
+          ]
+        }
+      },
+      {
+        "profile": "전기·통신 (서울)",
+        "profileValue": {
+          "name": "B",
+          "region": "서울특별시",
+          "licenses": [
+            "전기공사업",
+            "정보통신공사업"
+          ]
+        },
+        "case": "지역·면허 모두 통과",
+        "notice": {
+          "bid_ntce_no": "1",
+          "bid_ntce_nm": "공원 조경식재공사",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "조경식재공사업/2003"
+        ],
+        "possibleRegions": [
+          "경상남도"
+        ],
+        "expected": {
+          "verdict": "ineligible",
+          "reasons": [
+            "지역 불가 (내 '서울특별시' ∉ ['경상남도'])",
+            "면허 불가 (보유 ['전기공사업', '정보통신공사업'] ↔ 요구 ['조경식재공사업/2003'])"
+          ]
+        }
+      },
+      {
+        "profile": "전기·통신 (서울)",
+        "profileValue": {
+          "name": "B",
+          "region": "서울특별시",
+          "licenses": [
+            "전기공사업",
+            "정보통신공사업"
+          ]
+        },
+        "case": "지역 불가(전남 제한)",
+        "notice": {
+          "bid_ntce_no": "2",
+          "bid_ntce_nm": "하수도시설물 유지보수",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "상·하수도설비공사업/1004"
+        ],
+        "possibleRegions": [
+          "전라남도"
+        ],
+        "expected": {
+          "verdict": "ineligible",
+          "reasons": [
+            "지역 불가 (내 '서울특별시' ∉ ['전라남도'])",
+            "면허 불가 (보유 ['전기공사업', '정보통신공사업'] ↔ 요구 ['상·하수도설비공사업/1004'])"
+          ]
+        }
+      },
+      {
+        "profile": "전기·통신 (서울)",
+        "profileValue": {
+          "name": "B",
+          "region": "서울특별시",
+          "licenses": [
+            "전기공사업",
+            "정보통신공사업"
+          ]
+        },
+        "case": "약칭 보정(경남 ↔ 경상남도)",
+        "notice": {
+          "bid_ntce_no": "3",
+          "bid_ntce_nm": "도로 포장공사",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "지반조성포장공사업/1002"
+        ],
+        "possibleRegions": [
+          "경남"
+        ],
+        "expected": {
+          "verdict": "ineligible",
+          "reasons": [
+            "지역 불가 (내 '서울특별시' ∉ ['경남'])",
+            "면허 불가 (보유 ['전기공사업', '정보통신공사업'] ↔ 요구 ['지반조성포장공사업/1002'])"
+          ]
+        }
+      },
+      {
+        "profile": "전기·통신 (서울)",
+        "profileValue": {
+          "name": "B",
+          "region": "서울특별시",
+          "licenses": [
+            "전기공사업",
+            "정보통신공사업"
+          ]
+        },
+        "case": "업종제한 Y 인데 면허 상세 없음 → 불확실",
+        "notice": {
+          "bid_ntce_no": "4",
+          "bid_ntce_nm": "생태하천 정비공사",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [],
+        "possibleRegions": [],
+        "expected": {
+          "verdict": "unknown",
+          "reasons": [
+            "지역 제한 없음",
+            "업종제한 있음(indstrytyLmtYn=Y)이나 면허 상세 미확보 → 확인 필요"
+          ]
+        }
+      },
+      {
+        "profile": "전기·통신 (서울)",
+        "profileValue": {
+          "name": "B",
+          "region": "서울특별시",
+          "licenses": [
+            "전기공사업",
+            "정보통신공사업"
+          ]
+        },
+        "case": "제한 없음 → 통과",
+        "notice": {
+          "bid_ntce_no": "5",
+          "bid_ntce_nm": "시설물 안전점검 용역",
+          "indstrety_lmt_yn": "N"
+        },
+        "licenseLimits": [],
+        "possibleRegions": [],
+        "expected": {
+          "verdict": "eligible",
+          "reasons": [
+            "지역 제한 없음",
+            "면허/업종 제한 없음"
+          ]
+        }
+      },
+      {
+        "profile": "전기·통신 (서울)",
+        "profileValue": {
+          "name": "B",
+          "region": "서울특별시",
+          "licenses": [
+            "전기공사업",
+            "정보통신공사업"
+          ]
+        },
+        "case": "면허 불가",
+        "notice": {
+          "bid_ntce_no": "6",
+          "bid_ntce_nm": "건설폐기물 수집·운반",
+          "indstrety_lmt_yn": "Y"
+        },
+        "licenseLimits": [
+          "건설폐기물 수집·운반업/8712"
+        ],
+        "possibleRegions": [],
+        "expected": {
+          "verdict": "ineligible",
+          "reasons": [
+            "지역 제한 없음",
+            "면허 불가 (보유 ['전기공사업', '정보통신공사업'] ↔ 요구 ['건설폐기물 수집·운반업/8712'])"
+          ]
+        }
+      }
+    ],
+    "joint": [
+      {
+        "methodName": "공동이행방식",
+        "expected": {
+          "kind": "joint",
+          "label": "공동이행",
+          "available": true,
+          "note": "실적·시공능력이 출자비율만큼만 인정된다 · 구성원별 실적 인정 비율은 공고서 본문에서 확인해야 한다"
+        }
+      },
+      {
+        "methodName": "분담이행방식",
+        "expected": {
+          "kind": "divided",
+          "label": "분담이행",
+          "available": true,
+          "note": "타 공종 실적이 없어도 맡은 공종만으로 참여할 여지가 있다 · 구성원별 실적 인정 비율은 공고서 본문에서 확인해야 한다"
+        }
+      },
+      {
+        "methodName": "공동이행방식,분담이행방식",
+        "expected": {
+          "kind": "mixed",
+          "label": "혼합",
+          "available": true,
+          "note": "구성원별 실적 인정 비율은 공고서 본문에서 확인해야 한다"
+        }
+      },
+      {
+        "methodName": "주계약자관리방식",
+        "expected": {
+          "kind": "main_contractor",
+          "label": "주계약자",
+          "available": true,
+          "note": "구성원별 실적 인정 비율은 공고서 본문에서 확인해야 한다"
+        }
+      },
+      {
+        "methodName": "공동수급불허",
+        "expected": {
+          "kind": "solo",
+          "label": "단독",
+          "available": false,
+          "note": ""
+        }
+      },
+      {
+        "methodName": "해당없음",
+        "expected": {
+          "kind": "solo",
+          "label": "단독",
+          "available": false,
+          "note": ""
+        }
+      },
+      {
+        "methodName": "",
+        "expected": {
+          "kind": "unknown",
+          "label": "확인필요",
+          "available": false,
+          "note": ""
+        }
+      }
+    ]
+  }
+}
