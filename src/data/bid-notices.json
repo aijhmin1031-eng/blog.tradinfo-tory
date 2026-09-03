@@ -43,7 +43,12 @@
         "bssamt": 858000000,
         "rsrvtnPrceRngBgnRate": -2,
         "rsrvtnPrceRngEndRate": 2,
-        "a_value": 41000000
+        "sftyMngcst": 12915000,
+        "rtrfundNon": 5822000,
+        "mrfnHealthInsrprm": 9061000,
+        "npnInsrprm": 12013000,
+        "odsnLngtrmrcprInsrprm": 1189000,
+        "bidPrceCalclAYn": "Y"
       },
       "raw": {
         "ntceSpecFileNm1": "설계내역서.pdf",
@@ -80,7 +85,12 @@
         "bssamt": 1595000000,
         "rsrvtnPrceRngBgnRate": -3,
         "rsrvtnPrceRngEndRate": 3,
-        "a_value": 78000000
+        "sftyMngcst": 24570000,
+        "rtrfundNon": 11076000,
+        "mrfnHealthInsrprm": 17238000,
+        "npnInsrprm": 22854000,
+        "odsnLngtrmrcprInsrprm": 2262000,
+        "bidPrceCalclAYn": "Y"
       },
       "raw": {
         "ntceSpecFileNm1": "공사시방서.pdf"
