@@ -203,6 +203,15 @@ const ld = {
             <select id="f-org"><option value="">전체</option></select>
           </label>
           <label class="br-chk"><input type="checkbox" id="f-joint" /> 공동도급 가능만</label>
+          {/* ★ 아래 둘은 **공사 공고에만 오는 값**으로 거른다(2026-09-04 실호출 확인).
+              수집분에 그 값이 하나도 없으면 칸 자체가 나타나지 않는다 —
+              고를 수 있는데 늘 0건이면 화면이 고장 난 것으로 읽히기 때문이다. */}
+          <label class="br-chk" id="w-main" hidden>
+            <input type="checkbox" id="f-main" /> 주공종이 내 업종인 공고만
+          </label>
+          <label class="br-chk" id="w-rgnduty" hidden>
+            <input type="checkbox" id="f-rgnduty" /> 지역의무공동도급만
+          </label>
         </div>
         <div class="br-active" id="br-active" hidden></div>
       </div>
@@ -297,6 +306,24 @@ const ld = {
               <td><strong>가립니다.</strong> 공동수급방식(공동이행·분담이행·혼합·주계약자·단독)과
                 구성원 소재지 제한 여부까지 봅니다.</td>
             </tr>
+            <tr class="is-yes">
+              <th>내 업종이 주공종인 공고만 볼 수 있는가</th>
+              <td><strong>볼 수 있습니다.</strong> 공사 공고는 주공종을 면허와 같은 이름으로 줍니다.
+                다만 <strong>모든 공사 공고에 오지는 않습니다</strong>(실측 37.9%). 주공종이 없는
+                공고는 이 조건에서 빠지므로, 걸러진 뒤 남은 것만 보는 조건으로 쓰십시오.</td>
+            </tr>
+            <tr class="is-yes">
+              <th>지역의무공동도급 공고를 가릴 수 있는가</th>
+              <td><strong>가립니다.</strong> 지역 업체를 일정 비율 이상 공동수급체에 넣도록
+                의무화한 공고인지가 <strong>공고마다 옵니다</strong>(실측 100%). 타 지역 공고에
+                들어갈 때 그 지역 업체와 짝을 지어야 하는지가 여기서 갈립니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>시공능력평가액으로 미달 공고를 걸러 주는가</th>
+              <td><strong>걸러 주지 못합니다.</strong> 공고가 요구하는 시공능력평가액은
+                실호출로 확인해 보니 <strong>값이 오지 않았습니다.</strong> 오지 않는 값으로
+                판정을 만들지 않습니다.</td>
+            </tr>
             <tr class="is-part">
               <th>공동도급 실적 계산을 해 주는가</th>
               <td><strong>계산은 합니다.</strong> 공동이행의 인정 실적은 출자비율만큼입니다.
@@ -379,7 +406,7 @@ const ld = {
   </section>
 
   <script>
-    import { evaluate as judge, VERDICT_LABEL } from '../lib/bid-radar/qualifier.js';
+    import { evaluate as judge, VERDICT_LABEL, licenseMatch } from '../lib/bid-radar/qualifier.js';
     import * as joint from '../lib/bid-radar/joint-supply.js';
     import {
       summarize, checklist, jointSupplyRows, bidPriceRow, noticeUrl,
@@ -427,6 +454,10 @@ const ld = {
     const clseMs = (n) => timeOf(n, 'bid_clse_dt', 'bidClseDt');
     const openMs = (n) => timeOf(n, 'bid_ntce_dt', 'bidNtceDt');
     const divOf = (n) => String(n.work_div || '');
+    // 주공종명. 면허제한과 **같은 어휘**로 온다(「지반조성ㆍ포장공사업」).
+    const mainCnstty = (n) => String(field(n, 'main_cnstty_nm', 'mainCnsttyNm') || '');
+    // 지역의무공동도급: 지역 업체를 일정 비율 이상 공동수급체에 넣도록 공고가 의무화한 것.
+    const rgnDuty = (n) => String(field(n, 'rgn_duty_jntcontrct_yn', 'rgnDutyJntcontrctYn') || '').toUpperCase() === 'Y';
     const DIV_LABEL = { cnstwk: '공사', servc: '용역', thng: '물품', frgcpt: '외자', etc: '기타' };
 
     const profile = () => ({
@@ -458,6 +489,8 @@ const ld = {
       amt: $('f-amt').value,
       org: $('f-org').value,
       joint: $('f-joint').checked,
+      main: $('f-main').checked,
+      rgnduty: $('f-rgnduty').checked,
     });
 
     /** 기간 조건을 [시작, 끝] 밀리초로 편다. 조건이 없으면 null. */
@@ -507,6 +540,16 @@ const ld = {
         });
       }
       if (c.joint) out = out.filter((r) => r.joint.available);
+      if (c.main) {
+        // 보유 면허와 주공종을 맞춘다. **판정과 같은 규칙**(부분 문자열)을 쓴다 —
+        // 여기만 다르게 맞추면 「참여가능인데 주공종은 아님」 같은 모순이 생긴다.
+        const mine = $('f-lic').value.split(',').map((x) => x.trim()).filter(Boolean);
+        out = out.filter((r) => {
+          const m = mainCnstty(r.notice);
+          return m && licenseMatch(mine, [m]);
+        });
+      }
+      if (c.rgnduty) out = out.filter((r) => rgnDuty(r.notice));
 
       // 값이 없는 건은 늘 뒤로 보낸다(NaN 이 비교에 섞이면 순서가 무너진다).
       const cmp = {
@@ -545,6 +588,9 @@ const ld = {
       const orgs = [...new Set(DATA.notices.map(org).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
       $('f-org').innerHTML = '<option value="">전체</option>'
         + orgs.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+      // 값이 하나도 없는 조건은 세우지 않는다(늘 0건이 되는 칸은 고장으로 읽힌다).
+      $('w-main').hidden = !DATA.notices.some((n) => mainCnstty(n));
+      $('w-rgnduty').hidden = !DATA.notices.some((n) => rgnDuty(n));
     }
 
     const BASE_LABEL = { clse: '마감일', ntce: '공고일' };
@@ -570,6 +616,8 @@ const ld = {
       if (c.amt) chips.push(['amt', `추정가: ${AMT_LABEL[c.amt]}`]);
       if (c.org) chips.push(['org', `발주처: ${c.org}`]);
       if (c.joint) chips.push(['joint', '공동도급 가능만']);
+      if (c.main) chips.push(['main', '주공종이 내 업종']);
+      if (c.rgnduty) chips.push(['rgnduty', '지역의무공동도급']);
       if (sort.key) chips.push(['sort', `정렬: ${sort.key} ${sort.dir === 'desc' ? '내림' : '오름'}차순`]);
       const box = $('br-active');
       box.hidden = chips.length === 0;
@@ -592,11 +640,13 @@ const ld = {
       else if (key === 'amt') $('f-amt').value = '';
       else if (key === 'org') $('f-org').value = '';
       else if (key === 'joint') $('f-joint').checked = false;
+      else if (key === 'main') $('f-main').checked = false;
+      else if (key === 'rgnduty') $('f-rgnduty').checked = false;
       else if (key === 'sort') sort = { key: '', dir: '' };
     }
 
     function clearAll() {
-      ['q', 'verdict', 'div', 'period', 'amt', 'org', 'joint', 'sort'].forEach(clearCond);
+      ['q', 'verdict', 'div', 'period', 'amt', 'org', 'joint', 'main', 'rgnduty', 'sort'].forEach(clearCond);
     }
 
     function setVerdict(v) {
@@ -727,6 +777,8 @@ const ld = {
       if (c.amt) why.push('추정가를 「전체」로');
       if (c.org) why.push('발주처를 「전체」로');
       if (c.joint) why.push('「공동도급 가능만」 해제');
+      if (c.main) why.push('「주공종이 내 업종인 공고만」 해제');
+      if (c.rgnduty) why.push('「지역의무공동도급만」 해제');
       if (!$('f-lic').value.trim()) why.push('보유 면허 선택');
       if ($('f-dist').value) why.push('시·군·구를 「광역 전체」로 되돌리기');
       const tip = why.length

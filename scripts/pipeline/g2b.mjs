@@ -132,6 +132,18 @@ const FIELDS = {
   cmmnSpldmdCorpRgnLmtYn: 'cmmn_spldmd_corp_rgn_lmt_yn',
   rgnLmtBidLocplcJdgmBssNm: 'rgn_lmt_bid_locplc_jdgm_bss_nm',
   bidNtceUrl: 'bid_ntce_url', bidNtceDtlUrl: 'bid_ntce_dtl_url',
+
+  // ★ 공사 공고에만 오는 필드들(2026-09-04 실호출로 채워지는 비율까지 확인).
+  //   용역 공고에는 아예 없다. 없는 값은 담지 않으므로 그대로 두면 된다.
+  //   `cnstrtnAbltyEvlAmtList`(시공능력평가액)는 표본에서 값이 오지 않아 넣지 않았다 —
+  //   오지 않는 필드로 기능을 만들면 그것이 곧 오해가 된다.
+  mainCnsttyNm: 'main_cnstty_nm',                       // 주공종명 (37.9%) 면허와 같은 어휘로 온다
+  mainCnsttyPresmptPrce: 'main_cnstty_presmpt_prce',    // 주공종 추정가격 (38.2%)
+  cnstrtsiteRgnNm: 'cnstrtsite_rgn_nm',                 // 공사현장지역 (참가가능지역과 다른 축이다)
+  rgnDutyJntcontrctYn: 'rgn_duty_jntcontrct_yn',        // 지역의무공동도급 여부 (100%)
+  rgnDutyJntcontrctRt: 'rgn_duty_jntcontrct_rt',        // 지역업체 의무 지분율 (2.8%)
+  indstrytyEvlRt: 'indstryty_evl_rt',                   // 업종평가율
+  ciblAplYn: 'cibl_apl_yn',                             // 주계약자 적용 여부
 };
 
 function toRow(item, workDiv) {
