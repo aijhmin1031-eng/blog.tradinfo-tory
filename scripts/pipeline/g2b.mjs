@@ -59,8 +59,22 @@ async function call(op, params, page = 1, rows = PAGE_ROWS) {
   const qs = new URLSearchParams({
     serviceKey: KEY, type: 'json', numOfRows: String(rows), pageNo: String(page), ...params,
   });
-  const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
-  const text = await res.text();
+  // ★ 연결 실패 한 번으로 계열을 통째로 버리지 않는다(2026-09-04 CI 에서 실제로 겪었다).
+  //   같은 코드가 1분 전에 성공했는데 첫 호출만 `fetch failed` 였다.
+  let text;
+  let lastErr;
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
+      text = await res.text();
+      lastErr = null;
+      break;
+    } catch (e) {
+      lastErr = e;
+      await sleep(1500 * (i + 1));
+    }
+  }
+  if (lastErr) throw lastErr;
   if (text.trimStart().startsWith('<')) {
     // XML 은 보통 인증·파라미터 오류다. 본문에 인증키가 섞여 나올 수 있어 앞부분만 남긴다.
     throw new Error(`XML 응답(인증/파라미터 의심) ${op}: ${text.slice(0, 160).replace(KEY, '***')}`);

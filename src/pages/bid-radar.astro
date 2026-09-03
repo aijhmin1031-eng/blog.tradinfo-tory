@@ -83,6 +83,7 @@ const ld = {
     </header>
 
     <form class="br-form" id="br-form" autocomplete="off">
+      {/* ── 1단: 업체 조건 ── 판정의 재료다. 소재지·면허 둘 다 선택으로 받는다. */}
       <div class="br-grid">
         <div class="br-f">
           <span class="br-l">업체 소재지 <em>목록에서 고릅니다</em></span>
@@ -90,11 +91,7 @@ const ld = {
               두 선택칸이 이 숨은 칸을 채우므로 qualifier 는 손대지 않았다. */}
           <input type="hidden" id="f-region" value={DEFAULT_REGION} />
           <div class="br-two">
-            <select id="f-prov" aria-label="광역시·도">
-              {regions.provinces.map((p) => (
-                <option value={p.name} selected={p.name === DEFAULT_PROV}>{p.name}</option>
-              ))}
-            </select>
+            <select id="f-prov" aria-label="광역시·도"></select>
             <select id="f-dist" aria-label="시·군·구"></select>
           </div>
         </div>
@@ -131,47 +128,85 @@ const ld = {
           </div>
           <div class="br-ms-chips" id="br-ms-chips"></div>
         </div>
-        <div class="br-f br-opts">
-          <span class="br-l">표시</span>
-          <label class="br-chk"><input type="checkbox" id="f-onlyok" /> 참여가능만</label>
+      </div>
+
+      {/* ── 2단: 공고 조건 ── 입찰레이더 공고관리 화면(docs/18 §2-A)의 조건 막대를
+          그대로 옮긴 자리다. 1행은 검색, 2행은 고르는 조건. 순서까지 같다. */}
+      <div class="br-bar">
+        <div class="br-search">
+          <span class="br-si" aria-hidden="true">🔍</span>
+          <input type="search" id="f-q" placeholder="공고명을 입력해 검색하십시오" aria-label="공고명 검색" />
+          <button type="button" class="br-reset" id="f-reset">조건 초기화</button>
+        </div>
+        <div class="br-filters">
+          <div class="br-seg" role="group" aria-label="판정">
+            <button type="button" class="br-sg is-on" data-v="all" aria-pressed="true">전체</button>
+            <button type="button" class="br-sg" data-v="eligible" aria-pressed="false">참여 가능</button>
+            <button type="button" class="br-sg" data-v="unknown" aria-pressed="false">확인 필요</button>
+          </div>
+          <label class="br-fl">업무
+            <select id="f-div"><option value="">전체</option></select>
+          </label>
+          <label class="br-fl">마감
+            <select id="f-clse">
+              <option value="">전체</option>
+              <option value="1">오늘 안</option>
+              <option value="3">사흘 안</option>
+              <option value="7">이레 안</option>
+              <option value="30">한 달 안</option>
+            </select>
+          </label>
+          <label class="br-fl">추정가
+            <select id="f-amt">
+              <option value="">전체</option>
+              <option value="a">1억원 미만</option>
+              <option value="b">1억 ~ 10억원</option>
+              <option value="c">10억원 이상</option>
+            </select>
+          </label>
+          <label class="br-fl">발주처
+            <select id="f-org"><option value="">전체</option></select>
+          </label>
+          <label class="br-fl">정렬
+            <select id="f-sort">
+              <option value="clse">마감 임박순</option>
+              <option value="price-desc">추정가 높은 순</option>
+              <option value="price-asc">추정가 낮은 순</option>
+              <option value="new">공고일 최신순</option>
+            </select>
+          </label>
           <label class="br-chk"><input type="checkbox" id="f-joint" /> 공동도급 가능만</label>
         </div>
+        <div class="br-active" id="br-active" hidden></div>
       </div>
     </form>
 
     <div class="br-tally" id="br-tally" role="status" aria-live="polite"></div>
 
-    <div class="br-cols">
-      <section class="br-left">
-        <h2 class="br-h3">알림 <span class="br-h3s">텔레그램으로 나가는 카드 그대로</span></h2>
-        <div id="br-cards" class="br-cardgrid" aria-live="polite"></div>
-      </section>
-
-      <section class="br-right">
-        <div class="br-rhead">
-          <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 네 시트를 화면으로</span></h2>
-          <button type="button" class="br-dl" id="br-dl">
-            <span aria-hidden="true">⤓</span> 엑셀로 받기
-          </button>
-        </div>
-        <p class="br-dlnote" id="br-dlnote">
-          지금 화면에 보이는 공고가 네 시트로 담깁니다. 공고번호를 누르면 나라장터 원문이 열립니다.
-        </p>
-        <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 네 시트">
-          <button type="button" class="br-tab is-on" data-tab="compare" role="tab"
-                  aria-selected="true" aria-controls="br-sheet">공고 비교표</button>
-          <button type="button" class="br-tab" data-tab="check" role="tab"
-                  aria-selected="false" aria-controls="br-sheet">참여 체크리스트</button>
-          <button type="button" class="br-tab" data-tab="joint" role="tab"
-                  aria-selected="false" aria-controls="br-sheet">공동도급 분류</button>
-          <button type="button" class="br-tab" data-tab="price" role="tab"
-                  aria-selected="false" aria-controls="br-sheet">투찰가 참고</button>
-        </div>
-        <p class="br-tabnote" id="br-tabnote"></p>
-        <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (가로로 스크롤됩니다)">
-          <div id="br-sheet" role="tabpanel"></div></div>
-      </section>
-    </div>
+    <section class="br-sheetwrap">
+      <div class="br-rhead">
+        <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 네 시트를 화면으로</span></h2>
+        <button type="button" class="br-dl" id="br-dl">
+          <span aria-hidden="true">⤓</span> 엑셀로 받기
+        </button>
+      </div>
+      <p class="br-dlnote" id="br-dlnote">
+        지금 화면에 보이는 공고가 네 시트로 담깁니다. 공고번호를 누르면 나라장터 원문이 열립니다.
+      </p>
+      <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 네 시트">
+        <button type="button" class="br-tab is-on" data-tab="compare" role="tab"
+                aria-selected="true" aria-controls="br-sheet">공고 비교표</button>
+        <button type="button" class="br-tab" data-tab="check" role="tab"
+                aria-selected="false" aria-controls="br-sheet">참여 체크리스트</button>
+        <button type="button" class="br-tab" data-tab="joint" role="tab"
+                aria-selected="false" aria-controls="br-sheet">공동도급 분류</button>
+        <button type="button" class="br-tab" data-tab="price" role="tab"
+                aria-selected="false" aria-controls="br-sheet">투찰가 참고</button>
+      </div>
+      <p class="br-tabnote" id="br-tabnote"></p>
+      <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (가로로 스크롤됩니다)">
+        <div id="br-sheet" role="tabpanel" aria-live="polite"></div></div>
+    </section>
 
     <section class="br-explain">
       <h2 class="serif br-h2">판정이 갈리는 규칙</h2>

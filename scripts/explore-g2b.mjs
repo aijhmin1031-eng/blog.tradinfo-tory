@@ -23,12 +23,27 @@ const pad = (n) => String(n).padStart(2, '0');
 const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// ★ 연결 실패는 결론이 아니다(2026-09-04). 같은 코드가 1분 전에 성공했는데
+//   첫 호출이 `fetch failed` 한 번으로 죽었다. 세 번까지 다시 걸어 본다.
+async function fetchText(u) {
+  let last;
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      const res = await fetch(u, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
+      return await res.text();
+    } catch (e) {
+      last = e;
+      await sleep(1500 * (i + 1));
+    }
+  }
+  throw last;
+}
+
 async function page(op, params, pageNo) {
   const qs = new URLSearchParams({
     serviceKey: KEY, type: 'json', numOfRows: String(PAGE_ROWS), pageNo: String(pageNo), ...params,
   });
-  const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
-  const text = await res.text();
+  const text = await fetchText(`${ENDPOINT}${op}?${qs}`);
   if (text.trimStart().startsWith('<')) throw new Error(`XML 응답 ${text.slice(0, 120).replace(KEY, '***')}`);
   const data = JSON.parse(text);
   const code = String(data?.response?.header?.resultCode ?? '');
