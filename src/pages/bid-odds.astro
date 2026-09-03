@@ -450,7 +450,9 @@ const ld = {
       // 입찰레이더의 투찰가 참고표에서 넘어오는 길이다.
       const want = new URLSearchParams(location.search).get('ntce');
       if (want) {
-        const i = PICKS.findIndex((p) => p.no === want);
+        // 입찰레이더 화면은 「번호-차수」로 보여 주므로 차수가 붙어 와도 받아들인다.
+        const bare = String(want).split('-')[0];
+        const i = PICKS.findIndex((p) => p.no === want || p.no === bare);
         if (i >= 0) { pickSel.value = String(i); applyPick(i); }
       }
     }

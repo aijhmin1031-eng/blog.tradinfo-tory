@@ -72,6 +72,7 @@ const ld = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
   <script type="application/json" id="br-data" set:html={JSON.stringify(notices)} />
+  <script type="application/json" id="br-links" set:html={JSON.stringify({ odds: url('/bid-odds/') })} />
   <script
     type="application/json"
     id="br-regions"
@@ -219,6 +220,12 @@ const ld = {
     </form>
 
     <div class="br-tally" id="br-tally" role="status" aria-live="polite"></div>
+
+    {/* ★ 공고 상세 (2026-09-04 소유주 지시). 표는 훑는 자리이고, 고른 뒤에는
+        그 공고 하나를 깊게 봐야 한다. 수집해 두고 화면에 안 쓰던 값
+        (공사현장지역·주공종·지역의무공동도급 비율·업종평가율·주계약자)과
+        판정 사유·규격서 첨부·원문 링크를 여기 한자리에 편다. */}
+    <section class="br-detail" id="br-detail" hidden aria-live="polite"></section>
 
     <section class="br-sheetwrap">
       <div class="br-rhead">
@@ -413,7 +420,7 @@ const ld = {
     import * as joint from '../lib/bid-radar/joint-supply.js';
     import {
       summarize, checklist, jointSupplyRows, bidPriceRow, noticeUrl,
-      COMPARE_COLS, BID_PRICE_COLS,
+      COMPARE_COLS, BID_PRICE_COLS, won as wonBrief, WORK_DIV_LABEL,
     } from '../lib/bid-radar/briefing.js';
     import { buildWorkbook } from '../lib/bid-radar/xlsx.js';
 
@@ -431,6 +438,8 @@ const ld = {
     // (실측). 엑셀은 쪽과 무관하게 **조건에 맞는 전량**을 담는다.
     let page = 1;
     let perPage = 50;
+    // 고른 공고(공고번호-차수). 표에서 줄을 누르면 상세가 열린다.
+    let picked = '';
 
     /** 정규컬럼(snake) 우선, 없으면 raw(camel). briefing.js 의 g() 와 같은 규칙이다. */
     function field(n, ...keys) {
@@ -467,6 +476,21 @@ const ld = {
     // 지역의무공동도급: 지역 업체를 일정 비율 이상 공동수급체에 넣도록 공고가 의무화한 것.
     const rgnDuty = (n) => String(field(n, 'rgn_duty_jntcontrct_yn', 'rgnDutyJntcontrctYn') || '').toUpperCase() === 'Y';
     const DIV_LABEL = { cnstwk: '공사', servc: '용역', thng: '물품', frgcpt: '외자', etc: '기타' };
+
+    const keyOfNotice = (n) => `${field(n, 'bid_ntce_no', 'bidNtceNo') || ''}-${field(n, 'bid_ntce_ord', 'bidNtceOrd') || '000'}`;
+
+    // ★ 수집해 두고 화면에 안 쓰던 값들. 상세에서 처음으로 나온다.
+    const siteRgn = (n) => String(field(n, 'cnstrtsite_rgn_nm', 'cnstrtsiteRgnNm') || '');
+    const mainPrce = (n) => field(n, 'main_cnstty_presmpt_prce', 'mainCnsttyPresmptPrce');
+    const evlRt = (n) => field(n, 'indstryty_evl_rt', 'indstrytyEvlRt');
+    const dutyRt = (n) => field(n, 'rgn_duty_jntcontrct_rt', 'rgnDutyJntcontrctRt');
+    const cibl = (n) => String(field(n, 'cibl_apl_yn', 'ciblAplYn') || '').toUpperCase() === 'Y';
+    const specFiles = (n) => {
+      const r = n.raw || {};
+      const out = [];
+      for (let i = 1; i <= 10; i += 1) if (r[`ntceSpecFileNm${i}`]) out.push(r[`ntceSpecFileNm${i}`]);
+      return out;
+    };
 
     const profile = () => ({
       region: $('f-region').value.trim(),
@@ -825,7 +849,7 @@ const ld = {
           + `<button type="button" class="br-sortbtn" data-sort="${esc(c)}">${esc(c)}`
           + `<span class="br-sortmark" aria-hidden="true">${mark}</span></button></th>`;
       }).join('');
-      const tr = rows.map((r, i) => `<tr>${cols.map((c) => {
+      const tr = rows.map((r, i) => `<tr${opts.keys ? ` data-pick="${esc(opts.keys[i])}" tabindex="0"${opts.keys[i] === picked ? ' class="is-pick"' : ''}` : ''}>${cols.map((c) => {
         const v = r[c];
         // 공고번호 자체를 원문으로 연결한다 — 표 어디에 있어도 한 번에 넘어간다.
         if (c === '공고번호') {
@@ -877,6 +901,134 @@ const ld = {
         + '<br /><button type="button" class="br-clearall" id="br-clearall2">조건 초기화</button></p>';
     }
 
+    /**
+     * 공고 상세.
+     *
+     * ★ 표는 훑는 자리다. 고른 뒤에는 그 공고 하나를 깊게 봐야 한다(소유주 지시).
+     * 여기에서만 나오는 것: **공사현장지역 · 주공종과 그 추정가격 · 지역의무공동도급
+     * 의무 지분율 · 업종평가율 · 주계약자 적용 · 규격서 첨부 전체 목록 · 판정 사유 전문.**
+     * 전부 이미 수집해 두고 화면에 한 번도 쓰지 않던 값이다.
+     * 없는 값은 줄 자체를 세우지 않는다 — 빈 칸을 늘어놓으면 무엇이 없는지 흐려진다.
+     */
+    function renderDetail(row) {
+      const box = $('br-detail');
+      if (!row) { box.hidden = true; box.innerHTML = ''; return; }
+      const { notice: n, match, joint: j } = row;
+      const s = summarize(n);
+      const dd = dday(n.bid_clse_dt);
+      const url = noticeUrl(n);
+
+      const line = (k, v, memo) => (v === null || v === undefined || v === '' || v === '-'
+        ? ''
+        : `<div class="br-dr"><div class="br-dk">${esc(k)}</div><div class="br-dv">${v}</div>`
+          + `${memo ? `<div class="br-dm">${esc(memo)}</div>` : '<div class="br-dm"></div>'}</div>`);
+
+      // ① 공고 기본
+      const base = [
+        line('수요기관', esc(s.수요기관)),
+        line('공고기관', esc(String(field(n, 'ntce_instt_nm', 'ntceInsttNm') || ''))),
+        line('업무구분', esc(WORK_DIV_LABEL[n.work_div] || n.work_div || '')),
+        line('계약방법', esc(s.계약방법)),
+        line('낙찰방법', esc(s.낙찰방법)),
+        line('추정가격', esc(s.추정가격)),
+        line('배정예산', esc(s.배정예산)),
+        line('입찰마감', `${esc(s.입찰마감)}${dd ? ` <span class="br-dd ${dd.cls}">${esc(dd.text)}</span>` : ''}`),
+        line('개찰일시', esc(s.개찰일시)),
+        line('자격등록마감', esc(s.자격등록마감), '이 시각 전에 자격등록을 마쳐야 합니다'),
+      ].join('');
+
+      // ② 공사 공고에만 오는 값. 용역에는 아예 없으므로 줄이 통째로 사라진다.
+      const site = siteRgn(n);
+      const mc = mainCnstty(n);
+      const mp = mainPrce(n);
+      const er = evlRt(n);
+      const dr = dutyRt(n);
+      const work = [
+        line('공사현장지역', esc(site), '참가가능지역(참여 제한)과 다른 값입니다. 실제 현장 위치입니다'),
+        line('주공종', esc(mc) + (mp ? ` <span class="br-dsub">추정 ${esc(wonBrief(mp))}</span>` : '')),
+        line('업종평가율', er ? `${esc(er)}%` : '', '주공종이 전체에서 차지하는 비율입니다'),
+        line('지역의무공동도급', rgnDuty(n) ? '해당' : '', dr ? `지역 업체 의무 지분율 ${dr}%` : '지역 업체를 공동수급체에 포함해야 합니다'),
+        line('주계약자 관리방식', cibl(n) ? '적용' : ''),
+      ].join('');
+
+      // ③ 자격
+      const lic = (n.licenseLimits || []).join(' · ');
+      const rgn = (n.possibleRegions || []).join(' · ');
+      const qual = [
+        line('필요 면허·업종', lic ? esc(lic) : (String(n.indstrety_lmt_yn || '').toUpperCase() === 'Y'
+          ? '있음(상세 미확보)' : ''), lic ? '' : '공고서에서 확인해야 합니다'),
+        line('참가가능지역', esc(rgn)),
+        line('지역제한 판단기준', esc(String(field(n, 'rgn_lmt_bid_locplc_jdgm_bss_nm', 'rgnLmtBidLocplcJdgmBssNm') || ''))),
+      ].join('');
+
+      // ④ 공동도급 (joint-supply.js 판정 그대로)
+      const jointRows = [
+        line('공동수급방식', esc(j.label), esc(j.desc)),
+        line('공고 표기', esc(j.methodName)),
+        line('구성원 소재지 제한', j.regionLimit ? '있음' : '', '공고서에서 범위를 확인해야 합니다'),
+        line('참고', esc(j.note)),
+      ].join('');
+
+      // ⑤ 투찰가 참고 + 계산기로 넘기기
+      const pr = bidPriceRow(n, n.basis);
+      const priceRows = pr.기초금액
+        ? [
+          line('기초금액', esc(pr.기초금액)),
+          line('예비가격범위', esc(pr.예비가격범위)),
+          line('낙찰하한율', esc(pr.낙찰하한율)),
+          line('A값', esc(pr.A값), '법정경비입니다. 하한선 계산에서 낙찰하한율을 곱하지 않습니다'),
+          line('투찰률 90%', esc(pr['투찰률 90%']), '하한 통과 조합이 90% 이상이 되는 가장 낮은 투찰률입니다'),
+          line('투찰금액 90%', esc(pr['투찰금액 90%'])),
+        ].join('')
+        : `<p class="br-dnote">${esc(pr.산출근거 || '기초금액이 아직 공개되지 않았습니다.')}</p>`;
+
+      // ⑥ 규격서 첨부 (예전에는 개수와 앞 세 개만 보였다)
+      const files = specFiles(n);
+      const fileList = files.length
+        ? `<ul class="br-dfiles">${files.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>`
+        : '<p class="br-dnote">첨부 파일 정보가 제공되지 않았습니다.</p>';
+
+      const items = checklist(n, n.licenseLimits, n.possibleRegions);
+      const checkRows = items.map(([item, val, memo]) => `<tr><td class="br-cbox">☐</td><th>${esc(item)}</th>`
+        + `<td>${esc(val)}</td><td class="br-memo">${esc(memo)}</td></tr>`).join('');
+
+      box.hidden = false;
+      box.innerHTML = `
+        <div class="br-dhead">
+          <div>
+            <div class="br-dtitle">${esc(s.공고명)}</div>
+            <div class="br-dno">${noLink(s.공고번호, url)} · ${esc(s.공고게시)} 게시</div>
+          </div>
+          <div class="br-dact">
+            ${verdictBadge(match)}
+            ${url ? `<a class="br-dbtn" href="${esc(url)}" rel="nofollow noopener" target="_blank">나라장터 원문 열기</a>` : ''}
+            ${pr.기초금액 ? `<a class="br-dbtn" href="${esc(bidOddsHref(s.공고번호))}">투찰률 계산기로 열기</a>` : ''}
+            <button type="button" class="br-dclose" id="br-dclose">닫기</button>
+          </div>
+        </div>
+        <p class="br-dwhy"><strong>판정 사유</strong> ${esc((match.reasons || []).map(readableReason).join(' / '))}</p>
+        <div class="br-dgrid">
+          <section><h3>공고 기본</h3>${base}</section>
+          ${work.trim() ? `<section><h3>공사 상세</h3>${work}</section>` : ''}
+          <section><h3>참여 자격</h3>${qual || '<p class="br-dnote">공고에 걸린 자격 제한이 없습니다.</p>'}</section>
+          <section><h3>공동도급</h3>${jointRows}</section>
+          <section><h3>투찰가 참고</h3>${priceRows}
+            <p class="br-dnote">참고용 통계입니다. 예정가격은 추첨으로 결정되므로 낙찰을 예측하지 않습니다.</p></section>
+          <section><h3>규격서·공고문 첨부</h3>${fileList}</section>
+        </div>
+        <h3 class="br-dh">참여 체크리스트</h3>
+        <table class="br-t br-ct"><tbody>${checkRows}</tbody></table>`;
+    }
+
+    /** 판정 사유의 파이썬 리스트 표기를 사람이 읽게 편다(뜻은 그대로). */
+    const readableReason = (t) => String(t ?? '')
+      .replace(/\[\]/g, '없음').replace(/\[|\]/g, '').replace(/', '/g, ' · ').replace(/'/g, '');
+
+    const BASE_ODDS = JSON.parse($('br-links').textContent).odds;
+    // ★ 화면의 공고번호는 「R26BK01704879-001」처럼 차수가 붙어 있는데
+    // 계산기는 차수 없는 번호로 찾는다. 그대로 보내면 링크가 열려도 아무것도 안 채워진다.
+    const bidOddsHref = (no) => `${BASE_ODDS}?ntce=${encodeURIComponent(String(no || '').split('-')[0])}`;
+
     function renderSheet(list, from = 0, total = 0) {
       const notices = list.map((r) => r.notice);
       // ★ 쪽으로 끊어 보여 준다는 사실을 밝힌다. 밝히지 않으면 「왜 50건만 나오나」가 된다.
@@ -889,30 +1041,52 @@ const ld = {
       // 필요하므로 `__url` 로 얹어 준다(열로는 나오지 않는다).
       const withUrl = (rows) => rows.map((r, i) => ({ ...r, __url: noticeUrl(notices[i]) }));
       const meta = list.map((r) => r.match);
+      const keys = notices.map(keyOfNotice);
 
       if (tab === 'compare') {
-        $('br-sheet').innerHTML = table(COMPARE_COLS, notices.map(summarize), { meta });
+        $('br-sheet').innerHTML = table(COMPARE_COLS, notices.map(summarize), { meta, keys });
       } else if (tab === 'joint') {
         $('br-sheet').innerHTML = table(
           ['공고번호', '공고명', '구분', '가능여부', '공고표기', '지역제한', '메모'],
-          withUrl(jointSupplyRows(notices)), { meta },
+          withUrl(jointSupplyRows(notices)), { meta, keys },
         );
       } else if (tab === 'price') {
         $('br-sheet').innerHTML = table(
-          BID_PRICE_COLS, withUrl(notices.map((n) => bidPriceRow(n, n.basis))), { meta },
+          BID_PRICE_COLS, withUrl(notices.map((n) => bidPriceRow(n, n.basis))), { meta, keys },
         );
       } else {
-        // 체크리스트는 공고별 블록이다(엑셀도 블록으로 쌓는다)
-        $('br-sheet').innerHTML = list.map(({ notice, match }) => {
-          const s = summarize(notice);
-          const items = checklist(notice, notice.licenseLimits, notice.possibleRegions);
-          const rows = items.map(([item, val, memo]) => `<tr><td class="br-cbox">☐</td><th>${esc(item)}</th>`
-            + `<td title="${esc(val)}"><span class="br-cx">${esc(val)}</span></td>`
-            + `<td class="br-memo" title="${esc(memo)}"><span class="br-cx">${esc(memo)}</span></td></tr>`).join('');
-          return `<div class="br-block"><div class="br-bt">▣ ${esc(s.공고명)}<span class="br-bno">${noLink(s.공고번호, s.원문URL)}</span>${verdictBadge(match)}</div>
-            <table class="br-t br-ct"><tbody>${rows}</tbody></table></div>`;
-        }).join('');
+        // ★ 체크리스트는 **고른 공고 하나**만 편다(2026-09-04 소유주 지시).
+        // 훑는 것은 비교표가 하고, 고른 뒤에 깊게 보는 것이 체크리스트다.
+        // 엑셀에는 예전처럼 조건에 맞는 전량이 블록으로 쌓인다.
+        const one = picked ? list.filter((r) => keyOfNotice(r.notice) === picked) : [];
+        const target = one.length ? one : list;
+        if (picked && !one.length) {
+          $('br-sheet').innerHTML = '<p class="br-empty">고른 공고가 지금 조건에서 빠졌습니다. '
+            + '조건을 되돌리거나 표에서 다른 공고를 고르십시오.</p>';
+          return;
+        }
+        if (!picked) {
+          $('br-sheet').innerHTML = '<p class="br-empty"><strong>표에서 공고를 고르면 그 공고만 폅니다.</strong>'
+            + '<br />지금은 이 쪽의 ' + target.length + '건을 차례로 보여 줍니다.</p>'
+            + checklistBlocks(target);
+          return;
+        }
+        $('br-sheet').innerHTML = checklistBlocks(target);
+        return;
       }
+    }
+
+    /** 참여 체크리스트 블록. 엑셀도 같은 항목·같은 순서로 쌓는다. */
+    function checklistBlocks(list) {
+      return list.map(({ notice, match }) => {
+        const s = summarize(notice);
+        const items = checklist(notice, notice.licenseLimits, notice.possibleRegions);
+        const rows = items.map(([item, val, memo]) => `<tr><td class="br-cbox">☐</td><th>${esc(item)}</th>`
+          + `<td title="${esc(val)}"><span class="br-cx">${esc(val)}</span></td>`
+          + `<td class="br-memo" title="${esc(memo)}"><span class="br-cx">${esc(memo)}</span></td></tr>`).join('');
+        return `<div class="br-block"><div class="br-bt">▣ ${esc(s.공고명)}<span class="br-bno">${noLink(s.공고번호, s.원문URL)}</span>${verdictBadge(match)}</div>
+          <table class="br-t br-ct"><tbody>${rows}</tbody></table></div>`;
+      }).join('');
     }
 
     function render() {
@@ -925,6 +1099,8 @@ const ld = {
       renderActive();
       renderSheet(list.slice(from, from + perPage), list.length ? from + 1 : 0, list.length);
       renderPager(list.length, pages, from);
+      // 고른 공고가 조건에서 빠지면 상세도 닫는다(없는 공고를 펴 두면 안 된다).
+      renderDetail(picked ? list.find((r) => keyOfNotice(r.notice) === picked) : null);
     }
 
     /** 조건이 바뀌면 첫 쪽으로 돌아간다(3쪽을 보다 조건을 좁히면 빈 쪽이 남는다). */
@@ -1217,6 +1393,29 @@ const ld = {
       if (ev.target.id !== 'br-per') return;
       perPage = Number(ev.target.value);
       page = 1;
+      render();
+    });
+
+    // 표에서 줄을 누르면 상세가 열린다. 공고번호 링크는 그대로 원문으로 간다.
+    $('br-sheet').addEventListener('click', (ev) => {
+      if (ev.target.closest('a') || ev.target.closest('[data-sort]')) return;
+      const tr = ev.target.closest('[data-pick]');
+      if (!tr) return;
+      picked = tr.dataset.pick === picked ? '' : tr.dataset.pick;
+      render();
+      if (picked) $('br-detail').scrollIntoView({ block: 'start' });
+    });
+    $('br-sheet').addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Enter' && ev.key !== ' ') return;
+      const tr = ev.target.closest('[data-pick]');
+      if (!tr) return;
+      ev.preventDefault();
+      picked = tr.dataset.pick === picked ? '' : tr.dataset.pick;
+      render();
+    });
+    $('br-detail').addEventListener('click', (ev) => {
+      if (!ev.target.closest('#br-dclose')) return;
+      picked = '';
       render();
     });
 
@@ -1521,6 +1720,58 @@ const ld = {
     .br-pg.is-on { background: var(--brand); color: #fff; border-color: var(--brand); font-weight: 700; }
     .br-pg:disabled { color: var(--hair); cursor: default; }
     .br-pgd { color: var(--muted); padding: 0 2px; }
+
+    /* ── 공고 상세 ── 표에서 고른 공고 하나를 깊게 편다. */
+    .br-detail {
+      margin-top: 18px; border: 1px solid var(--hair); border-left: 3px solid var(--brand);
+      border-radius: 4px; background: var(--surface); padding: 16px 18px;
+    }
+    .br-dhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
+    .br-dtitle { font-size: 16px; font-weight: 700; color: var(--ink); word-break: keep-all; line-height: 1.5; }
+    .br-dno { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .br-dact { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .br-dbtn {
+      font-size: 12px; color: var(--brand); text-decoration: none; white-space: nowrap;
+      border: 1px solid var(--hair); border-radius: 3px; padding: 5px 9px; background: var(--bg);
+    }
+    .br-dbtn:hover { border-color: var(--accent); color: var(--accent); }
+    .br-dclose {
+      font: inherit; font-size: 12px; color: var(--sub); background: transparent; cursor: pointer;
+      border: 1px solid var(--hair); border-radius: 3px; padding: 5px 9px;
+    }
+    .br-dwhy { margin: 12px 0 0; font-size: 12.5px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
+    .br-dwhy strong { color: var(--brand); margin-right: 5px; }
+    .br-dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+                gap: 6px 26px; margin-top: 14px; }
+    .br-dgrid h3, .br-dh {
+      font-size: 12.5px; font-weight: 700; color: var(--brand); margin: 12px 0 6px;
+      padding-bottom: 4px; border-bottom: 1px solid var(--hair);
+    }
+    /* 한 줄 = 이름 · 값 · 메모. 없는 값은 줄 자체가 서지 않는다. */
+    .br-dr { display: grid; grid-template-columns: minmax(0, 96px) minmax(0, 1fr);
+             gap: 2px 10px; padding: 5px 0; border-bottom: 1px solid var(--hair2); }
+    .br-dk { font-size: 12px; color: var(--muted); }
+    .br-dv { font-size: 13px; color: var(--ink); font-weight: 600; word-break: keep-all; }
+    .br-dsub { font-weight: 400; color: var(--muted); font-size: 11.5px; }
+    .br-dm { grid-column: 2; font-size: 11.5px; color: var(--muted); line-height: 1.6; word-break: keep-all; }
+    .br-dm:empty { display: none; }
+    .br-dnote { margin: 6px 0 0; font-size: 11.5px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+    .br-dfiles { margin: 4px 0 0; padding-left: 16px; font-size: 12px; color: var(--sub); line-height: 1.8; word-break: break-all; }
+    /* ★ 상세 안의 체크리스트 표는 **칸 너비를 고정**한다(390px 실측 163px 넘침).
+       `width: 100%` 만으로는 못 막는다 — 표 레이아웃이 auto 면 셀 안에 끊을 수 없는
+       토막이 하나만 있어도 표가 그만큼 벌어진다. `table-layout: fixed` 로 칸을 먼저
+       정하고, 어절 단위를 지키되(keep-all) 정 안 되면 끊게 둔다(overflow-wrap). */
+    .br-detail .br-ct { table-layout: fixed; width: 100%; min-width: 0; }
+    .br-detail .br-ct th, .br-detail .br-ct td {
+      white-space: normal; word-break: keep-all; overflow-wrap: anywhere;
+    }
+    .br-detail .br-ct .br-cbox { width: 24px; }
+    .br-detail .br-ct tbody th { width: 30%; }
+    .br-detail .br-ct .br-memo { color: var(--muted); }
+    /* 고른 줄은 표에서도 표시된다(색만으로 알리지 않도록 왼쪽 막대를 함께 준다). */
+    .br-t tbody tr[data-pick] { cursor: pointer; }
+    .br-t tbody tr[data-pick]:hover { background: var(--bg); }
+    .br-t tbody tr.is-pick { background: var(--bg); box-shadow: inset 3px 0 0 var(--brand); }
 
     .br-sheetwrap { margin-top: 26px; min-width: 0; }
     .br-h3 { font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 10px; }
