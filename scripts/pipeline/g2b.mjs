@@ -111,7 +111,7 @@ async function main() {
   const end = fmt(now);
   console.log(`[g2b] 수집 창 ${bgn} ~ ${end}`);
 
-  const rows = [];
+  let rows = [];
   for (const [div, ops] of Object.entries(WORK_DIVS)) {
     const items = await safeCall(ops.list, { inqryDiv: '1', bidNtceBgnDt: bgn, bidNtceEndDt: end }, `${div} 목록`);
     console.log(`  · ${div} 공고 ${items.length}건`);
@@ -165,8 +165,24 @@ async function main() {
     console.log('  · A값은 기초금액 응답에서 전부 채웠습니다(호출 생략).');
   }
 
-  // 마감이 남은 공고를 앞에 두고, 화면이 감당할 만큼만 싣는다
-  rows.sort((a, b) => String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
+  // ★ 마감이 지난 공고는 싣지 않는다(2026-09-04 수리).
+  // 예전에는 주석만 「마감이 남은 공고를 앞에」였고 실제로는 **게시일**로만 정렬했다.
+  // 실데이터로 재어 보니 60건 중 5건이 이미 마감된 공고였다 — 참여할 수 없는 공고가
+  // 화면을 차지하고, 상한(MAX_NOTICES)에 걸려 살아 있는 공고를 밀어낸다.
+  const nowMs = Date.now();
+  const clseMs = (r) => {
+    const t = String(r.bid_clse_dt || '').trim();
+    if (!t) return Infinity;          // 마감이 없으면 거르지 않는다(빈 값은 지어내지 않는다)
+    const d = new Date(t.replace(' ', 'T'));
+    return Number.isNaN(d.getTime()) ? Infinity : d.getTime();
+  };
+  const before = rows.length;
+  rows = rows.filter((r) => clseMs(r) >= nowMs);
+  if (before !== rows.length) console.log(`  · 마감이 지난 공고 ${before - rows.length}건 제외`);
+
+  // 마감이 임박한 것부터. 같으면 최근 게시분이 앞이다.
+  rows.sort((a, b) => (clseMs(a) - clseMs(b))
+    || String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
   const notices = rows.slice(0, MAX_NOTICES).map((row) => {
     const k = key(row.bid_ntce_no, row.bid_ntce_ord);
     return { ...row, licenseLimits: licenses[k] || [], possibleRegions: regions[k] || [], basis: basis[k] || null };

@@ -268,6 +268,7 @@ const ld = {
         const lines = alertLines(notice, match);
         const head = lines[0];
         const v = VERDICT_LABEL[match.verdict];
+        const dd = dday(notice.bid_clse_dt);
         const body = lines.slice(1).map((l) => (
           l.href
             ? `<div class="br-cl"><span class="br-ci">${l.icon}</span><a href="${esc(l.href)}" rel="nofollow noopener" target="_blank">${esc(l.text)}</a></div>`
@@ -276,9 +277,29 @@ const ld = {
         return `<article class="br-card br-v-${match.verdict}">
           <div class="br-ch"><span class="br-ci">${head.icon}</span><span class="br-cn">${esc(head.text)}</span>
             <span class="br-badge">${v.icon} ${v.text}</span></div>
+          ${dd ? `<div class="br-dday ${dd.cls}">${esc(dd.text)}</div>` : ''}
           ${body}
         </article>`;
       }).join('');
+    }
+
+    /**
+     * 마감까지 남은 시간. 입찰자가 가장 먼저 보는 값이라 카드 위에 띠로 세운다.
+     * ★ 알림 카드의 「⏰ 마감 …」 줄은 텔레그램 정본과 글자가 같아야 하므로 손대지 않았다.
+     * 이것은 화면에만 더한 별개 표시다.
+     */
+    function dday(clse) {
+      const t = String(clse || '').trim();
+      if (!t) return null;
+      const d = new Date(t.replace(' ', 'T'));
+      if (Number.isNaN(d.getTime())) return null;
+      const ms = d.getTime() - Date.now();
+      if (ms < 0) return { cls: 'is-over', text: '마감됨' };
+      const h = Math.floor(ms / 36e5);
+      if (h < 24) return { cls: 'is-soon', text: `오늘 마감 · ${h}시간 남음` };
+      const day = Math.floor(h / 24);
+      if (day <= 3) return { cls: 'is-soon', text: `D-${day} · ${day}일 남음` };
+      return { cls: '', text: `D-${day}` };
     }
 
     /** 공고번호 칸에 거는 원문 링크. URL 이 없으면 번호만 적는다(지어내지 않는다). */
@@ -612,6 +633,14 @@ const ld = {
     .br-ch { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
     .br-cn { font-weight: 700; font-size: 14px; color: var(--ink); word-break: keep-all; flex: 1 1 auto; }
     .br-badge { font-size: 11.5px; font-weight: 700; color: var(--sub); white-space: nowrap; }
+    /* 마감까지 남은 시간 — 입찰자가 가장 먼저 보는 값 */
+    .br-dday {
+      display: inline-block; margin: 2px 0 6px; padding: 2px 8px; border-radius: 999px;
+      font-size: 11.5px; font-weight: 700; color: var(--sub);
+      background: var(--bg); border: 1px solid var(--hair);
+    }
+    .br-dday.is-soon { color: #fff; background: var(--up); border-color: var(--up); }
+    .br-dday.is-over { color: var(--muted); text-decoration: line-through; }
     .br-v-eligible .br-badge { color: var(--accent); }
     .br-cl { font-size: 12.5px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
     .br-ci { display: inline-block; width: 1.35em; }

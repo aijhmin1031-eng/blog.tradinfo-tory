@@ -11,13 +11,18 @@
 //
 // 사용: npm run build 뒤 `node scripts/check-images.mjs [베이스URL]`
 import { chromium } from 'playwright';
-import { readdirSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const BASE = process.argv[2] || 'http://localhost:8140/blog.tradinfo-tory';
-// CI(리눅스 컨테이너)의 경로가 기본이다. 로컬 윈도우에서 돌릴 때는
-// PW_CHROMIUM 으로 덮어쓴다(예: ~/AppData/Local/ms-playwright/chromium-*/chrome-win/chrome.exe).
-const EXEC = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium';
+// ★ 크로미움 경로는 환경마다 다르다(2026-09-04 수리).
+// 예전에는 `/opt/pw-browsers/chromium` 한 곳만 보았는데, **CI 는 거기에 설치하지 않는다**
+// (`npx playwright install` 은 러너의 제 캐시에 넣는다). 그래서 배포 워크플로의
+// 「품질 점검」이 이 한 줄 때문에 계속 실패하고 있었다. 로컬 윈도우에서도 당연히 없다.
+// 순서: PW_CHROMIUM(직접 지정) → 그 경로가 실제로 있을 때만 사용 → 없으면 Playwright 가
+// 제 힘으로 찾게 둔다(executablePath 를 넘기지 않는 것이 정답이다).
+const HINT = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium';
+const EXEC = existsSync(HINT) ? HINT : undefined;
 
 // 조판마다 한 쪽. 버그는 조판 단위로 생기므로 전 페이지를 돌 필요가 없다.
 // 낱장 조판(기사·용어·그림함·브리핑·특집)은 dist 에서 첫 항목을 자동으로 집어 온다.
@@ -43,7 +48,7 @@ const targets = [
   ['영문낱장', `/en/pack/${first('en/pack')}/`],
 ].filter(([, u]) => !u.includes('/undefined/'));
 
-const browser = await chromium.launch({ executablePath: EXEC });
+const browser = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
 const findings = [];
 const failed = [];
 
