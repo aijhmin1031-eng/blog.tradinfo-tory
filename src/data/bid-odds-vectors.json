@@ -1,0 +1,174 @@
+{
+  "note": "투찰가 산정기 공유 테스트 벡터. 정본은 ai-bid-radar/src/bid_price.py 다.",
+  "generator": "tests/make_vectors.py",
+  "cases": [
+    {
+      "name": "표준 공사 (기초금액 10억 · 하한 87.745% · A값 없음)",
+      "params": {
+        "base_amount": 1000000000,
+        "lower_limit_rate": 87.745,
+        "a_value": 0,
+        "total_reserves": 15,
+        "draw_reserves": 4,
+        "range_begin_rate": -2.0,
+        "range_end_rate": 2.0
+      },
+      "expected": {
+        "combinations": 1365,
+        "minPrice": 984285714.2857144,
+        "maxPrice": 1015714285.7142857,
+        "minRatePct": 98.42857142857144,
+        "maxRatePct": 101.57142857142858,
+        "curve": [
+          {
+            "rate": 86.0,
+            "amount": 860000000.0,
+            "probability": 0.0
+          },
+          {
+            "rate": 87.0,
+            "amount": 870000000.0,
+            "probability": 0.06886446886446887
+          },
+          {
+            "rate": 87.745,
+            "amount": 877450000.0,
+            "probability": 0.5252747252747253
+          },
+          {
+            "rate": 88.0,
+            "amount": 880000000.0,
+            "probability": 0.7142857142857143
+          },
+          {
+            "rate": 88.5,
+            "amount": 885000000.0,
+            "probability": 0.947985347985348
+          },
+          {
+            "rate": 89.0,
+            "amount": 890000000.0,
+            "probability": 0.9985347985347985
+          },
+          {
+            "rate": 90.0,
+            "amount": 900000000.0,
+            "probability": 1.0
+          },
+          {
+            "rate": 95.0,
+            "amount": 950000000.0,
+            "probability": 1.0
+          },
+          {
+            "rate": 100.0,
+            "amount": 1000000000.0,
+            "probability": 0.5223443223443224
+          },
+          {
+            "rate": 102.0,
+            "amount": 1020000000.0,
+            "probability": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "A값 있는 공사 (A 1.2억)",
+      "params": {
+        "base_amount": 1000000000,
+        "lower_limit_rate": 87.745,
+        "a_value": 120000000,
+        "total_reserves": 15,
+        "draw_reserves": 4,
+        "range_begin_rate": -2.0,
+        "range_end_rate": 2.0
+      },
+      "expected": {
+        "combinations": 1365,
+        "minPrice": 984285714.2857144,
+        "maxPrice": 1015714285.7142857,
+        "minRatePct": 98.42857142857144,
+        "maxRatePct": 101.57142857142858,
+        "curve": [
+          {
+            "rate": 88.0,
+            "amount": 880000000.0,
+            "probability": 0.0029304029304029304
+          },
+          {
+            "rate": 88.5,
+            "amount": 885000000.0,
+            "probability": 0.06886446886446887
+          },
+          {
+            "rate": 89.0,
+            "amount": 890000000.0,
+            "probability": 0.3304029304029304
+          },
+          {
+            "rate": 89.5,
+            "amount": 895000000.0,
+            "probability": 0.7142857142857143
+          },
+          {
+            "rate": 90.0,
+            "amount": 900000000.0,
+            "probability": 0.947985347985348
+          },
+          {
+            "rate": 91.0,
+            "amount": 910000000.0,
+            "probability": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "소액 용역 (기초금액 5천만 · 하한 87.995% · 범위 ±3%)",
+      "params": {
+        "base_amount": 50000000,
+        "lower_limit_rate": 87.995,
+        "a_value": 0,
+        "total_reserves": 15,
+        "draw_reserves": 4,
+        "range_begin_rate": -3.0,
+        "range_end_rate": 3.0
+      },
+      "expected": {
+        "combinations": 1365,
+        "minPrice": 48821428.57142857,
+        "maxPrice": 51178571.42857143,
+        "minRatePct": 97.64285714285712,
+        "maxRatePct": 102.35714285714286,
+        "curve": [
+          {
+            "rate": 87.0,
+            "amount": 43500000.0,
+            "probability": 0.08864468864468865
+          },
+          {
+            "rate": 88.0,
+            "amount": 44000000.0,
+            "probability": 0.5252747252747253
+          },
+          {
+            "rate": 89.0,
+            "amount": 44500000.0,
+            "probability": 0.9113553113553113
+          },
+          {
+            "rate": 90.0,
+            "amount": 45000000.0,
+            "probability": 0.9992673992673993
+          },
+          {
+            "rate": 91.0,
+            "amount": 45500000.0,
+            "probability": 1.0
+          }
+        ]
+      }
+    }
+  ]
+}

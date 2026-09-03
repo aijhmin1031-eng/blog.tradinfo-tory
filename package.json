@@ -20,7 +20,8 @@
     "indexnow": "node scripts/indexnow.mjs",
     "check-images": "node scripts/check-images.mjs",
     "series-check": "node scripts/series-check.mjs",
-    "review": "node scripts/review.mjs"
+    "review": "node scripts/review.mjs",
+    "check-bid-odds": "node scripts/check-bid-odds.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
