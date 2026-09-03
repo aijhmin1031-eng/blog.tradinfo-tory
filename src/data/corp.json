@@ -1,98 +1,97 @@
 {
-  "asOf": "2026-09-01",
+  "asOf": "2026-09-02",
   "stocks": [
     {
       "name": "삼성전자",
       "sector": "반도체",
-      "value": "261,000",
-      "delta": "0.38%",
-      "dir": "up",
+      "value": "250,500",
+      "delta": "4.02%",
+      "dir": "down",
       "spark": [
-        13,
         4,
-        26,
-        26,
-        22,
+        21,
+        21,
         18,
-        26,
-        23,
-        22
+        15,
+        21,
+        19,
+        19,
+        26
       ],
       "sparkHi": "281,500",
-      "sparkLo": "257,000",
-      "basDt": "20260901"
+      "sparkLo": "250,500",
+      "basDt": "20260902"
     },
     {
       "name": "SK하이닉스",
       "sector": "반도체",
-      "value": "1,693,000",
-      "delta": "1.14%",
-      "dir": "up",
+      "value": "1,613,000",
+      "delta": "4.73%",
+      "dir": "down",
       "spark": [
+        4,
         15,
+        14,
+        12,
         4,
-        21,
-        19,
-        16,
-        4,
-        26,
-        20,
-        15
+        18,
+        15,
+        11,
+        26
       ],
       "sparkHi": "1,730,000",
-      "sparkLo": "1,653,000",
-      "basDt": "20260901"
+      "sparkLo": "1,613,000",
+      "basDt": "20260902"
     },
     {
       "name": "현대차",
       "sector": "자동차",
-      "value": "400,500",
-      "delta": "0.74%",
+      "value": "378,000",
+      "delta": "5.62%",
       "dir": "down",
       "spark": [
         7,
-        10,
-        11,
+        8,
         4,
+        11,
         16,
-        26,
-        25,
-        21,
-        24
+        15,
+        13,
+        14,
+        26
       ],
       "sparkHi": "421,000",
-      "sparkLo": "398,000",
-      "basDt": "20260901"
+      "sparkLo": "378,000",
+      "basDt": "20260902"
     },
     {
       "name": "HMM",
       "sector": "해운",
-      "value": "21,350",
-      "delta": "0.47%",
+      "value": "20,800",
+      "delta": "2.58%",
       "dir": "down",
       "spark": [
-        26,
-        21,
+        17,
         4,
-        7,
-        24,
-        23,
+        6,
+        20,
         19,
-        23,
-        24
+        16,
+        19,
+        20,
+        26
       ],
       "sparkHi": "22,850",
-      "sparkLo": "21,200",
-      "basDt": "20260901"
+      "sparkLo": "20,800",
+      "basDt": "20260902"
     },
     {
       "name": "POSCO홀딩스",
       "sector": "철강",
-      "value": "341,000",
-      "delta": "0.74%",
-      "dir": "up",
+      "value": "330,000",
+      "delta": "3.23%",
+      "dir": "down",
       "spark": [
-        18,
         26,
         14,
         10,
@@ -100,20 +99,20 @@
         5,
         6,
         6,
-        4
+        4,
+        12
       ],
       "sparkHi": "341,000",
       "sparkLo": "310,000",
-      "basDt": "20260901"
+      "basDt": "20260902"
     },
     {
       "name": "LG에너지솔루션",
       "sector": "배터리",
-      "value": "367,000",
-      "delta": "2.91%",
+      "value": "347,500",
+      "delta": "5.31%",
       "dir": "down",
       "spark": [
-        17,
         26,
         14,
         22,
@@ -121,11 +120,12 @@
         9,
         9,
         4,
-        11
+        11,
+        23
       ],
       "sparkHi": "378,000",
       "sparkLo": "343,500",
-      "basDt": "20260901"
+      "basDt": "20260902"
     }
   ],
   "disclosures": [
@@ -172,32 +172,32 @@
       "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260813000255"
     },
     {
-      "date": "20260902",
+      "date": "20260903",
       "corp": "현대차",
-      "title": "생산재개(자율공시)",
+      "title": "기업설명회(IR)개최(안내공시)",
       "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260902800437"
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903800273"
     },
     {
-      "date": "20260902",
+      "date": "20260903",
+      "corp": "현대차",
+      "title": "기업설명회(IR)개최(안내공시)",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903800271"
+    },
+    {
+      "date": "20260903",
       "corp": "POSCO홀딩스",
-      "title": "[기재정정]자기주식처분결과보고서",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
       "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260902000153"
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903000268"
     },
     {
-      "date": "20260901",
-      "corp": "현대차",
-      "title": "영업(잠정)실적(공정공시)",
+      "date": "20260903",
+      "corp": "POSCO홀딩스",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
       "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260901800400"
-    },
-    {
-      "date": "20260831",
-      "corp": "삼성전자",
-      "title": "대규모기업집단현황공시[분기별공시(대표회사용)]",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260831000250"
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903000243"
     }
   ]
 }
