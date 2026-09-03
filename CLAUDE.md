@@ -194,7 +194,14 @@
   붙는다. 클래스를 한 접두사로 묶고 `<style is:global>` 로 여는 편이 낱낱이 `:global()` 을
   거는 것보다 새는 곳이 없다. **눈으로는 「좀 허전한데」로만 보인다** —
   `getComputedStyle(el).prop` 을 찍어 확인할 것.
+  ⑦ **`is:global` 블록 안에서 `:global()` 을 또 쓰면 규칙이 통째로 죽는다**(2026-09-04).
+  `.br-head-art :global(img) { ... }` 를 `<style is:global>` 안에 썼더니 `:global(...)` 이
+  **문자열 그대로 CSS 에 나가** 선택자가 성립하지 않았고 규칙 다섯 줄이 전부 무시됐다.
+  빌드도 통과하고 그림도 보인다(모서리만 안 둥글다). **스코프 블록에서는 `:global()`,
+  `is:global` 블록에서는 맨 선택자**다. 확인은 역시 `getComputedStyle`.
   **이 계열은 눈으로 못 잡는다 — `npm run check-images` 가 조판 29종을 실측한다**(CI 에도 붙어 있다).
+  로컬 윈도우에서는 크로미움 경로가 달라 `PW_CHROMIUM` 환경변수로 덮어쓴다
+  (`~/AppData/Local/ms-playwright/chromium-*/chrome-win64/chrome.exe`).
 - **★ 단축 margin·padding 이 `.wrap` 의 가운데 정렬을 죽인다**(2026-08-27). `.wrap` 은
   `margin: 0 auto` 인데 `.foo { margin: 34px 0 0 }` 로 덮으면 좌우가 0 이 되어 **넓은 화면에서
   본문이 왼쪽 끝에 붙는다.** 1280px 에서는 티가 안 나고 1600px 이상에서 드러난다.

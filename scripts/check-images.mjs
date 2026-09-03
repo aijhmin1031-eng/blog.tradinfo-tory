@@ -15,7 +15,9 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const BASE = process.argv[2] || 'http://localhost:8140/blog.tradinfo-tory';
-const EXEC = '/opt/pw-browsers/chromium';
+// CI(리눅스 컨테이너)의 경로가 기본이다. 로컬 윈도우에서 돌릴 때는
+// PW_CHROMIUM 으로 덮어쓴다(예: ~/AppData/Local/ms-playwright/chromium-*/chrome-win/chrome.exe).
+const EXEC = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium';
 
 // 조판마다 한 쪽. 버그는 조판 단위로 생기므로 전 페이지를 돌 필요가 없다.
 // 낱장 조판(기사·용어·그림함·브리핑·특집)은 dist 에서 첫 항목을 자동으로 집어 온다.

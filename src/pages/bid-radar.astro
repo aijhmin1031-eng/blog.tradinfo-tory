@@ -13,6 +13,7 @@
 // 공고 데이터는 `src/data/bid-notices.json` 이고, CI 의 `scripts/pipeline/g2b.mjs` 가
 // 나라장터에서 받아 갱신한다. 키가 없으면 예시 세트가 그대로 남고 화면이 그것을 밝힌다.
 import Base from '../layouts/Base.astro';
+import Pic from '../components/Pic.astro';
 import { url } from '../lib/site';
 import notices from '../data/bid-notices.json';
 
@@ -43,19 +44,29 @@ const ld = {
 
   <section class="wrap br">
     <header class="br-head">
-      <div class="kicker-en" style="color: var(--accent);">BID RADAR</div>
-      <h1 class="serif br-title">입찰레이더</h1>
-      <p class="br-sub">
-        나라장터 공고를 업체의 <strong>지역과 보유 면허</strong>로 갈라
-        <strong>참여가능·확인필요·자격미달</strong>을 판정합니다. 통과한 공고에는 공동도급
-        가능 여부, 참여 체크리스트, 복수예가 투찰가 참고표가 함께 붙습니다.
-      </p>
-      <p class="br-note">
-        판정은 규칙 기반이며 참고용입니다. 최종 자격 확인은 공고서와 발주기관 기준을 따릅니다.
-        {isSample
-          ? ' 지금 보이는 공고는 화면 구성을 위한 예시입니다. 실제 수집이 연결되면 자동으로 교체됩니다.'
-          : ` 수집 기준일 ${asOf}.`}
-      </p>
+      <div class="br-head-text">
+        <div class="kicker-en" style="color: var(--accent);">BID RADAR</div>
+        <h1 class="serif br-title">입찰레이더</h1>
+        <p class="br-sub">
+          나라장터 공고를 업체의 <strong>지역과 보유 면허</strong>로 갈라
+          <strong>참여가능·확인필요·자격미달</strong>을 판정합니다. 통과한 공고에는 공동도급
+          가능 여부, 참여 체크리스트, 복수예가 투찰가 참고표가 함께 붙습니다.
+        </p>
+        <p class="br-note">
+          판정은 규칙 기반이며 참고용입니다. 최종 자격 확인은 공고서와 발주기관 기준을 따릅니다.
+          {isSample
+            ? ' 지금 보이는 공고는 화면 구성을 위한 예시입니다. 실제 수집이 연결되면 자동으로 교체됩니다.'
+            : ` 수집 기준일 ${asOf}.`}
+        </p>
+      </div>
+      <div class="br-head-art">
+        <Pic
+          path="bid-radar-banner.jpg"
+          alt="네이비 조끼를 입고 둥근 안경을 쓴 다람쥐 분석가가 서류판을 들고 연필로 심사판을 가리키고 있다. 심사판에는 세 줄의 공고 서류가 놓여 있고 각 줄 왼쪽에 초록 체크·주황 물음표·빨강 가위표 표시가 차례로 붙어 있다."
+          width={800}
+          height={450}
+        />
+      </div>
     </header>
 
     <form class="br-form" id="br-form" autocomplete="off">
@@ -299,6 +310,24 @@ const ld = {
       스타일 블록을 전역으로 연다. 낱낱이 `:global()` 로 감싸는 것보다 새는 곳이 없다. */}
   <style is:global>
     .br { max-width: var(--measure-wide); padding-top: 26px; padding-bottom: 60px; }
+    /* 머리글 2단 — 글 왼쪽, 그림 오른쪽. 좁아지면 그림이 위로 올라가 한 단이 된다.
+       ★ 그리드 칸에 min-width: 0 이 없으면 문서 전체에 가로 스크롤이 생긴다(390px 실측). */
+    .br-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+               gap: 12px 28px; align-items: center; }
+    .br-head-text { min-width: 0; }
+    .br-head-art { min-width: 0; }
+    /* ★ 이 블록은 이미 is:global 이다. 여기에 :global() 을 또 쓰면 그 문자열이
+       CSS 에 그대로 나가 규칙 전체가 죽는다(실제로 border-radius 가 0 이었다).
+       스코프 안에서만 :global() 을 쓸 것. 확인은 getComputedStyle 로. */
+    .br-head-art img {
+      display: block; width: 100%; height: auto; border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    @media (max-width: 760px) {
+      .br-head { grid-template-columns: minmax(0, 1fr); }
+      .br-head-art { order: -1; max-width: 420px; }
+    }
+
     .br-title { margin: 6px 0 0; font-size: clamp(26px, 4.4vw, 36px); letter-spacing: -.022em; }
     .br-sub { margin: 10px 0 0; font-size: 15px; color: var(--sub); line-height: 1.8; word-break: keep-all; max-width: 64ch; }
     .br-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); word-break: keep-all; max-width: 70ch; }
