@@ -17,6 +17,37 @@
 
 // 부동소수점 찌꺼기를 자르는 자리수. 1,000,000,000 x 0.87745 가
 // 877,450,000.0000001 로 나와 그대로 절상하면 1원이 더 붙는다.
+// ★ A값(법정경비)은 응답에 **합계로 오지 않는다**(2026-09-04 실호출 확인).
+// `bidPrceCalclAValue` 라는 필드는 실제 응답에 없다 — 그것을 읽던 코드는 늘 null 이었다.
+// 아래 구성 항목을 더한 값이 A값이다(빈 문자열은 0으로 친다). 정본은 bid_price.py 의
+// A_VALUE_COMPONENTS 이고 두 목록은 같은 순서·같은 이름이어야 한다.
+export const A_VALUE_COMPONENTS = [
+  'sftyMngcst',                 // 안전관리비
+  'sftyChckMngcst',             // 안전점검비
+  'rtrfundNon',                 // 퇴직공제부금
+  'mrfnHealthInsrprm',          // 국민건강보험료
+  'npnInsrprm',                 // 국민연금보험료
+  'odsnLngtrmrcprInsrprm',      // 노인장기요양보험료
+  'qltyMngcst',                 // 품질관리비
+  'envCnsrvcst',                // 환경보전비
+  'scontrctPayprcePayGrntyFee', // 하도급대금지급보증서발급수수료
+  'usefulAmt',                  // 기타
+];
+
+const amount = (v) => {
+  if (v === null || v === undefined) return 0;
+  const t = String(v).replace(/,/g, '').trim();
+  if (!t) return 0;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : 0;
+};
+
+/** A값 구성 항목을 더해 A값을 낸다. 항목이 하나도 없으면 0. */
+export function sumAValue(item) {
+  if (!item) return 0;
+  return A_VALUE_COMPONENTS.reduce((acc, k) => acc + amount(item[k]), 0);
+}
+
 const ROUND_DIGITS = 6;
 const EPS = 0.5 * Math.pow(10, -ROUND_DIGITS);
 
@@ -78,7 +109,10 @@ export class BidParams {
     return new BidParams({
       baseAmount: baseNum,
       lowerLimitRate: parseFloat(String(lwlt).replace('%', '')),
-      aValue: Number(aValue ?? pick('a_value', 'aValue') ?? 0),
+      // 합계 필드가 따로 없으므로, 명시적으로 받지 않았으면 구성 항목을 더한다.
+      aValue: Number(
+        aValue ?? pick('a_value', 'aValue') ?? (sumAValue(basis) || sumAValue(notice)) ?? 0,
+      ),
       totalReserves: parseInt(pick('tot_prdprc_num', 'totPrdprcNum') ?? 15, 10),
       drawReserves: parseInt(pick('drwt_prdprc_num', 'drwtPrdprcNum') ?? 4, 10),
       rangeBeginRate: rngB !== null ? Number(rngB) : -2,

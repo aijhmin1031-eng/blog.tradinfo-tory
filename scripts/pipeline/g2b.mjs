@@ -27,6 +27,22 @@ const OP_LICENSE = '/getBidPblancListInfoLicenseLimit';
 const OP_REGION = '/getBidPblancListInfoPrtcptPsblRgn';
 const OP_AVALUE = '/getBidPblancListBidPrceCalclAInfo';
 
+// A값(법정경비) 구성 항목. 정본은 입찰레이더 `src/bid_price.py` 의 A_VALUE_COMPONENTS 이고
+// 블로그 계산기는 `src/lib/bid-odds.js` 가 같은 목록을 들고 있다. 셋이 같아야 한다.
+const A_VALUE_COMPONENTS = [
+  'sftyMngcst', 'sftyChckMngcst', 'rtrfundNon', 'mrfnHealthInsrprm', 'npnInsrprm',
+  'odsnLngtrmrcprInsrprm', 'qltyMngcst', 'envCnsrvcst', 'scontrctPayprcePayGrntyFee', 'usefulAmt',
+];
+
+const sumAValue = (item) => {
+  if (!item) return 0;
+  return A_VALUE_COMPONENTS.reduce((acc, k) => {
+    const t = String(item[k] ?? '').replace(/,/g, '').trim();
+    const n = t ? Number(t) : 0;
+    return acc + (Number.isFinite(n) ? n : 0);
+  }, 0);
+};
+
 const pad = (n) => String(n).padStart(2, '0');
 const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
 const key = (no, ord) => `${no}-${String(ord || '000').padStart(3, '0')}`;
@@ -130,9 +146,23 @@ async function main() {
       basis[key(it.bidNtceNo, it.bidNtceOrd)] = { ...it };
     }
   }
-  for (const it of await safeCall(OP_AVALUE, { inqryDiv: '1', inqryBgnDt: auxBgn, inqryEndDt: auxEnd }, 'A값')) {
-    const k = key(it.bidNtceNo, it.bidNtceOrd);
-    if (basis[k]) basis[k].a_value = it.bidPrceCalclAValue ?? it.aValue ?? null;
+  // ★ A값은 합계로 오지 않는다(2026-09-04 실호출로 확인).
+  // `bidPrceCalclAValue` 라는 필드는 응답에 없어서 예전 코드는 늘 null 을 넣고 있었다.
+  // 구성 항목(안전관리비·퇴직공제부금·건강보험료 …)을 더한 값이 A값이다.
+  // 그 항목들은 **기초금액 응답에도 그대로 들어 있으므로** 별도 호출 없이 먼저 채우고,
+  // 비어 있는 것만 A값 오퍼레이션으로 메운다(개발계정 일 1,000건을 아낀다).
+  for (const k of Object.keys(basis)) {
+    const v = sumAValue(basis[k]);
+    if (v > 0) basis[k].a_value = v;
+  }
+  const needA = Object.keys(basis).filter((k) => !(basis[k].a_value > 0));
+  if (needA.length) {
+    for (const it of await safeCall(OP_AVALUE, { inqryDiv: '1', inqryBgnDt: auxBgn, inqryEndDt: auxEnd }, 'A값')) {
+      const k = key(it.bidNtceNo, it.bidNtceOrd);
+      if (basis[k] && !(basis[k].a_value > 0)) basis[k].a_value = sumAValue(it) || null;
+    }
+  } else {
+    console.log('  · A값은 기초금액 응답에서 전부 채웠습니다(호출 생략).');
   }
 
   // 마감이 남은 공고를 앞에 두고, 화면이 감당할 만큼만 싣는다

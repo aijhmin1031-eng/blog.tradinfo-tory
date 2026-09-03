@@ -39,6 +39,19 @@ function g(notice, r, ...keys) {
   return null;
 }
 
+/**
+ * 공고 원문 URL. **API 가 준 값만 쓴다.**
+ *
+ * ★ 주소를 손으로 지어내지 않는다(2026-09-04 실측). 나라장터도 조달정보 개방포털도
+ * 지금은 세션 키가 붙은 SPA 라 **없는 공고번호를 넣어도 200 이 온다** — 상태코드로
+ * 진짜와 가짜가 안 갈린다. 틀린 링크는 없는 링크보다 나쁘므로 빈 값으로 남긴다.
+ * (실제 응답에서는 `bidNtceUrl` 이 비어 있고 `bidNtceDtlUrl` 에 값이 온다.)
+ */
+export function noticeUrl(notice) {
+  const r = raw(notice);
+  return g(notice, r, 'bid_ntce_dtl_url', 'bidNtceDtlUrl', 'bid_ntce_url', 'bidNtceUrl') || '';
+}
+
 /** 공고 핵심 항목 -> 비교표용 객체. 열 이름까지 엑셀과 같다. */
 export function summarize(notice) {
   const r = raw(notice);
