@@ -6,7 +6,7 @@ name: 일회성 API 탐색
 # **나라장터 보조정보**다 — 쪽 넘기기가 실제로 도는지, 그리고 소재지 드롭다운을
 # 무엇으로 채울지(참가가능지역 표기의 실제 어휘)를 실측한다.
 on: { workflow_dispatch: }
-permissions: { contents: read }
+permissions: { contents: write }
 jobs:
   explore:
     runs-on: ubuntu-latest
@@ -19,8 +19,22 @@ jobs:
         with: { node-version: 22 }
       # 지역·면허 어휘는 2026-09-04 에 확인을 마쳤다. 지금 재는 것은 공사 공고의
       # 실적·시공능력 필드다(크몽 고객 문의 ②). 값이 안 오면 그 기능은 만들지 않는다.
-      - name: 공사 공고 실적·시공능력 필드 실측
-        run: node scripts/explore-cnstwk.mjs
+      # ★ 상한을 없앤 수집기를 한 번 돌려 실제 건수를 확인하고 커밋한다.
+      #   정규 파이프라인은 「오늘 이미 수집했다」 가드에 걸려 건너뛰므로 여기서 돌린다.
+      - run: npm ci
+      - name: 공고 수집 (상한 없음)
+        run: node scripts/pipeline/g2b.mjs
         env:
           G2B_SERVICE_KEY: ${{ secrets.G2B_SERVICE_KEY }}
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+      - name: 수집 결과 커밋
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add src/data/bid-notices.json
+          if git diff --cached --quiet; then
+            echo '변경 없음'
+          else
+            git commit -m "공고 수집: 상한 없이 전량 ($(TZ=Asia/Seoul date +%F))"
+            git push
+          fi
