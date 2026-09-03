@@ -235,6 +235,44 @@ const ld = {
         <div id="br-sheet" role="tabpanel" aria-live="polite"></div></div>
     </section>
 
+    {/* ★ 공동도급 인정 실적 계산 (2026-09-04, 고객 문의 ④).
+        계산식 자체는 한 줄이다. 어려운 것은 **공고가 요구하는 실적**인데 그 값은
+        공고서 본문에 있고 API 로 오지 않는다. 그래서 그 칸은 사람이 옮겨 적게 하고,
+        화면이 그 사실을 밝힌다. 지어내지 않는다. */}
+    <section class="br-js">
+      <h2 class="br-h3">공동도급 인정 실적 <span class="br-h3s">출자비율만큼 인정되는 몫을 냅니다</span></h2>
+      <p class="br-jsnote">
+        공동이행에서는 시공실적이 <strong>출자비율만큼만</strong> 인정됩니다. 아래 계산은 그 몫과,
+        요구 실적을 채우는 데 필요한 최소 지분율을 냅니다.
+        <strong>공고가 요구하는 실적 금액은 공고서에서 옮겨 적으셔야 합니다.</strong>
+        그 값은 조달청 API 로 오지 않습니다.
+      </p>
+      <div class="br-jsgrid">
+        <label class="br-f">
+          <span class="br-l">공동수급 방식</span>
+          <select id="j-kind">
+            <option value="joint">공동이행</option>
+            <option value="divided">분담이행</option>
+          </select>
+        </label>
+        <label class="br-f">
+          <span class="br-l">우리 회사 시공실적 <em>원</em></span>
+          <input type="number" id="j-mine" inputmode="numeric" step="1" min="0" value="500000000" />
+          <span class="br-u" id="j-mine-u"></span>
+        </label>
+        <label class="br-f">
+          <span class="br-l">출자비율 <em>%</em></span>
+          <input type="number" id="j-share" inputmode="decimal" step="0.1" min="0" max="100" value="30" />
+        </label>
+        <label class="br-f">
+          <span class="br-l">공고 요구 실적 <em>원</em></span>
+          <input type="number" id="j-need" inputmode="numeric" step="1" min="0" value="" placeholder="공고서에서 옮겨 적습니다" />
+          <span class="br-u" id="j-need-u"></span>
+        </label>
+      </div>
+      <div class="br-jsout" id="j-out" role="status" aria-live="polite"></div>
+    </section>
+
     <section class="br-explain">
       {/* ★ 팔기 전에 못 하는 것을 먼저 밝힌다(2026-09-04 소유주 지시 「정직하게」).
           문의로 들어온 물음 여덟 개를 그대로 세우고 되는 것·안 되는 것을 갈랐다.
@@ -916,6 +954,73 @@ const ld = {
       if (ev.target.closest('#br-clearall') || ev.target.closest('#br-clearall2')) { clearAll(); render(); }
     });
 
+    // ── 공동도급 인정 실적 계산 ─────────────────────────────────────
+    // 공동이행은 실적이 출자비율만큼 인정된다. 분담이행은 비율로 나누는 것이 아니라
+    // **맡은 공종의 실적을 그대로** 본다. 그래서 방식에 따라 계산 자체가 달라진다.
+    // 요구 실적은 공고서에서 옮겨 적는 값이라, 비어 있으면 충족 여부를 내지 않는다.
+    const jNum = (id) => {
+      const v = parseFloat($(id).value);
+      return Number.isFinite(v) ? v : NaN;
+    };
+    const wonKo = (n) => {
+      if (!Number.isFinite(n) || n <= 0) return '0원';
+      if (n >= 1e8) return `${(n / 1e8).toFixed(n % 1e8 === 0 ? 0 : 2)}억원`;
+      if (n >= 1e4) return `${Math.round(n / 1e4).toLocaleString('ko-KR')}만원`;
+      return `${Math.round(n).toLocaleString('ko-KR')}원`;
+    };
+
+    function renderJoint() {
+      const kind = $('j-kind').value;
+      const mine = jNum('j-mine');
+      const share = jNum('j-share');
+      const need = jNum('j-need');
+      $('j-mine-u').textContent = Number.isFinite(mine) && mine > 0 ? wonKo(mine) : '';
+      $('j-need-u').textContent = Number.isFinite(need) && need > 0 ? wonKo(need) : '';
+      // 분담이행에서는 출자비율이 실적을 깎지 않는다. 칸을 잠가 오해를 막는다.
+      $('j-share').disabled = kind === 'divided';
+
+      const lines = [];
+      if (!Number.isFinite(mine) || mine <= 0) {
+        $('j-out').innerHTML = '<p class="br-jsempty">우리 회사 시공실적을 넣으면 계산합니다.</p>';
+        return;
+      }
+      if (kind === 'divided') {
+        lines.push(['맡은 공종의 실적', wonKo(mine),
+          '분담이행은 공종을 나눠 각자 맡은 부분만 시공하므로, 출자비율로 실적을 나누지 않습니다. 맡은 공종의 실적이 그대로 쓰입니다.']);
+      } else {
+        if (!Number.isFinite(share) || share <= 0 || share > 100) {
+          $('j-out').innerHTML = '<p class="br-jsempty">출자비율을 0 초과 100 이하로 넣어 주십시오.</p>';
+          return;
+        }
+        const got = mine * (share / 100);
+        lines.push(['인정 실적', wonKo(got), `보유 실적 ${wonKo(mine)} 가운데 출자비율 ${share}% 몫입니다.`]);
+        if (Number.isFinite(need) && need > 0) {
+          const ok = got >= need;
+          lines.push([ok ? '요구 실적 충족' : '요구 실적 미달',
+            ok ? `${wonKo(got - need)} 여유` : `${wonKo(need - got)} 부족`,
+            `공고 요구 ${wonKo(need)} 기준입니다. 이 값은 공고서에서 옮겨 적은 것이며 화면이 확인하지 못합니다.`]);
+          // 필요 최소 지분율. 보유 실적으로 아예 못 채우면 그 사실을 그대로 적는다.
+          const req = (need / mine) * 100;
+          lines.push(req <= 100
+            ? ['필요 최소 지분율', `${req.toFixed(2)}%`, '이 비율 이상을 가져야 요구 실적을 채웁니다.']
+            : ['필요 최소 지분율', '단독으로는 채우지 못함',
+              `요구 실적이 보유 실적의 ${(need / mine).toFixed(2)}배입니다. 지분을 100% 가져도 모자랍니다.`]);
+        }
+      }
+      $('j-out').innerHTML = lines.map(([k, v, memo]) => `<div class="br-jsrow">
+        <div class="br-jsk">${esc(k)}</div>
+        <div class="br-jsv mono">${esc(v)}</div>
+        <div class="br-jsm">${esc(memo)}</div></div>`).join('')
+        + '<p class="br-jswarn">구성원별 실적 인정 비율과 최소 지분율은 공고마다 다릅니다.'
+        + ' 최종 확인은 공고서와 현장설명서를 따릅니다.</p>';
+    }
+
+    ['j-kind', 'j-mine', 'j-share', 'j-need'].forEach((id) => {
+      $(id).addEventListener('input', renderJoint);
+      $(id).addEventListener('change', renderJoint);
+    });
+    renderJoint();
+
     // 열 머리 정렬 — 없음 → 오름 → 내림 → 없음
     $('br-sheet').addEventListener('click', (ev) => {
       const b = ev.target.closest('[data-sort]');
@@ -1305,6 +1410,34 @@ const ld = {
     .br-can tbody tr.is-no th { border-left-color: var(--muted); }
     .br-can tbody tr.is-later th { border-left-color: var(--muted); border-left-style: dashed; }
     .br-can td { font-size: 12.5px; }
+
+    /* 공동도급 인정 실적 계산 */
+    .br-js { margin-top: 30px; max-width: var(--measure); }
+    .br-jsnote { margin: 0 0 12px; font-size: 13px; color: var(--sub); line-height: 1.8; word-break: keep-all; }
+    .br-jsgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 16px;
+                 align-items: start; }
+    /* ★ 칸마다 라벨 길이가 달라 입력칸의 높이가 어긋난다. 각 칸을 위로 붙이고
+       라벨 줄을 한 줄로 고정해 밑변을 맞춘다(선택칸이 늘어나던 것도 함께 잡힌다). */
+    .br-jsgrid .br-f { align-content: start; }
+    .br-jsgrid .br-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .br-jsgrid select, .br-jsgrid input[type="number"] {
+      font: inherit; font-size: 14px; padding: 8px 10px; width: 100%; min-width: 0;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-jsgrid select:focus, .br-jsgrid input:focus { outline: none; border-color: var(--accent); }
+    .br-jsgrid input:disabled, .br-jsgrid select:disabled { color: var(--muted); background: var(--bg); }
+    .br-u { font-size: 11.5px; color: var(--muted); }
+    .br-jsout { margin-top: 14px; border-top: 1px solid var(--hair); }
+    .br-jsrow { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 160px) minmax(0, 1fr);
+                gap: 4px 14px; padding: 10px 0; border-bottom: 1px solid var(--hair2); align-items: baseline; }
+    .br-jsk { font-size: 13px; font-weight: 700; color: var(--brand); }
+    .br-jsv { font-size: 17px; font-weight: 700; color: var(--ink); }
+    .br-jsm { font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+    .br-jsempty { font-size: 13px; color: var(--muted); padding: 12px 0; }
+    .br-jswarn { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+    @media (max-width: 620px) {
+      .br-jsrow { grid-template-columns: minmax(0, 1fr); }
+    }
 
     .br-explain { margin-top: 34px; max-width: var(--measure); }
     .br-h2 { font-size: 19px; margin: 24px 0 8px; letter-spacing: -.022em; }
