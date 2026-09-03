@@ -32,6 +32,61 @@ export function asRatio(rate) {
   return Math.abs(v) > 1 ? v / 100 : v;
 }
 
+/**
+ * 한 공고의 투찰가 파라미터. `bid_price.BidParams` 의 이식이다.
+ * 기존 함수들은 평범한 객체도 그대로 받는다(필드명이 같다).
+ */
+export class BidParams {
+  constructor({
+    baseAmount, lowerLimitRate, aValue = 0,
+    totalReserves = 15, drawReserves = 4,
+    rangeBeginRate = -2, rangeEndRate = 2,
+  }) {
+    this.baseAmount = Number(baseAmount);
+    this.lowerLimitRate = lowerLimitRate;
+    this.aValue = Number(aValue) || 0;
+    this.totalReserves = Number(totalReserves) || 15;
+    this.drawReserves = Number(drawReserves) || 4;
+    this.rangeBeginRate = Number(rangeBeginRate);
+    this.rangeEndRate = Number(rangeEndRate);
+  }
+
+  lowerRatio() { return asRatio(this.lowerLimitRate); }
+
+  /**
+   * 공고 행 + 기초금액 응답에서 만든다.
+   * 기초금액이나 낙찰하한율이 없으면 null — 추정가격 따위로 대신 채우지 않는다.
+   */
+  static fromNotice(notice, basis = null, aValue = null) {
+    const b = basis || {};
+    const pick = (...keys) => {
+      for (const k of keys) {
+        for (const src of [b, notice]) {
+          const v = src?.[k];
+          if (v !== undefined && v !== null && v !== '' && v !== '0') return v;
+        }
+      }
+      return null;
+    };
+    const base = pick('bssamt', 'bsis_amt', 'base_amount');
+    const lwlt = pick('sucsfbid_lwlt_rate', 'sucsfbidLwltRate');
+    if (base === null || lwlt === null) return null;
+    const baseNum = parseFloat(String(base).replace(/,/g, ''));
+    if (!isFinite(baseNum) || baseNum <= 0) return null;
+    const rngB = pick('rsrvtnPrceRngBgnRate', 'rsrvtn_prce_rng_bgn_rate');
+    const rngE = pick('rsrvtnPrceRngEndRate', 'rsrvtn_prce_rng_end_rate');
+    return new BidParams({
+      baseAmount: baseNum,
+      lowerLimitRate: parseFloat(String(lwlt).replace('%', '')),
+      aValue: Number(aValue ?? pick('a_value', 'aValue') ?? 0),
+      totalReserves: parseInt(pick('tot_prdprc_num', 'totPrdprcNum') ?? 15, 10),
+      drawReserves: parseInt(pick('drwt_prdprc_num', 'drwtPrdprcNum') ?? 4, 10),
+      rangeBeginRate: rngB !== null ? Number(rngB) : -2,
+      rangeEndRate: rngE !== null ? Number(rngE) : 2,
+    });
+  }
+}
+
 /** 예비가격범위 하단·상단. 범위율은 늘 백분율이다(-2 = -2%). */
 export function reserveRange(p) {
   return [
@@ -151,9 +206,12 @@ export function analyze(p, targets = [0.5, 0.8, 0.9, 0.95]) {
   const dist = priceDistribution(syntheticReserves(p), p.drawReserves);
   const curve = probabilityCurve(p, dist, { step: 0.01 });
   const mid = dist[Math.floor((dist.length - 1) / 2)];
+  const [rangeLow, rangeHigh] = reserveRange(p);
   return {
     distribution: dist,
     curve,
+    rangeLow,
+    rangeHigh,
     combinations: dist.length,
     minPrice: dist[0],
     medianPrice: mid,

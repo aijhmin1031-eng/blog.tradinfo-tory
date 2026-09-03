@@ -68,6 +68,9 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           DART_API_KEY: ${{ secrets.DART_API_KEY }}
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          # 나라장터 입찰공고(입찰레이더 화면). 전용 키가 없으면 DATA_GO_KR_KEY 로 떨어지고,
+          # 그것도 없으면 수집만 조용히 건너뛴다(사이트는 예시 세트로 그려진다).
+          G2B_SERVICE_KEY: ${{ secrets.G2B_SERVICE_KEY }}
         run: npm run pipeline
 
       - name: 계열 점검 (실패해도 커밋은 한다)

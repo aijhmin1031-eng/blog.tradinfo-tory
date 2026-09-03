@@ -1,0 +1,385 @@
+---
+// 입찰레이더 — 나라장터 공고 자동 선별 · 2026-09-03 신설.
+//
+// 입찰레이더(별도 repo `ai-bid-radar`)의 엔진을 그대로 옮긴 화면이다. 그 프로그램에는
+// 웹 화면이 없다. 결과가 나가는 곳이 **텔레그램 알림 카드**와 **기초자료 엑셀 네 시트**뿐이라,
+// 그 둘을 화면에 그대로 세웠다. 열 이름·순서·문구·이모지까지 같다.
+//
+// 이식한 것: 자격필터(qualifier.py) · 공동도급 분류(joint_supply.py) ·
+//            기초자료(briefing.py, briefing_excel.py) · 알림 카드(notifier.py) ·
+//            투찰가 산정(bid_price.py, `/bid-odds/` 와 같은 모듈)
+// 판정은 전부 브라우저에서 돈다. 인증키는 이 사이트에 없다.
+//
+// 공고 데이터는 `src/data/bid-notices.json` 이고, CI 의 `scripts/pipeline/g2b.mjs` 가
+// 나라장터에서 받아 갱신한다. 키가 없으면 예시 세트가 그대로 남고 화면이 그것을 밝힌다.
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+import notices from '../data/bid-notices.json';
+
+const isSample = notices.source === 'sample';
+const asOf = notices.generatedAt ? notices.generatedAt.slice(0, 10).replace(/-/g, '.') : '';
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: '입찰레이더',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'All',
+  description:
+    '나라장터 입찰공고를 업체의 지역·면허 조건으로 선별하고, 공동도급 가능 여부와 투찰가 참고표를 함께 냅니다.',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+  publisher: { '@type': 'Organization', name: '도토리경제' },
+};
+---
+
+<Base
+  title="입찰레이더"
+  description="나라장터 입찰공고를 업체의 지역·보유 면허로 선별합니다. 참여가능·확인필요·자격미달을 가르고, 공동도급 가능 여부와 참여 체크리스트, 복수예가 투찰가 참고표를 한 화면에 냅니다."
+  compact
+  activeNav="warehouse"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
+  <script type="application/json" id="br-data" set:html={JSON.stringify(notices)} />
+
+  <section class="wrap br">
+    <header class="br-head">
+      <div class="kicker-en" style="color: var(--accent);">BID RADAR</div>
+      <h1 class="serif br-title">입찰레이더</h1>
+      <p class="br-sub">
+        나라장터 공고를 업체의 <strong>지역과 보유 면허</strong>로 갈라
+        <strong>참여가능·확인필요·자격미달</strong>을 판정합니다. 통과한 공고에는 공동도급
+        가능 여부, 참여 체크리스트, 복수예가 투찰가 참고표가 함께 붙습니다.
+      </p>
+      <p class="br-note">
+        판정은 규칙 기반이며 참고용입니다. 최종 자격 확인은 공고서와 발주기관 기준을 따릅니다.
+        {isSample
+          ? ' 지금 보이는 공고는 화면 구성을 위한 예시입니다. 실제 수집이 연결되면 자동으로 교체됩니다.'
+          : ` 수집 기준일 ${asOf}.`}
+      </p>
+    </header>
+
+    <form class="br-form" id="br-form" autocomplete="off">
+      <div class="br-grid">
+        <label class="br-f">
+          <span class="br-l">업체 소재지 <em>광역 또는 광역+기초</em></span>
+          <input type="text" id="f-region" value="경상남도 창원시" />
+        </label>
+        <label class="br-f br-wide">
+          <span class="br-l">보유 면허·업종 <em>쉼표로 구분</em></span>
+          <input type="text" id="f-lic" value="조경식재공사업, 조경시설물설치공사업, 지반조성포장공사업" />
+        </label>
+        <div class="br-f br-opts">
+          <span class="br-l">표시</span>
+          <label class="br-chk"><input type="checkbox" id="f-onlyok" /> 참여가능만</label>
+          <label class="br-chk"><input type="checkbox" id="f-joint" /> 공동도급 가능만</label>
+        </div>
+      </div>
+    </form>
+
+    <div class="br-tally" id="br-tally"></div>
+
+    <div class="br-cols">
+      <section class="br-left">
+        <h2 class="br-h3">알림 <span class="br-h3s">텔레그램으로 나가는 카드 그대로</span></h2>
+        <div id="br-cards" class="br-cardgrid"></div>
+      </section>
+
+      <section class="br-right">
+        <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 네 시트를 화면으로</span></h2>
+        <div class="br-tabs" role="tablist" id="br-tabs">
+          <button type="button" class="br-tab is-on" data-tab="compare" role="tab">공고 비교표</button>
+          <button type="button" class="br-tab" data-tab="check" role="tab">참여 체크리스트</button>
+          <button type="button" class="br-tab" data-tab="joint" role="tab">공동도급 분류</button>
+          <button type="button" class="br-tab" data-tab="price" role="tab">투찰가 참고</button>
+        </div>
+        <p class="br-tabnote" id="br-tabnote"></p>
+        <div class="br-scroll"><div id="br-sheet"></div></div>
+      </section>
+    </div>
+
+    <section class="br-explain">
+      <h2 class="serif br-h2">판정이 갈리는 규칙</h2>
+      <p>
+        지역은 공고에 참가가능지역이 지정된 경우에만 봅니다. 지정돼 있으면 업체 소재지가 그 안에
+        들어야 하고, 광역과 기초 표기 차이는 보정합니다. 경남과 경상남도는 같은 것으로 읽습니다.
+        면허는 공고가 요구하는 면허 가운데 하나라도 보유 면허와 맞으면 통과합니다. 면허명 뒤에
+        붙는 코드는 떼고 비교합니다.
+      </p>
+      <p>
+        <strong>업종제한이 있다고 표시돼 있는데 면허 상세를 받지 못한 공고는 확인필요로 남깁니다.</strong>
+        제한이 없는 것과 확인하지 못한 것은 다릅니다. 이 둘을 섞으면 참여 못 할 공고가
+        참여가능으로 올라오거나, 될 공고가 조용히 사라집니다.
+      </p>
+
+      <h2 class="serif br-h2">공동도급에서 할 수 있는 것과 없는 것</h2>
+      <p>
+        공고의 공동수급방식으로 공동이행·분담이행·혼합·주계약자·단독을 가릅니다.
+        <strong>분담이행</strong>은 공종을 나눠 각자 맡은 부분만 하므로, 타 공종 실적이 없는
+        업체가 들어갈 자리가 여기서 생깁니다. <strong>공동이행</strong>은 출자비율대로 함께
+        시공하고 실적도 지분만큼 인정됩니다.
+      </p>
+      <p>
+        다만 <strong>실적 공동도급과 무실적 공동도급의 구분은 이 데이터로 알 수 없습니다.</strong>
+        구성원별 실적 인정 비율과 최소 지분율은 공고서와 현장설명서 본문에 적히고, 조달청 API 는
+        그 본문을 필드로 주지 않습니다. 그래서 화면은 어떤 방식이 열려 있는지까지만 말하고,
+        실적 계산이 필요하다는 사실을 메모로 남깁니다.
+      </p>
+
+      <h2 class="serif br-h2">투찰가는 참고용 통계입니다</h2>
+      <p>
+        기초금액이 공개된 공고에는 복수예비가격 조합을 전수 전개한 투찰가 참고표가 붙습니다.
+        낙찰 확률이 아니라 <strong>하한선 미달로 탈락하지 않을 조합의 비율</strong>이며,
+        예정가격은 추첨으로 정해집니다. 계산 구조와 가정은
+        <a href={url('/bid-odds/')}>복수예가 투찰률 계산기</a>에 자세히 있습니다.
+        기초금액이 아직 공개되지 않은 공고는 비워 둡니다. 추정가격으로 대신 채우지 않습니다.
+      </p>
+
+      <h2 class="serif br-h2">데이터와 인증키</h2>
+      <p>
+        공고는 조달청 나라장터 입찰공고정보서비스에서 받습니다. 이 사이트는 정적 페이지라
+        브라우저가 API 를 직접 부르지 않습니다. 수집은 서버 쪽 작업이 맡고, 화면은 그 결과 파일을
+        읽습니다. 입력한 업체 정보는 어디에도 전송되지 않고 브라우저 안에서만 쓰입니다.
+      </p>
+    </section>
+  </section>
+
+  <script>
+    import { evaluate as judge, VERDICT_LABEL } from '../lib/bid-radar/qualifier.js';
+    import * as joint from '../lib/bid-radar/joint-supply.js';
+    import {
+      summarize, checklist, jointSupplyRows, bidPriceRow, alertLines,
+      COMPARE_COLS, BID_PRICE_COLS,
+    } from '../lib/bid-radar/briefing.js';
+
+    const $ = (id) => document.getElementById(id);
+    const DATA = JSON.parse($('br-data').textContent);
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // 판정 사유는 엔진이 만든 문자열을 그대로 쓴다(파이썬과 같은 문구라야 대조가 된다).
+    // 다만 목록이 ["a","b"] 로 박혀 있어 화면에서는 가운뎃점으로 편다. 뜻은 그대로다.
+    const readable = (s) => String(s ?? '')
+      .replace(/\[\]/g, '없음')
+      .replace(/\[|\]/g, '')
+      .replace(/', '/g, ' · ')
+      .replace(/'/g, '');
+    let tab = 'compare';
+
+    const profile = () => ({
+      region: $('f-region').value.trim(),
+      licenses: $('f-lic').value.split(',').map((s) => s.trim()).filter(Boolean),
+    });
+
+    function judged() {
+      const p = profile();
+      return DATA.notices.map((n) => ({
+        notice: n,
+        match: judge(n, n.licenseLimits || [], n.possibleRegions || [], p),
+        joint: joint.evaluate(n, n.raw || {}),
+      }));
+    }
+
+    function shown(rows) {
+      let out = rows;
+      if ($('f-onlyok').checked) out = out.filter((r) => r.match.verdict === 'eligible');
+      if ($('f-joint').checked) out = out.filter((r) => r.joint.available);
+      return out;
+    }
+
+    function renderTally(rows, list) {
+      const c = { eligible: 0, unknown: 0, ineligible: 0 };
+      rows.forEach((r) => { c[r.match.verdict] += 1; });
+      const total = rows.length;
+      const cut = total ? Math.round(((total - c.eligible) / total) * 100) : 0;
+      $('br-tally').innerHTML = `
+        <div class="br-tl">
+          <div class="br-tn">${total}</div><div class="br-tt">수집 공고</div>
+        </div>
+        <div class="br-tl br-ok">
+          <div class="br-tn">${c.eligible}</div><div class="br-tt">✅ 참여가능</div>
+        </div>
+        <div class="br-tl">
+          <div class="br-tn">${c.unknown}</div><div class="br-tt">❓ 확인필요</div>
+        </div>
+        <div class="br-tl">
+          <div class="br-tn">${c.ineligible}</div><div class="br-tt">❌ 자격미달</div>
+        </div>
+        <div class="br-tsum">볼 공고가 <strong>${cut}%</strong> 줄었습니다. 지금 화면에 ${list.length}건을 폅니다.</div>`;
+    }
+
+    function renderCards(list) {
+      if (!list.length) {
+        $('br-cards').innerHTML = '<p class="br-empty">조건에 맞는 공고가 없습니다.</p>';
+        return;
+      }
+      $('br-cards').innerHTML = list.map(({ notice, match }) => {
+        const lines = alertLines(notice, match);
+        const head = lines[0];
+        const v = VERDICT_LABEL[match.verdict];
+        const body = lines.slice(1).map((l) => (
+          l.href
+            ? `<div class="br-cl"><span class="br-ci">${l.icon}</span><a href="${esc(l.href)}" rel="nofollow noopener" target="_blank">${esc(l.text)}</a></div>`
+            : `<div class="br-cl"><span class="br-ci">${l.icon}</span>${esc(readable(l.text))}</div>`
+        )).join('');
+        return `<article class="br-card br-v-${match.verdict}">
+          <div class="br-ch"><span class="br-ci">${head.icon}</span><span class="br-cn">${esc(head.text)}</span>
+            <span class="br-badge">${v.icon} ${v.text}</span></div>
+          ${body}
+        </article>`;
+      }).join('');
+    }
+
+    function table(cols, rows, opts = {}) {
+      if (!rows.length) return '<p class="br-empty">표시할 공고가 없습니다.</p>';
+      const th = cols.map((c) => `<th>${esc(c)}</th>`).join('');
+      const tr = rows.map((r) => `<tr>${cols.map((c) => {
+        const v = r[c];
+        if (c === '원문URL' && v) return `<td><a href="${esc(v)}" rel="nofollow noopener" target="_blank">공고 원문</a></td>`;
+        const cls = (opts.wide || []).includes(c) ? ' class="br-wcell"' : '';
+        return `<td${cls}>${esc(v ?? '-')}</td>`;
+      }).join('')}</tr>`).join('');
+      return `<table class="br-t"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+    }
+
+    const NOTES = {
+      compare: '엑셀 「공고 비교표」 시트와 같은 열·같은 순서입니다.',
+      check: '공고마다 준비할 것을 항목·내용·메모로 폅니다. ★ 표시는 놓치면 참여 자체가 막히는 항목입니다.',
+      joint: '공고의 공동수급방식으로 분류했습니다. 구성원별 실적 인정 비율은 공고서 본문에서 확인해야 합니다.',
+      price: '참고용 통계입니다. 예정가격은 추첨으로 정해지므로 낙찰을 예측하거나 보장하지 않습니다. 투찰률 x% 열은 하한 통과 조합이 x% 이상이 되는 가장 낮은 투찰률입니다.',
+    };
+
+    function renderSheet(list) {
+      const notices = list.map((r) => r.notice);
+      $('br-tabnote').textContent = NOTES[tab];
+      if (tab === 'compare') {
+        $('br-sheet').innerHTML = table(COMPARE_COLS, notices.map(summarize), { wide: ['공고명'] });
+      } else if (tab === 'joint') {
+        $('br-sheet').innerHTML = table(
+          ['공고번호', '공고명', '구분', '가능여부', '공고표기', '지역제한', '메모'],
+          jointSupplyRows(notices), { wide: ['공고명', '메모'] },
+        );
+      } else if (tab === 'price') {
+        $('br-sheet').innerHTML = table(
+          BID_PRICE_COLS, notices.map((n) => bidPriceRow(n, n.basis)), { wide: ['공고명', '산출근거'] },
+        );
+      } else {
+        // 체크리스트는 공고별 블록이다(엑셀도 블록으로 쌓는다)
+        $('br-sheet').innerHTML = list.map(({ notice }) => {
+          const s = summarize(notice);
+          const items = checklist(notice, notice.licenseLimits, notice.possibleRegions);
+          const rows = items.map(([item, val, memo]) => `<tr><td class="br-cbox">☐</td><th>${esc(item)}</th><td>${esc(val)}</td><td class="br-memo">${esc(memo)}</td></tr>`).join('');
+          return `<div class="br-block"><div class="br-bt">▣ ${esc(s.공고명)}<span class="br-bno">${esc(s.공고번호)}</span></div>
+            <table class="br-t br-ct"><tbody>${rows}</tbody></table></div>`;
+        }).join('');
+      }
+    }
+
+    function render() {
+      const rows = judged();
+      const list = shown(rows);
+      renderTally(rows, list);
+      renderCards(list);
+      renderSheet(list);
+    }
+
+    ['f-region', 'f-lic'].forEach((id) => $(id).addEventListener('input', render));
+    ['f-onlyok', 'f-joint'].forEach((id) => $(id).addEventListener('change', render));
+    $('br-tabs').addEventListener('click', (ev) => {
+      const b = ev.target.closest('.br-tab');
+      if (!b) return;
+      tab = b.dataset.tab;
+      [...$('br-tabs').children].forEach((c) => c.classList.toggle('is-on', c === b));
+      renderSheet(shown(judged()));
+    });
+    render();
+  </script>
+
+  {/* ★ 스코프 CSS 함정: 이 화면의 표·카드·집계는 전부 **런타임에 innerHTML 로 꽂는다.**
+      Astro 스코프는 템플릿에 있던 요소에만 속성을 붙이므로 그 규칙이 하나도 안 닿는다
+      (빌드도 통과하고 글자도 보여서 눈으로만 잡힌다). 선택자를 전부 `.br-` 로 묶어 두고
+      스타일 블록을 전역으로 연다. 낱낱이 `:global()` 로 감싸는 것보다 새는 곳이 없다. */}
+  <style is:global>
+    .br { max-width: var(--measure-wide); padding-top: 26px; padding-bottom: 60px; }
+    .br-title { margin: 6px 0 0; font-size: clamp(26px, 4.4vw, 36px); letter-spacing: -.022em; }
+    .br-sub { margin: 10px 0 0; font-size: 15px; color: var(--sub); line-height: 1.8; word-break: keep-all; max-width: 64ch; }
+    .br-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); word-break: keep-all; max-width: 70ch; }
+
+    .br-form { margin-top: 20px; }
+    .br-grid { display: grid; grid-template-columns: 1fr 1.6fr auto; gap: 14px 18px; align-items: end; }
+    .br-f { display: grid; gap: 5px; }
+    .br-l { font-size: 12.5px; color: var(--sub); font-weight: 600; }
+    .br-l em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 5px; }
+    .br-f input[type="text"] {
+      font-size: 14px; padding: 8px 10px; width: 100%;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-f input[type="text"]:focus { outline: none; border-color: var(--accent); }
+    .br-opts { align-content: end; }
+    .br-chk { font-size: 13px; color: var(--sub); display: inline-flex; align-items: center; gap: 5px; margin-right: 12px; white-space: nowrap; }
+
+    .br-tally {
+      display: grid; grid-template-columns: repeat(4, auto) 1fr; gap: 0 26px; align-items: end;
+      margin-top: 20px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--hair); border-radius: 4px;
+    }
+    .br-tl { text-align: left; }
+    .br-tn { font-size: 26px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+    .br-ok .br-tn { color: var(--accent); }
+    .br-tt { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+    .br-tsum { font-size: 13px; color: var(--sub); text-align: right; word-break: keep-all; }
+
+    /* 알림과 기초자료를 위아래로 놓는다. 나란히 두면 표가 460px 칸에 갇혀 열이 전부 접힌다. */
+    .br-cols { display: grid; gap: 30px; margin-top: 26px; }
+    .br-cardgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+    /* ★ 그리드 칸의 기본 min-width 는 auto 다. 표가 든 칸에 0 을 주지 않으면
+       칸이 표만큼 넓어져 .br-scroll 이 아니라 문서 전체가 가로로 밀린다(390px 에서 실측). */
+    .br-left, .br-right { min-width: 0; }
+    .br-h3 { font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 10px; }
+    .br-h3s { font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 6px; }
+
+    .br-card { border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); padding: 12px 14px; margin-bottom: 10px; }
+    .br-ch { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+    .br-cn { font-weight: 700; font-size: 14px; color: var(--ink); word-break: keep-all; flex: 1 1 auto; }
+    .br-badge { font-size: 11.5px; font-weight: 700; color: var(--sub); white-space: nowrap; }
+    .br-v-eligible .br-badge { color: var(--accent); }
+    .br-cl { font-size: 12.5px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
+    .br-ci { display: inline-block; width: 1.35em; }
+    .br-cl a { color: var(--brand); text-decoration: none; border-bottom: 1px solid var(--hair); }
+    .br-empty { font-size: 13px; color: var(--muted); padding: 14px 0; }
+
+    .br-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+    .br-tab {
+      font: inherit; font-size: 12.5px; padding: 6px 11px; cursor: pointer;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--paper); color: var(--sub);
+    }
+    .br-tab.is-on { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 700; }
+    .br-tabnote { margin: 9px 0 0; font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+    .br-scroll { overflow-x: auto; margin-top: 8px; border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); }
+    /* 엑셀 시트처럼 내용 폭으로 벌리고 좁으면 가로로 민다. width:100% 로 묶으면
+       열 열아홉 개가 한 화면에 눌려 공고명이 네 줄로 접힌다. */
+    .br-t { border-collapse: collapse; width: max-content; min-width: 100%; }
+    /* 줄바꿈되는 칸이 있으면 행이 그 높이만큼 커진다. 위로 붙여야 빈 줄처럼 보이지 않는다. */
+    .br-t th, .br-t td { padding: 7px 9px; font-size: 12px; border-bottom: 1px solid var(--hair2); text-align: left; white-space: nowrap; vertical-align: top; }
+    .br-t thead th { background: var(--brand); color: #fff; font-weight: 700; font-size: 11.5px; white-space: nowrap; }
+    .br-t tbody th { font-weight: 600; color: var(--ink); }
+    .br-t td { color: var(--sub); }
+    .br-t td a { color: var(--brand); }
+    .br-wcell { white-space: normal; min-width: 190px; max-width: 330px; word-break: keep-all; }
+    .br-block { padding: 12px 12px 4px; }
+    .br-bt { font-size: 13px; font-weight: 700; color: var(--brand); margin-bottom: 6px; }
+    .br-bno { font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 8px; }
+    .br-ct { min-width: 560px; }
+    .br-cbox { width: 26px; color: var(--muted); }
+    .br-memo { white-space: normal; color: var(--muted); min-width: 200px; word-break: keep-all; }
+
+    .br-explain { margin-top: 34px; max-width: var(--measure); }
+    .br-h2 { font-size: 19px; margin: 24px 0 8px; letter-spacing: -.022em; }
+    .br-explain p { margin: 0 0 10px; font-size: 14.5px; line-height: 1.85; color: var(--sub); word-break: keep-all; }
+    .br-explain a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--hair); }
+
+    @media (max-width: 900px) {
+      .br-grid { grid-template-columns: 1fr; }
+      .br-tally { grid-template-columns: repeat(4, 1fr); gap: 8px 12px; }
+      .br-tsum { grid-column: 1 / -1; text-align: left; }
+      .br-tn { font-size: 22px; }
+    }
+  </style>
+</Base>
