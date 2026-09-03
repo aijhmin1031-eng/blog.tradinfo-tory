@@ -120,12 +120,12 @@ const ld = {
       </div>
     </form>
 
-    <div class="br-tally" id="br-tally"></div>
+    <div class="br-tally" id="br-tally" role="status" aria-live="polite"></div>
 
     <div class="br-cols">
       <section class="br-left">
         <h2 class="br-h3">알림 <span class="br-h3s">텔레그램으로 나가는 카드 그대로</span></h2>
-        <div id="br-cards" class="br-cardgrid"></div>
+        <div id="br-cards" class="br-cardgrid" aria-live="polite"></div>
       </section>
 
       <section class="br-right">
@@ -138,14 +138,19 @@ const ld = {
         <p class="br-dlnote" id="br-dlnote">
           지금 화면에 보이는 공고가 네 시트로 담깁니다. 공고번호를 누르면 나라장터 원문이 열립니다.
         </p>
-        <div class="br-tabs" role="tablist" id="br-tabs">
-          <button type="button" class="br-tab is-on" data-tab="compare" role="tab">공고 비교표</button>
-          <button type="button" class="br-tab" data-tab="check" role="tab">참여 체크리스트</button>
-          <button type="button" class="br-tab" data-tab="joint" role="tab">공동도급 분류</button>
-          <button type="button" class="br-tab" data-tab="price" role="tab">투찰가 참고</button>
+        <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 네 시트">
+          <button type="button" class="br-tab is-on" data-tab="compare" role="tab"
+                  aria-selected="true" aria-controls="br-sheet">공고 비교표</button>
+          <button type="button" class="br-tab" data-tab="check" role="tab"
+                  aria-selected="false" aria-controls="br-sheet">참여 체크리스트</button>
+          <button type="button" class="br-tab" data-tab="joint" role="tab"
+                  aria-selected="false" aria-controls="br-sheet">공동도급 분류</button>
+          <button type="button" class="br-tab" data-tab="price" role="tab"
+                  aria-selected="false" aria-controls="br-sheet">투찰가 참고</button>
         </div>
         <p class="br-tabnote" id="br-tabnote"></p>
-        <div class="br-scroll"><div id="br-sheet"></div></div>
+        <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (가로로 스크롤됩니다)">
+          <div id="br-sheet" role="tabpanel"></div></div>
       </section>
     </div>
 
@@ -261,7 +266,20 @@ const ld = {
 
     function renderCards(list) {
       if (!list.length) {
-        $('br-cards').innerHTML = '<p class="br-empty">조건에 맞는 공고가 없습니다.</p>';
+        // 「없습니다」로 끝내지 않는다. 무엇을 풀면 되는지까지 적는다.
+        const all = judged();
+        const why = [];
+        if ($('f-onlyok').checked) why.push('「참여가능만」 표시 해제');
+        if ($('f-joint').checked) why.push('「공동도급 가능만」 표시 해제');
+        if (!$('f-lic').value.trim()) why.push('보유 면허 선택');
+        else if (all.length && !all.some((r) => r.match.verdict === 'eligible')) {
+          why.push('보유 면허를 넓게 고르기');
+        }
+        if ($('f-region').value.trim()) why.push('업체 소재지를 광역만 남기기');
+        const tip = why.length
+          ? `이렇게 해 보십시오 — ${why.join(' · ')}.`
+          : '수집된 공고 자체가 없습니다. 다음 아침 수집을 기다려 주십시오.';
+        $('br-cards').innerHTML = `<p class="br-empty"><strong>조건에 맞는 공고가 없습니다.</strong><br />${esc(tip)}</p>`;
         return;
       }
       $('br-cards').innerHTML = list.map(({ notice, match }) => {
@@ -515,12 +533,34 @@ const ld = {
       }
     });
 
-    $('br-tabs').addEventListener('click', (ev) => {
-      const b = ev.target.closest('.br-tab');
+    function selectTab(b) {
       if (!b) return;
       tab = b.dataset.tab;
-      [...$('br-tabs').children].forEach((c) => c.classList.toggle('is-on', c === b));
+      [...$('br-tabs').children].forEach((c) => {
+        const on = c === b;
+        c.classList.toggle('is-on', on);
+        c.setAttribute('aria-selected', String(on));   // 색만으로 알리지 않는다
+      });
       renderSheet(shown(judged()));
+    }
+
+    $('br-tabs').addEventListener('click', (ev) => selectTab(ev.target.closest('.br-tab')));
+
+    // 탭은 화살표로 옮겨 다니는 것이 표준이다(WAI-ARIA tablist).
+    $('br-tabs').addEventListener('keydown', (ev) => {
+      const tabs = [...$('br-tabs').children];
+      const i = tabs.indexOf(document.activeElement);
+      if (i < 0) return;
+      const to = ev.key === 'ArrowRight' ? i + 1
+        : ev.key === 'ArrowLeft' ? i - 1
+        : ev.key === 'Home' ? 0
+        : ev.key === 'End' ? tabs.length - 1
+        : -1;
+      if (to === -1) return;
+      ev.preventDefault();
+      const next = tabs[(to + tabs.length) % tabs.length];
+      next.focus();
+      selectTab(next);
     });
     render();
   </script>
