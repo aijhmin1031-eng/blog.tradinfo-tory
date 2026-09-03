@@ -170,15 +170,27 @@ const ld = {
           <label class="br-fl">업무
             <select id="f-div"><option value="">전체</option></select>
           </label>
-          <label class="br-fl">마감
-            <select id="f-clse">
-              <option value="">전체</option>
-              <option value="1">오늘 안</option>
-              <option value="3">사흘 안</option>
-              <option value="7">이레 안</option>
-              <option value="30">한 달 안</option>
+          {/* 기간 — 기준을 고르고, 프리셋으로 좁히고, 필요하면 달력으로 직접 잡는다.
+              공고가 많을수록 먼저 쓰게 되는 조건이라 한 묶음으로 붙여 두었다. */}
+          <span class="br-fl br-period">기간
+            <select id="f-base" aria-label="기간 기준">
+              <option value="clse">마감일</option>
+              <option value="ntce">공고일</option>
             </select>
-          </label>
+            <select id="f-period" aria-label="기간 범위">
+              <option value="">전체</option>
+              <option value="1">오늘</option>
+              <option value="3">사흘</option>
+              <option value="7">이레</option>
+              <option value="30">한 달</option>
+              <option value="custom">직접 지정</option>
+            </select>
+            <span class="br-dates" id="br-dates" hidden>
+              <input type="date" id="f-from" aria-label="시작일" />
+              <span class="br-tilde" aria-hidden="true">~</span>
+              <input type="date" id="f-to" aria-label="종료일" />
+            </span>
+          </span>
           <label class="br-fl">추정가
             <select id="f-amt">
               <option value="">전체</option>
@@ -342,11 +354,31 @@ const ld = {
       q: $('f-q').value.trim(),
       verdict,
       div: $('f-div').value,
-      clse: $('f-clse').value,
+      base: $('f-base').value,
+      period: $('f-period').value,
+      from: $('f-from').value,
+      to: $('f-to').value,
       amt: $('f-amt').value,
       org: $('f-org').value,
       joint: $('f-joint').checked,
     });
+
+    /** 기간 조건을 [시작, 끝] 밀리초로 편다. 조건이 없으면 null. */
+    function span(c) {
+      if (c.period === 'custom') {
+        if (!c.from && !c.to) return null;
+        // 끝날은 그날 하루를 통째로 포함한다(23:59:59.999).
+        return [
+          c.from ? new Date(`${c.from}T00:00:00`).getTime() : -Infinity,
+          c.to ? new Date(`${c.to}T23:59:59.999`).getTime() : Infinity,
+        ];
+      }
+      if (!c.period) return null;
+      const n = Number(c.period) * 864e5;
+      const now = Date.now();
+      // 마감일은 **앞으로** 며칠, 공고일은 **최근** 며칠이다. 기준이 바뀌면 방향도 바뀐다.
+      return c.base === 'ntce' ? [now - n, now] : [now, now + n];
+    }
 
     const AMT = {
       a: (v) => Number.isFinite(v) && v < 1e8,
@@ -370,11 +402,11 @@ const ld = {
       if (c.div) out = out.filter((r) => divOf(r.notice) === c.div);
       if (c.org) out = out.filter((r) => org(r.notice) === c.org);
       if (c.amt) out = out.filter((r) => AMT[c.amt](price(r.notice)));
-      if (c.clse) {
-        const limit = Date.now() + Number(c.clse) * 864e5;
+      const sp = span(c);
+      if (sp) {
         out = out.filter((r) => {
-          const t = clseMs(r.notice);
-          return Number.isFinite(t) && t <= limit;
+          const t = c.base === 'ntce' ? openMs(r.notice) : clseMs(r.notice);
+          return Number.isFinite(t) && t >= sp[0] && t <= sp[1];
         });
       }
       if (c.joint) out = out.filter((r) => r.joint.available);
@@ -418,7 +450,8 @@ const ld = {
         + orgs.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
     }
 
-    const CLSE_LABEL = { 1: '오늘 안', 3: '사흘 안', 7: '이레 안', 30: '한 달 안' };
+    const BASE_LABEL = { clse: '마감일', ntce: '공고일' };
+    const PERIOD_LABEL = { 1: '오늘', 3: '사흘', 7: '이레', 30: '한 달' };
     const AMT_LABEL = { a: '1억원 미만', b: '1억 ~ 10억원', c: '10억원 이상' };
     const VERDICT_TEXT = { eligible: '참여 가능', unknown: '확인 필요' };
 
@@ -429,7 +462,14 @@ const ld = {
       if (c.q) chips.push(['q', `"${c.q}" 검색`]);
       if (c.verdict !== 'all') chips.push(['verdict', `판정: ${VERDICT_TEXT[c.verdict]}`]);
       if (c.div) chips.push(['div', `업무: ${DIV_LABEL[c.div] || c.div}`]);
-      if (c.clse) chips.push(['clse', `마감: ${CLSE_LABEL[c.clse]}`]);
+      if (c.period === 'custom' && (c.from || c.to)) {
+        chips.push(['period', `기간: ${BASE_LABEL[c.base]} ${c.from || '처음'} ~ ${c.to || '끝'}`]);
+      } else if (c.period) {
+        const word = c.base === 'ntce'
+          ? (c.period === '1' ? '오늘' : `최근 ${PERIOD_LABEL[c.period]}`)
+          : `${PERIOD_LABEL[c.period]} 안`;
+        chips.push(['period', `기간: ${BASE_LABEL[c.base]} ${word}`]);
+      }
       if (c.amt) chips.push(['amt', `추정가: ${AMT_LABEL[c.amt]}`]);
       if (c.org) chips.push(['org', `발주처: ${c.org}`]);
       if (c.joint) chips.push(['joint', '공동도급 가능만']);
@@ -446,7 +486,12 @@ const ld = {
       if (key === 'q') $('f-q').value = '';
       else if (key === 'verdict') setVerdict('all');
       else if (key === 'div') $('f-div').value = '';
-      else if (key === 'clse') $('f-clse').value = '';
+      else if (key === 'period') {
+        $('f-period').value = '';
+        $('f-from').value = '';
+        $('f-to').value = '';
+        syncPeriod();
+      }
       else if (key === 'amt') $('f-amt').value = '';
       else if (key === 'org') $('f-org').value = '';
       else if (key === 'joint') $('f-joint').checked = false;
@@ -454,7 +499,7 @@ const ld = {
     }
 
     function clearAll() {
-      ['q', 'verdict', 'div', 'clse', 'amt', 'org', 'joint', 'sort'].forEach(clearCond);
+      ['q', 'verdict', 'div', 'period', 'amt', 'org', 'joint', 'sort'].forEach(clearCond);
     }
 
     function setVerdict(v) {
@@ -581,7 +626,7 @@ const ld = {
       if (c.q) why.push('검색어 지우기');
       if (c.verdict !== 'all') why.push('판정을 「전체」로');
       if (c.div) why.push('업무를 「전체」로');
-      if (c.clse) why.push('마감을 「전체」로');
+      if (c.period) why.push('기간을 「전체」로');
       if (c.amt) why.push('추정가를 「전체」로');
       if (c.org) why.push('발주처를 「전체」로');
       if (c.joint) why.push('「공동도급 가능만」 해제');
@@ -746,8 +791,55 @@ const ld = {
       if (ev.key === 'Enter') { ev.preventDefault(); clearTimeout(qTimer); render(); }
     });
 
-    ['f-div', 'f-clse', 'f-amt', 'f-org'].forEach((id) => $(id).addEventListener('change', render));
+    ['f-div', 'f-amt', 'f-org'].forEach((id) => $(id).addEventListener('change', render));
     $('f-joint').addEventListener('change', render);
+
+    // ── 기간 ─────────────────────────────────────────────────────────
+    // 프리셋의 말이 기준에 따라 달라진다. 마감일은 「이레 안」(앞으로),
+    // 공고일은 「최근 이레」(뒤로)다. 같은 말로 두면 반대 뜻이 된다.
+    const ymd = (ms) => {
+      const d = new Date(ms);
+      const p2 = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+    };
+
+    /** 수집분에 실제로 있는 날짜 범위. 달력의 양끝을 그 밖으로 못 가게 잡아 준다. */
+    function dataRange(base) {
+      const ts = DATA.notices.map((n) => (base === 'ntce' ? openMs(n) : clseMs(n)))
+        .filter((t) => Number.isFinite(t));
+      if (!ts.length) return null;
+      return [Math.min(...ts), Math.max(...ts)];
+    }
+
+    function syncPeriod() {
+      const base = $('f-base').value;
+      const custom = $('f-period').value === 'custom';
+      $('br-dates').hidden = !custom;
+      // 프리셋 문구를 기준에 맞춘다
+      [...$('f-period').options].forEach((o) => {
+        if (!PERIOD_LABEL[o.value]) return;
+        // 「최근 오늘」은 말이 안 된다. 하루짜리는 그냥 「오늘」이다.
+        o.textContent = base === 'ntce'
+          ? (o.value === '1' ? '오늘' : `최근 ${PERIOD_LABEL[o.value]}`)
+          : `${PERIOD_LABEL[o.value]} 안`;
+      });
+      const rg = dataRange(base);
+      if (rg) {
+        const lo = ymd(rg[0]);
+        const hi = ymd(rg[1]);
+        ['f-from', 'f-to'].forEach((id) => { $(id).min = lo; $(id).max = hi; });
+        // 직접 지정으로 처음 넘어오면 수집분의 양끝을 채워 둔다(빈 칸에서 시작하지 않는다).
+        if (custom && !$('f-from').value && !$('f-to').value) {
+          $('f-from').value = lo;
+          $('f-to').value = hi;
+        }
+      }
+    }
+
+    $('f-base').addEventListener('change', () => { syncPeriod(); render(); });
+    $('f-period').addEventListener('change', () => { syncPeriod(); render(); });
+    ['f-from', 'f-to'].forEach((id) => $(id).addEventListener('change', render));
+    syncPeriod();
 
     document.querySelector('.br-seg').addEventListener('click', (ev) => {
       const b = ev.target.closest('.br-sg');
@@ -1018,12 +1110,22 @@ const ld = {
     }
     .br-sg:last-child { border-right: 0; }
     .br-sg.is-on { background: var(--brand); color: #fff; font-weight: 700; }
-    .br-fl { font-size: 12.5px; color: var(--sub); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .br-fl { font-size: 12.5px; color: var(--sub); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; min-width: 0; max-width: 100%; }
     .br-fl select {
       font: inherit; font-size: 12.5px; padding: 5px 7px; max-width: 190px;
       border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
     }
     .br-fl select:focus { outline: none; border-color: var(--accent); }
+    /* ★ 기간 묶음은 칸이 넷이라 390px 에서 문서를 밀어낸다(실측 65px).
+       줄바꿈을 허용하고 달력 칸이 남은 너비를 나눠 갖게 한다. */
+    .br-period { gap: 6px; flex-wrap: wrap; white-space: normal; }
+    .br-dates { display: inline-flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 0; }
+    .br-dates input[type="date"] { min-width: 0; flex: 1 1 0; }
+    .br-dates input[type="date"] {
+      font: inherit; font-size: 12.5px; padding: 4px 6px;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-tilde { color: var(--muted); }
     .br-active { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
     .br-al { font-size: 11.5px; color: var(--muted); margin-right: 2px; }
     .br-clearall {
