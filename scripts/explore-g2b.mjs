@@ -54,10 +54,11 @@ async function all(op, params, label) {
 }
 
 /** 값별 건수를 많은 순으로. 어휘가 무엇인지 눈으로 보려는 것이다. */
-function tally(values, top = 40) {
+function tally(values, top = 0) {
   const m = new Map();
   for (const v of values) m.set(v, (m.get(v) || 0) + 1);
-  return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, top);
+  const out = [...m.entries()].sort((a, b) => b[1] - a[1]);
+  return top > 0 ? out.slice(0, top) : out;
 }
 
 async function main() {
@@ -104,7 +105,7 @@ async function main() {
   const rgnHit = new Set(rgn.rows.filter((r) => noticeKeys.has(key(r.bidNtceNo, r.bidNtceOrd)))
     .map((r) => key(r.bidNtceNo, r.bidNtceOrd)));
   log(`참가가능지역 ${rgn.rows.length}줄 · 우리 공고와 겹치는 공고 ${rgnHit.size}건`);
-  console.log('── 지역 표기 상위 40 ──');
+  console.log('── 지역 표기 전체 ──');
   for (const [v, c] of tally(rgnNames)) console.log(`   ${String(c).padStart(5)}  ${v}`);
   const withSpace = rgnNames.filter((v) => v.includes(' ')).length;
   console.log(`   (공백 포함 표기 ${withSpace}줄 / 서로 다른 표기 ${new Set(rgnNames).size}종)`);
@@ -116,7 +117,7 @@ async function main() {
   const licHit = new Set(lic.rows.filter((r) => noticeKeys.has(key(r.bidNtceNo, r.bidNtceOrd)))
     .map((r) => key(r.bidNtceNo, r.bidNtceOrd)));
   log(`면허제한 ${lic.rows.length}줄 · 우리 공고와 겹치는 공고 ${licHit.size}건`);
-  console.log('── 면허 표기 상위 40 ──');
+  console.log('── 면허 표기 전체 ──');
   for (const [v, c] of tally(licNames)) console.log(`   ${String(c).padStart(5)}  ${v}`);
   console.log(`   (서로 다른 표기 ${new Set(licNames).size}종)`);
 
