@@ -17,7 +17,7 @@ const OUT = join(here, '../../src/data/bid-notices.json');
 const ENDPOINT = process.env.G2B_ENDPOINT || 'https://apis.data.go.kr/1230000/ad/BidPublicInfoService';
 const KEY = process.env.G2B_SERVICE_KEY || process.env.DATA_GO_KR_KEY || '';
 const DAYS = Number(process.env.G2B_DAYS || 2);
-const MAX_NOTICES = Number(process.env.G2B_MAX || 60);
+const MAX_NOTICES = Number(process.env.G2B_MAX || 200);
 
 const WORK_DIVS = {
   cnstwk: { list: '/getBidPblancListInfoCnstwkPPSSrch', basis: '/getBidPblancListInfoCnstwkBsisAmount' },
@@ -225,6 +225,18 @@ async function main() {
   rows = rows.filter((r) => clseMs(r) >= nowMs);
   if (before !== rows.length) console.log(`  · 마감이 지난 공고 ${before - rows.length}건 제외`);
 
+  // ★ 같은 공고가 두 줄로 오면 안 된다(2026-09-04 소유주 지시 「데이터가 겹치면 안 된다」).
+  // 재공고·정정공고는 공고번호가 같고 차수만 다르다. **가장 큰 차수 하나만** 남긴다.
+  const best = new Map();
+  for (const r of rows) {
+    const no = String(r.bid_ntce_no || '');
+    const ord = Number(r.bid_ntce_ord || 0);
+    const prev = best.get(no);
+    if (!prev || ord > Number(prev.bid_ntce_ord || 0)) best.set(no, r);
+  }
+  if (best.size !== rows.length) console.log(`  · 같은 공고의 이전 차수 ${rows.length - best.size}건 제외`);
+  rows = [...best.values()];
+
   // 마감이 임박한 것부터. 같으면 최근 게시분이 앞이다.
   rows.sort((a, b) => (clseMs(a) - clseMs(b))
     || String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
@@ -233,10 +245,44 @@ async function main() {
     return { ...row, licenseLimits: licenses[k] || [], possibleRegions: regions[k] || [], basis: basis[k] || null };
   });
 
+  // ★ 화면이 고르게 할 어휘는 **API 가 쓰는 그 이름**이어야 한다(2026-09-04 실측).
+  //
+  // 손으로 적은 표는 반드시 낡는다. 실제로 낡아 있었다 —
+  //   · 면허: 우리는 「조경식재공사업」, 나라장터는 「조경식재ㆍ시설물공사업」(가운뎃점이 ㆍ 다).
+  //           licenseMatch 는 부분 문자열로 맞추므로 **어느 쪽으로도 안 걸렸다.**
+  //   · 지역: 우리는 「전라남도」·「광주광역시」, 나라장터는 「전남광주통합특별시」.
+  //           인천은 제물포구·영종구·서해구·검단구로 갈렸다.
+  // 그래서 수집할 때 어휘를 함께 적어 두고, 화면이 등록부와 합쳐 쓴다.
+  // 지역은 광역·기초 두 마디까지만 본다(읍면리까지 오는 공고가 있는데 그것은 고를 대상이 아니다).
+  const licenseVocab = [...Object.entries(
+    Object.values(licenses).flat().reduce((m, v) => {
+      const nm = String(v).split('/')[0].trim();
+      if (nm) m[nm] = (m[nm] || 0) + 1;
+      return m;
+    }, {}),
+  )].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+
+  const regionVocab = {};
+  for (const v of Object.values(regions).flat()) {
+    const t = String(v).replace(/ {2,}/g, ' ').trim().split(' ').filter(Boolean);
+    if (!t.length) continue;
+    const prov = t[0];
+    (regionVocab[prov] ||= new Set());
+    // 두 마디째가 시·군·구일 때만 기초로 본다(「도계읍」·「발이리」는 넣지 않는다).
+    if (t[1] && /[시군구]$/.test(t[1])) regionVocab[prov].add(t[1]);
+  }
+  const regionVocabOut = Object.fromEntries(
+    Object.entries(regionVocab)
+      .sort((a, b) => a[0].localeCompare(b[0], 'ko'))
+      .map(([k, v]) => [k, [...v].sort((a, b) => a.localeCompare(b, 'ko'))]),
+  );
+
   const payload = {
     source: 'g2b',
     generatedAt: new Date().toISOString(),
     window: { bgn, end },
+    licenseVocab,
+    regionVocab: regionVocabOut,
     counts: {
       notices: notices.length,
       withLicense: notices.filter((n) => n.licenseLimits.length).length,
