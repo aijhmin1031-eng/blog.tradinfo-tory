@@ -47,8 +47,18 @@ const pad = (n) => String(n).padStart(2, '0');
 const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
 const key = (no, ord) => `${no}-${String(ord || '000').padStart(3, '0')}`;
 
-async function call(op, params) {
-  const qs = new URLSearchParams({ serviceKey: KEY, type: 'json', numOfRows: '100', pageNo: '1', ...params });
+// 한 쪽에 받을 수 있는 최대 건수. 1000 이상을 넣으면 API 가 거부하고 10건만 준다
+// (정본 `ai-bid-radar/src/g2b_client.py` 의 `_MAX_NUM_ROWS` 와 같은 값이다).
+const PAGE_ROWS = 999;
+const MAX_PAGES = Number(process.env.G2B_MAX_PAGES || 8);
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** 한 쪽을 받는다. 총건수(totalCount)를 함께 돌려주어 호출 쪽이 넘길지 정한다. */
+async function call(op, params, page = 1, rows = PAGE_ROWS) {
+  const qs = new URLSearchParams({
+    serviceKey: KEY, type: 'json', numOfRows: String(rows), pageNo: String(page), ...params,
+  });
   const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
   const text = await res.text();
   if (text.trimStart().startsWith('<')) {
@@ -59,18 +69,39 @@ async function call(op, params) {
   const header = data?.response?.header ?? {};
   const code = String(header.resultCode ?? '');
   if (code !== '00' && code !== '0') throw new Error(`API 오류 ${code} ${op}: ${header.resultMsg ?? ''}`);
-  let items = data?.response?.body?.items ?? [];
+  const body = data?.response?.body ?? {};
+  let items = body.items ?? [];
   if (!Array.isArray(items)) items = items.item ? [].concat(items.item) : [];
-  return items;
+  return { items, total: Number(body.totalCount || 0) };
 }
 
+/**
+ * ★ 총건수만큼 쪽을 넘겨 전부 받는다(2026-09-04 수리).
+ *
+ * 예전 `call()` 은 **1쪽·100건만 받고 끝냈다.** 보조정보(면허제한·참가가능지역·기초금액)는
+ * 공고 한 건에 여러 줄이 붙어 조회창 이틀에 4,400줄이 쌓이는데, 그중 앞 100줄만 보니
+ * 화면에 싣는 60건과 거의 겹치지 않아 **오류 없이 조용히 0건**이 됐다.
+ * 정본 `g2b_client.fetch_aux()` 는 처음부터 999건씩 넘기고 있었다 — 4,438건이면 5쪽이라
+ * 개발계정 일 1,000건 안에서 넉넉하다.
+ *
+ * 중간 쪽에서 실패하면 **그때까지 받은 것은 살린다**(전부 버리면 예전처럼 0이 된다).
+ */
 async function safeCall(op, params, label) {
-  try {
-    return await call(op, params);
-  } catch (e) {
-    console.log(`  · ${label} 건너뜀 (${e.message.slice(0, 120)})`);
-    return [];
+  const out = [];
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    let got;
+    try {
+      got = await call(op, params, page);
+    } catch (e) {
+      console.log(`  · ${label} ${page}쪽에서 중단 (${e.message.slice(0, 120)})`);
+      break;
+    }
+    out.push(...got.items);
+    if (!got.items.length || page * PAGE_ROWS >= got.total) break;
+    if (page === MAX_PAGES) console.log(`  · ${label} 총 ${got.total}건 중 ${out.length}건까지만 받았습니다(쪽 상한).`);
+    await sleep(200);
   }
+  return out;
 }
 
 const FIELDS = {

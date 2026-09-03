@@ -1,8 +1,12 @@
 name: 일회성 API 탐색
 # 키가 CI 에만 있어 로컬로는 확인할 수 없는 API 를 한 번 때려 본다.
 # ★ 확인이 끝나면 이 워크플로는 지운다(스크립트는 남겨 재실행할 수 있게 한다).
+#
+# 2026-09-04: 기업 재무제표 탐색(DART)은 끝나서 걷어 냈다. 지금 재는 것은
+# **나라장터 보조정보**다 — 쪽 넘기기가 실제로 도는지, 그리고 소재지 드롭다운을
+# 무엇으로 채울지(참가가능지역 표기의 실제 어휘)를 실측한다.
 on: { workflow_dispatch: }
-permissions: { contents: write }
+permissions: { contents: read }
 jobs:
   explore:
     runs-on: ubuntu-latest
@@ -13,22 +17,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: node scripts/explore-apis.mjs
+      - name: 나라장터 보조정보 실측
+        run: node scripts/explore-g2b.mjs
         env:
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          G2B_SERVICE_KEY: ${{ secrets.G2B_SERVICE_KEY }}
           DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
-      # ★ 수집기를 여기서 한 번 돌려 실제 산출물을 만들고 커밋한다.
-      #   정기 파이프라인에 걸기 전에 눈으로 확인하려는 것이다.
-      - run: node scripts/pipeline/dart-fs.mjs
-        env:
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
-      - run: node scripts/pipeline/dart-text.mjs
-        env:
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
-      - name: 수집 결과 커밋
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add data/corp-fs data/corp-text data/series || true
-          git diff --cached --quiet && echo '변경 없음' || \
-            git commit -m "기업 재무제표 수집: $(TZ=Asia/Seoul date +%F)" && git push
