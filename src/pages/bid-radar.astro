@@ -236,6 +236,65 @@ const ld = {
     </section>
 
     <section class="br-explain">
+      {/* ★ 팔기 전에 못 하는 것을 먼저 밝힌다(2026-09-04 소유주 지시 「정직하게」).
+          문의로 들어온 물음 여덟 개를 그대로 세우고 되는 것·안 되는 것을 갈랐다.
+          안 되는 것은 「아직 못 함」과 「원리적으로 못 함」을 또 나눈다. */}
+      <h2 class="serif br-h2">이 화면이 답하는 것과 답하지 않는 것</h2>
+      <p>
+        입찰 실무에서 자주 들어오는 물음을 그대로 두고, 이 화면이 어디까지 답하는지 밝힙니다.
+        <strong>못 하는 것을 먼저 적는 이유는 하나입니다.</strong> 자격 판정이 틀리면 입찰 한 건이
+        날아가므로, 없는 판정보다 틀린 판정이 나쁩니다.
+      </p>
+      <div class="br-scroll" tabindex="0" role="region" aria-label="답하는 것과 답하지 않는 것">
+        <table class="br-t br-can">
+          <thead><tr><th>물음</th><th>답</th></tr></thead>
+          <tbody>
+            <tr class="is-yes">
+              <th>지역과 업종으로 공고를 가를 수 있는가</th>
+              <td><strong>가릅니다.</strong> 업체 소재지와 보유 면허로 참여가능·확인필요·자격미달을
+                판정하고, 그렇게 판정한 사유를 함께 답니다.</td>
+            </tr>
+            <tr class="is-yes">
+              <th>타 지역 업체와 공동도급이 열린 공고를 가릴 수 있는가</th>
+              <td><strong>가립니다.</strong> 공동수급방식(공동이행·분담이행·혼합·주계약자·단독)과
+                구성원 소재지 제한 여부까지 봅니다.</td>
+            </tr>
+            <tr class="is-part">
+              <th>공동도급 실적 계산을 해 주는가</th>
+              <td><strong>계산은 합니다.</strong> 공동이행의 인정 실적은 출자비율만큼입니다.
+                다만 <strong>공고가 요구하는 실적 금액은 공고서에서 옮겨 적어야 합니다.</strong>
+                그 값은 API 로 오지 않습니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>실적 공동도급과 무실적 공동도급을 갈라 주는가</th>
+              <td><strong>가르지 못합니다.</strong> 구성원별 실적 인정 비율과 최소 지분율은
+                공고서·현장설명서 본문에 적히고, 조달청 API 는 그 본문을 필드로 주지 않습니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>적격심사 조건으로 참여 불가한 공고를 걸러 주는가</th>
+              <td><strong>걸러 주지 못합니다.</strong> 적격심사 세부기준의 시공경험·경영상태 배점은
+                공고서 본문에 있습니다. 이 화면이 볼 수 있는 것은 공고가 필드로 준 값뿐입니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>낙찰 확률이 얼마인지 알려 주는가</th>
+              <td><strong>알려 주지 않습니다.</strong> 예정가격은 추첨으로 정해지고, 낙찰은 하한을
+                넘긴 업체들 가운데 순위로 갈립니다. 몇 곳이 얼마를 넣는지는 개찰 전에 알 수 없습니다.
+                내는 값은 <strong>하한선 미달로 탈락하지 않을 조합의 비율</strong>입니다.</td>
+            </tr>
+            <tr class="is-later">
+              <th>발주처별·경쟁업체별 사정률을 분석해 주는가</th>
+              <td><strong>아직 못 합니다.</strong> 개찰결과가 별도 서비스이고, 지금 인증키로는
+                과거 개찰 이력을 쌓을 수 없습니다. 값을 지어내지 않으므로 비워 둡니다.</td>
+            </tr>
+            <tr class="is-later">
+              <th>지난 공고를 다시 볼 수 있는가</th>
+              <td><strong>아직 못 봅니다.</strong> 화면은 최근 수집분을 폅니다. 날마다 쌓아 두고
+                되돌아보는 것은 이 화면의 구조 밖입니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <h2 class="serif br-h2">판정이 갈리는 규칙</h2>
       <p>
         지역은 공고에 참가가능지역이 지정된 경우에만 봅니다. 지정돼 있으면 업체 소재지가 그 안에
@@ -1234,6 +1293,18 @@ const ld = {
     .br-ct { min-width: 560px; }
     .br-cbox { width: 26px; color: var(--muted); }
     .br-memo { white-space: normal; color: var(--muted); min-width: 200px; word-break: keep-all; }
+
+    /* 「답하는 것과 답하지 않는 것」 표. 위쪽 기초자료 표와 달리 **줄바꿈을 허용한다** —
+       설명문이라 한 줄로 끊으면 뜻이 죽는다. 판정은 색이 아니라 왼쪽 굵은 선과
+       본문의 「가릅니다 / 못 합니다」로 읽힌다. */
+    .br-can { width: 100%; min-width: 520px; margin: 6px 0 4px; }
+    .br-can th, .br-can td { white-space: normal; word-break: keep-all; vertical-align: top; line-height: 1.7; }
+    .br-can tbody th { width: 34%; font-weight: 700; color: var(--ink); border-left: 3px solid var(--hair); padding-left: 10px; }
+    .br-can tbody tr.is-yes th { border-left-color: var(--brand); }
+    .br-can tbody tr.is-part th { border-left-color: var(--accent); }
+    .br-can tbody tr.is-no th { border-left-color: var(--muted); }
+    .br-can tbody tr.is-later th { border-left-color: var(--muted); border-left-style: dashed; }
+    .br-can td { font-size: 12.5px; }
 
     .br-explain { margin-top: 34px; max-width: var(--measure); }
     .br-h2 { font-size: 19px; margin: 24px 0 8px; letter-spacing: -.022em; }
