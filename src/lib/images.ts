@@ -47,7 +47,14 @@ const OTHER = byName(others);
 export function heroMeta(category: CategoryKey, hero?: string): ImageMetadata | undefined {
   if (hero) {
     const name = hero.split('/').pop();
-    if (name && HERO[name]) return HERO[name];
+    // ★ `hero/` 밖에 있는 그림을 대표 이미지로 쓰는 기사가 있다(2026-09-03 전수 점검에서 나왔다).
+    //    갈림길 1화가 `story/galim-02.jpg` 를 가리켰는데, 여기서 HERO 만 뒤지느라 못 찾고
+    //    **조용히 카테고리 배너로 떨어져 있었다.** 빌드도 화면도 멀쩡해서 눈으로만 보면 모른다.
+    //    OTHER 까지 본 뒤에 대체한다 — 대체는 정말 없을 때만 일어나야 한다.
+    if (name) {
+      const found = HERO[name] ?? OTHER[name];
+      if (found) return found;
+    }
   }
   return CAT[`${CATEGORIES[category].slug}.jpg`];
 }
