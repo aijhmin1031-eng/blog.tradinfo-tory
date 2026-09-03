@@ -17,7 +17,10 @@ const OUT = join(here, '../../src/data/bid-notices.json');
 const ENDPOINT = process.env.G2B_ENDPOINT || 'https://apis.data.go.kr/1230000/ad/BidPublicInfoService';
 const KEY = process.env.G2B_SERVICE_KEY || process.env.DATA_GO_KR_KEY || '';
 const DAYS = Number(process.env.G2B_DAYS || 2);
-const MAX_NOTICES = Number(process.env.G2B_MAX || 200);
+// ★ 0 = 상한 없음(2026-09-04 소유주 지시 「검색되는 건 다 보여야지」).
+// 예전에는 60건, 그다음 200건으로 잘랐는데 **자른 뒤에 거르니** 사용자가 찾는 공고가
+// 처음부터 없을 수 있었다. 지금은 수집한 것을 전부 싣고 거르기는 화면이 한다.
+const MAX_NOTICES = Number(process.env.G2B_MAX || 0);
 
 const WORK_DIVS = {
   cnstwk: { list: '/getBidPblancListInfoCnstwkPPSSrch', basis: '/getBidPblancListInfoCnstwkBsisAmount' },
@@ -42,6 +45,21 @@ const sumAValue = (item) => {
     return acc + (Number.isFinite(n) ? n : 0);
   }, 0);
 };
+
+// 기초금액 응답은 27개 항목으로 오는데 화면이 쓰는 것은 아래뿐이다.
+// 상한을 없애 공고 수가 네 배로 늘었으므로, 안 쓰는 항목은 싣지 않는다.
+// A값 구성 항목을 남기는 이유는 `a_value` 가 비었을 때 계산기가 직접 더하기 때문이다.
+const BASIS_KEYS = [
+  'bssamt', 'rsrvtnPrceRngBgnRate', 'rsrvtnPrceRngEndRate', 'a_value',
+  ...A_VALUE_COMPONENTS,
+];
+
+function trimBasis(b) {
+  if (!b) return null;
+  const out = {};
+  for (const k of BASIS_KEYS) if (b[k] !== undefined && b[k] !== null && b[k] !== '') out[k] = b[k];
+  return Object.keys(out).length ? out : null;
+}
 
 const pad = (n) => String(n).padStart(2, '0');
 const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
@@ -252,9 +270,15 @@ async function main() {
   // 마감이 임박한 것부터. 같으면 최근 게시분이 앞이다.
   rows.sort((a, b) => (clseMs(a) - clseMs(b))
     || String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
-  const notices = rows.slice(0, MAX_NOTICES).map((row) => {
+  const kept = MAX_NOTICES > 0 ? rows.slice(0, MAX_NOTICES) : rows;
+  const notices = kept.map((row) => {
     const k = key(row.bid_ntce_no, row.bid_ntce_ord);
-    return { ...row, licenseLimits: licenses[k] || [], possibleRegions: regions[k] || [], basis: basis[k] || null };
+    return {
+      ...row,
+      licenseLimits: licenses[k] || [],
+      possibleRegions: regions[k] || [],
+      basis: trimBasis(basis[k]),
+    };
   });
 
   // ★ 화면이 고르게 할 어휘는 **API 가 쓰는 그 이름**이어야 한다(2026-09-04 실측).
@@ -305,7 +329,7 @@ async function main() {
   };
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, `${JSON.stringify(payload, null, 1)}\n`, 'utf8');
-  console.log(`[g2b] 기록 ${notices.length}건 → src/data/bid-notices.json`, payload.counts);
+  console.log(`[g2b] 기록 ${notices.length}건 (수집 ${rows.length}건 중) → src/data/bid-notices.json`, payload.counts);
 }
 
 main().catch((e) => {
