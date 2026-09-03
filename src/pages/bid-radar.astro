@@ -17,9 +17,36 @@ import Pic from '../components/Pic.astro';
 import { url } from '../lib/site';
 import notices from '../data/bid-notices.json';
 import licenseCatalog from '../data/bid-licenses.json';
+import regions from '../data/bid-regions.json';
 
 // 크몽 문의 업체(조경식재·지반조성 전문건설)의 업종을 기본값으로 둔다.
-const DEFAULT_LICENSES = ['조경식재공사업', '조경시설물설치공사업', '지반조성포장공사업'];
+const DEFAULT_LICENSES = ['조경식재ㆍ시설물공사업', '지반조성ㆍ포장공사업'];
+const DEFAULT_PROV = '경상남도';
+const DEFAULT_DIST = '창원시';
+const DEFAULT_REGION = `${DEFAULT_PROV} ${DEFAULT_DIST}`;
+
+// ★ 고를 수 있는 이름은 **API 가 실제로 쓰는 이름**이어야 한다(2026-09-04).
+// 손으로 적은 등록부는 반드시 낡으므로, 수집기가 함께 저장한 어휘와 합친다.
+// 등록부에 없는 업종·지역이 공고에 나오면 그대로 목록에 선다.
+const vocab = notices.licenseVocab || [];
+const known = new Set(licenseCatalog.groups.flatMap((g) => g.items));
+const extra = vocab.map((v) => v.name).filter((n) => n && !known.has(n));
+const licenseGroups = extra.length
+  ? [...licenseCatalog.groups, { label: '그 밖에 공고에 나온 업종', items: extra }]
+  : licenseCatalog.groups;
+
+// 지역도 같은 방식이다. 등록부의 기초 목록에 실제 어휘를 더한다.
+const rvocab = notices.regionVocab || {};
+const provMap = new Map(regions.provinces.map((p) => [p.name, { ...p, districts: [...p.districts] }]));
+for (const [prov, dists] of Object.entries(rvocab)) {
+  if (!provMap.has(prov)) provMap.set(prov, { name: prov, short: prov, districts: [] });
+  const cur = provMap.get(prov);
+  for (const d of dists) if (!cur.districts.includes(d)) cur.districts.push(d);
+}
+const provinces = [...provMap.values()].map((p) => ({
+  ...p,
+  districts: [...p.districts].sort((a, b) => a.localeCompare(b, 'ko')),
+}));
 
 const isSample = notices.source === 'sample';
 const asOf = notices.generatedAt ? notices.generatedAt.slice(0, 10).replace(/-/g, '.') : '';
@@ -45,6 +72,11 @@ const ld = {
 >
   <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
   <script type="application/json" id="br-data" set:html={JSON.stringify(notices)} />
+  <script
+    type="application/json"
+    id="br-regions"
+    set:html={JSON.stringify({ provinces, defaultProv: DEFAULT_PROV, defaultDist: DEFAULT_DIST })}
+  />
 
   <section class="wrap br">
     <header class="br-head">
@@ -74,11 +106,18 @@ const ld = {
     </header>
 
     <form class="br-form" id="br-form" autocomplete="off">
+      {/* ── 1단: 업체 조건 ── 판정의 재료다. 소재지·면허 둘 다 선택으로 받는다. */}
       <div class="br-grid">
-        <label class="br-f">
-          <span class="br-l">업체 소재지 <em>광역 또는 광역+기초</em></span>
-          <input type="text" id="f-region" value="경상남도 창원시" />
-        </label>
+        <div class="br-f">
+          <span class="br-l">업체 소재지 <em>목록에서 고릅니다</em></span>
+          {/* 판정 쪽은 예전처럼 「경상남도 창원시」 같은 문자열 하나만 읽는다.
+              두 선택칸이 이 숨은 칸을 채우므로 qualifier 는 손대지 않았다. */}
+          <input type="hidden" id="f-region" value={DEFAULT_REGION} />
+          <div class="br-two">
+            <select id="f-prov" aria-label="광역시·도"></select>
+            <select id="f-dist" aria-label="시·군·구"></select>
+          </div>
+        </div>
         <div class="br-f br-wide">
           <span class="br-l">보유 면허·업종 <em>목록에서 고릅니다</em></span>
           {/* 엔진은 예전처럼 쉼표로 이어 붙인 문자열 하나만 읽는다.
@@ -96,7 +135,7 @@ const ld = {
                 <button type="button" class="br-ms-clear" id="br-ms-clear">전체 해제</button>
               </div>
               <div class="br-ms-list" id="br-ms-list">
-                {licenseCatalog.groups.map((g) => (
+                {licenseGroups.map((g) => (
                   <div class="br-ms-g" data-group={g.label}>
                     <div class="br-ms-gl">{g.label}</div>
                     {g.items.map((it) => (
@@ -112,49 +151,215 @@ const ld = {
           </div>
           <div class="br-ms-chips" id="br-ms-chips"></div>
         </div>
-        <div class="br-f br-opts">
-          <span class="br-l">표시</span>
-          <label class="br-chk"><input type="checkbox" id="f-onlyok" /> 참여가능만</label>
-          <label class="br-chk"><input type="checkbox" id="f-joint" /> 공동도급 가능만</label>
+      </div>
+
+      {/* ── 2단: 공고 조건 ── 입찰레이더 공고관리 화면(docs/18 §2-A)의 조건 막대를
+          그대로 옮긴 자리다. 1행은 검색, 2행은 고르는 조건. 순서까지 같다. */}
+      <div class="br-bar">
+        <div class="br-search">
+          <span class="br-si" aria-hidden="true">🔍</span>
+          <input type="search" id="f-q" placeholder="공고명을 입력해 검색하십시오" aria-label="공고명 검색" />
+          <button type="button" class="br-reset" id="f-reset">조건 초기화</button>
         </div>
+        <div class="br-filters">
+          <div class="br-seg" role="group" aria-label="판정">
+            <button type="button" class="br-sg is-on" data-v="all" aria-pressed="true">전체</button>
+            <button type="button" class="br-sg" data-v="eligible" aria-pressed="false">참여 가능</button>
+            <button type="button" class="br-sg" data-v="unknown" aria-pressed="false">확인 필요</button>
+          </div>
+          <label class="br-fl">업무
+            <select id="f-div"><option value="">전체</option></select>
+          </label>
+          {/* 기간 — 기준을 고르고, 프리셋으로 좁히고, 필요하면 달력으로 직접 잡는다.
+              공고가 많을수록 먼저 쓰게 되는 조건이라 한 묶음으로 붙여 두었다. */}
+          <span class="br-fl br-period">기간
+            <select id="f-base" aria-label="기간 기준">
+              <option value="clse">마감일</option>
+              <option value="ntce">공고일</option>
+            </select>
+            <select id="f-period" aria-label="기간 범위">
+              <option value="">전체</option>
+              <option value="1">오늘</option>
+              <option value="3">사흘</option>
+              <option value="7">이레</option>
+              <option value="30">한 달</option>
+              <option value="custom">직접 지정</option>
+            </select>
+            <span class="br-dates" id="br-dates" hidden>
+              <input type="date" id="f-from" aria-label="시작일" />
+              <span class="br-tilde" aria-hidden="true">~</span>
+              <input type="date" id="f-to" aria-label="종료일" />
+            </span>
+          </span>
+          <label class="br-fl">추정가
+            <select id="f-amt">
+              <option value="">전체</option>
+              <option value="a">1억원 미만</option>
+              <option value="b">1억 ~ 10억원</option>
+              <option value="c">10억원 이상</option>
+            </select>
+          </label>
+          <label class="br-fl">발주처
+            <select id="f-org"><option value="">전체</option></select>
+          </label>
+          <label class="br-chk"><input type="checkbox" id="f-joint" /> 공동도급 가능만</label>
+          {/* ★ 아래 둘은 **공사 공고에만 오는 값**으로 거른다(2026-09-04 실호출 확인).
+              수집분에 그 값이 하나도 없으면 칸 자체가 나타나지 않는다 —
+              고를 수 있는데 늘 0건이면 화면이 고장 난 것으로 읽히기 때문이다. */}
+          <label class="br-chk" id="w-main" hidden>
+            <input type="checkbox" id="f-main" /> 주공종이 내 업종인 공고만
+          </label>
+          <label class="br-chk" id="w-rgnduty" hidden>
+            <input type="checkbox" id="f-rgnduty" /> 지역의무공동도급만
+          </label>
+        </div>
+        <div class="br-active" id="br-active" hidden></div>
       </div>
     </form>
 
     <div class="br-tally" id="br-tally" role="status" aria-live="polite"></div>
 
-    <div class="br-cols">
-      <section class="br-left">
-        <h2 class="br-h3">알림 <span class="br-h3s">텔레그램으로 나가는 카드 그대로</span></h2>
-        <div id="br-cards" class="br-cardgrid" aria-live="polite"></div>
-      </section>
+    <section class="br-sheetwrap">
+      <div class="br-rhead">
+        <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 네 시트를 화면으로</span></h2>
+        <button type="button" class="br-dl" id="br-dl">
+          <span aria-hidden="true">⤓</span> 엑셀로 받기
+        </button>
+      </div>
+      <p class="br-dlnote" id="br-dlnote">
+        지금 화면에 보이는 공고가 네 시트로 담깁니다. 공고번호를 누르면 나라장터 원문이 열립니다.
+      </p>
+      <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 네 시트">
+        <button type="button" class="br-tab is-on" data-tab="compare" role="tab"
+                aria-selected="true" aria-controls="br-sheet">공고 비교표</button>
+        <button type="button" class="br-tab" data-tab="check" role="tab"
+                aria-selected="false" aria-controls="br-sheet">참여 체크리스트</button>
+        <button type="button" class="br-tab" data-tab="joint" role="tab"
+                aria-selected="false" aria-controls="br-sheet">공동도급 분류</button>
+        <button type="button" class="br-tab" data-tab="price" role="tab"
+                aria-selected="false" aria-controls="br-sheet">투찰가 참고</button>
+      </div>
+      <p class="br-tabnote" id="br-tabnote"></p>
+      <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (가로로 스크롤됩니다)">
+        <div id="br-sheet" role="tabpanel" aria-live="polite"></div></div>
+    </section>
 
-      <section class="br-right">
-        <div class="br-rhead">
-          <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 네 시트를 화면으로</span></h2>
-          <button type="button" class="br-dl" id="br-dl">
-            <span aria-hidden="true">⤓</span> 엑셀로 받기
-          </button>
-        </div>
-        <p class="br-dlnote" id="br-dlnote">
-          지금 화면에 보이는 공고가 네 시트로 담깁니다. 공고번호를 누르면 나라장터 원문이 열립니다.
-        </p>
-        <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 네 시트">
-          <button type="button" class="br-tab is-on" data-tab="compare" role="tab"
-                  aria-selected="true" aria-controls="br-sheet">공고 비교표</button>
-          <button type="button" class="br-tab" data-tab="check" role="tab"
-                  aria-selected="false" aria-controls="br-sheet">참여 체크리스트</button>
-          <button type="button" class="br-tab" data-tab="joint" role="tab"
-                  aria-selected="false" aria-controls="br-sheet">공동도급 분류</button>
-          <button type="button" class="br-tab" data-tab="price" role="tab"
-                  aria-selected="false" aria-controls="br-sheet">투찰가 참고</button>
-        </div>
-        <p class="br-tabnote" id="br-tabnote"></p>
-        <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (가로로 스크롤됩니다)">
-          <div id="br-sheet" role="tabpanel"></div></div>
-      </section>
-    </div>
+    {/* ★ 공동도급 인정 실적 계산 (2026-09-04, 고객 문의 ④).
+        계산식 자체는 한 줄이다. 어려운 것은 **공고가 요구하는 실적**인데 그 값은
+        공고서 본문에 있고 API 로 오지 않는다. 그래서 그 칸은 사람이 옮겨 적게 하고,
+        화면이 그 사실을 밝힌다. 지어내지 않는다. */}
+    <section class="br-js">
+      <h2 class="br-h3">공동도급 인정 실적 <span class="br-h3s">출자비율만큼 인정되는 몫을 냅니다</span></h2>
+      <p class="br-jsnote">
+        공동이행에서는 시공실적이 <strong>출자비율만큼만</strong> 인정됩니다. 아래 계산은 그 몫과,
+        요구 실적을 채우는 데 필요한 최소 지분율을 냅니다.
+        <strong>공고가 요구하는 실적 금액은 공고서에서 옮겨 적으셔야 합니다.</strong>
+        그 값은 조달청 API 로 오지 않습니다.
+      </p>
+      <div class="br-jsgrid">
+        <label class="br-f">
+          <span class="br-l">공동수급 방식</span>
+          <select id="j-kind">
+            <option value="joint">공동이행</option>
+            <option value="divided">분담이행</option>
+          </select>
+        </label>
+        <label class="br-f">
+          <span class="br-l">우리 회사 시공실적 <em>원</em></span>
+          <input type="number" id="j-mine" inputmode="numeric" step="1" min="0" value="500000000" />
+          <span class="br-u" id="j-mine-u"></span>
+        </label>
+        <label class="br-f">
+          <span class="br-l">출자비율 <em>%</em></span>
+          <input type="number" id="j-share" inputmode="decimal" step="0.1" min="0" max="100" value="30" />
+        </label>
+        <label class="br-f">
+          <span class="br-l">공고 요구 실적 <em>원</em></span>
+          <input type="number" id="j-need" inputmode="numeric" step="1" min="0" value="" placeholder="공고서에서 옮겨 적습니다" />
+          <span class="br-u" id="j-need-u"></span>
+        </label>
+      </div>
+      <div class="br-jsout" id="j-out" role="status" aria-live="polite"></div>
+    </section>
 
     <section class="br-explain">
+      {/* ★ 팔기 전에 못 하는 것을 먼저 밝힌다(2026-09-04 소유주 지시 「정직하게」).
+          문의로 들어온 물음 여덟 개를 그대로 세우고 되는 것·안 되는 것을 갈랐다.
+          안 되는 것은 「아직 못 함」과 「원리적으로 못 함」을 또 나눈다. */}
+      <h2 class="serif br-h2">이 화면이 답하는 것과 답하지 않는 것</h2>
+      <p>
+        입찰 실무에서 자주 들어오는 물음을 그대로 두고, 이 화면이 어디까지 답하는지 밝힙니다.
+        <strong>못 하는 것을 먼저 적는 이유는 하나입니다.</strong> 자격 판정이 틀리면 입찰 한 건이
+        날아가므로, 없는 판정보다 틀린 판정이 나쁩니다.
+      </p>
+      <div class="br-scroll" tabindex="0" role="region" aria-label="답하는 것과 답하지 않는 것">
+        <table class="br-t br-can">
+          <thead><tr><th>물음</th><th>답</th></tr></thead>
+          <tbody>
+            <tr class="is-yes">
+              <th>지역과 업종으로 공고를 가를 수 있는가</th>
+              <td><strong>가릅니다.</strong> 업체 소재지와 보유 면허로 참여가능·확인필요·자격미달을
+                판정하고, 그렇게 판정한 사유를 함께 답니다.</td>
+            </tr>
+            <tr class="is-yes">
+              <th>타 지역 업체와 공동도급이 열린 공고를 가릴 수 있는가</th>
+              <td><strong>가립니다.</strong> 공동수급방식(공동이행·분담이행·혼합·주계약자·단독)과
+                구성원 소재지 제한 여부까지 봅니다.</td>
+            </tr>
+            <tr class="is-yes">
+              <th>내 업종이 주공종인 공고만 볼 수 있는가</th>
+              <td><strong>볼 수 있습니다.</strong> 공사 공고는 주공종을 면허와 같은 이름으로 줍니다.
+                다만 <strong>모든 공사 공고에 오지는 않습니다</strong>(실측 37.9%). 주공종이 없는
+                공고는 이 조건에서 빠지므로, 걸러진 뒤 남은 것만 보는 조건으로 쓰십시오.</td>
+            </tr>
+            <tr class="is-yes">
+              <th>지역의무공동도급 공고를 가릴 수 있는가</th>
+              <td><strong>가립니다.</strong> 지역 업체를 일정 비율 이상 공동수급체에 넣도록
+                의무화한 공고인지가 <strong>공고마다 옵니다</strong>(실측 100%). 타 지역 공고에
+                들어갈 때 그 지역 업체와 짝을 지어야 하는지가 여기서 갈립니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>시공능력평가액으로 미달 공고를 걸러 주는가</th>
+              <td><strong>걸러 주지 못합니다.</strong> 공고가 요구하는 시공능력평가액은
+                실호출로 확인해 보니 <strong>값이 오지 않았습니다.</strong> 오지 않는 값으로
+                판정을 만들지 않습니다.</td>
+            </tr>
+            <tr class="is-part">
+              <th>공동도급 실적 계산을 해 주는가</th>
+              <td><strong>계산은 합니다.</strong> 공동이행의 인정 실적은 출자비율만큼입니다.
+                다만 <strong>공고가 요구하는 실적 금액은 공고서에서 옮겨 적어야 합니다.</strong>
+                그 값은 API 로 오지 않습니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>실적 공동도급과 무실적 공동도급을 갈라 주는가</th>
+              <td><strong>가르지 못합니다.</strong> 구성원별 실적 인정 비율과 최소 지분율은
+                공고서·현장설명서 본문에 적히고, 조달청 API 는 그 본문을 필드로 주지 않습니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>적격심사 조건으로 참여 불가한 공고를 걸러 주는가</th>
+              <td><strong>걸러 주지 못합니다.</strong> 적격심사 세부기준의 시공경험·경영상태 배점은
+                공고서 본문에 있습니다. 이 화면이 볼 수 있는 것은 공고가 필드로 준 값뿐입니다.</td>
+            </tr>
+            <tr class="is-no">
+              <th>낙찰 확률이 얼마인지 알려 주는가</th>
+              <td><strong>알려 주지 않습니다.</strong> 예정가격은 추첨으로 정해지고, 낙찰은 하한을
+                넘긴 업체들 가운데 순위로 갈립니다. 몇 곳이 얼마를 넣는지는 개찰 전에 알 수 없습니다.
+                내는 값은 <strong>하한선 미달로 탈락하지 않을 조합의 비율</strong>입니다.</td>
+            </tr>
+            <tr class="is-later">
+              <th>발주처별·경쟁업체별 사정률을 분석해 주는가</th>
+              <td><strong>아직 못 합니다.</strong> 개찰결과가 별도 서비스이고, 지금 인증키로는
+                과거 개찰 이력을 쌓을 수 없습니다. 값을 지어내지 않으므로 비워 둡니다.</td>
+            </tr>
+            <tr class="is-later">
+              <th>지난 공고를 다시 볼 수 있는가</th>
+              <td><strong>아직 못 봅니다.</strong> 화면은 최근 수집분을 폅니다. 날마다 쌓아 두고
+                되돌아보는 것은 이 화면의 구조 밖입니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       <h2 class="serif br-h2">판정이 갈리는 규칙</h2>
       <p>
         지역은 공고에 참가가능지역이 지정된 경우에만 봅니다. 지정돼 있으면 업체 소재지가 그 안에
@@ -201,26 +406,59 @@ const ld = {
   </section>
 
   <script>
-    import { evaluate as judge, VERDICT_LABEL } from '../lib/bid-radar/qualifier.js';
+    import { evaluate as judge, VERDICT_LABEL, licenseMatch } from '../lib/bid-radar/qualifier.js';
     import * as joint from '../lib/bid-radar/joint-supply.js';
     import {
-      summarize, checklist, jointSupplyRows, bidPriceRow, alertLines, noticeUrl,
+      summarize, checklist, jointSupplyRows, bidPriceRow, noticeUrl,
       COMPARE_COLS, BID_PRICE_COLS,
     } from '../lib/bid-radar/briefing.js';
     import { buildWorkbook } from '../lib/bid-radar/xlsx.js';
 
     const $ = (id) => document.getElementById(id);
     const DATA = JSON.parse($('br-data').textContent);
-    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
 
-    // 판정 사유는 엔진이 만든 문자열을 그대로 쓴다(파이썬과 같은 문구라야 대조가 된다).
-    // 다만 목록이 ["a","b"] 로 박혀 있어 화면에서는 가운뎃점으로 편다. 뜻은 그대로다.
-    const readable = (s) => String(s ?? '')
-      .replace(/\[\]/g, '없음')
-      .replace(/\[|\]/g, '')
-      .replace(/', '/g, ' · ')
-      .replace(/'/g, '');
     let tab = 'compare';
+    // 정렬 상태. 열 머리를 누르면 없음 → 오름 → 내림 → 없음으로 돌아간다
+    // (입찰레이더 공고관리 화면 docs/18 §2-E 와 같은 3단계다).
+    let sort = { key: '', dir: '' };
+
+    /** 정규컬럼(snake) 우선, 없으면 raw(camel). briefing.js 의 g() 와 같은 규칙이다. */
+    function field(n, ...keys) {
+      const r = n.raw || {};
+      for (const k of keys) {
+        const v = n[k];
+        if (v !== undefined && v !== null && v !== '' && v !== '0') return v;
+      }
+      for (const k of keys) {
+        const v = r[k];
+        if (v !== undefined && v !== null && v !== '' && v !== '0') return v;
+      }
+      return null;
+    }
+
+    const nm = (n) => String(field(n, 'bid_ntce_nm', 'bidNtceNm') || '');
+    const org = (n) => String(field(n, 'dminstt_nm', 'dminsttNm', 'ntce_instt_nm', 'ntceInsttNm') || '');
+    const price = (n) => {
+      const v = field(n, 'presmpt_prce', 'presmptPrce');
+      const x = Number(String(v ?? '').replace(/,/g, ''));
+      return Number.isFinite(x) ? x : NaN;
+    };
+    const timeOf = (n, ...keys) => {
+      const t = String(field(n, ...keys) || '').trim();
+      if (!t) return NaN;
+      const d = new Date(t.replace(' ', 'T'));
+      return Number.isNaN(d.getTime()) ? NaN : d.getTime();
+    };
+    const clseMs = (n) => timeOf(n, 'bid_clse_dt', 'bidClseDt');
+    const openMs = (n) => timeOf(n, 'bid_ntce_dt', 'bidNtceDt');
+    const divOf = (n) => String(n.work_div || '');
+    // 주공종명. 면허제한과 **같은 어휘**로 온다(「지반조성ㆍ포장공사업」).
+    const mainCnstty = (n) => String(field(n, 'main_cnstty_nm', 'mainCnsttyNm') || '');
+    // 지역의무공동도급: 지역 업체를 일정 비율 이상 공동수급체에 넣도록 공고가 의무화한 것.
+    const rgnDuty = (n) => String(field(n, 'rgn_duty_jntcontrct_yn', 'rgnDutyJntcontrctYn') || '').toUpperCase() === 'Y';
+    const DIV_LABEL = { cnstwk: '공사', servc: '용역', thng: '물품', frgcpt: '외자', etc: '기타' };
 
     const profile = () => ({
       region: $('f-region').value.trim(),
@@ -236,11 +474,188 @@ const ld = {
       }));
     }
 
+    // ── 조건 상태 ────────────────────────────────────────────────────
+    // 입찰레이더 공고관리 화면(docs/18 §1 필수 2·4·5·6, 권장 15·17)의 조건을 옮겼다.
+    let verdict = 'all';
+
+    const cond = () => ({
+      q: $('f-q').value.trim(),
+      verdict,
+      div: $('f-div').value,
+      base: $('f-base').value,
+      period: $('f-period').value,
+      from: $('f-from').value,
+      to: $('f-to').value,
+      amt: $('f-amt').value,
+      org: $('f-org').value,
+      joint: $('f-joint').checked,
+      main: $('f-main').checked,
+      rgnduty: $('f-rgnduty').checked,
+    });
+
+    /** 기간 조건을 [시작, 끝] 밀리초로 편다. 조건이 없으면 null. */
+    function span(c) {
+      if (c.period === 'custom') {
+        if (!c.from && !c.to) return null;
+        // 끝날은 그날 하루를 통째로 포함한다(23:59:59.999).
+        return [
+          c.from ? new Date(`${c.from}T00:00:00`).getTime() : -Infinity,
+          c.to ? new Date(`${c.to}T23:59:59.999`).getTime() : Infinity,
+        ];
+      }
+      if (!c.period) return null;
+      const n = Number(c.period) * 864e5;
+      const now = Date.now();
+      // 마감일은 **앞으로** 며칠, 공고일은 **최근** 며칠이다. 기준이 바뀌면 방향도 바뀐다.
+      return c.base === 'ntce' ? [now - n, now] : [now, now + n];
+    }
+
+    const AMT = {
+      a: (v) => Number.isFinite(v) && v < 1e8,
+      b: (v) => Number.isFinite(v) && v >= 1e8 && v < 1e9,
+      c: (v) => Number.isFinite(v) && v >= 1e9,
+    };
+
+    /**
+     * 화면에 실을 공고. ★ 거르기와 정렬을 **여기 한 곳에서** 끝낸다.
+     * 카드·표·집계·엑셀이 모두 이 함수를 거치므로, 한쪽만 정렬하면 엑셀
+     * 하이퍼링크가 배열 순서와 어긋난다(그래서 정렬을 밖으로 빼지 않는다).
+     */
     function shown(rows) {
+      const c = cond();
       let out = rows;
-      if ($('f-onlyok').checked) out = out.filter((r) => r.match.verdict === 'eligible');
-      if ($('f-joint').checked) out = out.filter((r) => r.joint.available);
-      return out;
+      if (c.q) {
+        const q = c.q.toLowerCase();
+        out = out.filter((r) => nm(r.notice).toLowerCase().includes(q));
+      }
+      if (c.verdict !== 'all') out = out.filter((r) => r.match.verdict === c.verdict);
+      if (c.div) out = out.filter((r) => divOf(r.notice) === c.div);
+      if (c.org) out = out.filter((r) => org(r.notice) === c.org);
+      if (c.amt) out = out.filter((r) => AMT[c.amt](price(r.notice)));
+      const sp = span(c);
+      if (sp) {
+        out = out.filter((r) => {
+          const t = c.base === 'ntce' ? openMs(r.notice) : clseMs(r.notice);
+          return Number.isFinite(t) && t >= sp[0] && t <= sp[1];
+        });
+      }
+      if (c.joint) out = out.filter((r) => r.joint.available);
+      if (c.main) {
+        // 보유 면허와 주공종을 맞춘다. **판정과 같은 규칙**(부분 문자열)을 쓴다 —
+        // 여기만 다르게 맞추면 「참여가능인데 주공종은 아님」 같은 모순이 생긴다.
+        const mine = $('f-lic').value.split(',').map((x) => x.trim()).filter(Boolean);
+        out = out.filter((r) => {
+          const m = mainCnstty(r.notice);
+          return m && licenseMatch(mine, [m]);
+        });
+      }
+      if (c.rgnduty) out = out.filter((r) => rgnDuty(r.notice));
+
+      // 값이 없는 건은 늘 뒤로 보낸다(NaN 이 비교에 섞이면 순서가 무너진다).
+      const cmp = {
+        '공고명': (a, b) => nm(a.notice).localeCompare(nm(b.notice), 'ko'),
+        '수요기관': (a, b) => org(a.notice).localeCompare(org(b.notice), 'ko'),
+        '추정가격': (a, b) => numCmp(price(a.notice), price(b.notice)),
+        '입찰마감': (a, b) => numCmp(clseMs(a.notice), clseMs(b.notice)),
+        '공고게시': (a, b) => numCmp(openMs(a.notice), openMs(b.notice)),
+      };
+      const base = [...out];
+      if (sort.key && cmp[sort.key]) {
+        base.sort((a, b) => cmp[sort.key](a, b) * (sort.dir === 'desc' ? -1 : 1));
+      } else {
+        // 기본값은 마감 임박순이다. 입찰자가 가장 먼저 보는 값이므로.
+        base.sort((a, b) => numCmp(clseMs(a.notice), clseMs(b.notice)));
+      }
+      return base;
+    }
+
+    function numCmp(a, b) {
+      const na = Number.isFinite(a);
+      const nb = Number.isFinite(b);
+      if (!na && !nb) return 0;
+      if (!na) return 1;
+      if (!nb) return -1;
+      return a - b;
+    }
+
+    // ── 조건 칸 채우기 ───────────────────────────────────────────────
+    // 업무구분·발주처는 **실제 수집된 값만** 목록에 세운다(없는 항목을 세우면
+    // 고르는 순간 0건이 되어 화면이 고장 난 것처럼 보인다).
+    function fillChoices() {
+      const divs = [...new Set(DATA.notices.map(divOf).filter(Boolean))];
+      $('f-div').innerHTML = '<option value="">전체</option>'
+        + divs.map((d) => `<option value="${esc(d)}">${esc(DIV_LABEL[d] || d)}</option>`).join('');
+      const orgs = [...new Set(DATA.notices.map(org).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
+      $('f-org').innerHTML = '<option value="">전체</option>'
+        + orgs.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+      // 값이 하나도 없는 조건은 세우지 않는다(늘 0건이 되는 칸은 고장으로 읽힌다).
+      $('w-main').hidden = !DATA.notices.some((n) => mainCnstty(n));
+      $('w-rgnduty').hidden = !DATA.notices.some((n) => rgnDuty(n));
+    }
+
+    const BASE_LABEL = { clse: '마감일', ntce: '공고일' };
+    const PERIOD_LABEL = { 1: '오늘', 3: '사흘', 7: '이레', 30: '한 달' };
+    const AMT_LABEL = { a: '1억원 미만', b: '1억 ~ 10억원', c: '10억원 이상' };
+    const VERDICT_TEXT = { eligible: '참여 가능', unknown: '확인 필요' };
+
+    /** 지금 걸린 조건을 칩으로 편다. 하나씩 끄거나 한꺼번에 지운다. */
+    function renderActive() {
+      const c = cond();
+      const chips = [];
+      if (c.q) chips.push(['q', `"${c.q}" 검색`]);
+      if (c.verdict !== 'all') chips.push(['verdict', `판정: ${VERDICT_TEXT[c.verdict]}`]);
+      if (c.div) chips.push(['div', `업무: ${DIV_LABEL[c.div] || c.div}`]);
+      if (c.period === 'custom' && (c.from || c.to)) {
+        chips.push(['period', `기간: ${BASE_LABEL[c.base]} ${c.from || '처음'} ~ ${c.to || '끝'}`]);
+      } else if (c.period) {
+        const word = c.base === 'ntce'
+          ? (c.period === '1' ? '오늘' : `최근 ${PERIOD_LABEL[c.period]}`)
+          : `${PERIOD_LABEL[c.period]} 안`;
+        chips.push(['period', `기간: ${BASE_LABEL[c.base]} ${word}`]);
+      }
+      if (c.amt) chips.push(['amt', `추정가: ${AMT_LABEL[c.amt]}`]);
+      if (c.org) chips.push(['org', `발주처: ${c.org}`]);
+      if (c.joint) chips.push(['joint', '공동도급 가능만']);
+      if (c.main) chips.push(['main', '주공종이 내 업종']);
+      if (c.rgnduty) chips.push(['rgnduty', '지역의무공동도급']);
+      if (sort.key) chips.push(['sort', `정렬: ${sort.key} ${sort.dir === 'desc' ? '내림' : '오름'}차순`]);
+      const box = $('br-active');
+      box.hidden = chips.length === 0;
+      if (!chips.length) return;
+      box.innerHTML = '<span class="br-al">적용된 조건</span>'
+        + chips.map(([k, t]) => `<button type="button" class="br-chip" data-clear="${esc(k)}">${esc(t)}<span aria-hidden="true">×</span></button>`).join('')
+        + '<button type="button" class="br-clearall" id="br-clearall">전체 해제</button>';
+    }
+
+    function clearCond(key) {
+      if (key === 'q') $('f-q').value = '';
+      else if (key === 'verdict') setVerdict('all');
+      else if (key === 'div') $('f-div').value = '';
+      else if (key === 'period') {
+        $('f-period').value = '';
+        $('f-from').value = '';
+        $('f-to').value = '';
+        syncPeriod();
+      }
+      else if (key === 'amt') $('f-amt').value = '';
+      else if (key === 'org') $('f-org').value = '';
+      else if (key === 'joint') $('f-joint').checked = false;
+      else if (key === 'main') $('f-main').checked = false;
+      else if (key === 'rgnduty') $('f-rgnduty').checked = false;
+      else if (key === 'sort') sort = { key: '', dir: '' };
+    }
+
+    function clearAll() {
+      ['q', 'verdict', 'div', 'period', 'amt', 'org', 'joint', 'main', 'rgnduty', 'sort'].forEach(clearCond);
+    }
+
+    function setVerdict(v) {
+      verdict = v;
+      [...document.querySelectorAll('.br-sg')].forEach((b) => {
+        const on = b.dataset.v === v;
+        b.classList.toggle('is-on', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
     }
 
     function renderTally(rows, list) {
@@ -248,6 +663,7 @@ const ld = {
       rows.forEach((r) => { c[r.match.verdict] += 1; });
       const total = rows.length;
       const cut = total ? Math.round(((total - c.eligible) / total) * 100) : 0;
+      const q = cond().q;
       $('br-tally').innerHTML = `
         <div class="br-tl">
           <div class="br-tn">${total}</div><div class="br-tt">수집 공고</div>
@@ -261,50 +677,14 @@ const ld = {
         <div class="br-tl">
           <div class="br-tn">${c.ineligible}</div><div class="br-tt">❌ 자격미달</div>
         </div>
-        <div class="br-tsum">볼 공고가 <strong>${cut}%</strong> 줄었습니다. 지금 화면에 ${list.length}건을 폅니다.</div>`;
-    }
-
-    function renderCards(list) {
-      if (!list.length) {
-        // 「없습니다」로 끝내지 않는다. 무엇을 풀면 되는지까지 적는다.
-        const all = judged();
-        const why = [];
-        if ($('f-onlyok').checked) why.push('「참여가능만」 표시 해제');
-        if ($('f-joint').checked) why.push('「공동도급 가능만」 표시 해제');
-        if (!$('f-lic').value.trim()) why.push('보유 면허 선택');
-        else if (all.length && !all.some((r) => r.match.verdict === 'eligible')) {
-          why.push('보유 면허를 넓게 고르기');
-        }
-        if ($('f-region').value.trim()) why.push('업체 소재지를 광역만 남기기');
-        const tip = why.length
-          ? `이렇게 해 보십시오 — ${why.join(' · ')}.`
-          : '수집된 공고 자체가 없습니다. 다음 아침 수집을 기다려 주십시오.';
-        $('br-cards').innerHTML = `<p class="br-empty"><strong>조건에 맞는 공고가 없습니다.</strong><br />${esc(tip)}</p>`;
-        return;
-      }
-      $('br-cards').innerHTML = list.map(({ notice, match }) => {
-        const lines = alertLines(notice, match);
-        const head = lines[0];
-        const v = VERDICT_LABEL[match.verdict];
-        const dd = dday(notice.bid_clse_dt);
-        const body = lines.slice(1).map((l) => (
-          l.href
-            ? `<div class="br-cl"><span class="br-ci">${l.icon}</span><a href="${esc(l.href)}" rel="nofollow noopener" target="_blank">${esc(l.text)}</a></div>`
-            : `<div class="br-cl"><span class="br-ci">${l.icon}</span>${esc(readable(l.text))}</div>`
-        )).join('');
-        return `<article class="br-card br-v-${match.verdict}">
-          <div class="br-ch"><span class="br-ci">${head.icon}</span><span class="br-cn">${esc(head.text)}</span>
-            <span class="br-badge">${v.icon} ${v.text}</span></div>
-          ${dd ? `<div class="br-dday ${dd.cls}">${esc(dd.text)}</div>` : ''}
-          ${body}
-        </article>`;
-      }).join('');
+        <div class="br-tsum">전체 ${total}건 중 참여 가능 ${c.eligible}건${q ? ` · "${esc(q)}" 검색` : ''}.
+          볼 공고가 <strong>${cut}%</strong> 줄었고, 지금 화면에 ${list.length}건을 폅니다.</div>`;
     }
 
     /**
-     * 마감까지 남은 시간. 입찰자가 가장 먼저 보는 값이라 카드 위에 띠로 세운다.
-     * ★ 알림 카드의 「⏰ 마감 …」 줄은 텔레그램 정본과 글자가 같아야 하므로 손대지 않았다.
-     * 이것은 화면에만 더한 별개 표시다.
+     * 마감까지 남은 시간. 입찰자가 가장 먼저 보는 값이라 마감 칸에 배지로 붙인다.
+     * ★ 표의 열 이름·값은 파이썬 정본과 같아야 하므로 손대지 않았다.
+     * 이것은 그 칸 안에 **덧붙인 별개 표시**다(엑셀에는 나가지 않는다).
      */
     function dday(clse) {
       const t = String(clse || '').trim();
@@ -312,11 +692,11 @@ const ld = {
       const d = new Date(t.replace(' ', 'T'));
       if (Number.isNaN(d.getTime())) return null;
       const ms = d.getTime() - Date.now();
-      if (ms < 0) return { cls: 'is-over', text: '마감됨' };
+      if (ms < 0) return { cls: 'is-over', text: '마감' };
       const h = Math.floor(ms / 36e5);
-      if (h < 24) return { cls: 'is-soon', text: `오늘 마감 · ${h}시간 남음` };
+      if (h < 24) return { cls: 'is-soon', text: `오늘 ${h}시간` };
       const day = Math.floor(h / 24);
-      if (day <= 3) return { cls: 'is-soon', text: `D-${day} · ${day}일 남음` };
+      if (day <= 3) return { cls: 'is-soon', text: `D-${day}` };
       return { cls: '', text: `D-${day}` };
     }
 
@@ -327,56 +707,116 @@ const ld = {
         title="나라장터에서 이 공고의 원문을 엽니다">${esc(no)}<span class="br-ext" aria-hidden="true">↗</span></a>`;
     }
 
+    // 열 머리를 눌러 정렬할 수 있는 열. 표시값이 아니라 **공고의 원값**으로 정렬한다
+    // (「5.7억」 같은 사람 표기를 글자로 늘어놓으면 순서가 뒤죽박죽이 된다).
+    const SORTABLE = new Set(['공고명', '수요기관', '추정가격', '입찰마감', '공고게시']);
+
+    /**
+     * 판정 표시. ★ 색과 이모지로만 가르지 않는다 — 흑백 인쇄와 색각 이상에서
+     * 셋이 한 덩어리가 된다. 그래서 **글자를 함께 적는다**(참여가능·확인필요·자격미달).
+     * 표의 열 이름·값은 파이썬 정본과 같아야 하므로 열을 늘리지 않고
+     * 공고번호 칸에 배지를 얹었다(엑셀에는 나가지 않는다).
+     */
+    function verdictBadge(m) {
+      if (!m) return '';
+      const v = VERDICT_LABEL[m.verdict];
+      const why = (m.reasons || []).join(' · ');
+      return `<span class="br-vb br-v-${m.verdict}" title="${esc(why)}">`
+        + `<span aria-hidden="true">${v.icon}</span> ${esc(v.text)}</span>`;
+    }
+
     function table(cols, rows, opts = {}) {
-      if (!rows.length) return '<p class="br-empty">표시할 공고가 없습니다.</p>';
-      const th = cols.map((c) => `<th>${esc(c)}</th>`).join('');
-      const tr = rows.map((r) => `<tr>${cols.map((c) => {
+      if (!rows.length) return '';
+      const th = cols.map((c) => {
+        if (!SORTABLE.has(c)) return `<th>${esc(c)}</th>`;
+        const on = sort.key === c;
+        const aria = on ? (sort.dir === 'desc' ? 'descending' : 'ascending') : 'none';
+        const mark = on ? (sort.dir === 'desc' ? '▼' : '▲') : '⇅';
+        return `<th aria-sort="${aria}" class="br-th-s${on ? ' is-on' : ''}">`
+          + `<button type="button" class="br-sortbtn" data-sort="${esc(c)}">${esc(c)}`
+          + `<span class="br-sortmark" aria-hidden="true">${mark}</span></button></th>`;
+      }).join('');
+      const tr = rows.map((r, i) => `<tr>${cols.map((c) => {
         const v = r[c];
         // 공고번호 자체를 원문으로 연결한다 — 표 어디에 있어도 한 번에 넘어간다.
-        if (c === '공고번호') return `<td class="br-nocell">${noLink(v, r.원문URL || r.__url || '')}</td>`;
+        if (c === '공고번호') {
+          return `<td class="br-nocell" data-col="공고번호">${noLink(v, r.원문URL || r.__url || '')}`
+            + `${verdictBadge((opts.meta || [])[i])}</td>`;
+        }
         if (c === '원문URL') {
           return v
-            ? `<td><a href="${esc(v)}" rel="nofollow noopener" target="_blank">공고 원문</a></td>`
-            : '<td class="br-dim">미제공</td>';
+            ? '<td data-col="원문URL"><a href="' + esc(v) + '" rel="nofollow noopener" target="_blank">공고 원문</a></td>'
+            : '<td class="br-dim" data-col="원문URL">미제공</td>';
         }
-        const cls = (opts.wide || []).includes(c) ? ' class="br-wcell"' : '';
-        return `<td${cls}>${esc(v ?? '-')}</td>`;
+        const text = v ?? '-';
+        if (c === '입찰마감') {
+          const d = dday(r.__clse ?? v);
+          return `<td data-col="입찰마감" title="${esc(text)}"><span class="br-cx">${esc(text)}`
+            + (d ? `<span class="br-dd ${d.cls}">${esc(d.text)}</span>` : '') + '</span></td>';
+        }
+        return `<td data-col="${esc(c)}" title="${esc(text)}"><span class="br-cx">${esc(text)}</span></td>`;
       }).join('')}</tr>`).join('');
       return `<table class="br-t"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
     }
 
     const NOTES = {
-      compare: '엑셀 「공고 비교표」 시트와 같은 열·같은 순서입니다.',
+      compare: '엑셀 「공고 비교표」 시트와 같은 열·같은 순서입니다. 밑줄 친 열 이름을 누르면 그 열로 정렬됩니다.',
       check: '공고마다 준비할 것을 항목·내용·메모로 폅니다. ★ 표시는 놓치면 참여 자체가 막히는 항목입니다.',
       joint: '공고의 공동수급방식으로 분류했습니다. 구성원별 실적 인정 비율은 공고서 본문에서 확인해야 합니다.',
       price: '참고용 통계입니다. 예정가격은 추첨으로 정해지므로 낙찰을 예측하거나 보장하지 않습니다. 투찰률 x% 열은 하한 통과 조합이 x% 이상이 되는 가장 낮은 투찰률입니다.',
     };
 
+    /** 조건에 걸려 0건일 때. 「없습니다」로 끝내지 않고 무엇을 풀면 되는지 적는다. */
+    function emptyBox() {
+      const c = cond();
+      const why = [];
+      if (c.q) why.push('검색어 지우기');
+      if (c.verdict !== 'all') why.push('판정을 「전체」로');
+      if (c.div) why.push('업무를 「전체」로');
+      if (c.period) why.push('기간을 「전체」로');
+      if (c.amt) why.push('추정가를 「전체」로');
+      if (c.org) why.push('발주처를 「전체」로');
+      if (c.joint) why.push('「공동도급 가능만」 해제');
+      if (c.main) why.push('「주공종이 내 업종인 공고만」 해제');
+      if (c.rgnduty) why.push('「지역의무공동도급만」 해제');
+      if (!$('f-lic').value.trim()) why.push('보유 면허 선택');
+      if ($('f-dist').value) why.push('시·군·구를 「광역 전체」로 되돌리기');
+      const tip = why.length
+        ? `이렇게 해 보십시오 — ${why.join(' · ')}.`
+        : '수집된 공고 자체가 없습니다. 다음 아침 수집을 기다려 주십시오.';
+      return `<p class="br-empty"><strong>조건에 맞는 공고가 없습니다.</strong><br />${esc(tip)}`
+        + '<br /><button type="button" class="br-clearall" id="br-clearall2">조건 초기화</button></p>';
+    }
+
     function renderSheet(list) {
       const notices = list.map((r) => r.notice);
       $('br-tabnote').textContent = NOTES[tab];
+      if (!notices.length) { $('br-sheet').innerHTML = emptyBox(); return; }
       // 공동도급·투찰가 표에는 원문URL 열이 없다. 공고번호를 링크로 걸려면 주소가
       // 필요하므로 `__url` 로 얹어 준다(열로는 나오지 않는다).
       const withUrl = (rows) => rows.map((r, i) => ({ ...r, __url: noticeUrl(notices[i]) }));
+      const meta = list.map((r) => r.match);
 
       if (tab === 'compare') {
-        $('br-sheet').innerHTML = table(COMPARE_COLS, notices.map(summarize), { wide: ['공고명'] });
+        $('br-sheet').innerHTML = table(COMPARE_COLS, notices.map(summarize), { meta });
       } else if (tab === 'joint') {
         $('br-sheet').innerHTML = table(
           ['공고번호', '공고명', '구분', '가능여부', '공고표기', '지역제한', '메모'],
-          withUrl(jointSupplyRows(notices)), { wide: ['공고명', '메모'] },
+          withUrl(jointSupplyRows(notices)), { meta },
         );
       } else if (tab === 'price') {
         $('br-sheet').innerHTML = table(
-          BID_PRICE_COLS, withUrl(notices.map((n) => bidPriceRow(n, n.basis))), { wide: ['공고명', '산출근거'] },
+          BID_PRICE_COLS, withUrl(notices.map((n) => bidPriceRow(n, n.basis))), { meta },
         );
       } else {
         // 체크리스트는 공고별 블록이다(엑셀도 블록으로 쌓는다)
-        $('br-sheet').innerHTML = list.map(({ notice }) => {
+        $('br-sheet').innerHTML = list.map(({ notice, match }) => {
           const s = summarize(notice);
           const items = checklist(notice, notice.licenseLimits, notice.possibleRegions);
-          const rows = items.map(([item, val, memo]) => `<tr><td class="br-cbox">☐</td><th>${esc(item)}</th><td>${esc(val)}</td><td class="br-memo">${esc(memo)}</td></tr>`).join('');
-          return `<div class="br-block"><div class="br-bt">▣ ${esc(s.공고명)}<span class="br-bno">${noLink(s.공고번호, s.원문URL)}</span></div>
+          const rows = items.map(([item, val, memo]) => `<tr><td class="br-cbox">☐</td><th>${esc(item)}</th>`
+            + `<td title="${esc(val)}"><span class="br-cx">${esc(val)}</span></td>`
+            + `<td class="br-memo" title="${esc(memo)}"><span class="br-cx">${esc(memo)}</span></td></tr>`).join('');
+          return `<div class="br-block"><div class="br-bt">▣ ${esc(s.공고명)}<span class="br-bno">${noLink(s.공고번호, s.원문URL)}</span>${verdictBadge(match)}</div>
             <table class="br-t br-ct"><tbody>${rows}</tbody></table></div>`;
         }).join('');
       }
@@ -386,7 +826,7 @@ const ld = {
       const rows = judged();
       const list = shown(rows);
       renderTally(rows, list);
-      renderCards(list);
+      renderActive();
       renderSheet(list);
     }
 
@@ -450,8 +890,199 @@ const ld = {
 
     msSync();
 
-    $('f-region').addEventListener('input', render);
-    ['f-onlyok', 'f-joint'].forEach((id) => $(id).addEventListener('change', render));
+    // ── 소재지 2단 선택 ──────────────────────────────────────────────
+    // 소유주 지적: 「업체 소재지 선택이 입력이라 어려움이 있음」. 자유 입력이던 칸을
+    // 광역(17) → 시·군·구(228) 두 칸으로 갈랐다. 고른 값을 숨은 #f-region 에
+    // 「경상남도 창원시」 꼴로 이어 붙이므로 판정 로직은 그대로다.
+    const RG = JSON.parse($('br-regions').textContent);
+    const provSel = $('f-prov');
+    const distSel = $('f-dist');
+
+    function fillProvinces() {
+      provSel.innerHTML = RG.provinces
+        .map((p) => `<option value="${esc(p.name)}"${p.name === RG.defaultProv ? ' selected' : ''}>${esc(p.name)}</option>`)
+        .join('');
+    }
+
+    function fillDistricts(keep) {
+      const p = RG.provinces.find((x) => x.name === provSel.value);
+      const ds = p ? p.districts : [];
+      // 첫 칸은 「광역 전체」다 — 지역제한이 광역 단위로만 걸린 공고를 넓게 받는다.
+      // 기초자치단체가 없는 광역(세종)은 이 칸이 잠긴다(빈 목록을 지어내지 않는다).
+      distSel.innerHTML = ds.length
+        ? `<option value="">광역 전체</option>${ds.map((d) => `<option>${esc(d)}</option>`).join('')}`
+        : '<option value="">기초자치단체 없음</option>';
+      distSel.disabled = !ds.length;
+      if (keep && ds.includes(keep)) distSel.value = keep;
+    }
+
+    function syncRegion() {
+      $('f-region').value = [provSel.value, distSel.value].filter(Boolean).join(' ');
+      render();
+    }
+
+    provSel.addEventListener('change', () => { fillDistricts(null); syncRegion(); });
+    distSel.addEventListener('change', syncRegion);
+    fillProvinces();
+    fillDistricts(RG.defaultDist);
+
+    // ── 공고 조건 ────────────────────────────────────────────────────
+    fillChoices();
+
+    // 검색은 글자마다 다시 그리면 60건에서도 손이 무겁다. 300ms 쉬고 그린다
+    // (입찰레이더 공고관리 화면과 같은 값이다).
+    let qTimer = null;
+    $('f-q').addEventListener('input', () => {
+      clearTimeout(qTimer);
+      qTimer = setTimeout(render, 300);
+    });
+    $('f-q').addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); clearTimeout(qTimer); render(); }
+    });
+
+    ['f-div', 'f-amt', 'f-org'].forEach((id) => $(id).addEventListener('change', render));
+    ['f-joint', 'f-main', 'f-rgnduty'].forEach((id) => $(id).addEventListener('change', render));
+
+    // ── 기간 ─────────────────────────────────────────────────────────
+    // 프리셋의 말이 기준에 따라 달라진다. 마감일은 「이레 안」(앞으로),
+    // 공고일은 「최근 이레」(뒤로)다. 같은 말로 두면 반대 뜻이 된다.
+    const ymd = (ms) => {
+      const d = new Date(ms);
+      const p2 = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+    };
+
+    /** 수집분에 실제로 있는 날짜 범위. 달력의 양끝을 그 밖으로 못 가게 잡아 준다. */
+    function dataRange(base) {
+      const ts = DATA.notices.map((n) => (base === 'ntce' ? openMs(n) : clseMs(n)))
+        .filter((t) => Number.isFinite(t));
+      if (!ts.length) return null;
+      return [Math.min(...ts), Math.max(...ts)];
+    }
+
+    function syncPeriod() {
+      const base = $('f-base').value;
+      const custom = $('f-period').value === 'custom';
+      $('br-dates').hidden = !custom;
+      // 프리셋 문구를 기준에 맞춘다
+      [...$('f-period').options].forEach((o) => {
+        if (!PERIOD_LABEL[o.value]) return;
+        // 「최근 오늘」은 말이 안 된다. 하루짜리는 그냥 「오늘」이다.
+        o.textContent = base === 'ntce'
+          ? (o.value === '1' ? '오늘' : `최근 ${PERIOD_LABEL[o.value]}`)
+          : `${PERIOD_LABEL[o.value]} 안`;
+      });
+      const rg = dataRange(base);
+      if (rg) {
+        const lo = ymd(rg[0]);
+        const hi = ymd(rg[1]);
+        ['f-from', 'f-to'].forEach((id) => { $(id).min = lo; $(id).max = hi; });
+        // 직접 지정으로 처음 넘어오면 수집분의 양끝을 채워 둔다(빈 칸에서 시작하지 않는다).
+        if (custom && !$('f-from').value && !$('f-to').value) {
+          $('f-from').value = lo;
+          $('f-to').value = hi;
+        }
+      }
+    }
+
+    $('f-base').addEventListener('change', () => { syncPeriod(); render(); });
+    $('f-period').addEventListener('change', () => { syncPeriod(); render(); });
+    ['f-from', 'f-to'].forEach((id) => $(id).addEventListener('change', render));
+    syncPeriod();
+
+    document.querySelector('.br-seg').addEventListener('click', (ev) => {
+      const b = ev.target.closest('.br-sg');
+      if (!b) return;
+      setVerdict(b.dataset.v);
+      render();
+    });
+
+    $('f-reset').addEventListener('click', () => { clearAll(); render(); });
+
+    // 조건 칩(하나 끄기 · 전체 해제)과 빈 화면의 초기화 단추
+    document.addEventListener('click', (ev) => {
+      const one = ev.target.closest('[data-clear]');
+      if (one) { clearCond(one.dataset.clear); render(); return; }
+      if (ev.target.closest('#br-clearall') || ev.target.closest('#br-clearall2')) { clearAll(); render(); }
+    });
+
+    // ── 공동도급 인정 실적 계산 ─────────────────────────────────────
+    // 공동이행은 실적이 출자비율만큼 인정된다. 분담이행은 비율로 나누는 것이 아니라
+    // **맡은 공종의 실적을 그대로** 본다. 그래서 방식에 따라 계산 자체가 달라진다.
+    // 요구 실적은 공고서에서 옮겨 적는 값이라, 비어 있으면 충족 여부를 내지 않는다.
+    const jNum = (id) => {
+      const v = parseFloat($(id).value);
+      return Number.isFinite(v) ? v : NaN;
+    };
+    const wonKo = (n) => {
+      if (!Number.isFinite(n) || n <= 0) return '0원';
+      if (n >= 1e8) return `${(n / 1e8).toFixed(n % 1e8 === 0 ? 0 : 2)}억원`;
+      if (n >= 1e4) return `${Math.round(n / 1e4).toLocaleString('ko-KR')}만원`;
+      return `${Math.round(n).toLocaleString('ko-KR')}원`;
+    };
+
+    function renderJoint() {
+      const kind = $('j-kind').value;
+      const mine = jNum('j-mine');
+      const share = jNum('j-share');
+      const need = jNum('j-need');
+      $('j-mine-u').textContent = Number.isFinite(mine) && mine > 0 ? wonKo(mine) : '';
+      $('j-need-u').textContent = Number.isFinite(need) && need > 0 ? wonKo(need) : '';
+      // 분담이행에서는 출자비율이 실적을 깎지 않는다. 칸을 잠가 오해를 막는다.
+      $('j-share').disabled = kind === 'divided';
+
+      const lines = [];
+      if (!Number.isFinite(mine) || mine <= 0) {
+        $('j-out').innerHTML = '<p class="br-jsempty">우리 회사 시공실적을 넣으면 계산합니다.</p>';
+        return;
+      }
+      if (kind === 'divided') {
+        lines.push(['맡은 공종의 실적', wonKo(mine),
+          '분담이행은 공종을 나눠 각자 맡은 부분만 시공하므로, 출자비율로 실적을 나누지 않습니다. 맡은 공종의 실적이 그대로 쓰입니다.']);
+      } else {
+        if (!Number.isFinite(share) || share <= 0 || share > 100) {
+          $('j-out').innerHTML = '<p class="br-jsempty">출자비율을 0 초과 100 이하로 넣어 주십시오.</p>';
+          return;
+        }
+        const got = mine * (share / 100);
+        lines.push(['인정 실적', wonKo(got), `보유 실적 ${wonKo(mine)} 가운데 출자비율 ${share}% 몫입니다.`]);
+        if (Number.isFinite(need) && need > 0) {
+          const ok = got >= need;
+          lines.push([ok ? '요구 실적 충족' : '요구 실적 미달',
+            ok ? `${wonKo(got - need)} 여유` : `${wonKo(need - got)} 부족`,
+            `공고 요구 ${wonKo(need)} 기준입니다. 이 값은 공고서에서 옮겨 적은 것이며 화면이 확인하지 못합니다.`]);
+          // 필요 최소 지분율. 보유 실적으로 아예 못 채우면 그 사실을 그대로 적는다.
+          const req = (need / mine) * 100;
+          lines.push(req <= 100
+            ? ['필요 최소 지분율', `${req.toFixed(2)}%`, '이 비율 이상을 가져야 요구 실적을 채웁니다.']
+            : ['필요 최소 지분율', '단독으로는 채우지 못함',
+              `요구 실적이 보유 실적의 ${(need / mine).toFixed(2)}배입니다. 지분을 100% 가져도 모자랍니다.`]);
+        }
+      }
+      $('j-out').innerHTML = lines.map(([k, v, memo]) => `<div class="br-jsrow">
+        <div class="br-jsk">${esc(k)}</div>
+        <div class="br-jsv mono">${esc(v)}</div>
+        <div class="br-jsm">${esc(memo)}</div></div>`).join('')
+        + '<p class="br-jswarn">구성원별 실적 인정 비율과 최소 지분율은 공고마다 다릅니다.'
+        + ' 최종 확인은 공고서와 현장설명서를 따릅니다.</p>';
+    }
+
+    ['j-kind', 'j-mine', 'j-share', 'j-need'].forEach((id) => {
+      $(id).addEventListener('input', renderJoint);
+      $(id).addEventListener('change', renderJoint);
+    });
+    renderJoint();
+
+    // 열 머리 정렬 — 없음 → 오름 → 내림 → 없음
+    $('br-sheet').addEventListener('click', (ev) => {
+      const b = ev.target.closest('[data-sort]');
+      if (!b) return;
+      const k = b.dataset.sort;
+      if (sort.key !== k) sort = { key: k, dir: 'asc' };
+      else if (sort.dir === 'asc') sort = { key: k, dir: 'desc' };
+      else sort = { key: '', dir: '' };
+      render();
+    });
     // ── 엑셀로 받기 ──────────────────────────────────────────────────
     // 화면에 보이는 그대로를 시트 넷으로 담는다. 시트 이름·열 순서는 입찰레이더
     // `briefing_excel.py` 와 같다. 공고번호 칸에 원문 하이퍼링크를 건다.
@@ -594,7 +1225,7 @@ const ld = {
     .br-note { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); word-break: keep-all; max-width: 70ch; }
 
     .br-form { margin-top: 20px; }
-    .br-grid { display: grid; grid-template-columns: 1fr 1.6fr auto; gap: 14px 18px; align-items: end; }
+    .br-grid { display: grid; grid-template-columns: 1fr 1.6fr auto; gap: 14px 18px; align-items: start; }
     .br-f { display: grid; gap: 5px; }
     .br-l { font-size: 12.5px; color: var(--sub); font-weight: 600; }
     .br-l em { font-style: normal; font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 5px; }
@@ -603,6 +1234,17 @@ const ld = {
       border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
     }
     .br-f input[type="text"]:focus { outline: none; border-color: var(--accent); }
+    /* 소재지 2단 선택 — 좁아지면 두 칸이 위아래로 쌓인다.
+       ★ 네이티브 <select> 를 쓰는 이유는 모양이 아니라 조작이다. 휴대전화에서는
+       기기 자체의 선택판이 뜨고, 키보드·스크린리더도 손댈 것이 없다. */
+    .br-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+    .br-two select {
+      font: inherit; font-size: 14px; padding: 8px 10px; width: 100%; min-width: 0;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-two select:focus { outline: none; border-color: var(--accent); }
+    .br-two select:disabled { color: var(--muted); background: var(--bg); }
+    @media (max-width: 520px) { .br-two { grid-template-columns: minmax(0, 1fr); } }
     /* 면허 다중 선택 드롭다운 — 기존 입력칸과 같은 테두리·여백을 쓴다. */
     .br-ms { position: relative; }
     .br-ms-btn {
@@ -661,31 +1303,61 @@ const ld = {
     .br-tsum { font-size: 13px; color: var(--sub); text-align: right; word-break: keep-all; }
 
     /* 알림과 기초자료를 위아래로 놓는다. 나란히 두면 표가 460px 칸에 갇혀 열이 전부 접힌다. */
-    .br-cols { display: grid; gap: 30px; margin-top: 26px; }
-    .br-cardgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
-    /* ★ 그리드 칸의 기본 min-width 는 auto 다. 표가 든 칸에 0 을 주지 않으면
-       칸이 표만큼 넓어져 .br-scroll 이 아니라 문서 전체가 가로로 밀린다(390px 에서 실측). */
-    .br-left, .br-right { min-width: 0; }
+    /* ── 공고 조건 막대 ── 입찰레이더 공고관리 화면(docs/18 §2-A)의 2행 구성이다.
+       1행은 검색(가장 자주 쓰므로 넓게), 2행은 고르는 조건. */
+    .br-bar { margin-top: 16px; display: grid; gap: 9px; }
+    .br-search { display: flex; align-items: center; gap: 8px;
+                 border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); padding: 0 10px; }
+    .br-si { color: var(--muted); font-size: 13px; }
+    .br-search input[type="search"] {
+      flex: 1 1 auto; min-width: 0; font: inherit; font-size: 14px; padding: 9px 0;
+      border: 0; background: transparent; color: var(--ink); outline: none;
+    }
+    .br-reset {
+      font: inherit; font-size: 12px; color: var(--sub); background: transparent;
+      border: 1px solid var(--hair); border-radius: 3px; padding: 4px 9px; cursor: pointer; white-space: nowrap;
+    }
+    .br-reset:hover { border-color: var(--accent); color: var(--accent); }
+    /* ★ CSS 함정 ⑧ — 우리가 건 display 가 브라우저 기본 `[hidden]{display:none}` 을 이긴다
+       (2026-09-04, 눈으로 봐서 잡았다). `.br-dates`·`.br-chk` 에 display 를 주었더니
+       `hidden` 을 걸어도 화면에 그대로 남았다. **속성값만 확인하면 통과한다** —
+       실제로 `el.hidden === true` 인데 보였다. 이 블록 안에서는 hidden 을 늘 이기게 둔다. */
+    .br [hidden] { display: none !important; }
+
+    .br-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+    .br-seg { display: inline-flex; border: 1px solid var(--hair); border-radius: 3px; overflow: hidden; }
+    .br-sg {
+      font: inherit; font-size: 12.5px; color: var(--sub); background: var(--surface);
+      border: 0; border-right: 1px solid var(--hair); padding: 6px 12px; cursor: pointer; white-space: nowrap;
+    }
+    .br-sg:last-child { border-right: 0; }
+    .br-sg.is-on { background: var(--brand); color: #fff; font-weight: 700; }
+    .br-fl { font-size: 12.5px; color: var(--sub); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; min-width: 0; max-width: 100%; }
+    .br-fl select {
+      font: inherit; font-size: 12.5px; padding: 5px 7px; max-width: 190px;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-fl select:focus { outline: none; border-color: var(--accent); }
+    /* ★ 기간 묶음은 칸이 넷이라 390px 에서 문서를 밀어낸다(실측 65px).
+       줄바꿈을 허용하고 달력 칸이 남은 너비를 나눠 갖게 한다. */
+    .br-period { gap: 6px; flex-wrap: wrap; white-space: normal; }
+    .br-dates { display: inline-flex; align-items: center; gap: 5px; flex: 1 1 auto; min-width: 0; }
+    .br-dates input[type="date"] { min-width: 0; flex: 1 1 0; }
+    .br-dates input[type="date"] {
+      font: inherit; font-size: 12.5px; padding: 4px 6px;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-tilde { color: var(--muted); }
+    .br-active { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .br-al { font-size: 11.5px; color: var(--muted); margin-right: 2px; }
+    .br-clearall {
+      font: inherit; font-size: 11.5px; color: var(--accent); background: transparent;
+      border: 0; border-bottom: 1px solid var(--hair); padding: 2px 0; cursor: pointer; margin-left: 4px;
+    }
+    .br-sheetwrap { margin-top: 26px; min-width: 0; }
     .br-h3 { font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 10px; }
     .br-h3s { font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 6px; }
-
-    .br-card { border: 1px solid var(--hair); border-radius: 4px; background: var(--surface); padding: 12px 14px; margin-bottom: 10px; }
-    .br-ch { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-    .br-cn { font-weight: 700; font-size: 14px; color: var(--ink); word-break: keep-all; flex: 1 1 auto; }
-    .br-badge { font-size: 11.5px; font-weight: 700; color: var(--sub); white-space: nowrap; }
-    /* 마감까지 남은 시간 — 입찰자가 가장 먼저 보는 값 */
-    .br-dday {
-      display: inline-block; margin: 2px 0 6px; padding: 2px 8px; border-radius: 999px;
-      font-size: 11.5px; font-weight: 700; color: var(--sub);
-      background: var(--bg); border: 1px solid var(--hair);
-    }
-    .br-dday.is-soon { color: #fff; background: var(--up); border-color: var(--up); }
-    .br-dday.is-over { color: var(--muted); text-decoration: line-through; }
-    .br-v-eligible .br-badge { color: var(--accent); }
-    .br-cl { font-size: 12.5px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
-    .br-ci { display: inline-block; width: 1.35em; }
-    .br-cl a { color: var(--brand); text-decoration: none; border-bottom: 1px solid var(--hair); }
-    .br-empty { font-size: 13px; color: var(--muted); padding: 14px 0; }
+    .br-empty { font-size: 13px; color: var(--muted); padding: 18px 0; line-height: 1.9; }
 
     /* 기초자료 머리줄 — 제목 왼쪽, 내려받기 오른쪽 */
     .br-rhead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -722,13 +1394,108 @@ const ld = {
     .br-t tbody th { font-weight: 600; color: var(--ink); }
     .br-t td { color: var(--sub); }
     .br-t td a { color: var(--brand); }
-    .br-wcell { white-space: normal; min-width: 190px; max-width: 330px; word-break: keep-all; }
+
+    /* ★ 칸을 넘는 글자가 옆 칸을 침범하지 않게 한다(소유주 지시, 2026-09-04).
+       한 칸은 반드시 한 줄이고, 넘치면 말줄임표로 끊는다. 끊긴 글자는 칸에 건
+       title 로 그대로 볼 수 있다. td 에 직접 걸면 표 레이아웃이 auto 라
+       max-width 가 먹지 않으므로 **안쪽 블록**에 건다. */
+    .br-t .br-cx {
+      display: block; max-width: 150px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .br-t td[data-col="공고명"] .br-cx { max-width: 300px; }
+    .br-t td[data-col="수요기관"] .br-cx,
+    .br-t td[data-col="메모"] .br-cx,
+    .br-t td[data-col="산출근거"] .br-cx { max-width: 230px; }
+    .br-t td[data-col="입찰마감"] .br-cx,
+    .br-t td[data-col="개찰일시"] .br-cx,
+    .br-t td[data-col="자격등록마감"] .br-cx,
+    .br-t td[data-col="공고게시"] .br-cx { max-width: 190px; }
+    .br-ct .br-cx { max-width: 260px; }
+    .br-ct td.br-memo .br-cx { max-width: 340px; }
+
+    /* 판정 배지. ★ 색·이모지만으로 가르지 않고 글자를 함께 적는다 —
+       흑백 인쇄와 색각 이상에서 셋이 한 덩어리로 보이기 때문이다. */
+    .br-vb {
+      display: inline-block; margin-left: 7px; font-size: 10.5px; font-weight: 700;
+      padding: 1px 6px; border-radius: 2px; white-space: nowrap;
+      border: 1px solid var(--hair); color: var(--sub); background: var(--surface);
+    }
+    .br-vb.br-v-eligible { color: #fff; background: var(--brand); border-color: var(--brand); }
+    .br-vb.br-v-unknown { color: var(--accent); border-color: var(--accent); }
+    .br-vb.br-v-ineligible { color: var(--muted); }
+
+    /* ★ 포커스가 어디 있는지 보이게 한다. 이 화면은 누를 것이 수십 개다. */
+    .br :is(button, select, input, a):focus-visible,
+    .br-ms-o:focus-within {
+      outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px;
+    }
+
+    /* 마감 칸에 덧붙인 D-day. 표의 값은 정본 그대로 두고 배지만 얹는다. */
+    .br-dd {
+      display: inline-block; margin-left: 6px; font-size: 10.5px; font-weight: 700;
+      padding: 1px 5px; border-radius: 2px; border: 1px solid var(--hair); color: var(--sub);
+      vertical-align: 1px;
+    }
+    .br-dd.is-soon { color: #fff; background: var(--up); border-color: var(--up); }
+    .br-dd.is-over { color: var(--muted); }
+
+    /* 정렬 가능한 열 머리. 누르면 없음 → 오름 → 내림 → 없음. */
+    .br-t thead th.br-th-s { padding: 0; }
+    .br-sortbtn {
+      font: inherit; font-size: 11.5px; font-weight: 700; color: #fff; background: transparent;
+      border: 0; padding: 7px 9px; cursor: pointer; white-space: nowrap; width: 100%; text-align: left;
+      text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, .45);
+    }
+    .br-sortmark { margin-left: 5px; opacity: .65; font-size: 10px; }
+    .br-th-s.is-on .br-sortmark { opacity: 1; }
+    .br-th-s.is-on { background: var(--accent); }
     .br-block { padding: 12px 12px 4px; }
     .br-bt { font-size: 13px; font-weight: 700; color: var(--brand); margin-bottom: 6px; }
     .br-bno { font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 8px; }
     .br-ct { min-width: 560px; }
     .br-cbox { width: 26px; color: var(--muted); }
     .br-memo { white-space: normal; color: var(--muted); min-width: 200px; word-break: keep-all; }
+
+    /* 「답하는 것과 답하지 않는 것」 표. 위쪽 기초자료 표와 달리 **줄바꿈을 허용한다** —
+       설명문이라 한 줄로 끊으면 뜻이 죽는다. 판정은 색이 아니라 왼쪽 굵은 선과
+       본문의 「가릅니다 / 못 합니다」로 읽힌다. */
+    .br-can { width: 100%; min-width: 520px; margin: 6px 0 4px; }
+    .br-can th, .br-can td { white-space: normal; word-break: keep-all; vertical-align: top; line-height: 1.7; }
+    .br-can tbody th { width: 34%; font-weight: 700; color: var(--ink); border-left: 3px solid var(--hair); padding-left: 10px; }
+    .br-can tbody tr.is-yes th { border-left-color: var(--brand); }
+    .br-can tbody tr.is-part th { border-left-color: var(--accent); }
+    .br-can tbody tr.is-no th { border-left-color: var(--muted); }
+    .br-can tbody tr.is-later th { border-left-color: var(--muted); border-left-style: dashed; }
+    .br-can td { font-size: 12.5px; }
+
+    /* 공동도급 인정 실적 계산 */
+    .br-js { margin-top: 30px; max-width: var(--measure); }
+    .br-jsnote { margin: 0 0 12px; font-size: 13px; color: var(--sub); line-height: 1.8; word-break: keep-all; }
+    .br-jsgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 16px;
+                 align-items: start; }
+    /* ★ 칸마다 라벨 길이가 달라 입력칸의 높이가 어긋난다. 각 칸을 위로 붙이고
+       라벨 줄을 한 줄로 고정해 밑변을 맞춘다(선택칸이 늘어나던 것도 함께 잡힌다). */
+    .br-jsgrid .br-f { align-content: start; }
+    .br-jsgrid .br-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .br-jsgrid select, .br-jsgrid input[type="number"] {
+      font: inherit; font-size: 14px; padding: 8px 10px; width: 100%; min-width: 0;
+      border: 1px solid var(--hair); border-radius: 3px; background: var(--surface); color: var(--ink);
+    }
+    .br-jsgrid select:focus, .br-jsgrid input:focus { outline: none; border-color: var(--accent); }
+    .br-jsgrid input:disabled, .br-jsgrid select:disabled { color: var(--muted); background: var(--bg); }
+    .br-u { font-size: 11.5px; color: var(--muted); }
+    .br-jsout { margin-top: 14px; border-top: 1px solid var(--hair); }
+    .br-jsrow { display: grid; grid-template-columns: minmax(0, 150px) minmax(0, 160px) minmax(0, 1fr);
+                gap: 4px 14px; padding: 10px 0; border-bottom: 1px solid var(--hair2); align-items: baseline; }
+    .br-jsk { font-size: 13px; font-weight: 700; color: var(--brand); }
+    .br-jsv { font-size: 17px; font-weight: 700; color: var(--ink); }
+    .br-jsm { font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+    .br-jsempty { font-size: 13px; color: var(--muted); padding: 12px 0; }
+    .br-jswarn { margin: 10px 0 0; font-size: 12px; color: var(--muted); line-height: 1.7; word-break: keep-all; }
+    @media (max-width: 620px) {
+      .br-jsrow { grid-template-columns: minmax(0, 1fr); }
+    }
 
     .br-explain { margin-top: 34px; max-width: var(--measure); }
     .br-h2 { font-size: 19px; margin: 24px 0 8px; letter-spacing: -.022em; }

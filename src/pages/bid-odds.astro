@@ -14,6 +14,32 @@
 //   「하한선 미달로 탈락하지 않을 조합의 비율」이다. 낙찰은 통과자 중 순위로 갈린다.
 import Base from '../layouts/Base.astro';
 import { url } from '../lib/site';
+import notices from '../data/bid-notices.json';
+import { BidParams } from '../lib/bid-odds.js';
+
+// ★ 공고 골라 넣기 (2026-09-04, 소유주 방침 「입력이 아니라 선택」).
+// 일곱 칸 중 여섯은 **이미 공고에 붙어 있다.** 손으로 옮겨 적게 둘 이유가 없다.
+// 값은 빌드 시점에 뽑는다 — 이 화면에 공고 원본을 통째로 실어 보낼 까닭이 없고,
+// 계산은 예전처럼 브라우저에서만 돈다.
+// 기초금액이나 낙찰하한율이 없는 공고는 목록에서 빠진다(빈 값을 지어내지 않는다).
+const picks = (notices.notices || []).map((n) => {
+  const p = BidParams.fromNotice({ ...(n.raw || {}), ...n }, n.basis);
+  if (!p) return null;
+  return {
+    no: n.bid_ntce_no || '',
+    nm: n.bid_ntce_nm || '(제목없음)',
+    clse: n.bid_clse_dt || '',
+    base: p.baseAmount,
+    lwlt: p.lowerLimitRate,
+    a: p.aValue,
+    tot: p.totalReserves,
+    draw: p.drawReserves,
+    rngB: p.rangeBeginRate,
+    rngE: p.rangeEndRate,
+  };
+}).filter(Boolean);
+const pickAsOf = notices.generatedAt ? notices.generatedAt.slice(0, 10).replace(/-/g, '.') : '';
+const pickIsSample = notices.source === 'sample';
 
 const ld = {
   '@context': 'https://schema.org',
@@ -35,6 +61,9 @@ const ld = {
   activeNav="warehouse"
 >
   <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
+  {picks.length > 0 && (
+    <script type="application/json" id="bo-picks" set:html={JSON.stringify(picks)} />
+  )}
 
   <section class="wrap bo">
     <header class="bo-head">
@@ -50,6 +79,25 @@ const ld = {
         사정률을 직접 넣는 계산이 아닙니다. 사정률의 분포 자체를 계산에서 만들어 냅니다.
       </p>
     </header>
+
+    {picks.length > 0 && (
+      <div class="bo-pick">
+        <label class="bo-pl" for="f-pick">공고 골라 넣기</label>
+        <select id="f-pick">
+          <option value="">직접 입력합니다</option>
+          {picks.map((p, i) => (
+            <option value={String(i)} data-no={p.no}>
+              {p.nm.length > 46 ? `${p.nm.slice(0, 46)}…` : p.nm} · {p.no}
+            </option>
+          ))}
+        </select>
+        <p class="bo-pn" id="bo-picknote">
+          {pickIsSample
+            ? `화면 구성을 위한 예시 공고 ${picks.length}건입니다. 실제 수집이 연결되면 자동으로 교체됩니다.`
+            : `나라장터에서 받은 공고 ${picks.length}건입니다. 기준일 ${pickAsOf}. 고르면 기초금액·낙찰하한율·A값·예비가격범위·예가개수가 한 번에 채워집니다. 투찰률은 그대로 둡니다.`}
+        </p>
+      </div>
+    )}
 
     <form class="bo-form" id="bo-form" autocomplete="off">
       <div class="bo-grid">
@@ -362,6 +410,51 @@ const ld = {
       $(id).addEventListener('input', render);
       $(id).addEventListener('change', render);
     });
+
+    // ── 공고 골라 넣기 ──────────────────────────────────────────────
+    // 여섯 칸을 손으로 옮겨 적는 일을 없앤다. 투찰률만 사람이 정한다.
+    const pickSel = $('f-pick');
+    if (pickSel) {
+      const PICKS = JSON.parse($('bo-picks').textContent);
+      const note = $('bo-picknote');
+      const baseNote = note.textContent;
+
+      function applyPick(i) {
+        const p = PICKS[i];
+        if (!p) return;
+        $('f-base').value = String(Math.round(p.base));
+        $('f-lwlt').value = String(p.lwlt);
+        $('f-a').value = String(Math.round(p.a || 0));
+        $('f-tot').value = String(p.tot);
+        $('f-draw').value = String(p.draw);
+        // 이 계산기는 예비가격범위를 ± 한 값으로 받는다. 공고가 -3 / +3 처럼
+        // 대칭이면 그대로고, 어긋나면 평균을 넣고 아래 줄에 원래 값을 밝힌다.
+        const lo = Math.abs(Number(p.rngB));
+        const hi = Math.abs(Number(p.rngE));
+        $('f-range').value = String(Math.round(((lo + hi) / 2) * 1000) / 1000);
+        const asym = Math.abs(lo - hi) > 1e-9
+          ? ` 공고의 예비가격범위가 ${p.rngB}% ~ +${hi}% 로 대칭이 아니어서 평균으로 넣었습니다.`
+          : '';
+        note.textContent =
+          `${p.nm} · ${p.no} 의 값을 넣었습니다.${p.clse ? ` 마감 ${p.clse}.` : ''}`
+          + `${asym} 투찰률은 그대로 두었으니 직접 정하십시오.`;
+        render();
+      }
+
+      pickSel.addEventListener('change', () => {
+        if (pickSel.value === '') { note.textContent = baseNote; return; }
+        applyPick(Number(pickSel.value));
+      });
+
+      // `/bid-odds/?ntce=<공고번호>` 로 들어오면 그 공고를 골라 둔다.
+      // 입찰레이더의 투찰가 참고표에서 넘어오는 길이다.
+      const want = new URLSearchParams(location.search).get('ntce');
+      if (want) {
+        const i = PICKS.findIndex((p) => p.no === want);
+        if (i >= 0) { pickSel.value = String(i); applyPick(i); }
+      }
+    }
+
     render();
   </script>
 

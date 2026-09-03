@@ -199,6 +199,11 @@
   **문자열 그대로 CSS 에 나가** 선택자가 성립하지 않았고 규칙 다섯 줄이 전부 무시됐다.
   빌드도 통과하고 그림도 보인다(모서리만 안 둥글다). **스코프 블록에서는 `:global()`,
   `is:global` 블록에서는 맨 선택자**다. 확인은 역시 `getComputedStyle`.
+  ⑧ **우리가 건 `display` 가 브라우저 기본 `[hidden]{display:none}` 을 이긴다**(2026-09-04).
+  `.br-dates { display: inline-flex }` 를 준 요소에 `hidden` 을 걸었더니 **화면에 그대로 남았다.**
+  더 무서운 것은 **`el.hidden` 은 `true` 라서 속성만 확인하는 점검은 통과한다**는 것이다.
+  수리는 `[hidden] { display: none !important; }` 한 줄. **확인은 `getBoundingClientRect`
+  로 크기를 재서** 한다(속성값이 아니라 실제로 안 보이는지를 본다).
   **이 계열은 눈으로 못 잡는다 — `npm run check-images` 가 조판 29종을 실측한다**(CI 에도 붙어 있다).
   로컬 윈도우에서는 크로미움 경로가 달라 `PW_CHROMIUM` 환경변수로 덮어쓴다
   (`~/AppData/Local/ms-playwright/chromium-*/chrome-win64/chrome.exe`).

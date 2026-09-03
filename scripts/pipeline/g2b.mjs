@@ -17,7 +17,7 @@ const OUT = join(here, '../../src/data/bid-notices.json');
 const ENDPOINT = process.env.G2B_ENDPOINT || 'https://apis.data.go.kr/1230000/ad/BidPublicInfoService';
 const KEY = process.env.G2B_SERVICE_KEY || process.env.DATA_GO_KR_KEY || '';
 const DAYS = Number(process.env.G2B_DAYS || 2);
-const MAX_NOTICES = Number(process.env.G2B_MAX || 60);
+const MAX_NOTICES = Number(process.env.G2B_MAX || 200);
 
 const WORK_DIVS = {
   cnstwk: { list: '/getBidPblancListInfoCnstwkPPSSrch', basis: '/getBidPblancListInfoCnstwkBsisAmount' },
@@ -47,10 +47,34 @@ const pad = (n) => String(n).padStart(2, '0');
 const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
 const key = (no, ord) => `${no}-${String(ord || '000').padStart(3, '0')}`;
 
-async function call(op, params) {
-  const qs = new URLSearchParams({ serviceKey: KEY, type: 'json', numOfRows: '100', pageNo: '1', ...params });
-  const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
-  const text = await res.text();
+// 한 쪽에 받을 수 있는 최대 건수. 1000 이상을 넣으면 API 가 거부하고 10건만 준다
+// (정본 `ai-bid-radar/src/g2b_client.py` 의 `_MAX_NUM_ROWS` 와 같은 값이다).
+const PAGE_ROWS = 999;
+const MAX_PAGES = Number(process.env.G2B_MAX_PAGES || 8);
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** 한 쪽을 받는다. 총건수(totalCount)를 함께 돌려주어 호출 쪽이 넘길지 정한다. */
+async function call(op, params, page = 1, rows = PAGE_ROWS) {
+  const qs = new URLSearchParams({
+    serviceKey: KEY, type: 'json', numOfRows: String(rows), pageNo: String(page), ...params,
+  });
+  // ★ 연결 실패 한 번으로 계열을 통째로 버리지 않는다(2026-09-04 CI 에서 실제로 겪었다).
+  //   같은 코드가 1분 전에 성공했는데 첫 호출만 `fetch failed` 였다.
+  let text;
+  let lastErr;
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
+      text = await res.text();
+      lastErr = null;
+      break;
+    } catch (e) {
+      lastErr = e;
+      await sleep(1500 * (i + 1));
+    }
+  }
+  if (lastErr) throw lastErr;
   if (text.trimStart().startsWith('<')) {
     // XML 은 보통 인증·파라미터 오류다. 본문에 인증키가 섞여 나올 수 있어 앞부분만 남긴다.
     throw new Error(`XML 응답(인증/파라미터 의심) ${op}: ${text.slice(0, 160).replace(KEY, '***')}`);
@@ -59,18 +83,39 @@ async function call(op, params) {
   const header = data?.response?.header ?? {};
   const code = String(header.resultCode ?? '');
   if (code !== '00' && code !== '0') throw new Error(`API 오류 ${code} ${op}: ${header.resultMsg ?? ''}`);
-  let items = data?.response?.body?.items ?? [];
+  const body = data?.response?.body ?? {};
+  let items = body.items ?? [];
   if (!Array.isArray(items)) items = items.item ? [].concat(items.item) : [];
-  return items;
+  return { items, total: Number(body.totalCount || 0) };
 }
 
+/**
+ * ★ 총건수만큼 쪽을 넘겨 전부 받는다(2026-09-04 수리).
+ *
+ * 예전 `call()` 은 **1쪽·100건만 받고 끝냈다.** 보조정보(면허제한·참가가능지역·기초금액)는
+ * 공고 한 건에 여러 줄이 붙어 조회창 이틀에 4,400줄이 쌓이는데, 그중 앞 100줄만 보니
+ * 화면에 싣는 60건과 거의 겹치지 않아 **오류 없이 조용히 0건**이 됐다.
+ * 정본 `g2b_client.fetch_aux()` 는 처음부터 999건씩 넘기고 있었다 — 4,438건이면 5쪽이라
+ * 개발계정 일 1,000건 안에서 넉넉하다.
+ *
+ * 중간 쪽에서 실패하면 **그때까지 받은 것은 살린다**(전부 버리면 예전처럼 0이 된다).
+ */
 async function safeCall(op, params, label) {
-  try {
-    return await call(op, params);
-  } catch (e) {
-    console.log(`  · ${label} 건너뜀 (${e.message.slice(0, 120)})`);
-    return [];
+  const out = [];
+  for (let page = 1; page <= MAX_PAGES; page += 1) {
+    let got;
+    try {
+      got = await call(op, params, page);
+    } catch (e) {
+      console.log(`  · ${label} ${page}쪽에서 중단 (${e.message.slice(0, 120)})`);
+      break;
+    }
+    out.push(...got.items);
+    if (!got.items.length || page * PAGE_ROWS >= got.total) break;
+    if (page === MAX_PAGES) console.log(`  · ${label} 총 ${got.total}건 중 ${out.length}건까지만 받았습니다(쪽 상한).`);
+    await sleep(200);
   }
+  return out;
 }
 
 const FIELDS = {
@@ -87,6 +132,18 @@ const FIELDS = {
   cmmnSpldmdCorpRgnLmtYn: 'cmmn_spldmd_corp_rgn_lmt_yn',
   rgnLmtBidLocplcJdgmBssNm: 'rgn_lmt_bid_locplc_jdgm_bss_nm',
   bidNtceUrl: 'bid_ntce_url', bidNtceDtlUrl: 'bid_ntce_dtl_url',
+
+  // ★ 공사 공고에만 오는 필드들(2026-09-04 실호출로 채워지는 비율까지 확인).
+  //   용역 공고에는 아예 없다. 없는 값은 담지 않으므로 그대로 두면 된다.
+  //   `cnstrtnAbltyEvlAmtList`(시공능력평가액)는 표본에서 값이 오지 않아 넣지 않았다 —
+  //   오지 않는 필드로 기능을 만들면 그것이 곧 오해가 된다.
+  mainCnsttyNm: 'main_cnstty_nm',                       // 주공종명 (37.9%) 면허와 같은 어휘로 온다
+  mainCnsttyPresmptPrce: 'main_cnstty_presmpt_prce',    // 주공종 추정가격 (38.2%)
+  cnstrtsiteRgnNm: 'cnstrtsite_rgn_nm',                 // 공사현장지역 (참가가능지역과 다른 축이다)
+  rgnDutyJntcontrctYn: 'rgn_duty_jntcontrct_yn',        // 지역의무공동도급 여부 (100%)
+  rgnDutyJntcontrctRt: 'rgn_duty_jntcontrct_rt',        // 지역업체 의무 지분율 (2.8%)
+  indstrytyEvlRt: 'indstryty_evl_rt',                   // 업종평가율
+  ciblAplYn: 'cibl_apl_yn',                             // 주계약자 적용 여부
 };
 
 function toRow(item, workDiv) {
@@ -180,6 +237,18 @@ async function main() {
   rows = rows.filter((r) => clseMs(r) >= nowMs);
   if (before !== rows.length) console.log(`  · 마감이 지난 공고 ${before - rows.length}건 제외`);
 
+  // ★ 같은 공고가 두 줄로 오면 안 된다(2026-09-04 소유주 지시 「데이터가 겹치면 안 된다」).
+  // 재공고·정정공고는 공고번호가 같고 차수만 다르다. **가장 큰 차수 하나만** 남긴다.
+  const best = new Map();
+  for (const r of rows) {
+    const no = String(r.bid_ntce_no || '');
+    const ord = Number(r.bid_ntce_ord || 0);
+    const prev = best.get(no);
+    if (!prev || ord > Number(prev.bid_ntce_ord || 0)) best.set(no, r);
+  }
+  if (best.size !== rows.length) console.log(`  · 같은 공고의 이전 차수 ${rows.length - best.size}건 제외`);
+  rows = [...best.values()];
+
   // 마감이 임박한 것부터. 같으면 최근 게시분이 앞이다.
   rows.sort((a, b) => (clseMs(a) - clseMs(b))
     || String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
@@ -188,10 +257,44 @@ async function main() {
     return { ...row, licenseLimits: licenses[k] || [], possibleRegions: regions[k] || [], basis: basis[k] || null };
   });
 
+  // ★ 화면이 고르게 할 어휘는 **API 가 쓰는 그 이름**이어야 한다(2026-09-04 실측).
+  //
+  // 손으로 적은 표는 반드시 낡는다. 실제로 낡아 있었다 —
+  //   · 면허: 우리는 「조경식재공사업」, 나라장터는 「조경식재ㆍ시설물공사업」(가운뎃점이 ㆍ 다).
+  //           licenseMatch 는 부분 문자열로 맞추므로 **어느 쪽으로도 안 걸렸다.**
+  //   · 지역: 우리는 「전라남도」·「광주광역시」, 나라장터는 「전남광주통합특별시」.
+  //           인천은 제물포구·영종구·서해구·검단구로 갈렸다.
+  // 그래서 수집할 때 어휘를 함께 적어 두고, 화면이 등록부와 합쳐 쓴다.
+  // 지역은 광역·기초 두 마디까지만 본다(읍면리까지 오는 공고가 있는데 그것은 고를 대상이 아니다).
+  const licenseVocab = [...Object.entries(
+    Object.values(licenses).flat().reduce((m, v) => {
+      const nm = String(v).split('/')[0].trim();
+      if (nm) m[nm] = (m[nm] || 0) + 1;
+      return m;
+    }, {}),
+  )].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count }));
+
+  const regionVocab = {};
+  for (const v of Object.values(regions).flat()) {
+    const t = String(v).replace(/ {2,}/g, ' ').trim().split(' ').filter(Boolean);
+    if (!t.length) continue;
+    const prov = t[0];
+    (regionVocab[prov] ||= new Set());
+    // 두 마디째가 시·군·구일 때만 기초로 본다(「도계읍」·「발이리」는 넣지 않는다).
+    if (t[1] && /[시군구]$/.test(t[1])) regionVocab[prov].add(t[1]);
+  }
+  const regionVocabOut = Object.fromEntries(
+    Object.entries(regionVocab)
+      .sort((a, b) => a[0].localeCompare(b[0], 'ko'))
+      .map(([k, v]) => [k, [...v].sort((a, b) => a.localeCompare(b, 'ko'))]),
+  );
+
   const payload = {
     source: 'g2b',
     generatedAt: new Date().toISOString(),
     window: { bgn, end },
+    licenseVocab,
+    regionVocab: regionVocabOut,
     counts: {
       notices: notices.length,
       withLicense: notices.filter((n) => n.licenseLimits.length).length,
