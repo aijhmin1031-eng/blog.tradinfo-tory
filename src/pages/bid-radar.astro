@@ -735,15 +735,27 @@ const ld = {
       });
     }
 
+    /**
+     * 집계 띠.
+     *
+     * ★ 네 숫자는 **조건에 맞는 공고(list)** 를 센다(2026-09-04 수리, 소유주 지적).
+     * 예전에는 수집 전량(rows)을 세어 **조건을 바꿔도 숫자가 꿈쩍하지 않았다.**
+     * 게다가 요약 문장이 「검토 대상이 77% 감소했고, 조건에 맞는 공고는 827건」처럼
+     * 앞뒤가 어긋났다. 화면에서 움직이지 않는 숫자는 고장으로 읽힌다.
+     * 수집 총계는 맥락이므로 요약 문장에 남긴다.
+     */
     function renderTally(rows, list) {
       const c = { eligible: 0, unknown: 0, ineligible: 0 };
-      rows.forEach((r) => { c[r.match.verdict] += 1; });
+      list.forEach((r) => { c[r.match.verdict] += 1; });
       const total = rows.length;
-      const cut = total ? Math.round(((total - c.eligible) / total) * 100) : 0;
+      const hit = list.length;
+      // ★ 내림으로 자른다. 826/827 을 반올림하면 1건이 남았는데 「100% 줄었다」가 된다.
+      const cut = total ? Math.floor(((total - hit) / total) * 100) : 0;
       const q = cond().q;
+      const narrowed = hit < total;
       $('br-tally').innerHTML = `
         <div class="br-tl">
-          <div class="br-tn">${total}</div><div class="br-tt">수집 공고</div>
+          <div class="br-tn">${hit}</div><div class="br-tt">조건에 맞는 공고</div>
         </div>
         <div class="br-tl br-ok">
           <div class="br-tn">${c.eligible}</div><div class="br-tt">✅ 참여가능</div>
@@ -754,8 +766,8 @@ const ld = {
         <div class="br-tl">
           <div class="br-tn">${c.ineligible}</div><div class="br-tt">❌ 자격미달</div>
         </div>
-        <div class="br-tsum">전체 ${total}건 중 참여 가능 ${c.eligible}건${q ? ` · "${esc(q)}" 검색` : ''}.
-          검토 대상이 <strong>${cut}%</strong> 감소했고, 조건에 맞는 공고는 ${list.length}건입니다.</div>`;
+        <div class="br-tsum">수집 공고 ${total}건 가운데 조건에 맞는 것이 ${hit}건${q ? `("${esc(q)}" 검색)` : ''},
+          그중 참여 가능이 ${c.eligible}건입니다.${narrowed ? ` 검토 대상이 <strong>${cut}%</strong> 줄었습니다.` : ''}</div>`;
     }
 
     /**
