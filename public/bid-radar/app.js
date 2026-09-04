@@ -411,8 +411,9 @@ function licenseLabel(lic){
     const left = (lic.runs_left==null)?'':lic.runs_left;
     return `<b style="color:var(--warning,#B45309)">체험판</b> · 수집 ${esc(String(left))}회 남음`;
   }
-  if(lic && lic.active) return '버전 1.1 · 정품 인증됨';
-  return '버전 1.1 · 인증 필요';
+  // ★ 웹판에는 정품 인증이 없다(소유주 지시로 제외). 없는 인증을 「인증됨」이라고
+  // 적으면 사실과 다르므로 판(edition)만 밝힌다. 데스크톱판 원본과 다른 곳은 여기뿐이다.
+  return '웹판 · 도토리경제';
 }
 
 // 연동 설정 화면의 '라이선스' 카드: 현재 상태 표시 + 새 키 적용(체험→정식 전환)
