@@ -32,7 +32,7 @@ const vocab = notices.licenseVocab || [];
 const known = new Set(licenseCatalog.groups.flatMap((g) => g.items));
 const extra = vocab.map((v) => v.name).filter((n) => n && !known.has(n));
 const licenseGroups = extra.length
-  ? [...licenseCatalog.groups, { label: '그 밖에 공고에 나온 업종', items: extra }]
+  ? [...licenseCatalog.groups, { label: '그 밖에 공고에 기재된 업종', items: extra }]
   : licenseCatalog.groups;
 
 // 지역도 같은 방식이다. 등록부의 기초 목록에 실제 어휘를 더한다.
@@ -58,7 +58,7 @@ const ld = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'All',
   description:
-    '나라장터 입찰공고를 업체의 지역·면허 조건으로 선별하고, 공동도급 가능 여부와 투찰가 참고표를 함께 냅니다.',
+    '나라장터 입찰공고를 업체의 지역·면허 조건으로 선별하고, 공동도급 가능 여부와 투찰가 참고표를 함께 제공합니다.',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
   publisher: { '@type': 'Organization', name: '도토리경제' },
 };
@@ -66,7 +66,7 @@ const ld = {
 
 <Base
   title="입찰레이더"
-  description="나라장터 입찰공고를 업체의 지역·보유 면허로 선별합니다. 참여가능·확인필요·자격미달을 가르고, 공동도급 가능 여부와 참여 체크리스트, 복수예가 투찰가 참고표를 한 화면에 냅니다."
+  description="나라장터 입찰공고를 업체의 지역·보유 면허로 선별합니다. 참여가능·확인필요·자격미달을 구분하고, 공동도급 가능 여부와 참여 체크리스트, 복수예가 투찰가 참고표를 한 화면에 제공합니다."
   compact
   activeNav="warehouse"
 >
@@ -85,14 +85,14 @@ const ld = {
         <div class="kicker-en" style="color: var(--accent);">BID RADAR</div>
         <h1 class="serif br-title">입찰레이더</h1>
         <p class="br-sub">
-          나라장터 공고를 업체의 <strong>지역과 보유 면허</strong>로 선별해
-          <strong>참여가능·확인필요·자격미달</strong>을 판정합니다. 통과한 공고에는 공동도급
-          가능 여부, 참여 체크리스트, 복수예가 투찰가 참고표가 함께 붙습니다.
+          나라장터 공고를 업체의 <strong>지역과 보유 면허</strong>로 선별하여
+          <strong>참여가능·확인필요·자격미달</strong>을 판정합니다. 판정을 통과한 공고에는 공동도급
+          가능 여부, 참여 체크리스트, 복수예가 투찰가 참고표를 함께 제공합니다.
         </p>
         <p class="br-note">
           판정은 규칙 기반이며 참고용입니다. 최종 자격 확인은 공고서와 발주기관 기준을 따릅니다.
           {isSample
-            ? ' 지금 보이는 공고는 화면 구성을 위한 예시입니다. 실제 수집이 연결되면 자동으로 교체됩니다.'
+            ? ' 현재 표시된 공고는 화면 구성을 위한 예시입니다. 실제 수집분이 연결되면 자동으로 교체됩니다.'
             : ` 수집 기준일 ${asOf}.`}
         </p>
       </div>
@@ -110,7 +110,7 @@ const ld = {
       {/* ── 1단: 업체 조건 ── 판정의 재료다. 소재지·면허 둘 다 선택으로 받는다. */}
       <div class="br-grid">
         <div class="br-f">
-          <span class="br-l">업체 소재지 <em>목록에서 고릅니다</em></span>
+          <span class="br-l">업체 소재지 <em>목록에서 선택</em></span>
           {/* 판정 쪽은 예전처럼 「경상남도 창원시」 같은 문자열 하나만 읽는다.
               두 선택칸이 이 숨은 칸을 채우므로 qualifier 는 손대지 않았다. */}
           <input type="hidden" id="f-region" value={DEFAULT_REGION} />
@@ -120,19 +120,19 @@ const ld = {
           </div>
         </div>
         <div class="br-f br-wide">
-          <span class="br-l">보유 면허·업종 <em>목록에서 고릅니다</em></span>
+          <span class="br-l">보유 면허·업종 <em>목록에서 선택</em></span>
           {/* 엔진은 예전처럼 쉼표로 이어 붙인 문자열 하나만 읽는다.
               드롭다운이 이 숨은 칸을 채우므로 판정 쪽은 손대지 않았다. */}
           <input type="hidden" id="f-lic" value={DEFAULT_LICENSES.join(', ')} />
           <div class="br-ms" id="br-ms">
             <button type="button" class="br-ms-btn" id="br-ms-btn"
                     aria-haspopup="listbox" aria-expanded="false">
-              <span id="br-ms-label">면허를 고르십시오</span>
+              <span id="br-ms-label">면허를 선택하십시오</span>
               <span class="br-ms-caret" aria-hidden="true">▾</span>
             </button>
             <div class="br-ms-pop" id="br-ms-pop" role="listbox" aria-multiselectable="true" hidden>
               <div class="br-ms-tools">
-                <input type="search" id="br-ms-q" placeholder="면허 이름으로 좁히기" aria-label="면허 검색" />
+                <input type="search" id="br-ms-q" placeholder="면허명 검색" aria-label="면허 검색" />
                 <button type="button" class="br-ms-clear" id="br-ms-clear">전체 해제</button>
               </div>
               <div class="br-ms-list" id="br-ms-list">
@@ -159,7 +159,7 @@ const ld = {
       <div class="br-bar">
         <div class="br-search">
           <span class="br-si" aria-hidden="true">🔍</span>
-          <input type="search" id="f-q" placeholder="공고명을 입력해 검색하십시오" aria-label="공고명 검색" />
+          <input type="search" id="f-q" placeholder="공고명 검색어 입력" aria-label="공고명 검색" />
           <button type="button" class="br-go" id="f-go">검색</button>
           <button type="button" class="br-reset" id="f-reset">조건 초기화</button>
         </div>
@@ -185,7 +185,7 @@ const ld = {
               <option value="7">7일</option>
               <option value="10">10일</option>
               <option value="30">30일</option>
-              <option value="custom">직접 지정</option>
+              <option value="custom">기간 직접 지정</option>
             </select>
             <span class="br-dates" id="br-dates" hidden>
               <input type="date" id="f-from" aria-label="시작일" />
@@ -209,7 +209,7 @@ const ld = {
               수집분에 그 값이 하나도 없으면 칸 자체가 나타나지 않는다 —
               고를 수 있는데 늘 0건이면 화면이 고장 난 것으로 읽히기 때문이다. */}
           <label class="br-chk" id="w-main" hidden>
-            <input type="checkbox" id="f-main" /> 주공종이 내 업종인 공고만
+            <input type="checkbox" id="f-main" /> 보유 업종이 주공종인 공고만
           </label>
           <label class="br-chk" id="w-rgnduty" hidden>
             <input type="checkbox" id="f-rgnduty" /> 지역의무공동도급만
@@ -234,15 +234,15 @@ const ld = {
 
     <section class="br-sheetwrap">
       <div class="br-rhead">
-        <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 네 시트를 화면으로</span></h2>
+        <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 4개 시트와 동일한 구성</span></h2>
         <button type="button" class="br-dl" id="br-dl">
-          <span aria-hidden="true">⤓</span> 엑셀로 받기
+          <span aria-hidden="true">⤓</span> 엑셀 내려받기
         </button>
       </div>
       <p class="br-dlnote" id="br-dlnote">
-        현재 표시된 공고가 네 시트로 저장됩니다. 공고번호를 누르면 나라장터 원문이 열립니다.
+        현재 표시된 공고를 4개 시트로 저장합니다. 공고번호를 선택하면 나라장터 원문이 열립니다.
       </p>
-      <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 네 시트">
+      <div class="br-tabs" role="tablist" id="br-tabs" aria-label="기초자료 4개 시트">
         <button type="button" class="br-tab is-on" data-tab="compare" role="tab"
                 aria-selected="true" aria-controls="br-sheet">공고 비교표</button>
         <button type="button" class="br-tab" data-tab="check" role="tab"
@@ -253,7 +253,7 @@ const ld = {
                 aria-selected="false" aria-controls="br-sheet">투찰가 참고</button>
       </div>
       <p class="br-tabnote" id="br-tabnote"></p>
-      <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (가로로 스크롤됩니다)">
+      <div class="br-scroll" tabindex="0" role="region" aria-label="기초자료 표 (좌우 스크롤)">
         <div id="br-sheet" role="tabpanel" aria-live="polite"></div></div>
       <div class="br-pager" id="br-pager" hidden></div>
     </section>
@@ -263,12 +263,12 @@ const ld = {
         공고서 본문에 있고 API 로 오지 않는다. 그래서 그 칸은 사람이 옮겨 적게 하고,
         화면이 그 사실을 밝힌다. 지어내지 않는다. */}
     <section class="br-js">
-      <h2 class="br-h3">공동도급 인정 실적 <span class="br-h3s">출자비율만큼 인정되는 몫을 냅니다</span></h2>
+      <h2 class="br-h3">공동도급 인정 실적 <span class="br-h3s">출자비율에 따른 인정 실적 산출</span></h2>
       <p class="br-jsnote">
-        공동이행에서는 시공실적이 <strong>출자비율만큼만</strong> 인정됩니다. 아래 계산은 그 몫과,
-        요구 실적을 채우는 데 필요한 최소 지분율을 냅니다.
-        <strong>공고가 요구하는 실적 금액은 공고서에서 옮겨 적으셔야 합니다.</strong>
-        그 값은 조달청 API 로 오지 않습니다.
+        공동이행 방식에서는 시공실적이 <strong>출자비율에 해당하는 금액만</strong> 인정됩니다. 아래 계산은
+        그 인정 금액과, 요구 실적을 충족하는 데 필요한 최소 지분율을 산출합니다.
+        <strong>공고가 요구하는 실적 금액은 공고서를 확인하여 직접 입력해야 합니다.</strong>
+        해당 값은 조달청 API 로 제공되지 않습니다.
       </p>
       <div class="br-jsgrid">
         <label class="br-f">
@@ -279,7 +279,7 @@ const ld = {
           </select>
         </label>
         <label class="br-f">
-          <span class="br-l">우리 회사 시공실적 <em>원</em></span>
+          <span class="br-l">자사 시공실적 <em>원</em></span>
           <input type="number" id="j-mine" inputmode="numeric" step="1" min="0" value="500000000" />
           <span class="br-u" id="j-mine-u"></span>
         </label>
@@ -289,7 +289,7 @@ const ld = {
         </label>
         <label class="br-f">
           <span class="br-l">공고 요구 실적 <em>원</em></span>
-          <input type="number" id="j-need" inputmode="numeric" step="1" min="0" value="" placeholder="공고서에서 옮겨 적습니다" />
+          <input type="number" id="j-need" inputmode="numeric" step="1" min="0" value="" placeholder="공고서 기재 금액 입력" />
           <span class="br-u" id="j-need-u"></span>
         </label>
       </div>
@@ -300,129 +300,130 @@ const ld = {
       {/* ★ 팔기 전에 못 하는 것을 먼저 밝힌다(2026-09-04 소유주 지시 「정직하게」).
           문의로 들어온 물음 여덟 개를 그대로 세우고 되는 것·안 되는 것을 갈랐다.
           안 되는 것은 「아직 못 함」과 「원리적으로 못 함」을 또 나눈다. */}
-      <h2 class="serif br-h2">이 화면이 답하는 것과 답하지 않는 것</h2>
+      <h2 class="serif br-h2">제공 항목과 미제공 항목</h2>
       <p>
-        입찰 실무에서 자주 제기되는 문의를 그대로 두고, 이 화면이 어디까지 답하는지 밝힙니다.
-        <strong>제공하지 못하는 항목을 먼저 적는 이유는 분명합니다.</strong> 자격 판정이 틀리면
+        입찰 실무에서 자주 제기되는 문의 항목을 그대로 두고, 이 화면의 제공 범위를 항목별로 밝힙니다.
+        <strong>미제공 항목을 먼저 적는 이유는 분명합니다.</strong> 자격 판정이 틀리면
         입찰 한 건을 잃게 되므로, 판정이 없는 것보다 틀린 판정이 더 큰 손실입니다.
       </p>
-      <div class="br-scroll" tabindex="0" role="region" aria-label="답하는 것과 답하지 않는 것">
+      <div class="br-scroll" tabindex="0" role="region" aria-label="제공 항목과 미제공 항목">
         <table class="br-t br-can">
-          <thead><tr><th>물음</th><th>답</th></tr></thead>
+          <thead><tr><th>항목</th><th>제공 여부 및 근거</th></tr></thead>
           <tbody>
             <tr class="is-yes">
-              <th>지역과 업종으로 공고를 구분할 수 있는가</th>
-              <td><strong>구분합니다.</strong> 업체 소재지와 보유 면허로 참여가능·확인필요·자격미달을
+              <th>지역·업종에 따른 공고 구분</th>
+              <td><strong>제공합니다.</strong> 업체 소재지와 보유 면허로 참여가능·확인필요·자격미달을
                 판정하고, 판정 사유를 함께 제시합니다.</td>
             </tr>
             <tr class="is-yes">
-              <th>타 지역 업체와 공동도급이 가능한 공고를 구분할 수 있는가</th>
-              <td><strong>구분합니다.</strong> 공동수급방식(공동이행·분담이행·혼합·주계약자·단독)과
+              <th>타 지역 업체와의 공동도급 가능 공고 구분</th>
+              <td><strong>제공합니다.</strong> 공동수급방식(공동이행·분담이행·혼합·주계약자·단독)과
                 구성원 소재지 제한 여부까지 확인합니다.</td>
             </tr>
             <tr class="is-yes">
-              <th>보유 업종이 주공종인 공고만 조회할 수 있는가</th>
-              <td><strong>조회할 수 있습니다.</strong> 공사 공고는 주공종을 면허와 동일한 명칭으로 제공합니다.
+              <th>보유 업종이 주공종인 공고 조회</th>
+              <td><strong>제공합니다.</strong> 공사 공고는 주공종을 면허와 동일한 명칭으로 제공합니다.
                 다만 <strong>모든 공사 공고에 제공되지는 않습니다</strong>(실측 37.9%). 주공종이 없는
                 공고는 이 조건에서 제외되므로, 선별된 결과만 확인하는 조건으로 사용하십시오.</td>
             </tr>
             <tr class="is-yes">
-              <th>지역의무공동도급 공고를 구분할 수 있는가</th>
-              <td><strong>구분합니다.</strong> 지역 업체를 일정 비율 이상 공동수급체에 포함하도록
+              <th>지역의무공동도급 공고 구분</th>
+              <td><strong>제공합니다.</strong> 지역 업체를 일정 비율 이상 공동수급체에 포함하도록
                 의무화한 공고인지가 <strong>공고마다 제공됩니다</strong>(실측 100%). 타 지역 공고에
                 참여할 때 해당 지역 업체와 공동수급체를 구성해야 하는지를 이 항목으로 확인합니다.</td>
             </tr>
             <tr class="is-part">
-              <th>실적제한이 걸린 공고를 제외할 수 있는가</th>
-              <td><strong>제외할 수 있습니다.</strong> 낙찰방법에 「실적제한 아님」·「실적에 의한
-                경쟁입찰 이외」·「실적제한」으로 적혀 오므로 그 표기로 구분합니다.
+              <th>실적제한 공고 제외</th>
+              <td><strong>제공합니다.</strong> 낙찰방법에 「실적제한 아님」·「실적에 의한
+                경쟁입찰 이외」·「실적제한」으로 기재되므로 해당 표기로 구분합니다.
                 다만 <strong>공고가 요구하는 실적 금액과 적격심사 세부 배점은 공고서 본문에</strong>
-                있어, 이 조건은 「실적제한 공고를 빼는 것」이지 「보유 실적으로 통과된다」가 아닙니다.</td>
+                기재되어, 이 조건은 실적제한 공고를 제외하는 기능이며 보유 실적의 충족 여부를
+                판정하는 기능이 아닙니다.</td>
             </tr>
             <tr class="is-no">
-              <th>시공능력평가액으로 미달 공고를 선별하는가</th>
-              <td><strong>선별하지 못합니다.</strong> 공고가 요구하는 시공능력평가액은
+              <th>시공능력평가액 기준 미달 공고 선별</th>
+              <td><strong>제공하지 않습니다.</strong> 공고가 요구하는 시공능력평가액은
                 실제 조회에서 <strong>값이 제공되지 않았습니다.</strong> 제공되지 않는 값으로는
                 판정을 구성하지 않습니다.</td>
             </tr>
             <tr class="is-part">
-              <th>공동도급 실적을 산출하는가</th>
-              <td><strong>산출합니다.</strong> 공동이행의 인정 실적은 출자비율에 비례합니다.
+              <th>공동도급 인정 실적 산출</th>
+              <td><strong>제공합니다.</strong> 공동이행의 인정 실적은 출자비율에 비례합니다.
                 다만 <strong>공고가 요구하는 실적 금액은 공고서에서 직접 입력해야 합니다.</strong>
                 해당 값은 API 로 제공되지 않습니다.</td>
             </tr>
             <tr class="is-no">
-              <th>실적 공동도급과 무실적 공동도급을 구분하는가</th>
-              <td><strong>구분하지 못합니다.</strong> 구성원별 실적 인정 비율과 최소 지분율은
+              <th>실적 공동도급·무실적 공동도급 구분</th>
+              <td><strong>제공하지 않습니다.</strong> 구성원별 실적 인정 비율과 최소 지분율은
                 공고서·현장설명서 본문에 기재되며, 조달청 API 는 해당 본문을 항목으로 제공하지 않습니다.</td>
             </tr>
             <tr class="is-no">
-              <th>적격심사 조건으로 참여 불가한 공고를 선별하는가</th>
-              <td><strong>선별하지 못합니다.</strong> 적격심사 세부기준의 시공경험·경영상태 배점은
+              <th>적격심사 기준에 따른 참여 불가 공고 선별</th>
+              <td><strong>제공하지 않습니다.</strong> 적격심사 세부기준의 시공경험·경영상태 배점은
                 공고서 본문에 기재됩니다. 이 화면이 확인할 수 있는 것은 공고가 항목으로 제공한 값뿐입니다.</td>
             </tr>
             <tr class="is-no">
-              <th>낙찰 확률을 제시하는가</th>
-              <td><strong>제시하지 않습니다.</strong> 예정가격은 추첨으로 결정되고, 낙찰자는 하한선을
-                넘긴 업체 가운데 순위로 결정됩니다. 참여 업체 수와 투찰 금액은 개찰 전에 확인할 수
+              <th>낙찰 확률 산출</th>
+              <td><strong>제공하지 않습니다.</strong> 예정가격은 추첨으로 결정되고, 낙찰자는 하한선을
+                초과한 업체 가운데 순위로 결정됩니다. 참여 업체 수와 투찰 금액은 개찰 전에 확인할 수
                 없습니다. 이 화면이 산출하는 값은 <strong>하한선 미달로 탈락하지 않는 조합의
                 비율</strong>입니다.</td>
             </tr>
             <tr class="is-later">
-              <th>발주처별·경쟁업체별 사정률을 분석하는가</th>
+              <th>발주기관별·경쟁업체별 사정률 분석</th>
               <td><strong>제공하지 않습니다.</strong> 개찰결과가 별도 서비스이고, 현재 인증키로는
-                과거 개찰 이력을 축적할 수 없습니다. 확인되지 않은 값을 산출하지 않으므로 비워 둡니다.</td>
+                과거 개찰 이력을 축적할 수 없습니다. 확인되지 않은 값을 산출하지 않으므로 공란으로 둡니다.</td>
             </tr>
             <tr class="is-later">
-              <th>지난 공고를 다시 조회할 수 있는가</th>
-              <td><strong>제공하지 않습니다.</strong> 이 화면은 최근 수집분을 표시합니다. 날짜별로 축적해
-                과거 공고를 조회하는 기능은 현재 구조에 포함돼 있지 않습니다.</td>
+              <th>과거 공고 조회</th>
+              <td><strong>제공하지 않습니다.</strong> 이 화면은 최근 수집분을 표시합니다. 일자별로 축적하여
+                과거 공고를 조회하는 기능은 현재 구성에 포함되어 있지 않습니다.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <h2 class="serif br-h2">판정이 갈리는 규칙</h2>
+      <h2 class="serif br-h2">판정 기준</h2>
       <p>
-        지역은 공고에 참가가능지역이 지정된 경우에만 봅니다. 지정돼 있으면 업체 소재지가 그 안에
-        들어야 하고, 광역과 기초 표기 차이는 보정합니다. 경남과 경상남도는 같은 것으로 읽습니다.
-        면허는 공고가 요구하는 면허 가운데 하나라도 보유 면허와 맞으면 통과합니다. 면허명 뒤에
-        붙는 코드는 떼고 비교합니다.
+        지역 조건은 공고에 참가가능지역이 지정된 경우에만 적용합니다. 지정된 경우 업체 소재지가 해당
+        범위에 포함되어야 하며, 광역과 기초 표기의 차이는 보정합니다. 「경남」과 「경상남도」는 동일한
+        지역으로 처리합니다. 면허 조건은 공고가 요구하는 면허 가운데 하나 이상이 보유 면허와 일치하면
+        충족한 것으로 판정합니다. 면허명 뒤에 부기된 코드는 제외하고 대조합니다.
       </p>
       <p>
-        <strong>업종제한이 있다고 표시돼 있는데 면허 상세를 받지 못한 공고는 확인필요로 남깁니다.</strong>
-        제한이 없는 것과 확인하지 못한 것은 다릅니다. 이 둘을 섞으면 참여 못 할 공고가
-        참여가능으로 올라오거나, 될 공고가 조용히 사라집니다.
+        <strong>업종제한이 있는 것으로 표시되었으나 면허 상세를 확보하지 못한 공고는 확인필요로 분류합니다.</strong>
+        제한이 없는 경우와 확인하지 못한 경우는 서로 다릅니다. 양자를 동일하게 처리하면 참여가 불가능한
+        공고가 참여가능으로 분류되거나, 참여가 가능한 공고가 목록에서 누락됩니다.
       </p>
 
-      <h2 class="serif br-h2">공동도급에서 할 수 있는 것과 없는 것</h2>
+      <h2 class="serif br-h2">공동도급 제공 범위</h2>
       <p>
         공고의 공동수급방식으로 공동이행·분담이행·혼합·주계약자·단독을 구분합니다.
-        <strong>분담이행</strong>은 공종을 나눠 각자 맡은 부분만 하므로, 타 공종 실적이 없는
-        업체가 들어갈 자리가 여기서 생깁니다. <strong>공동이행</strong>은 출자비율대로 함께
-        시공하고 실적도 지분만큼 인정됩니다.
+        <strong>분담이행</strong>은 공종을 분담하여 각자 담당 부분만 시공하므로, 타 공종 실적이 없는
+        업체도 참여할 수 있습니다. <strong>공동이행</strong>은 출자비율에 따라 공동으로
+        시공하며 실적도 지분에 비례하여 인정됩니다.
       </p>
       <p>
-        다만 <strong>실적 공동도급과 무실적 공동도급의 구분은 이 데이터로 알 수 없습니다.</strong>
-        구성원별 실적 인정 비율과 최소 지분율은 공고서와 현장설명서 본문에 적히고, 조달청 API 는
-        그 본문을 필드로 주지 않습니다. 그래서 화면은 어떤 방식이 열려 있는지까지만 말하고,
-        실적 계산이 필요하다는 사실을 메모로 남깁니다.
+        다만 <strong>실적 공동도급과 무실적 공동도급의 구분은 이 자료로 확인할 수 없습니다.</strong>
+        구성원별 실적 인정 비율과 최소 지분율은 공고서와 현장설명서 본문에 기재되며, 조달청 API 는
+        해당 본문을 항목으로 제공하지 않습니다. 따라서 이 화면은 허용된 공동수급방식까지만 제시하고,
+        실적 계산이 필요한 공고에는 그 사실을 비고로 표시합니다.
       </p>
 
       <h2 class="serif br-h2">투찰가는 참고용 통계입니다</h2>
       <p>
-        기초금액이 공개된 공고에는 복수예비가격 조합을 전수 전개한 투찰가 참고표가 붙습니다.
+        기초금액이 공개된 공고에는 복수예비가격 조합을 전수 전개한 투찰가 참고표를 제공합니다.
         낙찰 확률이 아니라 <strong>하한선 미달로 탈락하지 않을 조합의 비율</strong>이며,
-        예정가격은 추첨으로 정해집니다. 계산 구조와 가정은
-        <a href={url('/bid-odds/')}>복수예가 투찰률 계산기</a>에 자세히 있습니다.
-        기초금액이 아직 공개되지 않은 공고는 비워 둡니다. 추정가격으로 대신 채우지 않습니다.
+        예정가격은 추첨으로 결정됩니다. 산출 구조와 전제는
+        <a href={url('/bid-odds/')}>복수예가 투찰률 계산기</a>에 상세히 기재되어 있습니다.
+        기초금액이 공개되지 않은 공고는 해당 항목을 공란으로 둡니다. 추정가격으로 대체하지 않습니다.
       </p>
 
-      <h2 class="serif br-h2">데이터와 인증키</h2>
+      <h2 class="serif br-h2">자료 출처와 인증키</h2>
       <p>
-        공고는 조달청 나라장터 입찰공고정보서비스에서 받습니다. 이 사이트는 정적 페이지라
-        브라우저가 API 를 직접 부르지 않습니다. 수집은 서버 쪽 작업이 맡고, 화면은 그 결과 파일을
-        읽습니다. 입력한 업체 정보는 어디에도 전송되지 않고 브라우저 안에서만 쓰입니다.
+        공고는 조달청 나라장터 입찰공고정보서비스에서 수집합니다. 이 사이트는 정적 페이지이므로
+        브라우저가 API 를 직접 호출하지 않습니다. 수집은 서버에서 수행하며, 화면은 그 결과 파일을
+        읽어 표시합니다. 입력한 업체 정보는 외부로 전송되지 않으며 브라우저 내에서만 사용됩니다.
       </p>
     </section>
   </section>
@@ -744,7 +745,7 @@ const ld = {
       if (c.verdict !== 'all') chips.push(['verdict', `판정: ${VERDICT_TEXT[c.verdict]}`]);
       if (c.div) chips.push(['div', `업무: ${DIV_LABEL[c.div] || c.div}`]);
       if (c.period === 'custom' && (c.from || c.to)) {
-        chips.push(['period', `기간: ${BASE_LABEL[c.base]} ${c.from || '처음'} ~ ${c.to || '끝'}`]);
+        chips.push(['period', `기간: ${BASE_LABEL[c.base]} ${c.from || '시작일 미지정'} ~ ${c.to || '종료일 미지정'}`]);
       } else if (c.period) {
         const word = c.base === 'ntce'
           ? `최근 ${PERIOD_LABEL[c.period]}`
@@ -754,16 +755,16 @@ const ld = {
       if (c.amt) chips.push(['amt', `추정가: ${AMT_LABEL[c.amt]}`]);
       if (c.org) chips.push(['org', `발주처: ${c.org}`]);
       if (c.joint) chips.push(['joint', '공동도급 가능만']);
-      if (c.main) chips.push(['main', '주공종이 내 업종']);
+      if (c.main) chips.push(['main', '보유 업종이 주공종']);
       if (c.rgnduty) chips.push(['rgnduty', '지역의무공동도급']);
       if (c.noperf) chips.push(['noperf', '실적제한 공고 제외']);
       if (sort.key) chips.push(['sort', `정렬: ${sort.key} ${sort.dir === 'desc' ? '내림' : '오름'}차순`]);
       const box = $('br-active');
       box.hidden = chips.length === 0;
       if (!chips.length) return;
-      box.innerHTML = '<span class="br-al">적용된 조건</span>'
+      box.innerHTML = '<span class="br-al">적용 조건</span>'
         + chips.map(([k, t]) => `<button type="button" class="br-chip" data-clear="${esc(k)}">${esc(t)}<span aria-hidden="true">×</span></button>`).join('')
-        + '<button type="button" class="br-clearall" id="br-clearall">전체 해제</button>';
+        + '<button type="button" class="br-clearall" id="br-clearall">조건 전체 해제</button>';
     }
 
     function clearCond(key) {
@@ -818,7 +819,7 @@ const ld = {
       const narrowed = hit < total;
       $('br-tally').innerHTML = `
         <div class="br-tl">
-          <div class="br-tn">${hit}</div><div class="br-tt">조건에 맞는 공고</div>
+          <div class="br-tn">${hit}</div><div class="br-tt">조건 부합 공고</div>
         </div>
         <div class="br-tl br-ok">
           <div class="br-tn">${c.eligible}</div><div class="br-tt">✅ 참여가능</div>
@@ -829,8 +830,8 @@ const ld = {
         <div class="br-tl">
           <div class="br-tn">${c.ineligible}</div><div class="br-tt">❌ 자격미달</div>
         </div>
-        <div class="br-tsum">수집 공고 ${total}건 가운데 조건에 맞는 것이 ${hit}건${q ? `("${esc(q)}" 검색)` : ''},
-          그중 참여 가능이 ${c.eligible}건입니다.${narrowed ? ` 검토 대상이 <strong>${cut}%</strong> 줄었습니다.` : ''}</div>`;
+        <div class="br-tsum">수집 공고 ${total}건 중 조건에 부합하는 공고는 ${hit}건${q ? `("${esc(q)}" 검색)` : ''}이며,
+          이 가운데 참여 가능은 ${c.eligible}건입니다.${narrowed ? ` 검토 대상이 <strong>${cut}%</strong> 감소했습니다.` : ''}</div>`;
     }
 
     /**
@@ -846,7 +847,7 @@ const ld = {
       const ms = d.getTime() - Date.now();
       if (ms < 0) return { cls: 'is-over', text: '마감' };
       const h = Math.floor(ms / 36e5);
-      if (h < 24) return { cls: 'is-soon', text: `오늘 ${h}시간` };
+      if (h < 24) return { cls: 'is-soon', text: `${h}시간 남음` };
       const day = Math.floor(h / 24);
       if (day <= 3) return { cls: 'is-soon', text: `D-${day}` };
       return { cls: '', text: `D-${day}` };
@@ -856,7 +857,7 @@ const ld = {
     function noLink(no, url) {
       if (!url) return esc(no ?? '-');
       return `<a class="br-nolink" href="${esc(url)}" rel="nofollow noopener" target="_blank"
-        title="나라장터에서 이 공고의 원문을 엽니다">${esc(no)}<span class="br-ext" aria-hidden="true">↗</span></a>`;
+        title="나라장터에서 해당 공고의 원문을 엽니다">${esc(no)}<span class="br-ext" aria-hidden="true">↗</span></a>`;
     }
 
     // ★ 정렬은 **모든 열**에서 된다(2026-09-04 소유주 지적 「왜 일부만 있니」).
@@ -912,32 +913,32 @@ const ld = {
     }
 
     const NOTES = {
-      compare: '엑셀 「공고 비교표」 시트와 같은 열·같은 순서입니다. 열 이름을 누르면 해당 열 기준으로 정렬됩니다. 누를 때마다 오름차순·내림차순·해제로 바뀝니다.',
-      check: '공고마다 준비 사항을 항목·내용·메모로 표시합니다. ★ 표시는 누락 시 참여가 불가능해지는 항목입니다.',
-      joint: '공고의 공동수급방식으로 분류했습니다. 구성원별 실적 인정 비율은 공고서 본문에서 확인해야 합니다.',
-      price: '참고용 통계입니다. 예정가격은 추첨으로 정해지므로 낙찰을 예측하거나 보장하지 않습니다. 투찰률 x% 열은 하한 통과 조합이 x% 이상이 되는 가장 낮은 투찰률입니다.',
+      compare: '엑셀 「공고 비교표」 시트와 동일한 열·동일한 순서입니다. 열 머리글을 선택하면 해당 열을 기준으로 정렬하며, 선택할 때마다 오름차순·내림차순·해제 순으로 전환됩니다.',
+      check: '공고별 준비 사항을 항목·내용·비고로 표시합니다. ★ 표시는 누락 시 참여가 제한되는 항목입니다.',
+      joint: '공고의 공동수급방식에 따라 분류한 결과입니다. 구성원별 실적 인정 비율은 공고서 본문에서 확인해야 합니다.',
+      price: '참고용 통계입니다. 예정가격은 추첨으로 결정되므로 낙찰을 예측하거나 보장하지 않습니다. 투찰률 x% 열은 하한 통과 조합이 x% 이상이 되는 최저 투찰률입니다.',
     };
 
     /** 조건에 걸려 0건일 때. 「없습니다」로 끝내지 않고 무엇을 풀면 되는지 적는다. */
     function emptyBox() {
       const c = cond();
       const why = [];
-      if (c.q) why.push('검색어 지우기');
-      if (c.verdict !== 'all') why.push('판정을 「전체」로');
-      if (c.div) why.push('업무를 「전체」로');
-      if (c.period) why.push('기간을 「전체」로');
-      if (c.amt) why.push('추정가를 「전체」로');
-      if (c.org) why.push('발주처를 「전체」로');
+      if (c.q) why.push('검색어 삭제');
+      if (c.verdict !== 'all') why.push('판정 「전체」로 변경');
+      if (c.div) why.push('업무구분 「전체」로 변경');
+      if (c.period) why.push('기간 「전체」로 변경');
+      if (c.amt) why.push('추정가 「전체」로 변경');
+      if (c.org) why.push('발주처 「전체」로 변경');
       if (c.joint) why.push('「공동도급 가능만」 해제');
-      if (c.main) why.push('「주공종이 내 업종인 공고만」 해제');
+      if (c.main) why.push('「보유 업종이 주공종인 공고만」 해제');
       if (c.rgnduty) why.push('「지역의무공동도급만」 해제');
       if (c.noperf) why.push('「실적제한 공고 제외」 해제');
       if (!$('f-lic').value.trim()) why.push('보유 면허 선택');
-      if ($('f-dist').value) why.push('시·군·구를 「광역 전체」로 되돌리기');
+      if ($('f-dist').value) why.push('시·군·구 「광역 전체」로 변경');
       const tip = why.length
-        ? `다음을 조정해 보십시오. ${why.join(' · ')}.`
-        : '수집된 공고가 없습니다. 다음 수집 이후 다시 확인해 주십시오.';
-      return `<p class="br-empty"><strong>조건에 맞는 공고가 없습니다.</strong><br />${esc(tip)}`
+        ? `다음 조건을 조정하십시오. ${why.join(' · ')}.`
+        : '수집된 공고가 없습니다. 다음 수집 이후 다시 확인하십시오.';
+      return `<p class="br-empty"><strong>조건에 부합하는 공고가 없습니다.</strong><br />${esc(tip)}`
         + '<br /><button type="button" class="br-clearall" id="br-clearall2">조건 초기화</button></p>';
     }
 
@@ -974,7 +975,7 @@ const ld = {
         line('배정예산', esc(s.배정예산)),
         line('입찰마감', `${esc(s.입찰마감)}${dd ? ` <span class="br-dd ${dd.cls}">${esc(dd.text)}</span>` : ''}`),
         line('개찰일시', esc(s.개찰일시)),
-        line('자격등록마감', esc(s.자격등록마감), '이 시각 전에 자격등록을 마쳐야 합니다'),
+        line('자격등록마감', esc(s.자격등록마감), '해당 일시 이전에 자격등록을 완료해야 합니다'),
       ].join('');
 
       // ② 공사 공고에만 오는 값. 용역에는 아예 없으므로 줄이 통째로 사라진다.
@@ -984,7 +985,7 @@ const ld = {
       const er = evlRt(n);
       const dr = dutyRt(n);
       const work = [
-        line('공사현장지역', esc(site), '참가가능지역(참여 제한)과 다른 값입니다. 실제 현장 위치입니다'),
+        line('공사현장지역', esc(site), '참가가능지역(참여 제한)과 별개의 항목으로, 실제 공사 현장의 소재지입니다'),
         line('주공종', esc(mc) + (mp ? ` <span class="br-dsub">추정 ${esc(wonBrief(mp))}</span>` : '')),
         line('업종평가율', er ? `${esc(er)}%` : '', '주공종이 전체에서 차지하는 비율입니다'),
         line('지역의무공동도급', rgnDuty(n) ? '해당' : '', dr ? `지역 업체 의무 지분율 ${dr}%` : '지역 업체를 공동수급체에 포함해야 합니다'),
@@ -1003,7 +1004,7 @@ const ld = {
           perfLimit(n) === 'limited'
             ? '낙찰방법에 실적제한이 명시된 공고입니다. 요구 실적 금액은 공고서에서 확인해야 합니다'
             : perfLimit(n) === 'free'
-              ? '낙찰방법에 실적제한이 아니라고 적혀 있습니다'
+              ? '낙찰방법에 실적제한이 아님으로 기재된 공고입니다'
               : '낙찰방법에 실적 관련 표기가 없습니다. 공고서에서 확인하십시오'),
       ].join('');
 
@@ -1022,11 +1023,11 @@ const ld = {
           line('기초금액', esc(pr.기초금액)),
           line('예비가격범위', esc(pr.예비가격범위)),
           line('낙찰하한율', esc(pr.낙찰하한율)),
-          line('A값', esc(pr.A값), '법정경비입니다. 하한선 계산에서 낙찰하한율을 곱하지 않습니다'),
-          line('투찰률 90%', esc(pr['투찰률 90%']), '하한 통과 조합이 90% 이상이 되는 가장 낮은 투찰률입니다'),
+          line('A값', esc(pr.A값), '법정경비로, 하한선 산정 시 낙찰하한율을 곱하지 않습니다'),
+          line('투찰률 90%', esc(pr['투찰률 90%']), '하한 통과 조합이 90% 이상이 되는 최저 투찰률입니다'),
           line('투찰금액 90%', esc(pr['투찰금액 90%'])),
         ].join('')
-        : `<p class="br-dnote">${esc(pr.산출근거 || '기초금액이 아직 공개되지 않았습니다.')}</p>`;
+        : `<p class="br-dnote">${esc(pr.산출근거 || '기초금액이 공개되지 않았습니다.')}</p>`;
 
       // ⑥ 규격서 첨부 (예전에는 개수와 앞 세 개만 보였다)
       const files = specFiles(n);
@@ -1048,7 +1049,7 @@ const ld = {
           <div class="br-dact">
             ${verdictBadge(match)}
             ${url ? `<a class="br-dbtn" href="${esc(url)}" rel="nofollow noopener" target="_blank">나라장터 원문 열기</a>` : ''}
-            ${pr.기초금액 ? `<a class="br-dbtn" href="${esc(bidOddsHref(s.공고번호))}">투찰률 계산기로 열기</a>` : ''}
+            ${pr.기초금액 ? `<a class="br-dbtn" href="${esc(bidOddsHref(s.공고번호))}">투찰률 계산기에서 열기</a>` : ''}
             <button type="button" class="br-dclose" id="br-dclose">닫기</button>
           </div>
         </div>
@@ -1056,7 +1057,7 @@ const ld = {
         <div class="br-dgrid">
           <section><h3>공고 기본</h3>${base}</section>
           ${work.trim() ? `<section><h3>공사 상세</h3>${work}</section>` : ''}
-          <section><h3>참여 자격</h3>${qual || '<p class="br-dnote">공고에 걸린 자격 제한이 없습니다.</p>'}</section>
+          <section><h3>참여 자격</h3>${qual || '<p class="br-dnote">공고에 명시된 자격 제한이 없습니다.</p>'}</section>
           <section><h3>공동도급</h3>${jointRows}</section>
           <section><h3>투찰가 참고</h3>${priceRows}
             <p class="br-dnote">참고용 통계입니다. 예정가격은 추첨으로 결정되므로 낙찰을 예측하지 않습니다.</p></section>
@@ -1079,7 +1080,7 @@ const ld = {
       const notices = list.map((r) => r.notice);
       // ★ 쪽으로 끊어 보여 준다는 사실을 밝힌다. 밝히지 않으면 「왜 50건만 나오나」가 된다.
       const scope = total > list.length
-        ? ` 지금 쪽에는 ${from}~${from + list.length - 1}번째 ${list.length}건을 폅니다(조건에 맞는 전체는 ${total}건이며 엑셀에는 전부 담깁니다).`
+        ? ` 현재 쪽에는 ${from}~${from + list.length - 1}번째 ${list.length}건을 표시합니다(조건에 부합하는 공고는 총 ${total}건이며 엑셀에는 전량 수록됩니다).`
         : '';
       $('br-tabnote').textContent = NOTES[tab] + scope;
       if (!notices.length) { $('br-sheet').innerHTML = emptyBox(); return; }
@@ -1107,13 +1108,13 @@ const ld = {
         const one = picked ? list.filter((r) => keyOfNotice(r.notice) === picked) : [];
         const target = one.length ? one : list;
         if (picked && !one.length) {
-          $('br-sheet').innerHTML = '<p class="br-empty">고른 공고가 지금 조건에서 빠졌습니다. '
-            + '조건을 되돌리거나 표에서 다른 공고를 고르십시오.</p>';
+          $('br-sheet').innerHTML = '<p class="br-empty">선택한 공고가 현재 조건에서 제외되었습니다. '
+            + '조건을 조정하거나 목록에서 다른 공고를 선택하십시오.</p>';
           return;
         }
         if (!picked) {
-          $('br-sheet').innerHTML = '<p class="br-empty"><strong>표에서 공고를 고르면 그 공고만 폅니다.</strong>'
-            + '<br />지금은 이 쪽의 ' + target.length + '건을 차례로 보여 줍니다.</p>'
+          $('br-sheet').innerHTML = '<p class="br-empty"><strong>목록에서 공고를 선택하면 해당 공고의 체크리스트만 표시합니다.</strong>'
+            + '<br />선택 전에는 현재 쪽의 ' + target.length + '건을 순서대로 표시합니다.</p>'
             + checklistBlocks(target);
           return;
         }
@@ -1173,7 +1174,7 @@ const ld = {
               ${[20, 50, 100].map((n) => `<option value="${n}"${n === perPage ? ' selected' : ''}>${n}건</option>`).join('')}
             </select>
           </label>
-          <span class="br-pgn">총 ${total}건 중 ${from + 1}~${to}번째</span>
+          <span class="br-pgn">총 ${total}건 중 ${from + 1}~${to}번째 표시</span>
         </div>
         <div class="br-pgb">
           <button type="button" class="br-pg" data-go="${page - 1}"${page === 1 ? ' disabled' : ''}>이전</button>
@@ -1199,7 +1200,7 @@ const ld = {
       const picked = msSelected();
       $('f-lic').value = picked.join(', ');
       $('br-ms-label').textContent =
-        picked.length === 0 ? '면허를 고르십시오'
+        picked.length === 0 ? '면허를 선택하십시오'
         : picked.length === 1 ? picked[0]
         : `${picked[0]} 외 ${picked.length - 1}건`;
       $('br-ms-chips').innerHTML = picked
@@ -1387,37 +1388,37 @@ const ld = {
 
       const lines = [];
       if (!Number.isFinite(mine) || mine <= 0) {
-        $('j-out').innerHTML = '<p class="br-jsempty">우리 회사 시공실적을 넣으면 계산합니다.</p>';
+        $('j-out').innerHTML = '<p class="br-jsempty">자사 시공실적을 입력하면 산출합니다.</p>';
         return;
       }
       if (kind === 'divided') {
-        lines.push(['맡은 공종의 실적', wonKo(mine),
-          '분담이행은 공종을 나눠 각자 맡은 부분만 시공하므로, 출자비율로 실적을 나누지 않습니다. 맡은 공종의 실적이 그대로 쓰입니다.']);
+        lines.push(['분담 공종의 실적', wonKo(mine),
+          '분담이행은 공종을 분담하여 각자 담당 부분만 시공하므로 출자비율로 실적을 안분하지 않습니다. 담당 공종의 실적이 그대로 적용됩니다.']);
       } else {
         if (!Number.isFinite(share) || share <= 0 || share > 100) {
-          $('j-out').innerHTML = '<p class="br-jsempty">출자비율을 0 초과 100 이하로 넣어 주십시오.</p>';
+          $('j-out').innerHTML = '<p class="br-jsempty">출자비율은 0 초과 100 이하로 입력하십시오.</p>';
           return;
         }
         const got = mine * (share / 100);
-        lines.push(['인정 실적', wonKo(got), `보유 실적 ${wonKo(mine)} 가운데 출자비율 ${share}% 몫입니다.`]);
+        lines.push(['인정 실적', wonKo(got), `보유 실적 ${wonKo(mine)} 중 출자비율 ${share}% 에 해당하는 금액입니다.`]);
         if (Number.isFinite(need) && need > 0) {
           const ok = got >= need;
           lines.push([ok ? '요구 실적 충족' : '요구 실적 미달',
             ok ? `${wonKo(got - need)} 여유` : `${wonKo(need - got)} 부족`,
-            `공고 요구 ${wonKo(need)} 기준입니다. 이 값은 공고서에서 옮겨 적은 것이며 화면이 확인하지 못합니다.`]);
+            `공고 요구 실적 ${wonKo(need)} 기준입니다. 해당 값은 입력값이며 이 화면에서 검증하지 않습니다.`]);
           // 필요 최소 지분율. 보유 실적으로 아예 못 채우면 그 사실을 그대로 적는다.
           const req = (need / mine) * 100;
           lines.push(req <= 100
-            ? ['필요 최소 지분율', `${req.toFixed(2)}%`, '이 비율 이상을 가져야 요구 실적을 채웁니다.']
-            : ['필요 최소 지분율', '단독으로는 채우지 못함',
-              `요구 실적이 보유 실적의 ${(need / mine).toFixed(2)}배입니다. 지분을 100% 가져도 모자랍니다.`]);
+            ? ['필요 최소 지분율', `${req.toFixed(2)}%`, '해당 비율 이상을 확보해야 요구 실적을 충족합니다.']
+            : ['필요 최소 지분율', '단독 충족 불가',
+              `요구 실적이 보유 실적의 ${(need / mine).toFixed(2)}배입니다. 지분 100% 를 확보하여도 충족되지 않습니다.`]);
         }
       }
       $('j-out').innerHTML = lines.map(([k, v, memo]) => `<div class="br-jsrow">
         <div class="br-jsk">${esc(k)}</div>
         <div class="br-jsv mono">${esc(v)}</div>
         <div class="br-jsm">${esc(memo)}</div></div>`).join('')
-        + '<p class="br-jswarn">구성원별 실적 인정 비율과 최소 지분율은 공고마다 다릅니다.'
+        + '<p class="br-jswarn">구성원별 실적 인정 비율과 최소 지분율은 공고별로 상이합니다.'
         + ' 최종 확인은 공고서와 현장설명서를 따릅니다.</p>';
     }
 
