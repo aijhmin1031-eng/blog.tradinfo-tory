@@ -226,12 +226,14 @@ const ld = {
 
     <div class="br-tally" id="br-tally" role="status" aria-live="polite"></div>
 
-    {/* ★ 공고 상세 (2026-09-04 소유주 지시). 표는 훑는 자리이고, 고른 뒤에는
-        그 공고 하나를 깊게 봐야 한다. 수집해 두고 화면에 안 쓰던 값
-        (공사현장지역·주공종·지역의무공동도급 비율·업종평가율·주계약자)과
-        판정 사유·규격서 첨부·원문 링크를 여기 한자리에 편다. */}
-    <section class="br-detail" id="br-detail" hidden aria-live="polite"></section>
-
+    {/* ★ 목록과 상세를 좌우로 가른다 (2026-09-04 소유주 지시 — 「같은 페이지에서
+        로딩되니 보기가 불편하다, 기존 프로그램은 3단이었다」). 데스크톱판
+        `src/gui_web/index.html` 의 `.board-wrap` 을 그대로 옮긴 자리다:
+          목록 minmax(0,1fr) · 폭 조절 손잡이 7px · 상세 패널(기본 460px)
+        상세를 목록 **위**에 펴면 표가 아래로 밀려 방금 고른 줄을 잃는다.
+        옆에 세우면 목록이 제자리에 있고 패널만 바뀐다. 좁은 화면(<1080px)에서는
+        원본과 같이 전체를 덮는 시트로 바꾼다 — 아래에 세우면 스크롤이 더 길어진다. */}
+    <div class="br-board" id="br-board">
     <section class="br-sheetwrap">
       <div class="br-rhead">
         <h2 class="br-h3">기초자료 <span class="br-h3s">엑셀 4개 시트와 동일한 구성</span></h2>
@@ -257,6 +259,13 @@ const ld = {
         <div id="br-sheet" role="tabpanel" aria-live="polite"></div></div>
       <div class="br-pager" id="br-pager" hidden></div>
     </section>
+      {/* 폭 조절 손잡이. 원본과 같이 드래그로 상세 폭을 바꾼다(두 번 누르면 기본값). */}
+      <div class="br-resizer" id="br-resizer" role="separator" aria-orientation="vertical"
+           aria-label="상세 패널 폭 조절" tabindex="0" title="드래그하여 상세 폭 조절"></div>
+      {/* 수집해 두고 화면에 안 쓰던 값(공사현장지역·주공종·지역의무공동도급 비율·
+          업종평가율·주계약자)과 판정 사유·규격서 첨부·원문 링크를 여기 한자리에 편다. */}
+      <section class="br-detail" id="br-detail" hidden aria-live="polite"></section>
+    </div>
 
     {/* ★ 공동도급 인정 실적 계산 (2026-09-04, 고객 문의 ④).
         계산식 자체는 한 줄이다. 어려운 것은 **공고가 요구하는 실적**인데 그 값은
@@ -953,6 +962,9 @@ const ld = {
      */
     function renderDetail(row) {
       const box = $('br-detail');
+      // ★ 칸 나눔은 여기 한 곳에서만 바꾼다. 여는 자리와 닫는 자리가 갈리면
+      //   「닫았는데 빈 칸이 남는」 상태가 조용히 생긴다.
+      $('br-board').classList.toggle('is-open', !!row);
       if (!row) { box.hidden = true; box.innerHTML = ''; return; }
       const { notice: n, match, joint: j } = row;
       const s = summarize(n);
@@ -1053,7 +1065,7 @@ const ld = {
             <button type="button" class="br-dclose" id="br-dclose">닫기</button>
           </div>
         </div>
-        <p class="br-dwhy"><strong>판정 사유</strong> ${esc((match.reasons || []).map(readableReason).join(' / '))}</p>
+        ${whyBlock(match)}
         <div class="br-dgrid">
           <section><h3>공고 기본</h3>${base}</section>
           ${work.trim() ? `<section><h3>공사 상세</h3>${work}</section>` : ''}
@@ -1065,6 +1077,17 @@ const ld = {
         </div>
         <h3 class="br-dh">참여 체크리스트</h3>
         <table class="br-t br-ct"><tbody>${checkRows}</tbody></table>`;
+    }
+
+    /** 판정 사유 블록. ★ 참가가능지역이 많은 공고는 사유 한 줄이 시·군·구를 전부
+     *  늘어놓아 **460px 패널을 통째로 먹는다**(진도중학교 공고 실측 15줄).
+     *  잘라 내지는 않는다 — 판정의 근거라 지우면 안 된다. 길면 접어 둘 뿐이다. */
+    function whyBlock(match) {
+      const t = (match.reasons || []).map(readableReason).join(' / ');
+      if (!t) return '';
+      if (t.length <= 120) return `<p class="br-dwhy"><strong>판정 사유</strong> ${esc(t)}</p>`;
+      return `<details class="br-dwhy br-dwhyx"><summary><strong>판정 사유</strong>`
+        + `<span class="br-dwhyp">${esc(t.slice(0, 60))}…</span></summary>${esc(t)}</details>`;
     }
 
     /** 판정 사유의 파이썬 리스트 표기를 사람이 읽게 편다(뜻은 그대로). */
@@ -1450,7 +1473,7 @@ const ld = {
       if (!tr) return;
       picked = tr.dataset.pick === picked ? '' : tr.dataset.pick;
       render();
-      if (picked) $('br-detail').scrollIntoView({ block: 'start' });
+      afterPick();
     });
     $('br-sheet').addEventListener('keydown', (ev) => {
       if (ev.key !== 'Enter' && ev.key !== ' ') return;
@@ -1459,11 +1482,85 @@ const ld = {
       ev.preventDefault();
       picked = tr.dataset.pick === picked ? '' : tr.dataset.pick;
       render();
+      afterPick();
     });
     $('br-detail').addEventListener('click', (ev) => {
       if (!ev.target.closest('#br-dclose')) return;
       picked = '';
       render();
+    });
+    // 시트로 덮인 상태에서 빠져나갈 길을 하나 더 둔다.
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'Escape' || !picked) return;
+      picked = '';
+      render();
+    });
+
+    /* ── 목록 | 상세 분할 ──────────────────────────────────────────────
+       ★ 옆에 세운 경우에는 **페이지를 움직이지 않는다.** 방금 고른 줄이 제자리에
+       있어야 다음 줄로 넘어갈 수 있다(이 화면을 옆으로 가른 이유가 그것이다).
+       좁은 화면에서는 상세가 전체를 덮으므로 역시 스크롤할 것이 없고,
+       패널 안쪽만 맨 위로 되돌린다. */
+    function afterPick() {
+      if (!picked) return;
+      $('br-detail').scrollTop = 0;
+    }
+
+    // 사이트 내비가 sticky(top:0)라 그 높이만큼 비켜 세워야 패널 머리가 가리지 않는다.
+    // 높이를 숫자로 박지 않고 실제로 잰다 — 글꼴·줄바꿈에 따라 달라진다.
+    function syncNavHeight() {
+      const nav = document.querySelector('.nav');
+      const h = nav ? Math.round(nav.getBoundingClientRect().height) : 0;
+      document.documentElement.style.setProperty('--br-navh', `${h}px`);
+    }
+    syncNavHeight();
+    window.addEventListener('resize', syncNavHeight);
+
+    // 폭 조절 손잡이. 원본과 같이 드래그로 바꾸고, 고른 폭은 다음에도 쓴다.
+    const PANEL_MIN = 340;
+    const PANEL_MAX = 680;
+    const PANEL_DEFAULT = 460;
+    const rz = $('br-resizer');
+    const board = $('br-board');
+
+    function setPanel(px, save) {
+      const w = Math.round(Math.min(PANEL_MAX, Math.max(PANEL_MIN, px)));
+      board.style.setProperty('--br-panel', `${w}px`);
+      if (save) { try { localStorage.setItem('br:panel', String(w)); } catch (e) {} }
+      return w;
+    }
+    try {
+      const kept = Number(localStorage.getItem('br:panel'));
+      if (Number.isFinite(kept) && kept > 0) setPanel(kept, false);
+    } catch (e) {}
+
+    rz.addEventListener('pointerdown', (ev) => {
+      // 손가락으로도 잡히게 pointer 로 받는다(터치에서 스크롤로 새지 않도록 캡처).
+      ev.preventDefault();
+      rz.setPointerCapture(ev.pointerId);
+      rz.classList.add('is-drag');
+      document.body.classList.add('br-resizing');
+      const right = board.getBoundingClientRect().right;
+      const move = (e) => setPanel(right - e.clientX, false);
+      const up = (e) => {
+        setPanel(right - e.clientX, true);
+        rz.classList.remove('is-drag');
+        document.body.classList.remove('br-resizing');
+        rz.removeEventListener('pointermove', move);
+        rz.removeEventListener('pointerup', up);
+        rz.removeEventListener('pointercancel', up);
+      };
+      rz.addEventListener('pointermove', move);
+      rz.addEventListener('pointerup', up);
+      rz.addEventListener('pointercancel', up);
+    });
+    // 두 번 누르면 기본 폭. 키보드로도 조절할 수 있어야 한다(손잡이가 focus 를 받는다).
+    rz.addEventListener('dblclick', () => setPanel(PANEL_DEFAULT, true));
+    rz.addEventListener('keydown', (ev) => {
+      const cur = parseInt(getComputedStyle(board).getPropertyValue('--br-panel'), 10) || PANEL_DEFAULT;
+      if (ev.key === 'ArrowLeft') { ev.preventDefault(); setPanel(cur + 24, true); }
+      else if (ev.key === 'ArrowRight') { ev.preventDefault(); setPanel(cur - 24, true); }
+      else if (ev.key === 'Home') { ev.preventDefault(); setPanel(PANEL_DEFAULT, true); }
     });
 
     // 열 머리 정렬 — 없음 → 오름 → 내림 → 없음
@@ -1769,9 +1866,51 @@ const ld = {
     .br-pgd { color: var(--muted); padding: 0 2px; }
 
     /* ── 공고 상세 ── 표에서 고른 공고 하나를 깊게 편다. */
+    /* ── 목록 | 상세 좌우 분할 (데스크톱판 `.board-wrap` 이식) ──────────────
+       상세를 열기 전에는 목록이 폭을 다 쓴다. 열면 세 칸이 된다.
+       ★ `minmax(0, 1fr)` 이어야 한다 — 기본값 `auto` 면 안쪽 표(`.br-scroll`)가
+         가로로 벌어질 때 칸이 같이 늘어나 페이지 전체에 가로 스크롤이 생긴다. */
+    .br-board { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; }
+    .br-board.is-open { grid-template-columns: minmax(0, 1fr) 7px var(--br-panel, 460px); column-gap: 14px; }
+    /* ★ 상세를 열면 목록 칸이 그만큼 좁아진다. `.br` 은 읽기 폭(--measure-wide 1000px)에
+       묶여 있어 1440px 화면에서도 목록이 457px 밖에 안 됐다 — 열이 여덟인 비교표를
+       그 폭에 넣으면 가로로만 밀게 된다. **열었을 때만** 페이지 최대폭까지 넓힌다.
+       ★ 좌우만 건드리는 `margin-inline` 을 쓴다 — 단축 `margin` 으로 덮으면
+       `.wrap` 의 `margin: 0 auto` 가 죽어 넓은 화면에서 본문이 왼쪽에 붙는다. */
+    @media (min-width: 1100px) {
+      .br-board.is-open {
+        /* 1152px = 페이지 최대폭 1200 − .wrap 좌우 여백 24×2 */
+        --br-wide: min(1152px, 100vw - 48px);
+        margin-inline: calc((100% - var(--br-wide)) / 2);
+      }
+    }
+
+    /* 손잡이는 상세가 열려 있고 화면이 넓을 때만 나온다. */
+    .br-resizer { display: none; align-self: stretch; margin-top: 26px; cursor: col-resize;
+      position: relative; background: transparent; border: 0; padding: 0; }
+    .br-board.is-open .br-resizer { display: block; }
+    .br-resizer::before {
+      content: ""; position: absolute; inset: 0 2px; border-radius: 3px; background: var(--hair);
+      transition: background .12s ease;
+    }
+    .br-resizer:hover::before, .br-resizer:focus-visible::before, .br-resizer.is-drag::before {
+      background: var(--brand);
+    }
+    body.br-resizing { cursor: col-resize; user-select: none; }
+
     .br-detail {
-      margin-top: 18px; border: 1px solid var(--hair); border-left: 3px solid var(--brand);
+      margin-top: 26px; border: 1px solid var(--hair); border-left: 3px solid var(--brand);
       border-radius: 4px; background: var(--surface); padding: 16px 18px;
+      /* 목록을 훑어 내려도 상세는 따라온다(원본의 sticky 패널). */
+      position: sticky; top: calc(var(--br-navh, 52px) + 10px); align-self: start;
+      max-height: calc(100vh - var(--br-navh, 52px) - 24px); overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* 패널 머리는 스크롤해도 남는다 — 어느 공고인지와 닫는 방법이 늘 보여야 한다.
+       바깥 padding(16/18) 만큼 음수 마진으로 되물려 배경이 틈 없이 덮게 한다. */
+    .br-detail .br-dhead {
+      position: sticky; top: 0; z-index: 1; background: var(--surface);
+      margin: -16px -18px 0; padding: 14px 18px 10px; border-bottom: 1px solid var(--hair);
     }
     .br-dhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
     .br-dtitle { font-size: 16px; font-weight: 700; color: var(--ink); word-break: keep-all; line-height: 1.5; }
@@ -1788,6 +1927,14 @@ const ld = {
     }
     .br-dwhy { margin: 12px 0 0; font-size: 12.5px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
     .br-dwhy strong { color: var(--brand); margin-right: 5px; }
+    .br-dwhyx > summary { cursor: pointer; list-style: none; display: flex; gap: 5px; align-items: baseline; }
+    .br-dwhyx > summary::-webkit-details-marker { display: none; }
+    .br-dwhyx > summary::after { content: "펼치기"; margin-left: auto; color: var(--brand); flex: 0 0 auto; }
+    .br-dwhyx[open] > summary::after { content: "접기"; }
+    .br-dwhyx[open] > summary .br-dwhyp { display: none; }
+    .br-dwhyp { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+    /* 390px 에서 「판정 사유」가 두 줄로 접혔다. 이름표는 줄을 바꾸지 않는다. */
+    .br-dwhyx > summary strong { white-space: nowrap; }
     .br-dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
                 gap: 6px 26px; margin-top: 14px; }
     .br-dgrid h3, .br-dh {
@@ -1819,6 +1966,26 @@ const ld = {
     .br-t tbody tr[data-pick] { cursor: pointer; }
     .br-t tbody tr[data-pick]:hover { background: var(--bg); }
     .br-t tbody tr.is-pick { background: var(--bg); box-shadow: inset 3px 0 0 var(--brand); }
+
+    /* ★ 좁은 화면에서는 옆에 세울 자리가 없다. 아래에 세우면 표를 다 지나야
+       상세가 나와 지금보다 나빠지므로, 원본과 같이 **전체를 덮는 시트**로 바꾼다.
+       사이트 내비(z-index 50, sticky)는 덮지 않는다 — 덮으면 빠져나갈 길이 준다. */
+    @media (max-width: 1079px) {
+      .br-board.is-open { grid-template-columns: minmax(0, 1fr); }
+      .br-board.is-open .br-resizer { display: none; }
+      /* ★ 내비 아래(top: navh)에 세웠더니 **내비가 시트 위에 그려졌다**(내비는
+         sticky·z-index 50). 390px 실측에서 패널 머리 위로 메뉴 띠가 겹쳐 찍혔다.
+         원본과 같이 **전체를 덮고**(inset 0) 내비보다 위에 세운다 — 빠져나갈 길은
+         패널 머리의 「닫기」와 Escape 두 가지를 둔다.
+         `overscroll-behavior: contain` 이 있어 시트를 굴려도 뒤 문서는 안 움직인다. */
+      .br-board.is-open .br-detail {
+        position: fixed; inset: 0; z-index: 60; margin: 0;
+        max-height: none; border-radius: 0; border-width: 0; padding: 0 16px 28px;
+      }
+      .br-board.is-open .br-detail .br-dhead {
+        margin: 0 -16px 0; padding: 12px 16px 10px; border-top: 3px solid var(--brand);
+      }
+    }
 
     .br-sheetwrap { margin-top: 26px; min-width: 0; }
     .br-h3 { font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 10px; }
