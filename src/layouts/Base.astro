@@ -308,15 +308,64 @@ const isActive = (n: (typeof navItems)[number]) =>
               // 미리 렌더(prerender)와 링크 미리보기는 화면에 뜨지 않은 채 스크립트만 돈다.
               // 다만 '지금 숨어 있다'고 버리지는 않는다 — 새 탭으로 연 사람도 숨은 상태로
               // 시작하므로, 보이는 순간을 기다렸다가 보낸다.
+              // ★ 체류 신호 (2026-09-04 신설). User-Agent 층은 이미 한계다 —
+              // log_visit 의 낱말 목록이 스무 개가 넘는데 30일간 걸린 것이 gptbot 1건뿐이었고,
+              // 남은 것들은 **진짜 브라우저 UA 를 쓰는 렌더러**였다. 낱말을 더 넣어도 안 잡힌다.
+              // 그래서 UA 가 아니라 행동으로 가른다: 화면을 5초 이상 보았거나 한 번이라도
+              // 만졌으면 두 번째 신호를 보내 그 기록에 사람 표시를 덧칠한다.
+              // **첫 기록은 그대로 남는다** — 지우는 것이 아니라 덧칠하는 것이다.
+              var engaged = false;
+              var seenMs = 0;
+              var since = 0;
+              var timer = null;
+
+              function markEngaged() {
+                if (engaged) return;
+                engaged = true;
+                if (timer) { clearTimeout(timer); timer = null; }
+                fetch(sbUrl + '/rest/v1/rpc/mark_engaged', {
+                  method: 'POST',
+                  headers: { apikey: sbKey, Authorization: 'Bearer ' + sbKey, 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ p_path: location.pathname, p_visitor: id }),
+                  keepalive: true,
+                }).catch(function () {});
+              }
+
+              // 숨은 동안은 시간을 세지 않는다. 배경 탭에 5초 있었다고 읽은 것은 아니다.
+              function clockOn() {
+                if (engaged || since) return;
+                since = Date.now();
+                timer = setTimeout(markEngaged, Math.max(0, 5000 - seenMs));
+              }
+              function clockOff() {
+                if (!since) return;
+                seenMs += Date.now() - since;
+                since = 0;
+                if (timer) { clearTimeout(timer); timer = null; }
+              }
+
+              function watch() {
+                clockOn();
+                document.addEventListener('visibilitychange', function () {
+                  if (document.visibilityState === 'visible') clockOn(); else clockOff();
+                });
+                // 한 번이라도 만졌으면 사람이다. 5초를 기다릴 것 없다.
+                ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) {
+                  window.addEventListener(ev, markEngaged, { once: true, passive: true });
+                });
+              }
+
+              function start() { send(); watch(); }
+
               if (document.prerendering) {
-                document.addEventListener('prerenderingchange', send, { once: true });
+                document.addEventListener('prerenderingchange', start, { once: true });
               } else if (document.visibilityState === 'visible') {
-                send();
+                start();
               } else {
                 document.addEventListener('visibilitychange', function onVis() {
                   if (document.visibilityState !== 'visible') return;
                   document.removeEventListener('visibilitychange', onVis);
-                  send();
+                  start();
                 });
               }
             } catch (e) {}

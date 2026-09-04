@@ -23,7 +23,8 @@
     "review": "node scripts/review.mjs",
     "check-bid-odds": "node scripts/check-bid-odds.mjs",
     "check-bid-radar": "node scripts/check-bid-radar.mjs",
-    "g2b": "node scripts/pipeline/g2b.mjs"
+    "g2b": "node scripts/pipeline/g2b.mjs",
+    "visits": "node scripts/visit-report.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.0",
