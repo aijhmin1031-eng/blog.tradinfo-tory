@@ -1,0 +1,56 @@
+---
+/**
+ * 입찰레이더 데스크톱판을 **그대로** 옮긴 화면 (2026-09-04 소유주 지시
+ * 「모든 기능과 모든 UI 100% 동일하게… 정품인증과 텔레그램만 빼고」).
+ *
+ * 왜 이 방법이 되는가: 데스크톱판(`ai-bid-radar/src/gui_web/index.html`, 3,809줄)은
+ * **이미 웹 화면**이다. 파이썬과는 `api()` 한 함수로만 이야기한다 —
+ *   `function api(){ return (window.pywebview && window.pywebview.api) || null; }`
+ * 그래서 화면(CSS 1,065줄 · JS 2,609줄 · 마크업 121줄)은 **한 글자도 고치지 않고** 싣고,
+ * 그 함수 뒤에 있던 파이썬만 `lib/bid-radar/web-bridge.js` 로 갈아 끼웠다.
+ *
+ * ★ 블로그 조판(Base.astro·global.css)을 쓰지 않는다. 앱 CSS 가 `:root` 와 `body`,
+ *   `body.view-status` 에 규칙을 걸어 문서 전체를 전제로 짜여 있다. 블로그 토큰과
+ *   같은 이름(--bg·--surface·--primary…)을 쓰므로 한 문서에 섞으면 **사이트 전체 색이
+ *   바뀐다.** 앱은 앱대로 한 문서를 쓰는 것이 원본과 같고 안전하다.
+ */
+import { url, canonicalUrl } from '../../lib/site';
+import notices from '../../data/bid-notices.json';
+// ★ `?raw` 로 읽는다. `readFileSync(new URL(..., import.meta.url))` 은 빌드 산출물 기준으로
+//    풀려 `dist/lib/...` 를 찾다가 없다고 죽는다(실제로 한 번 죽었다).
+import markup from '../../lib/bid-radar/app-markup.html?raw';
+const appCss = url('/bid-radar/app.css');
+const appJs = url('/bid-radar/app.js');
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 입찰레이더 · 도토리경제</title>
+    <meta name="description" content="나라장터 입찰공고를 업체의 지역·보유 면허로 선별합니다. 참여가능·확인필요·자격미달 판정, 공동도급 분류, 투찰가 참고표를 한 화면에 제공합니다." />
+    <link rel="canonical" href={canonicalUrl('/bid-radar/app/')} />
+    <link rel="stylesheet" href={appCss} />
+    <style>
+      /* 원본은 창 전체를 쓴다. 블로그로 돌아갈 길만 한 줄 얹는다. */
+      .brback { position: fixed; right: 12px; bottom: 12px; z-index: 80;
+        font: 500 12px/1 system-ui, sans-serif; color: #4A5568; background: #fff;
+        border: 1px solid #D8DEE8; border-radius: 999px; padding: 8px 14px;
+        text-decoration: none; box-shadow: 0 2px 8px rgba(16,24,40,.08); }
+      .brback:hover { color: #0B50D0; border-color: #256EF4; }
+    </style>
+  </head>
+  <body>
+    <Fragment set:html={markup} />
+    <a class="brback" href={url('/')}>← 도토리경제</a>
+
+    <script type="application/json" id="br-app-data" set:html={JSON.stringify(notices)} />
+    <script>
+      // 파이썬 브리지 대역을 먼저 꽂는다. 화면 코드는 80ms 간격으로 폴링하므로
+      // 순서가 어긋나도 붙지만, 첫 화면이 한 박자 늦게 뜨는 것을 막는다.
+      import { install } from '../../lib/bid-radar/web-bridge.js';
+      install(JSON.parse(document.getElementById('br-app-data').textContent));
+    </script>
+    <script is:inline src={appJs}></script>
+  </body>
+</html>
