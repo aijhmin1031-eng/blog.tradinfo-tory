@@ -164,6 +164,15 @@ const crumbsLd = {
         </section>
       )}
 
+      {/* ★ 되풀이되는 문장은 본문이 아니라 조판이 든다(2026-09-06).
+             「저평가·고평가 판정은 붙이지 않는다」는 보고서마다 다시 쓸 말이 아니라
+             이 방의 규약이다. 본문에 두었더니 두 편에 **글자 그대로 같은 문단**이 생겼고,
+             그것이 곧 자동생성 지문이 된다. 한 곳에서 한 번만 말한다. */}
+      <p class="stand">
+        가치평가 지표는 산출하여 제시하되 저평가·고평가 판정은 붙이지 않습니다.
+        판단은 읽는 분의 몫입니다.
+      </p>
+
       {sources.length > 0 && (
         <section class="ssec">
           <div class="sec-k">참고자료</div>
@@ -221,6 +230,9 @@ const crumbsLd = {
   .qsec:first-child { border-top: none; padding-top: 0; }
   .qnote { font-size: 14.5px; line-height: 1.95; color: #4a4f56; margin: 20px 0 0; max-width: 900px; }
   .qnote b { font-weight: 600; color: #15171a; }
+  /* 상시 고지 — 본문이 아니라 조판이 드는 문장이다(반복을 한 곳으로). */
+  .stand { font-size: 13px; line-height: 1.9; color: #71767d; margin: 34px 0 0;
+           border-left: 3px solid #d2d2ca; padding: 2px 0 2px 16px; max-width: 900px; }
   .tw { overflow-x: auto; }
   table.t { width: 100%; border-collapse: collapse; }
   .t th { font-size: 12px; font-weight: 600; color: #71767d; text-align: left;

@@ -22,10 +22,19 @@ const tools = [
     desc: '예금의 세후 실질수익과 손익분기 금리를 산출합니다.' },
 ];
 
-const chapters = [
-  ['1장', '사업 구조'], ['2장', '매출 및 영업이익 추이'], ['3장', '재무 건전성'],
-  ['4장', '가치평가 지표'], ['5장', '리스크 요인 및 자본 정책'], ['6장', '향후 방향'],
-  ['7장', '반증 검토'],
+// ★ 2026-09-06 에 고정 7장을 풀었다(소유주 지시 「고정틀부터 풀자」).
+//   두 보고서를 실측해 보니 장 제목 7개가 글자 그대로 같았고, 본문에도 겹치는 구절이
+//   여덟 군데 있었다(가장 긴 것은 60어절짜리 한 문단). 발행 82편을 잘라 낸 그 지문과
+//   같은 종류다. **틀을 고정하면 발견이 아니라 틀이 읽힌다.**
+//   그래서 장 구성은 회사마다 달라지고, 대신 **반드시 갖추는 것**을 정해 둔다.
+const requirements = [
+  ['한눈 카드', '검증 가능한 수치 여덟 개. 각각에 기준 시점과 산출 조건을 붙입니다'],
+  ['분기 격자', '5~6개 사업연도의 분기 영업이익. 4분기는 연간에서 3분기 누적을 차감해 산출합니다'],
+  ['발견', '그 기업에서 가장 오래 이어지는 사실 하나. 첫 문단에 수치로 제시합니다'],
+  ['원자료 표', '발견이 나온 재무제표의 그 줄을 그대로 옮깁니다'],
+  ['반증 검토', '그 발견을 밀어낼 수 있는 설명을 세우고 검토합니다'],
+  ['검증 지표', '결론이 언제 어느 정기보고서에서 판별되는지를 미리 지정합니다'],
+  ['참고자료', '출처와 기준 시점을 항목마다 표기합니다'],
 ];
 ---
 
@@ -77,19 +86,19 @@ const chapters = [
 
   <div class="dark">
     <div class="wrap">
-      <h2 class="hd dk-t">분석 보고서의 7개 장</h2>
-      <p class="dk-s">기업마다 같은 순서를 따르므로 기업 간 비교가 가능합니다.</p>
+      <h2 class="hd dk-t">분석 보고서가 갖추는 것</h2>
+      <p class="dk-s">장 구성은 기업마다 다릅니다. 그 기업에서 무엇이 발견되었는지가 순서를 정합니다.</p>
       <div class="chaps">
-        {chapters.map(([n, k], i) => (
-          <div class={i === 6 ? 'chap last' : 'chap'}>
-            <div class="mono c-n">{n}</div>
+        {requirements.map(([k, v], i) => (
+          <div class={k === '반증 검토' ? 'chap mark' : 'chap'}>
             <div class="hd c-k">{k}</div>
+            <div class="c-v">{v}</div>
           </div>
         ))}
       </div>
       <p class="dk-p">
-        마지막 장을 따로 둡니다. <span class="w">7장은 해당 보고서의 해석을 반박할 수 있는 설명을
-        세우고 검토하는 절입니다.</span> 반론이 성립하는 부분은 성립한다고 적고, 그 검토를 거치고도
+        <span class="w">반증 검토를 마지막에 둡니다.</span> 해당 보고서의 해석을 반박할 수 있는 설명을
+        직접 세우고 검토하는 절입니다. 반론이 성립하는 부분은 성립한다고 적고, 그 검토를 거치고도
         남는 것만 결론으로 제시합니다.
       </p>
     </div>
@@ -130,12 +139,14 @@ const chapters = [
   .dark { background: #15171a; padding: 44px 0 46px; margin-top: 60px; }
   .dk-t { font-size: 22px; font-weight: 900; color: #fff; margin: 0 0 6px; letter-spacing: -0.7px; }
   .dk-s { font-size: 12.5px; color: #8e9299; margin: 0 0 26px; }
-  .chaps { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; background: #2a2e33; }
+  .chaps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: #2a2e33; }
   .chap { background: #15171a; padding: 16px 14px 18px; border-top: 2px solid #3a3f45; }
-  .chap.last { border-top-color: #9a6b22; }
-  .c-n { font-size: 11px; color: #8e9299; margin-bottom: 9px; }
-  .chap.last .c-n { color: #c79a52; }
-  .c-k { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.45; }
+  .chap.mark { border-top-color: #9a6b22; }
+  /* 7칸이 4열에 4+3 으로 떨어져 빈 칸이 생긴다. 마지막 칸이 두 칸을 차지해 줄을 채운다. */
+  .chap:last-child { grid-column: span 2; }
+  .c-k { font-size: 14px; font-weight: 800; color: #fff; line-height: 1.45; margin-bottom: 8px; }
+  .chap.mark .c-k { color: #e8c88a; }
+  .c-v { font-size: 12px; line-height: 1.75; color: #a8acb1; word-break: keep-all; }
   .dk-p { font-size: 13.5px; line-height: 1.9; color: #a8acb1; margin: 22px 0 0; max-width: 900px; }
   .dk-p .w { color: #fff; }
   .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
