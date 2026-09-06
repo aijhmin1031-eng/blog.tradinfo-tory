@@ -40,10 +40,48 @@ const REPORTS = [
 //     매출액  : 「매출액」 22건 · 「수익(매출액)」 21건      → 절반이 사라진다
 //   계정 ID 는 IFRS 분류체계라 표기가 흔들리지 않는다. 첫 판이 이름을 썼다가
 //   서진시스템 영업이익 계열이 4개짜리로 나왔다.
+// ★ 계정마다 **값의 성질(basis)이 다르다.** 이것을 섞으면 수치가 조용히 틀린다.
+//
+//   `quarter`  손익계산서(CIS) — `thstrm_amount` 는 **그 분기 석 달**이다. 누적은 별도 필드.
+//              사업보고서의 당기는 한 해 전체라 분기 계열에 넣지 않는다.
+//   `balance`  재무상태표(BS) — 기말 **잔액**이다. 사업보고서도 그대로 쓴다(연말 잔액).
+//   `cumulative` 현금흐름표(CF) — **회계연도 초부터의 누적**이다(2026-09-06 실측으로 확인).
+//
+//   ★ CF 가 누적이라는 것을 모르고 발행분이 틀렸다. 대한광통신 낱장이
+//   「영업활동현금흐름은 22개 분기 가운데 20개가 마이너스」라고 썼는데, 그 22건은
+//   **정기보고서 22건의 누적 관측치**이지 22개 분기가 아니었다. 분기로 환산하면 16개다.
+//   근거: 대한광통신 2022년 1Q -76 → 반기 -171 → 3Q -281 → 사업 -318 로 **단조 누적**이고,
+//   2026년 반기 -197 은 발행분이 「상반기」로 쓴 값과 같다.
+//   그래서 계열에 `basis` 를 박고 이름에도 「(누적)」을 적는다. **파생은 하지 않는다** —
+//   차분으로 분기를 만드는 것은 우리가 계산한 값이라 쓰는 쪽에서 밝혀야 한다.
 const HEADLINE = [
+  // ── 손익계산서 (그 분기 석 달) ─────────────────────────────
   { key: 'revenue', id: 'ifrs-full_Revenue', name: '매출액' },
   { key: 'opinc', id: 'dart_OperatingIncomeLoss', name: '영업이익' },
   { key: 'netinc', id: 'ifrs-full_ProfitLoss', name: '당기순이익' },
+  { key: 'grossprofit', id: 'ifrs-full_GrossProfit', name: '매출총이익' },
+  { key: 'cogs', id: 'ifrs-full_CostOfSales', name: '매출원가' },
+  { key: 'sga', id: 'dart_TotalSellingGeneralAdministrativeExpenses', name: '판매비와관리비' },
+  { key: 'netinc_owners', id: 'ifrs-full_ProfitLossAttributableToOwnersOfParent', name: '지배주주순이익' },
+
+  // ── 재무상태표 (기말 잔액) ─────────────────────────────────
+  { key: 'assets', id: 'ifrs-full_Assets', name: '자산총계', basis: 'balance' },
+  { key: 'liabilities', id: 'ifrs-full_Liabilities', name: '부채총계', basis: 'balance' },
+  { key: 'equity', id: 'ifrs-full_Equity', name: '자본총계', basis: 'balance' },
+  { key: 'equity_owners', id: 'ifrs-full_EquityAttributableToOwnersOfParent', name: '지배주주지분', basis: 'balance' },
+  { key: 'capital_surplus', id: 'dart_CapitalSurplus', name: '자본잉여금', basis: 'balance' },
+  { key: 'retained', id: 'ifrs-full_RetainedEarnings', name: '이익잉여금(결손금)', basis: 'balance' },
+  { key: 'current_assets', id: 'ifrs-full_CurrentAssets', name: '유동자산', basis: 'balance' },
+  { key: 'current_liab', id: 'ifrs-full_CurrentLiabilities', name: '유동부채', basis: 'balance' },
+  { key: 'inventories', id: 'ifrs-full_Inventories', name: '재고자산', basis: 'balance' },
+  { key: 'cash', id: 'ifrs-full_CashAndCashEquivalents', name: '현금및현금성자산', basis: 'balance' },
+  { key: 'ppe', id: 'ifrs-full_PropertyPlantAndEquipment', name: '유형자산', basis: 'balance' },
+
+  // ── 현금흐름표 (연초부터 누적) ─────────────────────────────
+  { key: 'cfo', id: 'ifrs-full_CashFlowsFromUsedInOperatingActivities', name: '영업활동현금흐름(누적)', basis: 'cumulative' },
+  { key: 'cfi', id: 'ifrs-full_CashFlowsFromUsedInInvestingActivities', name: '투자활동현금흐름(누적)', basis: 'cumulative' },
+  { key: 'cff', id: 'ifrs-full_CashFlowsFromUsedInFinancingActivities', name: '재무활동현금흐름(누적)', basis: 'cumulative' },
+  { key: 'capex', id: 'ifrs-full_PurchaseOfPropertyPlantAndEquipmentClassifiedAsInvestingActivities', name: '유형자산 취득(누적)', basis: 'cumulative' },
 ];
 
 // 손익 보고서인가. 이름이 아니라 구분코드로 가른다(위 함정 참조).
@@ -178,30 +216,42 @@ async function collectCompany(c) {
   return store;
 }
 
-// 대표 항목을 분기 계열로 뽑는다. **값은 그 분기 석 달만**이다(누적이 아니다).
+// 계정을 계열로 뽑는다. **성질(basis)에 따라 고르는 규칙이 다르다** — 위 HEADLINE 주석 참조.
+const BASIS_NOTE = {
+  quarter: '그 분기 석 달의 값이다(누적이 아니다). 사업보고서의 당기는 한 해 전체라 넣지 않았다.',
+  balance: '해당 시점의 기말 잔액이다. 사업보고서는 연말 잔액이므로 함께 싣는다.',
+  cumulative: '★ 회계연도 초부터의 누적이다. 분기 단독 값이 아니다 — 분기로 보려면 차분해야 하고, 그것은 파생값이므로 쓰는 쪽에서 밝힌다.',
+};
+
 async function writeSeries(c, store) {
   for (const h of HEADLINE) {
+    const basis = h.basis ?? 'quarter';
     const points = [];
     for (const r of store.reports) {
-      const row = (r.accounts.CFS ?? r.accounts.OFS ?? []).find(
-        (x) => x.id === h.id && isIncome(x),
-      );
+      // 손익만 `isIncome` 으로 좁힌다. 재무상태표·현금흐름표는 그 표에서 찾는다.
+      const rows = r.accounts.CFS ?? r.accounts.OFS ?? [];
+      const row = rows.find((x) => x.id === h.id && (
+        basis === 'quarter' ? isIncome(x)
+          : basis === 'balance' ? x.sj === 'BS'
+            : x.sj === 'CF'
+      ));
       if (!row) continue;
-      // 사업보고서의 당기는 한 해 전체다. 4분기만 떼려면 3분기 누적을 빼야 하는데,
-      // 그것은 우리가 만든 값이라 계열에 섞지 않는다(파생은 기사에서 따로 밝힌다).
-      const v = r.reprt === '11011' ? null : row.amount;
-      if (v == null) continue;
-      points.push({ d: r.endDate, v: Math.round(v / 1e8) }); // 억원
+      // 사업보고서의 당기는 한 해 전체다. **분기 손익에만** 해당하므로 그때만 건너뛴다.
+      // 잔액과 누적은 사업보고서 값이 그대로 뜻이 있다(연말 잔액 · 연간 누적).
+      if (basis === 'quarter' && r.reprt === '11011') continue;
+      if (row.amount == null) continue;
+      points.push({ d: r.endDate, v: Math.round(row.amount / 1e8) }); // 억원
     }
     if (!points.length) continue;
     const id = `fs_${c.stock}_${h.key}`;
     await writeFile(new URL(`${id}.json`, SERIES_DIR), JSON.stringify({
       id, name: `${c.name} ${h.name}`, unit: '억원', cycle: 'Q',
-      note: '분기별 값(그 분기 석 달). 누적이 아니다.',
+      basis,
+      note: BASIS_NOTE[basis],
       updatedAt: todayKST(),
       points: points.sort((a, b) => a.d.localeCompare(b.d)),
     }, null, 1) + '\n');
-    console.log(`[dart-fs] 계열 ${id}: ${points.length}개`);
+    console.log(`[dart-fs] 계열 ${id}: ${points.length}개 (${basis})`);
   }
 }
 
