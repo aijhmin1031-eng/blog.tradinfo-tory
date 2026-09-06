@@ -18,20 +18,20 @@ const SERIES_DIR = new URL('data/series/', ROOT);
 const CORP = new URL('src/data/corp.json', ROOT);
 
 // 도토리경제 관심 종목 — 수출·무역의 대표 업종
+// ★ 2026-09-06 수리 — **분석 대상의 주가를 받지 않고 있었다.**
+//   이 목록이 대형주 여섯으로 손코딩돼 있었고, 정작 분석 보고서를 내는
+//   대한광통신·서진시스템은 빠져 있었다. 그래서 낱장의 시가총액이 손으로 적은 값이었고
+//   「분석 시점 주가」를 계산할 재료가 아예 없었다.
+//   목록은 이제 `dart-corp.json` 한 곳에서 온다 — `analysis`(분석 대상)가 먼저다.
+const REG = JSON.parse(await readFile(new URL('src/data/dart-corp.json', ROOT), 'utf8'));
 const WATCHLIST = [
-  { code: '005930', name: '삼성전자', sector: '반도체' },
-  { code: '000660', name: 'SK하이닉스', sector: '반도체' },
-  { code: '005380', name: '현대차', sector: '자동차' },
-  { code: '011200', name: 'HMM', sector: '해운' },
-  { code: '005490', name: 'POSCO홀딩스', sector: '철강' },
-  { code: '373220', name: 'LG에너지솔루션', sector: '배터리' },
-];
+  ...(REG.analysis ?? []).map((c) => ({ code: c.stock, name: c.name, sector: c.role ?? c.theme ?? '분석 대상', analysis: true })),
+  ...(REG.companies ?? []).map((c) => ({ code: c.stock, name: c.name, sector: c.sector })),
+].filter((v, i, a) => a.findIndex((x) => x.code === v.code) === i);
 // ★ DART 고유번호 표는 `src/data/dart-corp.json` 한 곳에만 있다.
 //   이름이 아니라 고유번호로 부른다 — 이름 표기는 갈리지만(현대차/현대자동차)
 //   고유번호는 하나다. 값은 corpCode.xml 에서 뽑아 CI 실호출로 확인했다(2026-09-01).
-const DART_CORPS = JSON.parse(
-  await readFile(new URL('src/data/dart-corp.json', ROOT), 'utf8'),
-).companies;
+const DART_CORPS = REG.companies;
 
 const ymd = (d) =>
   `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
@@ -46,25 +46,73 @@ async function loadCorp() {
   }
 }
 
-async function fetchStock(item) {
-  const begin = new Date();
-  begin.setDate(begin.getDate() - 45);
+/** 한 구간의 종가를 받는다. `beginBasDt`~`endBasDt` 는 금융위 API 의 조회 창이다. */
+async function fetchWindow(item, begin, end) {
   const url =
     `https://apis.data.go.kr/1160100/service/GetStockSecuritiesInfoService/getStockPriceInfo` +
-    `?serviceKey=${DATAGO}&resultType=json&numOfRows=60&likeSrtnCd=${item.code}&beginBasDt=${ymd(begin)}`;
-  const res = await fetch(url);
+    `?serviceKey=${DATAGO}&resultType=json&numOfRows=400&pageNo=1&likeSrtnCd=${item.code}` +
+    `&beginBasDt=${begin}&endBasDt=${end}`;
+  // ★ 타임아웃이 없으면 게이트웨이가 죽은 날 소켓마다 매달린다(2026-09-06 실제 사고).
+  const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
   const body = await res.text();
   if (!res.ok || body.includes('SERVICE_KEY_IS_NOT_REGISTERED')) {
     throw new Error(`주식시세 ${item.name}: 키 미승인 또는 HTTP ${res.status}`);
   }
   const rows = JSON.parse(body)?.response?.body?.items?.item ?? [];
-  const points = rows
+  return rows
     .filter((r) => r.srtnCd === item.code)
     .map((r) => ({ d: r.basDt, v: Number(r.clpr) }))
-    .filter((p) => !Number.isNaN(p.v))
-    .sort((a, b) => a.d.localeCompare(b.d));
+    .filter((p) => !Number.isNaN(p.v));
+}
+
+// ★ 씨앗 예산 — 이력이 짧은 종목만 과거를 채운다(2026-09-06 신설).
+//   밸류에이션의 위치(「지금 PBR 이 자기 이력의 몇 번째인가」)를 내려면 몇 해치가 있어야 하는데
+//   지금은 40일치뿐이었다. 한 번에 다 받지 않고 실행마다 조금씩 뒤로 판다 —
+//   개발계정 일일 호출 한도를 한 번에 태우지 않기 위해서다.
+const SEED_BUDGET = Number(process.env.STK_SEED_CALLS || 24);
+const SEED_TARGET_DAYS = Number(process.env.STK_SEED_DAYS || 1825); // 5년
+let seedUsed = 0;
+
+async function fetchStock(item, stored) {
+  const today = new Date();
+  const points = [];
+
+  // ① 최근분은 늘 받는다(45일 창).
+  const recent = new Date(today); recent.setDate(recent.getDate() - 45);
+  points.push(...(await fetchWindow(item, ymd(recent), ymd(today))));
+
+  // ② 이력이 목표보다 짧으면 **가장 오래된 관측일 앞쪽으로** 반년씩 판다.
+  //    분석 대상을 먼저 채운다 — 보고서가 그 값을 쓴다.
+  const oldest = stored?.points?.[0]?.d;
+  if (item.analysis || (stored?.points?.length ?? 0) < 200) {
+    let cursor = oldest ? new Date(`${oldest.slice(0, 4)}-${oldest.slice(4, 6)}-${oldest.slice(6, 8)}`) : new Date(today);
+    const floor = new Date(today); floor.setDate(floor.getDate() - SEED_TARGET_DAYS);
+    while (cursor > floor && seedUsed < SEED_BUDGET) {
+      const end = new Date(cursor); end.setDate(end.getDate() - 1);
+      const begin = new Date(end); begin.setDate(begin.getDate() - 182);
+      seedUsed += 1;
+      try {
+        const got = await fetchWindow(item, ymd(begin), ymd(end));
+        if (!got.length) break;           // 상장 전까지 팠으면 그만둔다
+        points.push(...got);
+      } catch (e) {
+        console.log(`[corp] ${item.name} 씨앗 중단: ${e.message.slice(0, 60)}`);
+        break;
+      }
+      cursor = begin;
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  }
+
   if (!points.length) throw new Error(`주식시세 ${item.name}: empty`);
-  return points;
+  return points.sort((a, b) => a.d.localeCompare(b.d));
+}
+
+/** 이미 쌓인 종가 계열을 읽는다(없으면 null). 씨앗이 어디부터 팔지 정하는 데 쓴다. */
+async function readSeries(code) {
+  try {
+    return JSON.parse(await readFile(new URL(`stk_${code}.json`, SERIES_DIR), 'utf8'));
+  } catch { return null; }
 }
 
 async function accumulateStock(item, fresh) {
@@ -140,7 +188,9 @@ async function main() {
     try {
       const stocks = [];
       for (const item of WATCHLIST) {
-        const stored = await accumulateStock(item, await fetchStock(item));
+        // 기존 이력을 먼저 읽어 넘긴다 — 씨앗이 어디까지 팠는지 알아야 한다.
+        const prevStored = await readSeries(item.code);
+        const stored = await accumulateStock(item, await fetchStock(item, prevStored));
         const pts = stored.points;
         const last = pts[pts.length - 1];
         const prev = pts[pts.length - 2] ?? last;
