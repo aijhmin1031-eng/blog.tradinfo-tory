@@ -59,7 +59,7 @@ const ld = {
       <p class="rr-sub">
         이자에서 <strong>이자소득세</strong>를 빼고, 남은 금액을 <strong>물가 상승률</strong>로 다시
         깎으면 실제로 얼마가 남는지 계산합니다. 금리와 물가의 기본값은
-        <strong>한국은행 ECOS 최신값</strong>이며 매일 아침 자동으로 갱신됩니다.
+        <strong>한국은행 ECOS 최신값</strong>이며 매일 아침 갱신됩니다.
       </p>
       <p class="rr-be">
         오늘 기준 <strong>손익분기 금리는 연 {breakEven}%</strong>입니다. 물가 {cpiDefault}%를
@@ -149,7 +149,7 @@ const ld = {
         물가 상승률은 <strong>앞으로도 같은 속도가 이어진다고 가정</strong>한 값입니다. 실제 물가는
         매달 바뀌므로 이 계산은 미래 예측이 아니라 <strong>현재 조건이 유지될 때의 크기</strong>를
         보여 줍니다. 기본값의 기준 시점은 금리 {ym(lastDep.d)}, 물가 {ym(lastCpi.d)}입니다.
-        모든 지표의 최신값은 <a href={url('/numbers/')}>오늘의 숫자</a>에 있습니다.
+        모든 지표의 최신값은 <a href={url('/numbers/')}>오늘의 지표</a>에 있습니다.
       </p>
     </section>
   </section>
