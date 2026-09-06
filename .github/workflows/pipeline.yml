@@ -33,8 +33,12 @@ concurrency:
 
 jobs:
   pipeline:
-    name: 지표 수집·브리핑 발행
+    name: 지표 수집
     runs-on: ubuntu-latest
+    # ★ 시간 제한이 없으면 기본값이 6시간이다(CLAUDE.md 2026-09-01 사고).
+    #   2026-09-06 에 apis.data.go.kr 이 죽어 30분을 태웠고, 그때 「멈춘 것」과
+    #   「느린 것」을 구별할 수 없었다. 정상 실행은 5분 안쪽이다.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -61,7 +65,7 @@ jobs:
       - run: npm ci
         if: steps.guard.outputs.skip != 'true'
 
-      - name: 지표 수집 + 아침 브리핑
+      - name: 지표 수집
         if: steps.guard.outputs.skip != 'true'
         env:
           ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
@@ -85,10 +89,10 @@ jobs:
         run: |
           git config user.name "tori-pipeline"
           git config user.email "actions@users.noreply.github.com"
-          git add data src/data src/content/briefs
+          git add data src/data
           if git diff --cached --quiet; then
             echo "변경 없음 — 커밋 생략"
           else
-            git commit -m "데이터 파이프라인: 지표 수집·브리핑 발행 ($(TZ=Asia/Seoul date +%F))"
+            git commit -m "데이터 파이프라인: 지표 수집 ($(TZ=Asia/Seoul date +%F))"
             git push
           fi

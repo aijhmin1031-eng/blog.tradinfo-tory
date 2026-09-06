@@ -12,7 +12,7 @@ const currencies = Object.keys(fx.rates ?? {}).length;
 
 const stat = [
   { k: '제공 도구', v: '4', n: '웹 응용프로그램 1종 · 계산기 3종' },
-  { k: '금일 수집 공고', v: noticeCount.toLocaleString('ko-KR'), n: `면허 요건 명시 ${withLicense} · 지역 제한 명시 ${withRegion}` },
+  { k: '진행 중 공고', v: noticeCount.toLocaleString('ko-KR'), n: `마감 전 · 면허 요건 명시 ${withLicense} · 지역 제한 명시 ${withRegion}` },
   { k: '관세환율 고시 통화', v: String(currencies), n: `수입 과세 기준 · ${fx.applyDate?.slice(0,4)}-${fx.applyDate?.slice(4,6)}-${fx.applyDate?.slice(6,8)} 적용분` },
   { k: '지표 연동', v: '25', n: '기본값에 최신 값이 적용됩니다' },
 ];

@@ -35,7 +35,7 @@ const licCount = licGroups.reduce((a: number, g: any) => a + (g.items?.length ??
 const regionCount = Object.keys(REGION_ALIASES).length;
 
 const stat = [
-  { k: '수집 공고', v: num(total), n: `조달청 나라장터 · ${asOf} 수집분` },
+  { k: '진행 중 공고', v: num(total), n: `조달청 나라장터 · ${asOf} 기준 · 마감 전` },
   { k: '면허 요건 명시', v: num(withLicense), n: `전체의 ${pct(withLicense)}% · 나머지는 확인필요` },
   { k: '지역 제한 명시', v: num(withRegion), n: `전체의 ${pct(withRegion)}% · 나머지는 확인필요` },
   { k: '기초금액 기재', v: num(withBasis), n: `전체의 ${pct(withBasis)}% · 투찰가 산출 가능 공고` },
@@ -180,7 +180,7 @@ const ld = {
           판정은 공고 본문의 표기를 대조 사전과 맞추는 <b>규칙 기반 방식</b>입니다. 면허는
           {licGroups.length}개 갈래 {licCount}종의 목록과 대조하고, 지역은 광역 {regionCount}종의
           표준 표기와 약칭을 맞춘 뒤 시·군·구 표기는 문자열 포함으로 판정합니다.
-          {asOf} 수집분 {num(total)}건 가운데 면허 요건이 명시된 공고는 {num(withLicense)}건,
+          {asOf} 기준 마감 전 공고 {num(total)}건 가운데 면허 요건이 명시된 공고는 {num(withLicense)}건,
           지역 제한이 명시된 공고는 {num(withRegion)}건이며 나머지는 확인필요로 분류됩니다.
         </p>
       </div>

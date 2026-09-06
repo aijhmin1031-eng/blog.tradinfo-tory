@@ -62,7 +62,20 @@ function trimBasis(b) {
 }
 
 const pad = (n) => String(n).padStart(2, '0');
-const fmt = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
+// ★ 나라장터는 조회 시각을 **KST 로 읽는다**(2026-09-06 수리).
+//   예전 `fmt` 는 `getFullYear()`·`getHours()` 로 **실행 환경의 로컬 시각**을 찍었는데
+//   GitHub 러너의 TZ 는 UTC 다. 그래서 창이 매일 **9시간 뒤로 밀려** 나갔다
+//   (09-06 08:22 KST 실행의 창이 `09-03 23:22 ~ 09-05 23:22` 로 나갔다).
+//   빌드도 통과하고 자료도 오므로 **끝자락 9시간을 놓치고 있다는 것을 아무도 못 봤다.**
+//   러너 TZ 가 무엇이든 같은 값이 나오도록 UTC 에 +9 를 더해 UTC 접근자로 읽는다.
+const KST_OFFSET = 9 * 36e5;
+const fmt = (d) => {
+  const k = new Date(d.getTime() + KST_OFFSET);
+  return `${k.getUTCFullYear()}${pad(k.getUTCMonth() + 1)}${pad(k.getUTCDate())}${pad(k.getUTCHours())}${pad(k.getUTCMinutes())}`;
+};
+/** `YYYYMMDDHHmm`(KST) → epoch ms. fmt 의 역함수다. */
+const parseKst = (s) =>
+  Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(8, 10), +s.slice(10, 12)) - KST_OFFSET;
 const key = (no, ord) => `${no}-${String(ord || '000').padStart(3, '0')}`;
 
 // 한 쪽에 받을 수 있는 최대 건수. 1000 이상을 넣으면 API 가 거부하고 10건만 준다
@@ -83,7 +96,12 @@ async function call(op, params, page = 1, rows = PAGE_ROWS) {
   let lastErr;
   for (let i = 0; i < 3; i += 1) {
     try {
-      const res = await fetch(`${ENDPOINT}${op}?${qs}`, { headers: { 'User-Agent': 'dotori-bid-radar/1.0' } });
+      // ★ 타임아웃이 없으면 소켓 하나가 물릴 때 워크플로가 통째로 매달린다
+      //   (2026-09-06 에 실제로 30분을 태웠다). 20초면 정상 응답에는 넉넉하다.
+      const res = await fetch(`${ENDPOINT}${op}?${qs}`, {
+        headers: { 'User-Agent': 'dotori-bid-radar/1.0' },
+        signal: AbortSignal.timeout(20000),
+      });
       text = await res.text();
       lastErr = null;
       break;
@@ -198,10 +216,8 @@ async function main() {
   }
 
   // 보강 조회 창은 양끝 6시간 확장(등록일시 기준이라 게시일시와 어긋난다)
-  const shift = (s, h) => {
-    const d = new Date(`${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}T${s.slice(8, 10)}:${s.slice(10, 12)}:00`);
-    return fmt(new Date(d.getTime() + h * 36e5));
-  };
+  // ★ 창 문자열은 KST 다. 로컬 시각으로 되읽으면 위의 수리가 도로 무너진다.
+  const shift = (t, h) => fmt(new Date(parseKst(t) + h * 36e5));
   const auxBgn = shift(bgn, -6);
   const auxEnd = shift(end, 6);
 
@@ -271,7 +287,7 @@ async function main() {
   rows.sort((a, b) => (clseMs(a) - clseMs(b))
     || String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
   const kept = MAX_NOTICES > 0 ? rows.slice(0, MAX_NOTICES) : rows;
-  const notices = kept.map((row) => {
+  let notices = kept.map((row) => {
     const k = key(row.bid_ntce_no, row.bid_ntce_ord);
     return {
       ...row,
@@ -313,10 +329,41 @@ async function main() {
       .map(([k, v]) => [k, [...v].sort((a, b) => a.localeCompare(b, 'ko'))]),
   );
 
+  // ★ 재고를 덮어쓰지 않고 **합친다**(2026-09-06 수리).
+  //
+  //   이 화면은 「2일치 신규 공고 피드」가 아니라 **「진행 중 공고 재고」**다. 그런데
+  //   수집기는 매일 파일을 통째로 덮어썼다. 그래서 수집이 하루만 부실해도 재고가
+  //   그날 통째로 비어 보였다 — 2026-09-06 에 실제로 그랬다(827 → 680 → **11**).
+  //   원인은 우리 코드가 아니라 `apis.data.go.kr` 게이트웨이 장애였는데,
+  //   **덮어쓰기 때문에 남의 장애가 우리 화면의 공백이 됐다.**
+  //
+  //   그래서 이전 파일에서 **마감이 지나지 않은 공고**를 살려 새 수집분과 합친다.
+  //   같은 공고는 새 것이 이긴다(정정·차수 변경이 반영되어야 하므로).
+  //   마감이 지난 것은 어차피 아래에서 걸러진다.
+  let carried = 0;
+  if (existsSync(OUT)) {
+    try {
+      const prev = JSON.parse(readFileSync(OUT, 'utf8'));
+      const fresh = new Set(notices.map((n) => key(n.bid_ntce_no, n.bid_ntce_ord)));
+      for (const old of prev.notices ?? []) {
+        if (clseMs(old) < nowMs) continue;                       // 마감 지남
+        if (fresh.has(key(old.bid_ntce_no, old.bid_ntce_ord))) continue; // 이번에 새로 받음
+        notices.push(old);
+        carried += 1;
+      }
+      if (carried) console.log(`  · 이전 재고에서 마감 전 공고 ${carried}건 이어받음`);
+    } catch (e) {
+      console.log(`  · 이전 재고를 읽지 못했습니다(무시하고 새로 씁니다): ${e.message}`);
+    }
+  }
+  notices.sort((a, b) => (clseMs(a) - clseMs(b))
+    || String(b.bid_ntce_dt || '').localeCompare(String(a.bid_ntce_dt || '')));
+
   const payload = {
     source: 'g2b',
     generatedAt: new Date().toISOString(),
     window: { bgn, end },
+    carried,
     licenseVocab,
     regionVocab: regionVocabOut,
     counts: {

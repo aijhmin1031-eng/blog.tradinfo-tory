@@ -59,7 +59,8 @@ async function fetchMonth(cc, month, hsSgn = '') {
     //   갈래가 다른 계열끼리 값이 같으면 의심할 것.
     (hsSgn ? `&hsSgn=${hsSgn}` : '') + (cc ? `&cntyCd=${cc}` : '') +
     `&numOfRows=1&pageNo=1`;
-  const res = await fetch(url);
+  // ★ 타임아웃이 없으면 게이트웨이가 죽은 날 소켓마다 매달린다(2026-09-06).
+  const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`관세청 ${cc} ${month} HTTP ${res.status}`);
   const xml = await res.text();
   const code = tag(xml, 'resultCode');
@@ -117,17 +118,41 @@ async function monthsFor(id, recent, seed) {
   return [...new Set([...recent, ...missing])].sort();
 }
 
+// ★ 게이트웨이가 통째로 죽은 날을 위한 차단기(2026-09-06 신설).
+//
+//   `apis.data.go.kr` 이 죽은 날, 이 스크립트는 38개 계열 × 4개월을 **전부 때려 보고**
+//   한 번에 10초씩 물려 **27분을 태웠다.** 로그는 「fetch failed」로 도배됐고,
+//   워크플로에는 시간 제한이 없어 파이프라인이 멈춘 것처럼 보였다.
+//   연결 자체가 연달아 죽으면 그것은 계열의 문제가 아니라 **게이트웨이의 문제**다.
+//   그때는 더 두드리지 않는다 — 남은 계열은 기존 값을 그대로 지킨다.
+const DEAD_AFTER = 6;             // 연속 연결 실패가 이만큼이면 게이트웨이가 죽은 것으로 본다
+let deadStreak = 0;
+let gatewayDead = false;
+/** 연결 자체가 안 된 것인가(응답이 온 오류와 구별한다). */
+const isConnFail = (e) => /fetch failed|timeout|ETIMEDOUT|ECONNRESET|ENOTFOUND|aborted/i.test(String(e?.message || e));
+
 /** 달 하나가 실패해도 나머지를 포기하지 않는다.
  *  다만 **한 계열이 통째로 실패하면** 키·권한 문제일 수 있으므로 위로 던진다. */
 async function fetchMonths(label, months, cc, hs = '') {
   const fresh = [];
   let failed = 0;
   for (const m of months) {
+    if (gatewayDead) throw new Error(`${label}: 게이트웨이 응답 없음 — 건너뜀(기존 값 유지)`);
     try {
       const p = await fetchMonth(cc, m, hs);
       if (p) fresh.push(p);
+      deadStreak = 0;
     } catch (e) {
       failed++;
+      if (isConnFail(e)) {
+        deadStreak += 1;
+        if (deadStreak >= DEAD_AFTER) {
+          gatewayDead = true;
+          console.log(`[trade] ⚠ 연결 실패 ${deadStreak}회 연속 — apis.data.go.kr 이 응답하지 않습니다. 남은 계열을 건너뜁니다(기존 값 유지).`);
+        }
+      } else {
+        deadStreak = 0;
+      }
       console.log(`[trade] ${label} ${m} 실패: ${e.message}`);
     }
   }
