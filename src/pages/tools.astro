@@ -1,0 +1,184 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../lib/site';
+import notices from '../data/bid-notices.json';
+import fx from '../data/customs-fx.json';
+
+// 승인된 지원 도구 착지 설계 그대로다 — 절마다 본문과 「제원」표(입력·산출·자료·전제).
+const noticeCount = notices.counts?.notices ?? notices.notices?.length ?? 0;
+const withLicense = notices.counts?.withLicense ?? 0;
+const withRegion = notices.counts?.withRegion ?? 0;
+const currencies = Object.keys(fx.rates ?? {}).length;
+
+const stat = [
+  { k: '제공 도구', v: '4', n: '웹 응용프로그램 1종 · 계산기 3종' },
+  { k: '금일 수집 공고', v: noticeCount.toLocaleString('ko-KR'), n: `면허 요건 명시 ${withLicense} · 지역 제한 명시 ${withRegion}` },
+  { k: '관세환율 고시 통화', v: String(currencies), n: `수입 과세 기준 · ${fx.applyDate?.slice(0,4)}-${fx.applyDate?.slice(4,6)}-${fx.applyDate?.slice(6,8)} 적용분` },
+  { k: '지표 연동', v: '25', n: '기본값에 최신 값이 적용됩니다' },
+];
+
+const tools = [
+  {
+    kick: '1 · 공공조달 · 웹 응용프로그램', name: '입찰레이더', href: '/bid-radar/',
+    body: [
+      '조달청 나라장터에서 수집한 입찰공고를 기업의 소재지와 보유 면허를 기준으로 선별하고, <b>참여가능·확인필요·자격미달</b>의 3구분으로 판정합니다. 판정 근거를 공고별로 함께 제시합니다.',
+      '판정 후에는 공동도급 가능 여부와 투찰가 참고표를 동일 화면에서 제공합니다. <b>설치와 회원가입 없이 브라우저에서 이용합니다.</b>',
+    ],
+    spec: [
+      ['입력', '기업 소재지 · 보유 면허 · 업무구분 · 기간'],
+      ['산출', '공고별 <b>참여가능·확인필요·자격미달</b> 판정 및 판정 근거'],
+      ['자료', '조달청 나라장터 입찰공고 오픈API · 매일 06:50 갱신'],
+      ['전제', '규칙 기반 판정이며 참고용입니다. 최종 자격 확인은 공고서와 발주기관 기준을 따릅니다.'],
+    ],
+  },
+  {
+    kick: '2 · 공공조달 · 계산기', name: '복수예가 투찰률 계산기', href: '/bid-odds/',
+    body: [
+      '복수예비가격 15개 가운데 4개를 추첨하는 방식에서 발생 가능한 조합은 <b>C(15,4) = 1,365가지</b>입니다. 본 계산기는 이 1,365개 조합을 전수 전개하여 각 조합의 예정가격을 산출하고, 입력한 투찰금액이 적격심사 하한선을 통과하는 조합의 비율을 계산합니다.',
+      '하한선은 <b>(예정가격 − A값) × 낙찰하한율 + A값</b>으로 산출합니다. A값에 해당하는 법정경비에는 낙찰하한율을 적용하지 않습니다. 기초금액 또는 낙찰하한율이 공고에 기재되지 않은 경우 추정치로 대체하지 않고 산출을 중단합니다.',
+    ],
+    spec: [
+      ['입력', '기초금액 · A값 · 낙찰하한율 · 투찰금액'],
+      ['산출', '1,365개 조합 중 하한선 통과 조합의 비율 및 권장 투찰 구간'],
+      ['검증', '입찰레이더 엔진과 공유 시험 벡터를 동시 통과'],
+      ['전제', '낙찰 확률이 아닙니다. 예정가격 결정은 추첨입니다.'],
+    ],
+    note: '본 계산기의 산출값을 <b>낙찰 확률로 표기하지 않습니다.</b> 산출되는 값은 하한선 미달로 탈락하지 않을 조합의 비율이며, 예정가격 결정은 추첨이고 낙찰은 하한 통과 업체 간 순위로 결정됩니다.',
+  },
+  {
+    kick: '3 · 무역 · 계산기', name: '수입원가 계산기', href: '/import-cost/',
+    body: [
+      '수입 신고 시 부담하는 관세와 부가가치세를 산출하고, <b>협정관세 적용 시와 미적용 시의 부담액을 나란히 비교</b>합니다. 원산지증명서 구비 여부에 따라 실제로 달라지는 금액을 사전에 확인하기 위한 도구입니다.',
+      `환율은 관세청이 고시하는 <b>수입 과세 기준 관세환율</b>을 적용합니다. 시장환율이 아니라 과세에 실제로 적용되는 환율이며, 현재 ${currencies}개 통화가 고시되어 있습니다.`,
+    ],
+    spec: [
+      ['입력', '물품가격 · 통화 · 운임 및 보험료 · 관세율 · 협정관세율'],
+      ['산출', '과세가격 · 관세 · 부가가치세 · 총 부담액 및 협정 적용 대비 절감액'],
+      ['자료', `관세청 관세환율정보 · ${currencies}개 통화`],
+      ['전제', '품목별 관세율과 협정 적용 요건은 이용자가 확인하여 입력합니다.'],
+    ],
+  },
+  {
+    kick: '4 · 자금 · 계산기', name: '실질금리 계산기', href: '/real-return/',
+    body: [
+      '예금의 <b>세후 실질수익률</b>을 산출합니다. 표면금리에서 이자소득세 15.4%를 차감하고 소비자물가 상승률을 반영하여, 구매력 기준으로 실제 증가한 금액을 제시합니다.',
+      '함께 산출하는 값이 <b>손익분기 금리</b>입니다. 현재 물가 상승률에서 구매력이 감소하지 않기 위해 필요한 최소 표면금리이며, 이 값을 밑도는 예금은 명목상 이자가 발생하더라도 실질 기준으로는 손실입니다.',
+    ],
+    spec: [
+      ['입력', '예치금액 · 표면금리 · 예치기간 · 물가 상승률(최신 값 적용)'],
+      ['산출', '세후 이자 · 실질수익률 · <b>손익분기 금리</b>'],
+      ['자료', '한국은행 ECOS 예금금리·소비자물가 · 매일 갱신'],
+      ['전제', '이자소득세 15.4% 일반과세 기준. 비과세·세금우대는 별도입니다.'],
+    ],
+  },
+];
+
+const rules = [
+  ['산출식 공개', '각 도구는 적용한 산출식과 전제를 화면에 명시합니다. 산출 과정을 확인할 수 없는 값은 제시하지 않습니다.'],
+  ['브라우저 내 연산', '모든 연산은 이용자의 브라우저 내에서 수행됩니다. 입력한 금액과 조건은 서버로 전송되거나 저장되지 않습니다.'],
+  ['확률 미표기', '추첨으로 결정되는 값을 예측으로 제시하지 않습니다. 산출 대상이 조건부 비율인 경우 그 정의를 함께 표기합니다.'],
+];
+---
+
+<Base title="공공조달·무역·자금 계산 도구" description="공공조달·무역·자금 실무에서 반복되는 산출을 수행하는 도구 4종입니다. 각 도구는 산출식과 적용 전제를 화면에 명시합니다." activeNav="tools">
+  <div class="th">
+    <div class="wrap">
+      <div class="kick">기업 실무 지원 도구</div>
+      <h1 class="hd">공공조달·무역·자금 계산 도구</h1>
+      <p class="lead">
+        공공조달·무역·자금 실무에서 반복되는 산출을 수행하는 도구 4종입니다. 각 도구는 산출식과 적용
+        전제를 화면에 명시하며, 기본값에는 본 사이트가 매일 갱신하는 지표의 최신 값이 적용됩니다.
+        입력 데이터는 브라우저 내에서만 처리되며 외부로 전송되지 않습니다.
+      </p>
+      <div class="strip">
+        {stat.map((s) => (
+          <div class="strip-c">
+            <div class="strip-k">{s.k}</div>
+            <div class="strip-v mono">{s.v}</div>
+            <div class="strip-n">{s.n}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap tb">
+    {tools.map((t) => (
+      <div class="sec">
+        <div class="sec-main">
+          <div class="sec-k">{t.kick}</div>
+          <h2 class="hd sec-h">{t.name}</h2>
+          {t.body.map((p) => <p class="tx" set:html={p} />)}
+          {t.note && <div class="note" set:html={t.note} />}
+          <a class="b1" href={url(t.href)}>{t.name} 열기</a>
+        </div>
+        <div class="side">
+          <div class="side-h">제원</div>
+          <dl>
+            {t.spec.map(([k, v]) => (<><dt>{k}</dt><dd set:html={v} /></>))}
+          </dl>
+        </div>
+      </div>
+    ))}
+
+    <div class="rules">
+      <h2 class="hd r-t">공통 적용 원칙</h2>
+      <div class="r-grid">
+        {rules.map(([k, v]) => (
+          <div class="r-c"><div class="hd r-k">{k}</div><div class="r-v">{v}</div></div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 64px; }
+  .th { background: #fff; border-bottom: 1px solid #e4e4de; padding: 54px 0 44px; }
+  .kick { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; margin-bottom: 18px; }
+  h1 { font-size: 44px; line-height: 1.34; font-weight: 900; color: #15171a; margin: 0 0 26px; letter-spacing: -1.8px; }
+  .lead { font-size: 17px; line-height: 1.95; color: #2e3238; max-width: 900px; margin: 0 0 34px; }
+  .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px;
+           background: #e4e4de; border-top: 1.6px solid #15171a; border-bottom: 1px solid #e4e4de; }
+  .strip-c { background: #fff; padding: 17px 22px 18px; }
+  .strip-k { font-size: 12px; color: #71767d; margin-bottom: 8px; }
+  .strip-v { font-size: 24px; font-weight: 500; color: #15171a; letter-spacing: -0.7px; }
+  .strip-n { font-size: 11.5px; color: #8e9299; margin-top: 7px; line-height: 1.65; }
+  .tb { padding: 12px 64px 54px; }
+  .sec { display: grid; grid-template-columns: minmax(0, 1fr) 288px; gap: 52px;
+         padding: 34px 0 38px; border-top: 1px solid #e4e4de; align-items: start; }
+  .sec:first-child { border-top: none; }
+  .sec-k { font-size: 11px; font-weight: 600; letter-spacing: 2.2px; color: #9a6b22; margin-bottom: 11px; }
+  .sec-h { font-size: 26px; font-weight: 900; color: #15171a; letter-spacing: -0.95px; line-height: 1.45; margin: 0 0 18px; }
+  .tx { font-size: 15px; line-height: 2; color: #3c4046; margin: 0 0 19px; }
+  .tx b { font-weight: 600; color: #15171a; }
+  .note { border-left: 3px solid #9a6b22; padding: 4px 0 4px 20px; margin: 0 0 22px;
+          font-size: 14.5px; line-height: 2; color: #4a4f56; }
+  .b1 { display: inline-block; background: #16355e; color: #fff; padding: 11px 22px;
+        font-family: 'Gothic A1', sans-serif; font-size: 13.5px; font-weight: 700;
+        border-radius: 2px; text-decoration: none; }
+  .side { border-top: 1.6px solid #d2d2ca; padding-top: 14px; }
+  .side-h { font-size: 11px; font-weight: 600; letter-spacing: 1.6px; color: #9a6b22; margin-bottom: 12px; }
+  .side dl { margin: 0; }
+  .side dt { font-size: 11.5px; color: #8e9299; margin-top: 11px; }
+  .side dt:first-of-type { margin-top: 0; }
+  .side dd { font-size: 12.5px; color: #4a4f56; line-height: 1.7; margin: 3px 0 0; }
+  .side dd b { color: #15171a; font-weight: 600; }
+  .rules { border-top: 1.6px solid #15171a; padding-top: 28px; margin-top: 8px; }
+  .r-t { font-size: 20px; font-weight: 900; color: #15171a; letter-spacing: -0.7px; margin: 0 0 22px; }
+  .r-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 36px; }
+  .r-c { border-top: 2px solid #9a6b22; padding-top: 16px; }
+  .r-k { font-size: 15.5px; font-weight: 800; color: #15171a; margin-bottom: 10px; }
+  .r-v { font-size: 13.5px; line-height: 1.9; color: #4a4f56; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
+  @media (max-width: 720px) {
+    .wrap, .tb { padding-left: 20px; padding-right: 20px; }
+    h1 { font-size: 27px; letter-spacing: -1.1px; }
+    .lead { font-size: 15px; }
+    .sec { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .sec-h { font-size: 20px; letter-spacing: -0.7px; }
+    .tx { font-size: 14.5px; }
+    .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .r-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+</style>

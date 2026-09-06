@@ -1,213 +1,56 @@
 ---
 import '../styles/global.css';
-import Ticker from '../components/Ticker.astro';
-import Collab from '../components/Collab.astro';
-import { TOPICS } from '../lib/topics';
-import Acorn from '../components/Acorn.astro';
-import { SITE, CATEGORIES, url, fmtDate, shortDateIn, shortDateEnIn, todayIn, TZ_KST, TZ_ET, canonicalUrl, CANONICAL_ORIGIN } from '../lib/site';
+import { SITE, url, shortDateIn, todayIn, TZ_KST, canonicalUrl } from '../lib/site';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase';
 import { ADSENSE_PUB_ID, adsenseOn } from '../lib/adsense';
-import { T, HTML_LANG, OG_LOCALE, HREFLANG, localizedPath, type Lang } from '../lib/i18n';
 
-interface Props {
-  title?: string;
-  description?: string;
-  compact?: boolean;
-  ogImage?: string;
-  activeNav?: string;
-  /** 본문에 구독 박스가 이미 있는 페이지(기사)는 푸터 폼을 생략해 2중 노출을 피한다 */
-  footerNewsletter?: boolean;
-  ogType?: 'website' | 'article';
-  /** 페이지 언어. 영문판(/en/)은 'en' 을 넘긴다. */
-  lang?: Lang;
-  /**
-   * 짝이 되는 다른 언어 페이지의 **중립 경로**(`/posts/x/` 처럼 /en 접두어 없이).
-   * 넘기면 hreflang 을 **양방향**으로 걸고 언어 전환 버튼이 그 글로 간다.
-   * 구글은 짝이 서로를 가리킬 때만 hreflang 을 인정하므로, 짝이 실제로 있을 때만 넘길 것.
-   */
-  altPath?: string;
-}
+// ★ 2026-09-05 전면 개편으로 새로 쓴 껍데기다. 그전 판은 1,080줄이었고 영문판·특집·
+//   숲/창고 드롭다운과 얽혀 있었다. 옛 구역을 지우면서 참조가 125곳 끊겨 다시 썼다.
+//   내비는 승인된 설계대로 **4슬롯 평면**이다 — 드롭다운이 없다.
+//   경위는 `docs/redesign-2026-09.md`.
+
 const {
   title,
   description,
-  compact = false,
   ogImage = url('/images/og-default.jpg'),
   activeNav = '',
-  footerNewsletter = true,
   ogType = 'website',
-  lang = 'ko',
-  altPath,
 } = Astro.props;
 
-const t = T[lang];
-const isEn = lang === 'en';
-const pageDesc = description ?? t.description;
+const pageDesc = description ?? SITE.description;
+const pageTitle = title ? `${title} | ${SITE.name}` : `${SITE.name} | ${SITE.taglineSub}`;
 
-const pageTitle = title ? `${title} | ${t.siteName}` : (isEn ? `${t.siteName} | ${t.tagline}` : `${SITE.name} | ${SITE.taglineSub}`);
-// 이 블로그의 기준 시간은 한국이다. 빌드가 UTC 서버에서 돌아 예전에는 하루가 밀려 나왔다.
-// 미 국채·달러 지표가 '어제 값'인 이유를 읽는 분이 알 수 있도록 뉴욕 날짜를 참고로 함께 적는다.
 const now = new Date();
-// 날짜도 판을 따라간다. 영문 페이지에 한국어 날짜가 찍히고 있었다(2026-08-26 수리).
-// isEn 은 아래에서 정해지므로 여기서는 lang 을 직접 본다.
-const _isEnDate = lang === 'en';
-// 한국·뉴욕 두 날짜를 **같은 형식**으로 내고 지명을 앞에 붙인다(소유주 지시 2026-08-28).
-const dateLine = _isEnDate ? shortDateEnIn(TZ_KST, now) : shortDateIn(TZ_KST, now);
-const etLine = _isEnDate ? shortDateEnIn(TZ_ET, now) : shortDateIn(TZ_ET, now);
+const dateLine = shortDateIn(TZ_KST, now);
 const kstYear = todayIn(TZ_KST, now).slice(0, 4);
-// 정본 주소는 커스텀 도메인 한 곳이다. GitHub Pages 미러도 canonical은 이 도메인을 가리켜
-// 색인 신호가 둘로 갈리지 않게 한다(중복 페이지는 noindex가 아니라 canonical로 합치는 것이 권장 방식).
-// 값은 `lib/site.ts` 한 곳에 있다 — 공유 줄이 만드는 링크와 어긋나지 않게 하기 위해서다.
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const canonical = canonicalUrl(Astro.url.pathname);
+const onVercel = !!import.meta.env.VERCEL;
 
-// ── hreflang (2026-08-26) ────────────────────────────────────────────
-// 같은 내용의 두 언어판이 **서로를 가리킬 때만** 구글이 hreflang 을 인정한다.
-// 한쪽만 걸면 무시될 뿐 아니라 두 판이 중복 콘텐츠로 경쟁할 수 있다.
-// 그래서 짝(altPath)이 실제로 있을 때만 내보낸다. x-default 는 한글판이다(정본).
-const otherLang: Lang = isEn ? 'ko' : 'en';
-const altHref = altPath ? new URL(localizedPath(altPath, otherLang), CANONICAL_ORIGIN).href : null;
-const koHref = altHref ? (isEn ? altHref : canonical) : null;
-const enHref = altHref ? (isEn ? canonical : altHref) : null;
-// 언어 전환 버튼의 착지. 짝이 없으면 그 언어의 홈으로 보낸다(막다른 곳을 만들지 않는다).
-const switchHref = url(localizedPath(altPath ?? '/', otherLang));
-// 정본(Vercel) 빌드에서만 켜는 것들 — GitHub Pages 미러에는 없는 엔드포인트다.
-const onVercel = !!process.env.VERCEL;
-
-// 내비게이션은 7슬롯 고정, 특집·창고는 드롭다운(데스크톱)이 증가분을 흡수한다.
-// 새 특집은 lib/topics.ts에만 추가하면 된다.
-const navItems: {
-  key: string;
-  name: string;
-  /** 좁은 화면용 짧은 라벨. 영문 내비는 다섯 칸이라 정식 라벨로는 390px 에서 460px 을
-   *  차지해 마지막 칸이 잘렸다(2026-08-26 수리). 한글 라벨은 원래 짧아 필요 없다. */
-  short?: string;
-  href: string;
-  children?: { key: string; name: string; href: string; desc?: string; group?: string; mark?: string }[];
-}[] = [
-  // ★ 2026-08-31 개명(소유주 결정). 바로 위 워드마크 「도토리경제」가 이미 홈 링크이므로
-  //   (스크롤 뒤 압축 헤더에도 남는다) 이 칸은 **두 번째 홈 링크**다. 브랜드를 또 얹을
-  //   이유가 없고, 첫 칸의 일은 길 안내 하나뿐이라 가장 짧고 오해 없는 말로 둔다.
-  //   부수 효과로 칸 폭이 109px → 30px 대로 줄어 둘째 칸에 여유가 생긴다.
-  { key: 'home', name: '홈', href: url('/') },
-  {
-    // 읽을거리(기사)는 전부 '숲' 아래로. 카테고리를 상단에 평평하게 늘어놓으면
-    // 도구 모음인 창고와 같은 층으로 보여 위계가 사라진다.
-    key: 'forest',
-    name: '분석',
-    href: url('/forest/'),
-    children: [
-      // ★ 묶음 머리글을 둔 이유(2026-08-31). 칸 이름이 「분석」인데 이 안에는 카툰도 있어
-      //   이름과 내용이 어긋난다. 창고와 같은 방식으로 성격을 갈라, 무엇이 분석이고
-      //   무엇이 읽을거리인지 패널 자체가 말하게 했다.
-      // ★ 2026-09-03 소유주 결정 — **기업 분석을 이 드롭다운의 맨 위로 올린다.**
-      //   「우리 블로그를 살릴 수 있는 핵심 콘텐츠」라는 판단이고, 그러면 자리도 그렇게 두어야 한다.
-      //   `mark` 를 달면 액센트 색과 배지가 붙는다(이 항목 하나에만 쓴다 — 전부 강조하면 강조가 아니다).
-      //   다섯 번째 칸은 여전히 만들지 않는다(390px 에서 4칸이 355px, 4슬롯 규약).
-      { group: '기업 분석' },
-      { key: 'corp', name: '기업 분석', href: url('/corp/'), desc: '공시 원문과 전체계정으로 회사를 해부합니다 · 종목 추천 아님', mark: '신설' },
-      { group: '분야별' },
-      ...Object.values(CATEGORIES).map((c) => ({
-        key: c.slug,
-        name: c.name,
-        href: url(`/category/${c.slug}/`),
-        desc: c.desc,
-      })),
-      { group: '연중 특집' },
-      ...TOPICS.map((t) => ({ key: t.key, name: `${t.name} 특집`, href: url(t.href), desc: t.desc })),
-      { group: '그 밖에' },
-      { key: 'story', name: '토리 이야기', href: url('/story/'), desc: '토리를 그린 카툰 연재 · 화별로 읽기' },
-      { key: 'forest', name: '전체 보기', href: url('/forest/'), desc: '분야·특집·최신 기사를 한 화면에서' },
-    ],
-  },
-  {
-    // ★ 2026-08-31 재편(소유주 지시 「창고 그룹핑을 다시 하자」).
-    //   그전에는 **평면 8항목**이었고 성격이 섞여 있어 무엇을 하는 곳인지 갈리지 않았다.
-    //   더 나쁜 것은 **계산기 둘과 「오늘의 숫자」가 메뉴에 아예 없었다**는 점이다 —
-    //   수익으로 닿는 유일한 길이라고 정해 놓은 도구가 내비에서 빠져 있었다.
-    //   또 `/warehouse/` 가 착지이면서 항목으로도 들어가 같은 주소가 두 번 나왔다(중복 제거).
-    //   이제 성격으로 셋으로 가른다: **계산 → 자료 → 함께·안내.** 도구가 맨 위다.
-    key: 'warehouse',
-    name: '데이터·도구',
-    href: url('/warehouse/'),
-    children: [
-      { group: '계산해 보기' },
-      { key: 'bid-radar', name: '입찰레이더', href: url('/bid-radar/'), desc: '나라장터 공고를 지역·면허로 선별 · 공동도급과 투찰가까지' },
-      { key: 'real-return', name: '실질금리 계산기', href: url('/real-return/'), desc: '세금과 물가를 빼면 예금에 얼마가 남는가 · 손익분기 금리' },
-      { key: 'import-cost', name: '수입원가 계산기', href: url('/import-cost/'), desc: '관세·부가세와 FTA 적용 여부 비교 · 관세청 과세환율 자동' },
-      { key: 'bid-odds', name: '투찰률 계산기', href: url('/bid-odds/'), desc: '복수예가 조합 1,365가지 전수 전개 · 하한 통과 비율' },
-      { group: '자료 찾기' },
-      { key: 'desk', name: '데이터 데스크', href: url('/desk/'), desc: '계열 73종의 시계열을 표와 그래프로' },
-      { key: 'numbers', name: '오늘의 숫자', href: url('/numbers/'), desc: '지표 30종의 현재값·직전 대비·기준일을 한 화면에' },
-      { key: 'glossary', name: '용어 도토리', href: url('/glossary/'), desc: '무역·경제 용어 사전' },
-      { key: 'pack', name: '도토리 그림함', href: url('/pack/'), desc: '무료 이미지 나눔 · 출처 표기 시 상업적 이용 가능' },
-      { group: '함께·안내' },
-      { key: 'galimgil', name: '토리의 갈림길', href: url('/galimgil/'), desc: '주간 전망 연재·공개 채점 아카이브' },
-      { key: 'board', name: '도토리 광장', href: url('/board/'), desc: '자유 의견·주제 제안·제보 게시판' },
-      { key: 'method', name: '숫자를 다루는 방법', href: url('/method/'), desc: '데이터 출처와 검증 원칙' },
-      { key: 'map', name: '블로그 지도', href: url('/map/'), desc: '전체 콘텐츠 구성을 한눈에 (매일 자동 갱신)' },
-    ],
-  },
-  // ★ 2026-08-31 내비 이름 개편(소유주 지시 「숲·창고가 별로다」, 「브랜드는 홈에만」).
-  //   그전 4슬롯이 **오늘의 도토리 · 도토리 숲 · 도토리 창고 · 소개** 였다 —
-  //   **네 칸 중 세 칸이 「도토리」로 시작**해 브랜드 반복이 정보를 밀어냈고,
-  //   처음 온 독자는 「창고」 안에 계산기가 있다는 것을 짐작할 수 없었다.
-  //   **영문 내비가 이미 세계관 용어를 버린 선례**가 있다(2026-08-26 결정, Analysis·Data Tracker).
-  //   같은 논리를 한글에도 적용한다 — 홈 한 칸에만 브랜드를 남기고 나머지는 뭐가 있는지 말한다.
-  //   세계관은 착지 페이지(`/forest/`·`/warehouse/`)의 제목과 본문이 계속 지킨다.
-  // 소개는 드롭다운 안에 두면 8항목 중 하나로 묻힌다(소유주 지시 2026-08-27로 밖으로 뺐다).
-  // 「누가 쓰는가」는 처음 온 독자와 심사자가 가장 먼저 찾는 자리라 한 번에 보이는 편이 낫다.
-  // 3슬롯 고정 규약을 4슬롯으로 고친 것이며, 그만큼 모바일 여백을 줄여 폭을 맞췄다(실측 355px).
+// 4슬롯 고정. 항목을 늘리지 않는다 — 390px 에서 네 칸이 한 줄에 들어가는 폭이 한계다.
+const nav = [
+  { key: 'corp', name: '기업 분석', href: url('/corp/') },
+  { key: 'tools', name: '지원 도구', href: url('/tools/') },
+  { key: 'numbers', name: '오늘의 지표', href: url('/numbers/') },
   { key: 'about', name: '소개', href: url('/about/') },
 ];
-// 영문 내비는 **세계관 용어를 쓰지 않는다**(소유주 결정 2026-08-26).
-// Acorn Forest·Acorn Warehouse 는 영어권에서 유아용으로 읽힌다. 기능 이름으로 간다.
-// 그리고 영문판은 「데이터 데스크」라 트래커가 기사보다 앞에 온다.
-const navItemsEn: typeof navItems = [
-  { key: 'home', name: T.en.navHome, href: url('/en/') },
-  { key: 'tracker', name: T.en.navTracker, short: 'Tracker', href: url('/en/tracker/') },
-  { key: 'analysis', name: T.en.navArticles, href: url('/en/analysis/') },
-  { key: 'pack', name: T.en.navPack, short: 'Illustrations', href: url('/en/pack/') },
-  { key: 'about', name: T.en.navAbout, href: url('/en/about/') },
-];
-const nav = isEn ? navItemsEn : navItems;
-
-// 'about' 을 뺐다: 소개가 최상위 칸이 되면서, 남겨 두면 /about/ 에서 숲과 소개가 함께 강조된다.
-const FOREST_KEYS = new Set(['forest', 'topics', 'story', 'corp', ...Object.values(CATEGORIES).map((c) => c.slug), ...TOPICS.map((t) => t.key)]);
-const isActive = (n: (typeof navItems)[number]) =>
-  activeNav === n.key ||
-  (n.children?.some((c) => c.key === activeNav) ?? false) ||
-  (n.key === 'forest' && FOREST_KEYS.has(activeNav));
 ---
 
 <!doctype html>
-<html lang={HTML_LANG[lang]} data-lang={lang}>
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDesc} />
     <link rel="canonical" href={canonical} />
-
-    {/* 애드센스 소유 확인·광고 게재. 게시자 ID 가 없으면 아무것도 나가지 않는다.
-        구글이 요구하는 세 방법(메타 태그·코드 조각·ads.txt) 중 둘을 여기서, ads.txt 는
-        `src/pages/ads.txt.ts` 가 낸다. 심사 중에도 코드가 살아 있어야 하는 경우가 있어 함께 둔다. */}
     {adsenseOn && <meta name="google-adsense-account" content={ADSENSE_PUB_ID} />}
-    {adsenseOn && (
-      <script
-        async
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUB_ID}`}
-        crossorigin="anonymous"></script>
-    )}
-    {koHref && <link rel="alternate" hreflang={HREFLANG.ko} href={koHref} />}
-    {enHref && <link rel="alternate" hreflang={HREFLANG.en} href={enHref} />}
-    {koHref && <link rel="alternate" hreflang="x-default" href={koHref} />}
     {SITE.naverVerify && <meta name="naver-site-verification" content={SITE.naverVerify} />}
     {SITE.googleVerify && <meta name="google-site-verification" content={SITE.googleVerify} />}
     <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
-    {!isEn && <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url('/rss.xml')} />}
+    <link rel="alternate" type="application/rss+xml" title={SITE.name} href={url('/rss.xml')} />
     <meta property="og:type" content={ogType} />
-    <meta property="og:site_name" content={t.siteName} />
-    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="ko_KR" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDesc} />
     <meta property="og:url" content={canonical} />
@@ -216,11 +59,10 @@ const isActive = (n: (typeof navItems)[number]) =>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700;900&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <script is:inline>
-      // 테마 초기화 (FOUC 방지), localStorage 실패 시 시스템 설정 따름
       (function () {
         document.documentElement.classList.add('js');
         try {
@@ -229,15 +71,7 @@ const isActive = (n: (typeof navItems)[number]) =>
         } catch (e) {}
       })();
     </script>
-    {
-      /* Vercel Web Analytics — 순 방문자·유입 경로(referrer)·국가·기기를 잡는다.
-         자체 집계(bump_view)는 페이지 조회 수만 세고 방문자를 구분하지 못해
-         "실제 외부 방문자가 있는가"에 답하지 못했다. 이 스크립트가 그 자리를 메운다.
-         쿠키를 쓰지 않고 개인 식별자도 남기지 않는다.
-         정본에서만 넣는다 — GH Pages 미러에는 이 엔드포인트가 없어 404가 날 뿐이다.
-         **Vercel 대시보드에서 Analytics 를 켜야 실제 수집이 시작된다.** */
-      onVercel && <script defer src="/_vercel/insights/script.js"></script>
-    }
+    { onVercel && <script defer src="/_vercel/insights/script.js"></script> }
     {
       /* 방문 기록 — 기사뿐 아니라 모든 페이지에서 한 번씩.
          남기는 것은 '그날치 난수 + 경로 + 유입 도메인' 뿐이다(scripts/sql/visit_log.sql 참조).
@@ -375,706 +209,87 @@ const isActive = (n: (typeof navItems)[number]) =>
     }
     <slot name="head" />
   </head>
+
   <body>
-    <a class="skip-link" href="#main">{isEn ? 'Skip to content' : '본문 바로가기'}</a>
-    <header>
-      <div class="topbar">
-        <div class="wrap topbar-in">
-          <span class="topbar-date">
-            <span title={isEn ? 'Korea Standard Time, the reference for this publication' : '한국 표준시 · 이 매체의 기준 시각'}
-            >{isEn ? 'Seoul ' : '한국 '}{dateLine}</span>
-            <span
-              class="topbar-et"
-              title={isEn
-                ? 'New York local date, the reference for US equity and Treasury figures'
-                : '뉴욕 현지 날짜 · 미 증시와 국채 지표의 기준'}
-            >{isEn ? 'New York ' : '뉴욕 '}{etLine}</span>
-          </span>
-          <span class="topbar-slogan">
-            {isEn ? 'Published every morning, Korea time' : '매일 아침 7시, 새 도토리가 올라옵니다'}
-          </span>
-          <span class="topbar-actions">
-            {/* 언어 전환 — 짝이 없으면 그 언어의 홈으로 보낸다(막다른 곳을 만들지 않는다). */}
-            <a href={switchHref} class="topbar-lang" hreflang={HREFLANG[otherLang]} aria-label={t.langSwitchLabel}>
-              {t.langSwitch}
-            </a>
-            {!isEn && <a href={url('/story/')}>토리 이야기</a>}
-            {!isEn && <a href={url('/contact/')} class="topbar-work">협업 문의</a>}
-            {!isEn && <a href={url('/search/')} aria-label="검색" title="검색" class="topbar-icon">
-              <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-                <circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
-                <path d="M11 11 L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-              </svg>
-            </a>}
-            <button id="theme-toggle" aria-label={t.themeToggle} title={t.themeToggleTitle}>
-              <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-                <circle cx="8" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"
-                ></circle>
-                <path
-                  d="M8 0.8 V2.6 M8 13.4 V15.2 M0.8 8 H2.6 M13.4 8 H15.2 M2.9 2.9 L4.2 4.2 M11.8 11.8 L13.1 13.1 M13.1 2.9 L11.8 4.2 M4.2 11.8 L2.9 13.1"
-                  stroke="currentColor"
-                  stroke-width="1.3"
-                  stroke-linecap="round"></path>
-              </svg>
-            </button>
-          </span>
+    <header class="hd-bar">
+      <div class="hd-in">
+        <a class="hd-mark" href={url('/')}>도토리경제</a>
+        <nav class="hd-nav" aria-label="주요 메뉴">
+          {nav.map((n) => (
+            <a href={n.href} class={activeNav === n.key ? 'on' : ''}>{n.name}</a>
+          ))}
+        </nav>
+        <div class="hd-right">
+          <span class="hd-date mono">{dateLine}</span>
+          <a class="hd-cta" href={url('/bid-radar/')}>입찰레이더 이용</a>
         </div>
       </div>
-
-      {
-        !compact ? (
-          <div class="masthead wrap">
-            <a href={url(isEn ? '/en/' : '/')} class="masthead-logo">
-              <Acorn size={36} label={t.siteName} />
-              <span class="masthead-name serif">{t.siteName}</span>
-            </a>
-            <div class="masthead-tagline">{isEn ? t.tagline : SITE.taglineSub}</div>
-          </div>
-        ) : (
-          <div class="compact-head wrap">
-            <a href={url(isEn ? '/en/' : '/')} class="compact-logo">
-              <Acorn size={19} label={t.siteName} />
-              <span class="serif">{t.siteName}</span>
-            </a>
-          </div>
-        )
-      }
-      {!compact && <div class="double-rule wrap" style="padding:0;" />}
     </header>
 
-    <nav class="nav" aria-label={isEn ? 'Sections' : '주요 카테고리'}>
-      <div class="wrap nav-in">
-        {
-          nav.map((n) =>
-            n.children ? (
-              <div class="nav-group">
-                <a
-                  href={n.href}
-                  data-nav-key={n.key}
-                  class:list={['nav-item', 'nav-parent', { active: isActive(n) }]}
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
-                  {n.name}<span class="nav-caret" aria-hidden="true">▾</span>
-                </a>
-                <div class="nav-panel" role="menu">
-                  {n.children.map((c) => (
-                    c.group ? (
-                      <p class="nav-grp" role="presentation">{c.group}</p>
-                    ) : (
-                      <a href={c.href} class:list={['nav-sub', { active: activeNav === c.key, marked: !!c.mark }]} role="menuitem">
-                        <span class="nav-sub-name">
-                          {c.name}
-                          {c.mark && <span class="nav-badge">{c.mark}</span>}
-                        </span>
-                        {c.desc && <span class="nav-sub-desc">{c.desc}</span>}
-                      </a>
-                    )
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <a
-                href={n.href}
-                class:list={['nav-item', { active: activeNav === n.key }]}
-                aria-current={activeNav === n.key ? 'page' : undefined}
-              >
-                {n.short ? <><span class="nav-long">{n.name}</span><span class="nav-short">{n.short}</span></> : n.name}
-              </a>
-            )
-          )
-        }
-      </div>
-      {
-        /* 모바일 전용 메뉴 시트. 데스크톱 드롭다운(.nav-panel)을 좁은 화면에 밀어 넣으면
-           .nav-in 의 가로 스크롤 컨테이너에 갇혀 계속 문제가 났다. 그래서 시트를
-           .nav-in 밖(.nav 직속)에 따로 두어 클리핑 자체를 없앤다. 데스크톱에서는 숨는다. */
-        nav
-          .filter((n) => n.children)
-          .map((n) => (
-            <div class="nav-sheet" data-sheet={n.key}>
-              <div class="nav-sheet-head">
-                <span class="nav-sheet-title">{n.name}</span>
-                <button class="nav-sheet-close" type="button" aria-label={isEn ? 'Close menu' : '메뉴 닫기'}>
-                  {isEn ? 'Close ✕' : '닫기 ✕'}
-                </button>
-              </div>
-              {n.children!.map((c) => (
-                c.group ? (
-                  <p class="nav-grp nav-grp-m">{c.group}</p>
-                ) : (
-                  <a href={c.href} class:list={['nav-sheet-item', { active: activeNav === c.key, marked: !!c.mark }]}>
-                    <span class="nav-sheet-name">
-                      {c.name}
-                      {c.mark && <span class="nav-badge">{c.mark}</span>}
-                    </span>
-                    {c.desc && <span class="nav-sheet-desc">{c.desc}</span>}
-                  </a>
-                )
-              ))}
-            </div>
-          ))
-      }
-    </nav>
-    <div class="nav-backdrop" aria-hidden="true"></div>
+    <main><slot /></main>
 
-    <Ticker lang={lang} />
-
-    <main id="main">
-      <slot />
-    </main>
-
-    <footer class="footer">
-      {footerNewsletter && !isEn && (
-        <div class="wrap footer-collab">
-          <Collab source="footer" />
+    <footer class="ft">
+      <div class="ft-in">
+        <div class="ft-src">
+          금융감독원 전자공시(DART) · 한국은행 ECOS · 미국 연방준비제도 FRED ·
+          금융위원회 주식시세정보 · 조달청 나라장터 · 관세청<br />
+          본 사이트의 내용은 정보 제공을 목적으로 하며 투자 자문이 아닙니다.
         </div>
-      )}
-      <div class="wrap footer-in">
-        <div class="footer-brand">
-          <div class="footer-logo">
-            <Acorn size={17} cap="#8CA0BF" body="#C77B4A" label={t.siteName} />
-            <span class="serif">{t.siteName}</span>
-          </div>
-          <div class="footer-tag">{isEn ? t.tagline : SITE.tagline}<br />&copy; {kstYear} Dotori Economy</div>
-        </div>
-        <div class="footer-links">
-          {isEn ? (
-            <div>
-              <div class="footer-col-title">Sections</div>
-              <a href={url('/en/tracker/')}>{T.en.navTracker}</a>
-              <a href={url('/en/analysis/')}>{T.en.navArticles}</a>
-              <a href={url('/en/about/')}>{T.en.navAbout}</a>
-              <a href={url('/')} hreflang="ko">한국어</a>
-            </div>
-          ) : (
-            <div>
-              <div class="footer-col-title">콘텐츠</div>
-              {/* 기업 분석이 맨 위다(2026-09-03). 푸터는 검색엔진이 사이트 구조를 읽는 자리이기도 하다. */}
-              <a href={url('/corp/')} class="footer-mark">기업 분석</a>
-              {Object.values(CATEGORIES).map((c) => (
-                <a href={url(`/category/${c.slug}/`)}>{c.name}</a>
-              ))}
-            </div>
-          )}
-          {isEn ? (
-            <div>
-              <div class="footer-col-title">Dotori Economy</div>
-              <a href={url('/en/about/')}>Editorial standards</a>
-              <a href={url('/privacy/')}>Privacy</a>
-              <a href={url('/contact/')}>Contact</a>
-            </div>
-          ) : (
-            <div>
-              <div class="footer-col-title">도토리경제</div>
-              <a href={url('/about/')}>토리는 누구인가</a>
-              <a href={url('/method/')}>숫자를 다루는 방법</a>
-              <a href={url('/story/')}>토리 이야기</a>
-              <a href={url('/board/')}>도토리 광장</a>
-              <a href={url('/contact/')}>협업 문의</a>
-              <a href={url('/privacy/')}>개인정보처리방침</a>
-              <a href={url('/rss.xml')}>RSS</a>
-              <a href={url('/en/')} hreflang="en">English</a>
-            </div>
-          )}
-        </div>
-        <div class="footer-legal">
-          {isEn
-            ? 'This publication is for information only and does not constitute investment advice. Data sources: Bank of Korea (ECOS), Korea Customs Service, U.S. Federal Reserve (FRED) and UN Comtrade. Figures are subject to revision by the issuing agencies.'
-            : '본 콘텐츠는 정보 제공을 목적으로 하며 투자 자문이 아닙니다. 인용 데이터의 출처: 한국은행 ECOS, 관세청 수출입무역통계, 미 연준 FRED, UN Comtrade. 데이터는 발표 기관 사정에 따라 정정될 수 있습니다.'}
+        <nav class="ft-nav" aria-label="하단 메뉴">
+          <a href={url('/corp/')}>기업 분석</a>
+          <a href={url('/tools/')}>지원 도구</a>
+          <a href={url('/numbers/')}>오늘의 지표</a>
+          <a href={url('/glossary/')}>용어</a>
+          <a href={url('/about/')}>소개</a>
+          <a href={url('/contact/')}>문의</a>
+          <a href={url('/privacy/')}>개인정보</a>
+        </nav>
+        <div class="ft-btm">
+          <span class="mono">© {kstYear} {SITE.name}</span>
+          <span class="mono">dotoriecon.com</span>
         </div>
       </div>
     </footer>
-
-    <script>
-      // 모바일 메뉴 시트. 데스크톱은 CSS hover 로 .nav-panel 을 열고, 좁은 화면에서는
-      // .nav-in 밖에 있는 .nav-sheet 를 탭으로 여닫는다(클리핑·스크롤 문제를 구조로 없앤 설계).
-      (() => {
-        const mq = matchMedia('(max-width: 859.98px)');
-        const backdrop = document.querySelector('.nav-backdrop');
-        const parents = [...document.querySelectorAll('.nav-parent')];
-        const sheets = [...document.querySelectorAll('.nav-sheet')];
-        const sheetFor = (key) => sheets.find((s) => s.dataset.sheet === key);
-
-        const close = () => {
-          sheets.forEach((s) => {
-            s.classList.remove('open');
-            s.style.maxHeight = '';
-          });
-          parents.forEach((p) => {
-            p.classList.remove('open');
-            p.setAttribute('aria-expanded', 'false');
-          });
-          backdrop?.classList.remove('show');
-          document.body.classList.remove('nav-menu-open');
-        };
-
-        parents.forEach((parent) => {
-          parent.addEventListener('click', (e) => {
-            if (!mq.matches) return; // 데스크톱: 링크 이동 + hover 드롭다운 그대로
-            const sheet = sheetFor(parent.dataset.navKey);
-            if (!sheet) return; // 시트가 없으면 평범한 링크로 둔다
-            e.preventDefault();
-            const wasOpen = sheet.classList.contains('open');
-            close();
-            if (!wasOpen) {
-              sheet.classList.add('open');
-              parent.classList.add('open');
-              parent.setAttribute('aria-expanded', 'true');
-              backdrop?.classList.add('show');
-              document.body.classList.add('nav-menu-open'); // 떠 있는 위젯을 잠시 숨긴다
-              // 남은 화면 높이에 맞춰 시트를 자른다. 페이지 최상단에서는 머리글까지 있어
-              // 시트가 화면 밖으로 밀리는데, 스크롤하면 닫히니 마지막 항목에 닿을 수 없다.
-              // (CSS 의 max-height:70vh 는 이 계산이 실패할 때의 안전값으로 남겨 둔다.)
-              const top = sheet.getBoundingClientRect().top;
-              const room = window.innerHeight - top - 10;
-              if (room > 160) sheet.style.maxHeight = room + 'px';
-            }
-          });
-        });
-
-        // 닫는 길을 여러 개 둔다: 닫기 버튼 · 바깥 탭 · ESC · 스크롤(60px 문턱).
-        document.querySelectorAll('.nav-sheet-close').forEach((b) => b.addEventListener('click', close));
-        backdrop?.addEventListener('click', close);
-        addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') close();
-        });
-        // 스크롤로는 닫지 않는다. 시트가 sticky 인 .nav 에 붙어 있어 스크롤해도 어긋나지 않고,
-        // 문서에 부드러운 스크롤(scroll-behavior:smooth)이 걸려 있어서 손가락이 조금만 움직여도
-        // 스크롤 이벤트가 이어져 메뉴가 제멋대로 닫혔다(2026-08-25 원인 규명).
-        // 데스크톱 폭으로 커지면 모바일 상태를 정리한다.
-        addEventListener('resize', () => {
-          if (!mq.matches) close();
-        });
-      })();
-
-      // 테마 토글
-      document.getElementById('theme-toggle')?.addEventListener('click', () => {
-        const root = document.documentElement;
-        const cur =
-          root.dataset.theme ||
-          (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        const next = cur === 'dark' ? 'light' : 'dark';
-        root.dataset.theme = next;
-        try {
-          localStorage.setItem('theme', next);
-        } catch (e) {}
-      });
-
-      // 이스터에그, 홈에서 마스트헤드 도토리를 누르면 도토리 비
-      const logo = document.querySelector('.masthead-logo');
-      if (logo && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const ACORN =
-          '<svg width="22" height="26" viewBox="0 0 24 28"><path d="M12 3.1 C7 3.1 3.3 6.1 2.7 10.2 C2.6 10.9 3.1 11.5 3.8 11.5 L20.2 11.5 C20.9 11.5 21.4 10.9 21.3 10.2 C20.7 6.1 17 3.1 12 3.1 Z" fill="#5C3A22"></path><path d="M4.2 13 C4.9 19.3 7.8 24.1 11.3 26.2 C11.75 26.5 12.25 26.5 12.7 26.2 C16.2 24.1 19.1 19.3 19.8 13 Z" fill="#B4552D"></path></svg>';
-        logo.addEventListener('click', (e) => {
-          e.preventDefault();
-          for (let i = 0; i < 14; i++) {
-            const el = document.createElement('span');
-            el.className = 'acorn-drop';
-            el.innerHTML = ACORN;
-            el.style.left = `${Math.random() * 96}vw`;
-            el.style.animationDelay = `${Math.random() * 0.5}s`;
-            el.style.animationDuration = `${1.1 + Math.random() * 0.9}s`;
-            document.body.appendChild(el);
-            el.addEventListener('animationend', () => el.remove());
-          }
-        });
-      }
-
-      // 스크롤 리빌 + 차트 그리기
-      const io = new IntersectionObserver(
-        (entries) => {
-          for (const e of entries) {
-            if (e.isIntersecting) {
-              e.target.classList.add(e.target.hasAttribute('data-chart') ? 'animate' : 'is-visible');
-              io.unobserve(e.target);
-            }
-          }
-        },
-        { threshold: 0.25 }
-      );
-      document.querySelectorAll('.reveal, [data-chart]').forEach((el) => io.observe(el));
-    </script>
   </body>
 </html>
 
 <style>
-  .topbar { border-bottom: 1px solid var(--hair); }
-  .topbar-in {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding-top: 11px;
-    padding-bottom: 11px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--sub);
-    letter-spacing: 0.01em;
-  }
-  .topbar-et {
-    display: none;
-    margin-left: 8px;
-    padding-left: 8px;
-    border-left: 1px solid var(--hair);
-    color: var(--muted);
-    font-size: 0.92em;
-  }
-  @media (min-width: 720px) { .topbar-et { display: inline; } }
-  .topbar-slogan { display: none; }
-  @media (min-width: 860px) { .topbar-slogan { display: inline; } }
-  .topbar-actions { display: inline-flex; align-items: center; gap: 14px; }
-  /* 좁은 화면에서는 상단바가 두 줄로 깨졌다(언어 전환 버튼이 늘어난 뒤, 2026-08-26 제보).
-     덜 급한 것부터 접는다: 뉴욕 날짜 → 토리 이야기. 협업 문의·검색·언어·테마는 남긴다. */
-  @media (max-width: 560px) {
-    .topbar-et { display: none; }
-    .topbar-date { white-space: nowrap; font-size: 11.5px; }
-  }
-  @media (max-width: 430px) {
-    .topbar-actions a[href$="/story/"] { display: none; }
-  }
-  .topbar-icon { display: inline-flex; color: var(--sub); }
-  .topbar-icon:hover { color: var(--accent); }
-  #theme-toggle {
-    background: none;
-    border: none;
-    color: var(--sub);
-    cursor: pointer;
-    padding: 2px;
-    display: inline-flex;
-  }
-  #theme-toggle:hover { color: var(--accent); }
+  /* 승인된 설계의 조판 규약. 정본은 docs/redesign-2026-09.md 4절. */
+  .hd-bar { background: #fff; border-bottom: 1px solid #e4e4de; }
+  .hd-in { max-width: 1440px; margin: 0 auto; padding: 0 64px; height: 66px;
+           display: flex; align-items: stretch; justify-content: space-between; }
+  .hd-mark { font-family: 'Gothic A1', sans-serif; font-size: 18px; font-weight: 900;
+             color: #15171a; letter-spacing: -0.4px; display: flex; align-items: center;
+             text-decoration: none; margin-right: 36px; }
+  .hd-nav { display: flex; align-items: stretch; gap: 26px; }
+  .hd-nav a { display: flex; align-items: center; font-size: 13.5px; color: #6b7076;
+              text-decoration: none; border-bottom: 2px solid transparent; }
+  .hd-nav a:hover { color: #15171a; }
+  .hd-nav a.on { font-family: 'Gothic A1', sans-serif; font-weight: 700; color: #15171a;
+                 border-bottom-color: #16355e; }
+  .hd-in > .hd-nav { margin-right: auto; }
+  .hd-right { display: flex; align-items: center; gap: 18px; }
+  .hd-date { font-size: 11px; color: #8e9299; }
+  .hd-cta { background: #16355e; color: #fff; padding: 9px 18px; font-size: 13px;
+            font-weight: 600; border-radius: 2px; text-decoration: none; }
+  .ft { border-top: 1px solid #e4e4de; background: #fff; margin-top: 64px; }
+  .ft-in { max-width: 1440px; margin: 0 auto; padding: 30px 64px 36px; }
+  .ft-src { font-size: 12px; color: #8e9299; line-height: 1.95; }
+  .ft-nav { display: flex; flex-wrap: wrap; gap: 18px; margin: 18px 0 16px; }
+  .ft-nav a { font-size: 12.5px; color: #4a4f56; text-decoration: none; }
+  .ft-nav a:hover { color: #16355e; }
+  .ft-btm { display: flex; justify-content: space-between; font-size: 11px; color: #a8acb1;
+            border-top: 1px solid #efefe9; padding-top: 14px; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
 
-  .masthead {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding-top: 42px;
-    padding-bottom: 28px;
-    text-align: center;
-  }
-  .masthead-logo { display: flex; align-items: center; gap: 13px; }
-  .masthead-name {
-    font-size: clamp(38px, 7vw, 58px);
-    font-weight: 900;
-    letter-spacing: 0.05em;
-    line-height: 1;
-  }
-  .masthead-tagline { font-size: 13.5px; color: var(--sub); letter-spacing: 0.13em; }
-
-  .compact-head { padding-top: 14px; padding-bottom: 14px; }
-  .compact-logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 19px;
-    font-weight: 900;
-    letter-spacing: 0.03em;
-  }
-
-  .nav {
-    border-top: 1px solid var(--hair);
-    border-bottom: 1px solid var(--hair);
-    position: sticky;
-    top: 0;
-    background: var(--paper);
-    z-index: 50;
-  }
-  .nav-in {
-    display: flex;
-    justify-content: center;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav-in::-webkit-scrollbar { display: none; }
-  /* 좁은 화면: 가운데 정렬 + 넘침은 첫 항목 왼쪽이 잘려 닿을 수 없게 되므로 좌측 정렬로 스크롤,
-     오른쪽 페이드로 이어짐을 표시한다 */
-  @media (max-width: 859px) {
-    .nav { position: relative; }
-    .nav-in { justify-content: flex-start; }
-    .nav::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 30px; background: linear-gradient(to left, var(--paper), transparent); pointer-events: none; }
-  }
-  /* 데스크톱: 내비 폭이 넉넉하므로 스크롤 컨테이너를 풀어 드롭다운이 잘리지 않게 한다 */
-  @media (min-width: 860px) {
-    .nav-in { overflow: visible; }
-  }
-  .skip-link { position: absolute; left: -9999px; top: 0; z-index: 200; background: var(--ink); color: var(--paper); padding: 10px 18px; font-size: 13px; font-weight: 700; }
-  .skip-link:focus { left: 0; }
-  .nav-group { position: relative; display: flex; }
-  .nav-caret {
-    font-size: 8px;
-    margin-left: 5px;
-    color: var(--muted);
-    display: none;
-  }
-  /* 드롭다운 그룹 머리글 — 항목이 아니라 **구획 이름**이라 누를 수 없게 둔다.
-     평면 목록이던 창고를 「계산 → 자료 → 함께·안내」로 가르는 표지다. */
-  .nav-grp {
-    margin: 0; padding: 10px 12px 4px; font-size: 11px; font-weight: 700;
-    letter-spacing: .06em; color: var(--muted); text-transform: none;
-  }
-  .nav-grp + .nav-sub, .nav-grp + .nav-sheet-item { border-top: none; }
-  .nav-panel { display: none; }
-  @media (min-width: 860px) {
-    .nav-caret { display: inline; }
-    .nav-panel {
-      display: block;
-      visibility: hidden;
-      opacity: 0;
-      translate: 0 -4px;
-      transition: opacity 0.15s ease, translate 0.15s ease, visibility 0.15s;
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      min-width: 230px;
-      /* 항목이 늘면 패널이 화면 아래로 넘친다(소개 추가로 8항목이 되며 692px, 실제로 잘렸다).
-         넘칠 때만 패널 안에서 스크롤한다 — 항목을 지우지 않고 목록을 지키는 쪽을 택한다.
-         빼는 값은 내비 하단까지의 거리다: 홈은 머리글이 커서 267px, 기사·목록은 compact 라 166px.
-         큰 쪽에 여유 16px 을 더해 잡는다(작은 쪽에서는 조금 손해지만 어느 쪽도 잘리지 않는다). */
-      max-height: calc(100vh - 283px);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      background: var(--surface);
-      border: 1px solid var(--hair);
-      border-top: 2px solid var(--ink);
-      box-shadow: 0 12px 30px rgba(16, 20, 28, 0.12);
-      padding: 6px 0;
-      z-index: 60;
-    }
-    .nav-group:hover .nav-panel,
-    .nav-group:focus-within .nav-panel {
-      visibility: visible;
-      opacity: 1;
-      translate: 0 0;
-    }
-    .nav-sub {
-      display: block;
-      padding: 9px 18px;
-      text-decoration: none;
-    }
-    .nav-sub:hover { background: var(--paper); }
-    .nav-sub-name {
-      display: block;
-      font-size: 13.5px;
-      font-weight: 700;
-      color: var(--ink);
-    }
-    .nav-sub.active .nav-sub-name { color: var(--accent); }
-    .nav-sub:hover .nav-sub-name { color: var(--accent); }
-    /* ★ 강조 항목(2026-09-03, 소유주 지시로 기업 분석 하나에만 건다).
-       왼쪽에 액센트 띠를 세우고 이름을 액센트 색으로 둔다. 배경까지 칠하면
-       드롭다운 전체가 시끄러워져 오히려 눈에 안 들어온다(실측으로 띠만 남겼다). */
-    .nav-sub.marked { box-shadow: inset 3px 0 0 var(--accent); }
-    .nav-sub.marked .nav-sub-name { color: var(--accent); }
-    .nav-sub-desc {
-      display: block;
-      font-size: 11.5px;
-      color: var(--muted);
-      margin-top: 3px;
-      word-break: keep-all;
-    }
-  }
-  /* 강조 배지 — 드롭다운과 모바일 시트가 함께 쓴다(미디어 쿼리 밖에 둘 것). */
-  .nav-badge {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 5px;
-    border: 1px solid var(--accent);
-    border-radius: 3px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--accent);
-    vertical-align: 2px;
-  }
-  .footer-mark { color: var(--accent) !important; font-weight: 700; }
-
-  /* ── 모바일 메뉴 시트 (2026-08-25 재설계) ─────────────────────────────
-     데스크톱 드롭다운(.nav-panel)을 좁은 화면에 밀어 넣는 방식은 두 번 실패했다.
-     ① position:fixed + body 스크롤 잠금 → 모바일에서 잠금이 안 먹어 패널이 화면에 붙어 떠 있었다.
-     ② .nav-in(가로 스크롤 컨테이너) 안에 둔 채 absolute 로 빼내기 → 기준·클리핑이 계속 얽혔다.
-     그래서 마크업부터 갈랐다. 모바일은 .nav-in **밖**에 있는 `.nav-sheet` 를 쓴다.
-     클리핑할 조상이 아예 없으니 위치가 어긋날 여지가 없다. 데스크톱은 .nav-panel 그대로. */
-  .nav-sheet { display: none; }
-  @media (max-width: 859.98px) {
-    .nav-caret { display: inline; transition: rotate 0.16s ease; }
-    .nav-parent.open .nav-caret { rotate: 180deg; }
-    /* 강조의 주인을 하나로. 메뉴를 열면 방금 누른 그 메뉴가 강조되고,
-       현재 페이지 밑줄(예: 홈에서 '오늘의 도토리')은 잠시 물러난다.
-       그렇지 않으면 숲·창고를 눌렀는데 강조는 오늘의 도토리에 남아 헷갈린다. */
-    .nav-parent.open { color: var(--ink); font-weight: 700; box-shadow: inset 0 -3px 0 var(--accent); }
-    body.nav-menu-open .nav-item.active:not(.open) {
-      box-shadow: none;
-      color: var(--sub);
-      font-weight: 500;
-    }
-    .nav-panel { display: none !important; } /* 모바일에서는 데스크톱 패널을 쓰지 않는다 */
-
-    .nav-sheet {
-      display: none;
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: var(--surface);
-      border-top: 2px solid var(--ink);
-      border-bottom: 1px solid var(--hair);
-      box-shadow: 0 18px 36px rgba(16, 20, 28, 0.18);
-      max-height: 70vh;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      z-index: 60;
-    }
-    .nav-sheet.open { display: block; animation: sheet-in 0.18s ease both; }
-    @keyframes sheet-in {
-      from { opacity: 0; translate: 0 -6px; }
-      to { opacity: 1; translate: 0 0; }
-    }
-
-    /* 시트 머리, 지금 어느 메뉴인지와 닫는 방법을 분명히 둔다 */
-    .nav-sheet-head {
-      position: sticky;
-      top: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 18px;
-      background: var(--paper);
-      border-bottom: 1px solid var(--hair);
-    }
-    .nav-sheet-title { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); }
-    .nav-sheet-close {
-      appearance: none;
-      background: none;
-      border: 1px solid var(--hair);
-      border-radius: 999px;
-      color: var(--sub);
-      font-size: 12px;
-      font-weight: 700;
-      padding: 7px 13px;
-      min-height: 34px;
-      cursor: pointer;
-    }
-
-    /* 항목, 손가락으로 누르기 편한 높이(≈56px)와 또렷한 구분선 */
-    .nav-sheet-item {
-      display: block;
-      padding: 13px 18px;
-      min-height: 56px;
-      text-decoration: none;
-      border-bottom: 1px solid var(--hair2);
-      border-left: 3px solid transparent;
-    }
-    .nav-sheet-item:last-child { border-bottom: none; }
-    .nav-sheet-item:active { background: var(--paper); }
-    .nav-sheet-item.active { border-left-color: var(--accent); background: var(--paper); }
-    .nav-sheet-name { display: block; font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.4; }
-    .nav-sheet-item.active .nav-sheet-name { color: var(--accent); }
-    .nav-sheet-item.marked { box-shadow: inset 3px 0 0 var(--accent); }
-    .nav-sheet-item.marked .nav-sheet-name { color: var(--accent); }
-    .nav-sheet-desc {
-      display: block;
-      font-size: 12.5px;
-      color: var(--muted);
-      margin-top: 3px;
-      line-height: 1.55;
-      word-break: keep-all;
-    }
-  }
-  /* 열린 드롭다운 뒤 어둑한 배경(모바일 전용). nav(z-50) 아래, 본문 위에 깐다 */
-  .nav-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(16, 20, 28, 0.28);
-    z-index: 40;
-  }
-  .nav-backdrop.show { display: block; }
-  @media (min-width: 860px) { .nav-backdrop { display: none !important; } }
-  .nav-item {
-    padding: 15px 22px;
-    font-size: 14.5px;
-    font-weight: 500;
-    color: var(--sub);
-    white-space: nowrap;
-    transition: box-shadow 0.15s ease, color 0.15s ease;
-  }
-  /* hover 는 마우스가 있는 기기에서만. 모바일에서는 탭한 뒤 hover 가 눌러붙어
-     엉뚱한 항목이 강조돼 보인다(2026-08-25 소유주 제보). */
-  @media (hover: hover) {
-    .nav-item:hover { color: var(--ink); box-shadow: inset 0 -2px 0 var(--hair); }
-  }
-  .nav-item.active {
-    color: var(--ink);
-    font-weight: 700;
-    box-shadow: inset 0 -2px 0 var(--ink);
-  }
+  /* 모바일 390px — 좌우 여백 20px, 머리글 두 줄. 규약은 설계 문서와 같다. */
   @media (max-width: 720px) {
-    .nav-in { justify-content: flex-start; }
-    /* 손가락 탭 영역을 넉넉히(≈48px 높이) */
-    .nav-item { padding: 15px 16px; font-size: 13.5px; }
+    .hd-in { height: auto; padding: 12px 20px; flex-wrap: wrap; row-gap: 10px; }
+    .hd-mark { margin-right: 20px; }
+    .hd-nav { gap: 16px; font-size: 12.5px; }
+    .hd-nav a { font-size: 12.5px; border-bottom: none; padding-bottom: 2px; }
+    .hd-right { gap: 12px; }
+    .hd-cta { padding: 7px 12px; font-size: 12px; }
+    .ft-in { padding: 26px 20px 30px; }
   }
-  /* 소개가 최상위로 나오며 한글 내비도 4칸이 됐다. 기존 여백(16px)으로는 387px 로
-     화면(390px)에 3px 차이로 겨우 들어가 글꼴 렌더링만 달라져도 잘린다. 여백을 12px 로
-     줄여 355px 로 맞춘다(2026-08-27 실측). */
-  @media (max-width: 560px) {
-    .nav-item { padding: 15px 12px; }
-  }
-  /* 영문 내비는 다섯 칸이라 좁은 화면에서 마지막 칸이 잘렸다. 항목을 지우지 않고
-     라벨을 줄이고 여백을 좁혀 다섯 칸을 그대로 넣는다(실측 347px < 390px). */
-  .nav-long { display: inline; }
-  .nav-short { display: none; }
-  @media (max-width: 560px) {
-    .nav-long { display: none; }
-    .nav-short { display: inline; }
-    html[data-lang='en'] .nav-item { padding: 15px 10px; font-size: 13px; }
-  }
-  /* (스크롤 잠금은 폐지했다. 모바일에서 body{overflow:hidden} 이 안 먹는 브라우저가 있어
-     패널이 화면에 붙어 떠 있는 버그를 만들었다. 지금은 스크롤하면 닫히도록 JS 가 처리한다.) */
-
-  .footer { background: var(--dark-band); color: var(--dark-band-ink); margin-top: 72px; }
-  .footer-in {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 32px;
-    padding-top: 44px;
-    padding-bottom: 44px;
-  }
-  @media (min-width: 860px) {
-    .footer-in { grid-template-columns: 1fr auto 1fr; align-items: start; }
-  }
-  .footer-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 18px;
-    font-weight: 900;
-    margin-bottom: 10px;
-  }
-  .footer-tag { font-size: 12px; color: var(--dark-band-sub); line-height: 1.7; }
-  .footer-links { display: flex; gap: 48px; font-size: 12.5px; }
-  .footer-links a { display: block; margin-bottom: 9px; color: var(--dark-band-ink); }
-  .footer-links a:hover { color: var(--dark-band-up); }
-  .footer-col-title { color: var(--dark-band-sub); font-size: 11px; margin-bottom: 10px; }
-  .footer-legal {
-    max-width: 340px;
-    font-size: 11px;
-    color: var(--dark-band-sub);
-    line-height: 1.75;
-  }
-  .footer-collab { padding-top: 34px; padding-bottom: 30px; border-bottom: 1px solid rgba(255, 255, 255, 0.14); margin-bottom: 30px; }
-  .topbar-work { color: var(--accent) !important; font-weight: 700; }
-  /* 언어 전환 — 상단바에서 가장 먼저 눈에 띄어야 하는 것은 아니지만 늘 같은 자리에 있어야 한다. */
-  .topbar-lang {
-    color: var(--brand) !important;
-    font-weight: 700;
-    border: 1px solid var(--hair);
-    padding: 1px 7px;
-    border-radius: 2px;
-  }
-  .topbar-lang:hover { color: var(--brand-hover) !important; border-color: var(--brand); }
 </style>

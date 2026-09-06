@@ -1,202 +1,164 @@
 ---
-// 「토리는 누구인가」. 원래 이 파일 하나에 카툰 65컷이 통째로 쌓여 있었다.
-// 컷은 src/data/story.ts와 /story/로 옮기고, 여기에는 정체성과 철칙만 남긴다.
-import Pic from '../components/Pic.astro';
 import Base from '../layouts/Base.astro';
-import { getCollection } from 'astro:content';
-import { SITE, url, isPublished } from '../lib/site';
-import { EPISODES } from '../data/story';
+import { url } from '../lib/site';
 
-const publishedCount = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).length;
-const open = EPISODES.filter((e) => !e.gateAtPosts || publishedCount >= e.gateAtPosts).sort((a, b) => a.order - b.order);
-const totalCuts = open.reduce((n, e) => n + e.cuts, 0);
-const lead = open[0];
-
-const principles = [
-  { title: '주운 도토리만 말합니다', desc: '출처 있는 공식 데이터만 인용합니다. 소문과 추측(속이 빈 도토리)은 다루지 않습니다.' },
-  { title: '도토리를 대신 골라주지 않습니다', desc: '도토리경제는 정보를 전할 뿐, 투자 판단을 대신하지 않습니다. 모든 콘텐츠는 투자 자문이 아닙니다.' },
-  { title: '겨울을 팔지 않습니다', desc: '공포를 자극하는 헤드라인 대신, 숫자가 말하는 만큼만 말합니다.' },
+// 승인된 소개 설계의 구성 그대로다 — 범위 → 보고서 구성 → 자료원 → 발행 → 고지.
+// 결백을 주장하는 문장은 두지 않는다(CLAUDE.md 편집 규약 2).
+const stat = [
+  { k: '분석 보고서', v: '2', n: '수집 대상 8개사 · 순차 발행' },
+  { k: '계산 도구', v: '4', n: '공공조달 · 무역 · 자금' },
+  { k: '공개 지표', v: '25', n: '6개 묶음 · 기준일과 출처 병기' },
+  { k: '축적 시계열', v: '45,646', n: '79개 계열의 관측치 누적' },
+  { k: '용어 정의', v: '49', n: '7개 분류 · 본문에서 열람' },
 ];
-
-const glossary = [
-  ['도토리', '검증된 데이터·정보 한 조각'],
-  ['도토리를 줍다', '공식 데이터를 확인하다'],
-  ['속이 빈 도토리', '출처 없는 소문과 추측'],
-  ['겨울', '경기 침체·불확실성'],
-  ['도토리 창고', '지표 대시보드·아카이브'],
-  ['계절이 바뀐다', '금리·환율의 국면 전환'],
+const chapters = [
+  ['1', '사업 구조', '사업부문별 매출과 원재료 구성, 생산 거점, 단가 변동 요인'],
+  ['2', '매출 및 영업이익 추이', '분기 재무를 이어 붙인 구간 형태와 연도별 손익, 영업이익률'],
+  ['3', '재무 건전성', '자본 구성의 변동, 부채비율·유동비율, 영업활동현금흐름'],
+  ['4', '가치평가 지표', 'PBR·ROE 산출과 동일 분류 대조군과의 비교'],
+  ['5', '리스크 요인 및 자본 정책', '지역별 매출 구성, 종속기업 재무, 지분 변동과 배당'],
+  ['6', '향후 방향', '회사가 제시한 방향과 현재 수치의 대조, 검증 지표 및 확인 시점'],
+  ['7', '반증 검토', '해당 보고서의 해석을 반박할 수 있는 설명을 세우고 검토'],
 ];
-
-const desc =
-  '도토리경제의 마스코트, 다람쥐 이코노미스트 토리를 소개합니다. ' +
-  '확인한 것만 적는다는 세 가지 철칙과 숲의 언어 사전, 그리고 토리를 그린 카툰으로 들어가는 문입니다.';
+const sources = [
+  ['금융감독원', '전자공시(DART) 정기보고서 원문 및 전체계정 재무정보', '보고서 제출 시'],
+  ['한국은행', 'ECOS 경제통계 · 환율 · 금리 · 물가 · 대외 거래', '매일'],
+  ['미국 연방준비제도', 'FRED 정책금리 · 국채금리 · 소비자물가 · 실업률', '매일'],
+  ['금융위원회', '주식시세정보 · 종가 및 시가총액', '매일'],
+  ['조달청', '나라장터 입찰공고', '매일'],
+  ['관세청', '수출입실적 · 수입 과세 기준 관세환율', '주 단위 고시'],
+];
 ---
 
-<Base title="토리는 누구인가" description={desc} activeNav="about" compact>
-  <section class="wrap ab-head">
-    <div class="kicker-en" style="color: var(--accent);">ABOUT</div>
-    <h1 class="serif ab-title">토리는 누구인가</h1>
-    <p class="ab-sub">&ldquo;{SITE.tagline}&rdquo;</p>
-  </section>
-
-  <section class="wrap ab-lead">
-    <p>
-      도토리경제를 쓰는 것은 숲에 사는 다람쥐 이코노미스트 <strong>토리</strong>입니다.
-      모두가 도토리를 자루째 쓸어 담을 때 토리만 하나씩 열어 보고 장부에 적었습니다.
-      그해 겨울 속이 빈 도토리가 드러났을 때 숲을 살린 것은 그 기록이었습니다.
-    </p>
-    <p>
-      이 블로그도 같은 방식으로 굴러갑니다. 매일 새벽 한국은행·관세청·FRED·DART에서
-      숫자를 직접 거둬 오고, 확인된 것만 기사와 대시보드로 옮깁니다.
-      토리라는 이름 뒤에 숨는 이유는 하나입니다. 읽는 분이 보아야 할 것은 쓰는 사람이 아니라 숫자이기 때문입니다.
-    </p>
-  </section>
-
-  <section class="wrap ab-story">
-    <a class="ab-story-card" href={url('/story/')}>
-      {lead && (
-        <div class="ab-story-thumb">
-          <Pic path={`${lead.cover}.jpg`} alt="토리 이야기 대표 컷" width={520} height={390} />
-        </div>
-      )}
-      <div class="ab-story-body">
-        <div class="kicker-en" style="color: var(--accent);">CARTOON</div>
-        <div class="serif ab-story-title">토리 이야기</div>
-        <p class="ab-story-sub">
-          토리가 어떻게 첫 도토리를 셌고 지금은 어떤 새벽을 보내는지,
-          카툰 {open.length}편 {totalCuts}컷으로 그렸습니다.
-        </p>
-        <span class="ab-story-cta">이야기 보러 가기 →</span>
-      </div>
-    </a>
-  </section>
-
-  <section class="wrap ab-creed">
-    <h2 class="serif ab-h2">토리의 세 가지 철칙</h2>
-    <div class="ab-creed-grid">
-      {
-        principles.map((p, i) => (
-          <div class="ab-creed-item">
-            <div class="mono ab-creed-no">{String(i + 1).padStart(2, '0')}</div>
-            <div class="ab-creed-name serif">{p.title}</div>
-            <div class="ab-creed-desc">{p.desc}</div>
+<Base title="발행 범위와 편집 기준" description="도토리경제는 상장기업의 정기보고서를 분기 단위로 이어 분석하여 보고서로 발행하고, 공공조달·무역·자금 실무에 사용하는 계산 도구를 제공합니다." activeNav="about">
+  <div class="ab-head">
+    <div class="wrap">
+      <div class="kick">소개</div>
+      <h1 class="hd">발행 범위와 편집 기준</h1>
+      <p class="lead">
+        도토리경제는 상장기업의 정기보고서를 분석하여 보고서로 발행하고, 공공조달·무역·자금 실무에
+        사용하는 계산 도구를 제공합니다. 분석의 배경이 되는 거시·시장 지표는 매일 갱신하여 공개합니다.
+      </p>
+      <div class="strip">
+        {stat.map((s) => (
+          <div class="strip-c">
+            <div class="strip-k">{s.k}</div>
+            <div class="strip-v mono">{s.v}</div>
+            <div class="strip-n">{s.n}</div>
           </div>
-        ))
-      }
+        ))}
+      </div>
     </div>
-  </section>
+  </div>
 
-  <section class="wrap ab-method">
-    <p class="ab-note">
-      이 철칙이 실제로 어떻게 지켜지는지, 어느 기관에서 숫자를 받아 오고 잠정치와 확정치를 어떻게 구분하며
-      틀린 전망을 어떻게 남기는지는 <a href={url('/method/')}>숫자를 다루는 방법</a>에 전부 적어 두었습니다.
-    </p>
-  </section>
+  <div class="wrap ab-body">
+    <section class="sec">
+      <div class="sec-k">범위</div>
+      <h2 class="hd sec-h">기업 분석 · 계산 도구 · 지표</h2>
+      <p class="tx"><b>기업 분석.</b> 코스피·코스닥 상장기업의 정기보고서를 대상으로 합니다. 분기 재무를
+        5~6개 사업연도에 걸쳐 이어 붙여 구성하며, 한 분기의 실적이 아니라 구간의 형태를 봅니다.</p>
+      <p class="tx"><b>실무 계산 도구.</b> 공공조달 입찰공고의 참여 자격 선별, 수입 통관의 관세·부가세
+        산출, 예금의 세후 실질수익 산출을 다룹니다. 산출식과 적용 전제를 화면에 표기합니다.</p>
+      <p class="tx"><b>거시·시장 지표.</b> 환율·금리·물가·고용·원자재·대외 거래·증시 25종을 6개 묶음으로
+        정리하여 기준일·출처와 함께 <a href={url('/numbers/')}>공개</a>합니다.</p>
+    </section>
 
-  <section class="wrap ab-glossary">
-    <h2 class="serif ab-h2">숲의 언어 사전</h2>
-    <p class="ab-note">
-      기사에 나오는 숲의 말은 이렇게 옮겨 읽으시면 됩니다.
-      무역·경제 용어 자체는 <a href={url('/glossary/')}>용어 도토리</a>에 따로 정리돼 있습니다.
-    </p>
-    <div class="prose ab-table">
-      <table>
-        <thead>
-          <tr><th>숲의 언어</th><th>실제 의미</th></tr>
-        </thead>
-        <tbody>
-          {glossary.map(([k, v]) => (<tr><td>{k}</td><td>{v}</td></tr>))}
-        </tbody>
-      </table>
-    </div>
-  </section>
+    <section class="sec">
+      <div class="sec-k">보고서</div>
+      <h2 class="hd sec-h">분석 보고서의 7개 장</h2>
+      <p class="tx">기업마다 같은 순서를 따릅니다. 순서를 고정하는 이유는 기업 간 비교가 가능해지기 때문입니다.</p>
+      <div class="tw">
+        <table class="t">
+          <thead><tr><th class="n">장</th><th>제목</th><th>다루는 내용</th></tr></thead>
+          <tbody>
+            {chapters.map(([n, t, d]) => (
+              <tr><td class="n mono">{n}</td><td class="ch">{t}</td><td>{d}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="tx">마지막 장을 따로 두는 이유가 있습니다. <b>7장은 해당 보고서의 해석을 반박할 수 있는
+        설명을 직접 세우고 검토하는 절입니다.</b> 반론이 성립하는 부분은 성립한다고 적고, 그 검토를
+        거치고도 남는 것만 결론으로 제시합니다. 6장의 검증 지표는 그 결론이 언제 어느 보고서에서
+        판별되는지를 미리 지정하는 자리입니다.</p>
+    </section>
 
-  {/* 운영 안내 — 발행 주체·자료 출처·연락과 정정 경로를 한자리에 둔다.
-      마스코트 소개만 있고 「누가 발행하는가」가 어디에도 없었다(2026-08-27 신설).
-      실명은 적지 않는다. 필명으로 발행한다는 사실을 숨기지 않는 편이 더 정확하다. */}
-  <section class="wrap ab-run" aria-labelledby="ab-run-h">
-    <h2 class="serif ab-h2" id="ab-run-h">운영 안내</h2>
-    <dl class="ab-run-list">
-      <div>
-        <dt>발행</dt>
-        <dd>
-          도토리경제는 개인이 운영하는 1인 데이터 매체입니다.
-          기획·집계·작성·발행을 한 사람이 맡으며, 필명 <strong>도토리콘</strong>으로 발행합니다.
-        </dd>
+    <section class="sec">
+      <div class="sec-k">자료원</div>
+      <h2 class="hd sec-h">6개 기관의 공개 자료</h2>
+      <p class="tx">공개 API와 공시 원문에서 자료를 수집합니다. 수집은 매일 오전 6시 50분에 수행하며,
+        수집한 값은 시계열로 축적하여 이후 보고서가 같은 계열을 참조합니다. 현재 79개 계열에
+        관측치 45,646개가 쌓여 있습니다.</p>
+      <div class="tw">
+        <table class="t">
+          <thead><tr><th>기관</th><th>자료</th><th class="n">갱신</th></tr></thead>
+          <tbody>
+            {sources.map(([o, d, c]) => (
+              <tr><td class="ch">{o}</td><td>{d}</td><td class="n mono">{c}</td></tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <div>
-        <dt>자료</dt>
-        <dd>
-          숫자는 한국은행 경제통계시스템(ECOS), 관세청 수출입무역통계, 미국 세인트루이스 연준(FRED),
-          금융감독원 전자공시(DART)에서 매일 새벽 자동으로 받습니다.
-          인용한 자료는 기사마다 출처와 기준 시점을 적습니다.
-        </dd>
-      </div>
-      <div>
-        <dt>문의·정정</dt>
-        <dd>
-          <a href={url('/contact/')}>문의 페이지</a>로 받습니다.
-          정정 사유가 확인되면 즉시 고치고, 무엇을 어떻게 고쳤는지 그 기사에 남깁니다.
-        </dd>
-      </div>
-      <div>
-        <dt>고지</dt>
-        <dd>이 사이트의 내용은 정보 제공을 목적으로 하며 투자 자문이 아닙니다.</dd>
-      </div>
-    </dl>
-    <p class="ab-note">최종 갱신: 2026년 8월 27일</p>
-  </section>
+    </section>
+
+    <section class="sec">
+      <div class="sec-k">발행</div>
+      <h2 class="hd sec-h">갱신일 표기 원칙</h2>
+      <p class="tx">분석 보고서는 기사가 아닙니다. 기업의 정기보고서가 제출될 때마다 같은 보고서를 다시
+        작성하므로, <b>발행일을 표기하면 오래된 날짜를 단 화면이 새로운 수치를 담게 됩니다.</b>
+        그래서 날짜 항목을 갱신일로 두고, 목록과 RSS에도 갱신일 기준으로 싣습니다.</p>
+      <p class="tx">지표는 매일 오전에 갱신하며 화면마다 기준 시점을 함께 표기합니다. 기업의 시가총액과
+        재무는 기준 시점이 서로 다르므로, 두 값을 함께 쓰는 계산에서는 각각의 기준일을 명기합니다.</p>
+    </section>
+
+    <section class="sec">
+      <div class="sec-k">고지</div>
+      <h2 class="hd sec-h">이용 범위와 연락</h2>
+      <p class="tx">도토리경제는 개인이 운영합니다. 본 사이트의 내용은 정보 제공을 목적으로 하며
+        <b>투자 자문이 아닙니다.</b> 주가 예측과 매수·매도 의견은 제시하지 않습니다. 계산 도구의
+        산출값은 참고 자료이며 법적 효력을 가지는 판단의 근거로 사용할 수 없습니다.</p>
+      <p class="tx">수치나 해석에 관하여 알려 주실 내용이 있으면 <a href={url('/contact/')}>문의 화면</a>으로
+        연락 주십시오. 정정한 경우 <b>무엇을 어떻게 고쳤는지 해당 화면에 함께 기록합니다.</b></p>
+    </section>
+  </div>
 </Base>
 
 <style>
-  .ab-head { text-align: center; padding-top: 52px; }
-  .ab-title { font-size: clamp(30px, 5vw, 42px); font-weight: 900; margin: 12px 0 10px; color: var(--ink); }
-  .ab-sub { color: var(--sub); font-size: 14.5px; letter-spacing: 0.06em; }
-
-  /* ★ 단축 margin 이 .wrap 의 `margin: 0 auto` 를 덮어 좌우가 0 이 됐다.
-     max-width 가 720px 이라 넓은 화면에서 본문만 왼쪽 끝에 붙었다(2026-08-27 소유주 제보).
-     .wrap 을 좁히려면 좌우는 반드시 auto 로 남길 것. padding 단축의 형제 함정이다. */
-  .ab-lead { max-width: var(--measure); margin: 34px auto 0; }
-  .ab-lead p { font-size: 15px; line-height: 2; color: var(--sub); word-break: keep-all; }
-  .ab-lead p + p { margin-top: 16px; }
-
-  .ab-story { margin-top: 44px; }
-  .ab-story-card { display: grid; grid-template-columns: 240px 1fr; gap: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--paper); max-width: var(--measure-wide); }
-  .ab-story-card:hover { border-color: var(--accent); }
-  @media (max-width: 640px) { .ab-story-card { grid-template-columns: 1fr; } }
-  .ab-story-thumb { background: var(--surface); aspect-ratio: 4 / 3; }
-  .ab-story-thumb :global(img) { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .ab-story-body { padding: 22px 26px 24px; align-self: center; }
-  .ab-story-title { font-size: 21px; font-weight: 900; color: var(--ink); margin-top: 6px; }
-  .ab-story-sub { font-size: 13.5px; color: var(--sub); line-height: 1.85; margin-top: 9px; word-break: keep-all; }
-  .ab-story-cta { display: inline-block; font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 14px; }
-
-  .ab-creed { padding-top: 58px; }
-  .ab-h2 { font-size: 21px; font-weight: 900; border-bottom: 1px solid var(--ink); padding-bottom: 12px; color: var(--ink); }
-  .ab-creed-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; padding-top: 26px; }
-  @media (max-width: 760px) { .ab-creed-grid { grid-template-columns: 1fr; } }
-  .ab-creed-no { font-size: 12px; color: var(--accent); margin-bottom: 8px; }
-  .ab-creed-name { font-size: 17.5px; font-weight: 700; margin-bottom: 8px; color: var(--ink); word-break: keep-all; }
-  .ab-creed-desc { font-size: 13.5px; color: var(--sub); line-height: 1.75; word-break: keep-all; }
-
-  .ab-method { padding-top: 34px; }
-  .ab-glossary { padding-top: 56px; padding-bottom: 60px; }
-  .ab-note { font-size: 13px; color: var(--sub); line-height: 1.9; margin-top: 14px; word-break: keep-all; max-width: var(--measure); }
-  .ab-table { max-width: var(--measure); margin: 18px 0 0; }
-
-  .ab-run { padding-top: 56px; padding-bottom: 64px; }
-  .ab-run-list { margin: 20px 0 0; max-width: var(--measure); border-top: 1px solid var(--line); }
-  .ab-run-list > div {
-    display: grid;
-    grid-template-columns: 92px 1fr;
-    gap: 16px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--line);
-  }
-  .ab-run-list dt { font-size: 12.5px; font-weight: 700; color: var(--muted); padding-top: 2px; }
-  .ab-run-list dd { margin: 0; font-size: 14px; color: var(--sub); line-height: 1.9; word-break: keep-all; }
-  .ab-run-list dd strong { color: var(--ink); }
-  @media (max-width: 560px) {
-    .ab-run-list > div { grid-template-columns: 1fr; gap: 6px; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 64px; }
+  .ab-head { background: #fff; border-bottom: 1px solid #e4e4de; padding: 54px 0 42px; }
+  .kick { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; margin-bottom: 18px; }
+  h1 { font-size: 44px; line-height: 1.34; font-weight: 900; color: #15171a; margin: 0 0 26px; letter-spacing: -1.8px; }
+  .lead { font-size: 17px; line-height: 1.95; color: #2e3238; max-width: 900px; margin: 0 0 34px; }
+  .strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px;
+           background: #e4e4de; border-top: 1.6px solid #15171a; border-bottom: 1px solid #e4e4de; }
+  .strip-c { background: #fff; padding: 17px 20px 18px; }
+  .strip-k { font-size: 12px; color: #71767d; margin-bottom: 8px; }
+  .strip-v { font-size: 24px; font-weight: 500; color: #15171a; letter-spacing: -0.7px; }
+  .strip-n { font-size: 11.5px; color: #8e9299; margin-top: 7px; line-height: 1.65; }
+  .ab-body { padding: 12px 64px 54px; }
+  .sec { padding: 34px 0 38px; border-top: 1px solid #e4e4de; max-width: 980px; }
+  .sec:first-child { border-top: none; }
+  .sec-k { font-size: 11px; font-weight: 600; letter-spacing: 2.2px; color: #9a6b22; margin-bottom: 11px; }
+  .sec-h { font-size: 26px; font-weight: 900; color: #15171a; letter-spacing: -0.95px; line-height: 1.45; margin: 0 0 18px; }
+  .tx { font-size: 15px; line-height: 2; color: #3c4046; margin: 0 0 19px; }
+  .tx b { font-weight: 600; color: #15171a; }
+  .tw { overflow-x: auto; }
+  table.t { width: 100%; border-collapse: collapse; margin: 4px 0 22px; }
+  .t th { font-size: 12px; font-weight: 600; color: #71767d; text-align: left;
+          padding: 0 14px 9px 0; border-bottom: 1.6px solid #15171a; white-space: nowrap; }
+  .t td { font-size: 13.5px; line-height: 1.75; color: #3c4046; padding: 12px 14px 12px 0;
+          border-bottom: 1px solid #eaeae4; vertical-align: top; }
+  .t th.n, .t td.n { text-align: right; padding-left: 16px; }
+  .t th:last-child, .t td:last-child { padding-right: 0; }
+  .t tr:last-child td { border-bottom: none; }
+  .t td.ch { font-family: 'Gothic A1', sans-serif; font-weight: 800; color: #15171a; white-space: nowrap; }
+  @media (max-width: 720px) {
+    .wrap, .ab-body { padding-left: 20px; padding-right: 20px; }
+    h1 { font-size: 27px; letter-spacing: -1.1px; }
+    .lead { font-size: 15px; }
+    .sec-h { font-size: 20px; letter-spacing: -0.7px; }
+    .tx { font-size: 14.5px; }
+    .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tw > table { min-width: 560px; }
   }
 </style>
