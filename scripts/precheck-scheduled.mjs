@@ -21,6 +21,10 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = join(ROOT, 'src/content/posts');
+// ★ 2026-09-05 전면 개편으로 `posts` 컬렉션이 없어졌다. 디렉터리가 없으면
+//   빈 목록으로 돌려 CI 가 멎지 않게 한다(게이트는 기사가 다시 생기면 그대로 산다).
+const listMdxDir = (dir) => { try { return readdirSync(dir); } catch { return []; } };
+
 const GLOSSARY = join(ROOT, 'src/lib/glossary.ts');
 
 const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
@@ -55,7 +59,7 @@ const seriesLatest = (id) => {
 const fatal = { term: [], missingTarget: [] };
 const warn = { dash: [], noSrc: [], noEnd: [], link0: [], deadLink: [], stale: [] };
 
-const files = readdirSync(POSTS).filter((f) => f.endsWith('.mdx'));
+const files = listMdxDir(POSTS).filter((f) => f.endsWith('.mdx'));
 const pubOf = new Map();
 for (const f of files) {
   const { front } = splitFront(readFileSync(join(POSTS, f), 'utf8'));

@@ -31,21 +31,21 @@ const first = (dir) => {
   catch { return null; }
 };
 const targets = [
+  // ★ 2026-09-05 전면 개편으로 목록을 다시 짰다. 지워진 구역(숲·창고·광장·그림함·이야기·
+  //   특집·영문판·기사 조판)을 그대로 두었더니 **58쪽 전부가 열리지 않아** 결과가 통째로
+  //   무의미해졌다. 조판마다 한 쪽이라는 원칙은 그대로다.
   ['홈', '/'],
-  ['카테고리', '/category/money/'],
-  ['숲', '/forest/'], ['창고', '/warehouse/'], ['소개', '/about/'], ['문의', '/contact/'],
-  ['방법', '/method/'], ['지도', '/map/'], ['광장', '/board/'], ['검색', '/search/'],
-  ['갈림길', '/galimgil/'], ['용어목록', '/glossary/'], ['그림함', '/pack/'],
-  ['이야기', '/story/'], ['특집목록', '/topics/'], ['404', '/404.html'],
-  ['영문홈', '/en/'], ['영문분석', '/en/analysis/'], ['영문그림함', '/en/pack/'], ['영문소개', '/en/about/'],
-  ['기사', `/posts/${first('posts')}/`],
+  ['기업분석목록', '/corp/'],
+  ['기업분석낱장', `/corp/${first('corp')}/`],
+  ['지원도구', '/tools/'],
+  ['오늘의지표', '/numbers/'],
+  ['소개', '/about/'], ['문의', '/contact/'], ['개인정보', '/privacy/'],
+  ['검색', '/search/'], ['용어목록', '/glossary/'],
   ['용어낱장', `/glossary/${first('glossary')}/`],
-  ['그림함낱장', `/pack/${first('pack')}/`],
-  ['이야기낱장', `/story/${first('story')}/`],
-  ['특집허브', `/topics/${first('topics')}/`],
-  ['브리핑목록', '/briefs/'], ['브리핑낱장', `/briefs/${first('briefs')}/`],
-  ['영문기사', `/en/posts/${first('en/posts')}/`],
-  ['영문낱장', `/en/pack/${first('en/pack')}/`],
+  ['입찰레이더', '/bid-radar/'], ['기초자료', '/bid-radar/sheets/'],
+  ['투찰률계산기', '/bid-odds/'], ['수입원가계산기', '/import-cost/'],
+  ['실질수익계산기', '/real-return/'],
+  ['404', '/404.html'],
 ].filter(([, u]) => !u.includes('/undefined/'));
 
 const browser = await chromium.launch(EXEC ? { executablePath: EXEC } : {});

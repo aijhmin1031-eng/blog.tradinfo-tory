@@ -1,0 +1,35 @@
+---
+// 미니 격자 — 목록에서 회사의 이력을 한 줄로 비교한다. 칸 하나가 한 분기.
+// ★ 농도의 바닥이 낮으면 흑자 전환 분기가 안 보인다. 0.34 로 둔다.
+interface Props { values: (number | null)[]; from: string }
+const { values, from } = Astro.props;
+const max = Math.max(...values.filter((v): v is number => v !== null).map(Math.abs), 1);
+const cells = values.map((v, i) => {
+  if (v === null) return { bg: 'transparent', border: '1px dashed #DCDFE3', ring: 'none' };
+  const a = 0.34 + 0.66 * Math.min(1, Math.abs(v) / max);
+  return {
+    bg: `rgba(${v >= 0 ? '192, 57, 43' : '37, 99, 168'}, ${a.toFixed(2)})`,
+    border: 'none',
+    ring: i === values.length - 1 ? '0 0 0 1.5px #15171A' : 'none',
+  };
+});
+const startYear = parseInt(from.slice(0, 4), 10);
+const endYear = startYear + Math.ceil(values.length / 4) - 1;
+const endQ = ((values.length - 1) % 4) + 1;
+---
+<div class="mg-lbl">분기 영업이익 {values.length}개 분기</div>
+<div class="mg">
+  {cells.map((c) => (
+    <div style={`background: ${c.bg}; border: ${c.border}; box-shadow: ${c.ring}`}></div>
+  ))}
+</div>
+<div class="mg-ax">
+  <span>{startYear}년 1분기</span><span>{endYear}년 {endQ}분기</span>
+</div>
+
+<style>
+  .mg-lbl { font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; color: #8e9299; margin-bottom: 9px; }
+  .mg { display: flex; gap: 3px; }
+  .mg > div { width: 11px; height: 26px; flex: 0 0 auto; }
+  .mg-ax { display: flex; justify-content: space-between; margin-top: 7px; font-size: 10.5px; color: #a8acb1; }
+</style>

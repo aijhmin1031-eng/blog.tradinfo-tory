@@ -34,6 +34,10 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = join(ROOT, 'src/content/posts');
+// ★ 2026-09-05 전면 개편으로 `posts` 컬렉션이 없어졌다. 디렉터리가 없으면
+//   빈 목록으로 돌려 CI 가 멎지 않게 한다(게이트는 기사가 다시 생기면 그대로 산다).
+const listMdxDir = (dir) => { try { return readdirSync(dir); } catch { return []; } };
+
 // 영문판(/en/) — 2026-08-26. 별도 컬렉션이라 디렉토리도 따로다.
 // **게이트가 영문을 못 보면 영문은 규칙 밖에 놓인다.** 그 구멍을 열어 두지 않는다.
 const POSTS_EN = join(ROOT, 'src/content/posts-en');
@@ -445,7 +449,7 @@ if (args.length === 0) {
 if (args.includes('--linkable')) {
   const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
   const rows = [];
-  for (const f of readdirSync(POSTS)) {
+  for (const f of listMdxDir(POSTS)) {
     if (!f.endsWith('.mdx')) continue;
     const { front } = splitFront(readFileSync(join(POSTS, f), 'utf8'));
     const pub = (front.match(/^pubDate:\s*'?(\d{4}-\d{2}-\d{2})/m) || [])[1];
@@ -516,7 +520,7 @@ if (args.includes('--all')) {
   // 큐(한글 보강 대상) + **영문 전량**. 큐는 한글 기사 목록이라 영문은 영원히 검사
   // 대상에 들어오지 않았다 — CI 의 「품질 점검」이 영문을 한 편도 안 보고 있었다(2026-08-26 수리).
   // 영문은 편수가 적고 새 판이므로 매번 전수로 본다.
-  const en = readdirSync(POSTS_EN)
+  const en = listMdxDir(POSTS_EN)
     .filter((f) => f.endsWith('.mdx'))
     .map((f) => f.slice(0, -4));
   slugs = [...queueSlugs().filter((s) => existsSync(join(POSTS, `${s}.mdx`))), ...en];

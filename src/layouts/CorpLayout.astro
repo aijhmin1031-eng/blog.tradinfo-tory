@@ -14,12 +14,15 @@ import type { CollectionEntry } from 'astro:content';
 import { getImage } from 'astro:assets';
 import Base from './Base.astro';
 import Pic from '../components/Pic.astro';
+import QuarterGrid from '../components/QuarterGrid.astro';
 import { metaByPath } from '../lib/images';
 import { dedupeSources } from '../lib/sources';
 import { url, canonicalUrl } from '../lib/site';
 
-interface Props { corp: CollectionEntry<'corps'> }
-const { corp } = Astro.props;
+interface Props { corp: CollectionEntry<'corps'>; headings?: { depth: number; slug: string; text: string }[] }
+const { corp, headings = [] } = Astro.props;
+// 차례는 본문의 실제 소제목에서 뽑는다. 손으로 적으면 본문이 바뀔 때 여기만 낡는다.
+const toc = headings.filter((h) => h.depth === 2);
 const d = corp.data;
 const sources = dedupeSources(d.sources ?? []);
 
@@ -80,179 +83,205 @@ const crumbsLd = {
 };
 ---
 
-<Base
-  title={d.title}
-  description={d.description}
-  compact
-  activeNav="corp"
-  footerNewsletter={false}
-  ogImage={heroImg}
-  ogType="article"
->
+<Base title={d.title} description={d.description} activeNav="corp" ogImage={heroImg} ogType="article">
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(datasetLd)} />
   <script slot="head" type="application/ld+json" set:html={JSON.stringify(crumbsLd)} />
 
-  <article class="wrap">
-    <header class="corp-head">
-      <div class="kicker">기업 분석</div>
-      <h1 class="corp-name serif">{d.name}</h1>
-      <div class="corp-id mono">
-        <span>{d.market}</span><span class="sep"></span><span>{d.stock}</span>
-        {d.label && (<><span class="sep"></span><span class="corp-label">시장의 이름표 「{d.label}」</span></>)}
+  <div class="ch">
+    <div class="wrap">
+      <div class="c-id">
+        <span class="kick">기업 분석</span>
+        <span class="c-sep"></span>
+        <span class="hd c-nm">{d.name}</span>
+        <span class="mono c-code">{d.stock}</span>
+        {d.label && <span class="c-tag">{d.market} · {d.label}</span>}
       </div>
-      <p class="corp-dek">{d.description}</p>
-      <div class="corp-meta">
-        <span>갱신 <time datetime={d.updated.toISOString()}>{fmtDate(d.updated)}</time></span>
-        <span class="sep"></span>
-        <span class="mono">데이터 기준 {d.dataAsOf}</span>
+      <h1 class="hd c-title">{d.title}</h1>
+      <p class="c-lead">{d.description}</p>
+      <div class="mono c-meta">
+        최종 갱신 <time datetime={d.updated.toISOString()}>{fmtDate(d.updated)}</time>
+        <span class="c-dot">·</span> 데이터 기준 {d.dataAsOf}
       </div>
-    </header>
-
-    {d.hero && (
-      <figure class="corp-hero">
-        <Pic path={d.hero} alt={`${d.name} 분석 대표 이미지`} width={1200} height={675} eager />
-      </figure>
-    )}
-
-    {/* 한눈 카드 — 해석 없이 사실만. 기계가 집어 가는 자리이기도 하다. */}
-    <section class="glance" aria-labelledby="glance-h">
-      <h2 id="glance-h" class="glance-h">한눈 카드</h2>
-      <dl class="glance-grid">
-        {d.glance.map((g) => (
-          <div class="glance-item">
-            <dt>{g.k}</dt>
-            <dd class="glance-v mono">{g.v}</dd>
-            <dd class="glance-note">{g.note}</dd>
+      <div class="strip">
+        {d.glance.slice(0, 4).map((g) => (
+          <div class="strip-c">
+            <div class="strip-k">{g.k}</div>
+            <div class="strip-v mono">{g.v}</div>
+            <div class="strip-n">{g.note}</div>
           </div>
         ))}
-      </dl>
-      <p class="glance-foot">
-        모두 공시·공공 API 에서 가져온 값이며 항목마다 기준 시점을 적었다.
-        <strong>해석은 아래 본문에서 시작한다.</strong>
-      </p>
-    </section>
-
-    <div class="prose">
-      <slot />
+      </div>
     </div>
+  </div>
 
-    {d.watch && d.watch.length > 0 && (
-      <section class="watch" aria-labelledby="watch-h">
-        <h2 id="watch-h" class="watch-h">무엇을 보면 아는가</h2>
-        <p class="watch-lead">
-          이 낱장의 읽기가 맞는지는 다음 공시에서 갈린다. <strong>예측이 아니라 판별 조건이다.</strong>
-        </p>
-        <div class="table-scroll">
-          <table class="watch-table">
-            <thead>
-              <tr><th>볼 것</th><th>지금</th><th>갈리는 선</th><th>언제</th></tr>
-            </thead>
-            <tbody>
-              {d.watch.map((w) => (
-                <tr>
-                  <th scope="row">{w.metric}</th>
-                  <td class="mono">{w.now}</td>
-                  <td class="mono">{w.line}</td>
-                  <td>{w.when}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    )}
+  <div class="wrap body-wrap">
+    <aside class="toc">
+      <div class="toc-h">차례</div>
+      {toc.map((h, i) => (
+        <a class="toc-i" href={`#${h.slug}`}>
+          <span class="mono toc-n">{i + 1}</span>
+          <span>{h.text.replace(/^\d+장\.\s*/, '')}</span>
+        </a>
+      ))}
+      <p class="toc-f">정기보고서 제출 시마다 갱신합니다. 전망과 투자 판단은 제공하지 않습니다.</p>
+    </aside>
 
-    {d.toriNote && (
-      <aside class="tori-note">
-        <div class="tn-h">토리의 노트</div>
-        <p>{d.toriNote}</p>
-      </aside>
-    )}
+    <div class="body">
+      {d.quarters && (
+        <section class="qsec">
+          <div class="sec-k">분기 영업이익</div>
+          <h2 class="hd sec-h">{d.quarters.values.length}개 분기 영업이익</h2>
+          <QuarterGrid from={d.quarters.from} values={d.quarters.values} />
+          <p class="qnote">
+            분기보고서는 1분기부터 3분기까지만 제출되므로 4분기 값은 공시에 그대로 기재된 수치가
+            아닙니다. <b>사업보고서의 연간 금액에서 3분기까지의 누적을 차감하여 산출하였습니다.</b>
+          </p>
+        </section>
+      )}
 
-    {sources.length > 0 && (
-      <section class="sources" aria-labelledby="sources-h">
-        <h2 id="sources-h" class="sources-h">자료</h2>
-        <ul class="sources-list">
-          {sources.map((s) => (
-            <li>
-              <span class="src-org">{s.org}</span>
-              {s.url ? (
-                <a href={s.url} target="_blank" rel="noopener noreferrer">{s.name}</a>
-              ) : (
-                <span>{s.name}</span>
-              )}
-              {s.note && <span class="src-note-inline">{s.note}</span>}
-            </li>
-          ))}
-        </ul>
-        <p class="sources-foot">
-          공시된 숫자를 해부한 것이며 <strong>종목 추천·목표주가·매수매도 의견이 아니다.</strong>
-          수치는 발표 기관이 사후 정정할 수 있다.
-        </p>
-      </section>
-    )}
+      <div class="prose"><slot /></div>
 
-    <p class="back"><a href={url('/corp/')}>← 기업 분석 전체 보기</a></p>
-  </article>
+      {d.watch && d.watch.length > 0 && (
+        <section class="wsec">
+          <div class="sec-k">검증</div>
+          <h2 class="hd sec-h">검증 지표 및 확인 시점</h2>
+          <div class="tw">
+            <table class="t">
+              <thead><tr><th>지표</th><th class="n">현재</th><th class="n">판별선</th><th class="n">확인 시점</th></tr></thead>
+              <tbody>
+                {d.watch.map((w) => (
+                  <tr>
+                    <td>{w.metric}</td>
+                    <td class="n mono">{w.now}</td>
+                    <td class="n mono">{w.line}</td>
+                    <td class="n mono">{w.when}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {sources.length > 0 && (
+        <section class="ssec">
+          <div class="sec-k">참고자료</div>
+          <h2 class="hd sec-h">확인한 자료</h2>
+          <ul class="slist">
+            {sources.map((s) => (
+              <li>
+                <span class="s-org">{s.org}</span>
+                {s.url ? <a class="s-nm" href={s.url} rel="noopener">{s.name}</a> : <span class="s-nm">{s.name}</span>}
+                {s.note && <span class="s-note">{s.note}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </div>
 </Base>
 
 <style>
-  .wrap { padding-bottom: 72px; }
-  .corp-head { max-width: var(--w-prose); margin: 34px auto 0; }
-  .corp-name { font-size: clamp(1.9rem, 5.2vw, 2.6rem); line-height: 1.25; margin: 8px 0 0; letter-spacing: -0.01em; }
-  .corp-id { margin-top: 10px; font-size: 0.82rem; color: var(--sub); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .corp-label { font-family: inherit; }
-  .corp-dek { margin: 14px 0 0; font-size: 1.02rem; line-height: 1.72; color: var(--sub); word-break: keep-all; }
-  .corp-meta { margin-top: 14px; font-size: 0.8rem; color: var(--sub); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .sep { width: 3px; height: 3px; border-radius: 50%; background: var(--hair); display: inline-block; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 64px; }
+  .ch { background: #fff; border-bottom: 1px solid #e4e4de; padding: 52px 0 42px; }
+  .c-id { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .kick { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; }
+  .c-sep { width: 26px; height: 1px; background: #d2d2ca; }
+  .c-nm { font-size: 14px; font-weight: 800; color: #15171a; }
+  .c-code { font-size: 12.5px; color: #71767d; }
+  .c-tag { font-size: 11.5px; color: #71767d; border: 1px solid #e4e4de; padding: 2px 8px; }
+  .c-title { font-size: 43px; line-height: 1.35; font-weight: 900; color: #15171a; margin: 0 0 26px;
+             letter-spacing: -1.7px; max-width: 1060px; }
+  .c-lead { font-size: 17px; line-height: 1.95; color: #2e3238; max-width: 880px; margin: 0 0 18px; }
+  .c-meta { font-size: 11.5px; color: #8e9299; margin-bottom: 32px; }
+  .c-dot { margin: 0 6px; }
+  .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px;
+           background: #e4e4de; border-top: 1.6px solid #15171a; border-bottom: 1px solid #e4e4de; }
+  .strip-c { background: #fff; padding: 17px 22px 18px; }
+  .strip-k { font-size: 12px; color: #71767d; margin-bottom: 8px; }
+  .strip-v { font-size: 25px; font-weight: 500; color: #15171a; letter-spacing: -0.8px; }
+  .strip-n { font-size: 11.5px; color: #8e9299; margin-top: 7px; line-height: 1.65; }
 
-  .corp-hero { max-width: var(--w-prose); margin: 26px auto 0; }
-  .corp-hero :global(img) { border-radius: 6px; border: 1px solid var(--hair); }
+  .body-wrap { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 52px;
+               padding: 44px 64px 54px; align-items: start; }
+  .toc { position: sticky; top: 22px; }
+  .toc-h { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; margin-bottom: 14px; }
+  .toc-i { display: flex; gap: 11px; padding: 10px 0; border-bottom: 1px solid #efefe9;
+           font-size: 13px; color: #4a4f56; text-decoration: none; line-height: 1.5; }
+  .toc-i:hover { color: #16355e; }
+  .toc-n { font-size: 11.5px; color: #a8acb1; flex: 0 0 auto; }
+  .toc-f { margin-top: 22px; font-size: 11.5px; color: #8e9299; line-height: 1.85; }
 
-  .glance { max-width: var(--w-prose); margin: 30px auto 0; border: 1px solid var(--hair); border-radius: 8px; padding: 20px 22px 16px; background: var(--surface); }
-  .glance-h { margin: 0 0 14px; font-size: 0.78rem; letter-spacing: 0.08em; color: var(--sub); font-weight: 700; }
-  .glance-grid { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 22px; }
-  .glance-item { min-width: 0; }
-  .glance-item dt { font-size: 0.8rem; color: var(--sub); }
-  .glance-v { margin: 3px 0 0; font-size: 1.24rem; font-weight: 700; color: var(--body-ink); letter-spacing: -0.01em; }
-  .glance-note { margin: 3px 0 0; font-size: 0.74rem; line-height: 1.5; color: var(--sub); word-break: keep-all; }
-  .glance-foot { margin: 16px 0 0; padding-top: 12px; border-top: 1px solid var(--hair2); font-size: 0.76rem; line-height: 1.6; color: var(--sub); word-break: keep-all; }
-  .glance-foot strong { color: var(--body-ink); font-weight: 600; }
+  .sec-k { font-size: 11px; font-weight: 600; letter-spacing: 2.2px; color: #9a6b22; margin-bottom: 11px; }
+  .sec-h { font-size: 26px; font-weight: 900; color: #15171a; letter-spacing: -0.95px;
+           line-height: 1.45; margin: 0 0 18px; }
+  .qsec, .wsec, .ssec { padding: 32px 0 36px; border-top: 1px solid #e4e4de; }
+  .qsec:first-child { border-top: none; padding-top: 0; }
+  .qnote { font-size: 14.5px; line-height: 1.95; color: #4a4f56; margin: 20px 0 0; max-width: 900px; }
+  .qnote b { font-weight: 600; color: #15171a; }
+  .tw { overflow-x: auto; }
+  table.t { width: 100%; border-collapse: collapse; }
+  .t th { font-size: 12px; font-weight: 600; color: #71767d; text-align: left;
+          padding: 0 14px 9px 0; border-bottom: 1.6px solid #15171a; white-space: nowrap; }
+  .t td { font-size: 13.5px; line-height: 1.75; color: #3c4046; padding: 12px 14px 12px 0;
+          border-bottom: 1px solid #eaeae4; vertical-align: top; }
+  .t th.n, .t td.n { text-align: right; padding-left: 16px; }
+  .t th:last-child, .t td:last-child { padding-right: 0; }
+  .t tr:last-child td { border-bottom: none; }
+  .slist { list-style: none; margin: 0; padding: 0; }
+  .slist li { padding: 13px 0; border-bottom: 1px solid #eaeae4; font-size: 13.5px; line-height: 1.8; }
+  .slist li:last-child { border-bottom: none; }
+  .s-org { font-weight: 600; color: #15171a; margin-right: 10px; }
+  .s-nm { color: #16355e; }
+  .s-note { display: block; font-size: 12px; color: #8e9299; margin-top: 4px; }
 
-  .watch { max-width: var(--w-prose); margin: 46px auto 0; }
-  .watch-h { font-size: 1.24rem; margin: 0 0 8px; }
-  .watch-lead { margin: 0 0 14px; font-size: 0.92rem; line-height: 1.7; color: var(--sub); word-break: keep-all; }
-  .watch-lead strong { color: var(--body-ink); font-weight: 600; }
-  /* ★ `.table-scroll` 의 규칙은 `global.css` 에서 **`.prose` 아래에만** 있다.
-     이 표는 `.prose` 밖이므로 그대로 쓰면 클래스만 있고 규칙이 없는 껍데기가 된다
-     (2026-08-26 에 영문 기사에서 실제로 터졌던 사고다). 여기서 직접 든다. */
-  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .watch-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 460px; }
-  .watch-table th, .watch-table td { padding: 9px 10px; border-bottom: 1px solid var(--hair2); text-align: left; vertical-align: top; word-break: keep-all; }
-  .watch-table thead th { font-size: 0.76rem; color: var(--sub); border-bottom: 1px solid var(--hair); white-space: nowrap; }
-  .watch-table tbody th { font-weight: 600; }
+  /* 본문 — 이 화면의 주인은 글이다. 한 줄 44자 안팎, 행간 2.05. */
+  /* global.css 의 .prose 는 margin: 0 auto 라 가운데로 밀린다. 왼쪽 정렬로 되돌린다. */
+  .prose { max-width: 900px; margin: 0; }
+  .prose :global(h2) { font-family: 'Gothic A1', sans-serif; font-size: 26px; font-weight: 900;
+                       color: #15171a; letter-spacing: -0.95px; line-height: 1.45;
+                       margin: 46px 0 18px; padding-top: 34px; border-top: 1px solid #e4e4de; }
+  .prose :global(h2:first-child) { margin-top: 0; padding-top: 0; border-top: none; }
+  .prose :global(h3) { font-family: 'Gothic A1', sans-serif; font-size: 18px; font-weight: 800;
+                       color: #15171a; margin: 32px 0 12px; }
+  .prose :global(p) { font-size: 15.5px; line-height: 2.05; color: #3c4046; margin: 0 0 21px; }
+  .prose :global(strong) { font-weight: 600; color: #15171a; }
+  .prose :global(a) { color: #16355e; }
+  .prose :global(ul), .prose :global(ol) { font-size: 15.5px; line-height: 2.05; color: #3c4046;
+                                           margin: 0 0 21px; padding-left: 20px; }
+  .prose :global(li) { margin-bottom: 6px; }
+  .prose :global(table) { width: 100%; border-collapse: collapse; margin: 4px 0 26px; font-size: 13.5px; }
+  .prose :global(thead th) { font-size: 12px; font-weight: 600; color: #71767d; text-align: left;
+                             padding: 0 14px 9px 0; border-bottom: 1.6px solid #15171a; white-space: nowrap; }
+  .prose :global(tbody td) { padding: 11px 14px 11px 0; border-bottom: 1px solid #eaeae4;
+                             line-height: 1.75; vertical-align: top; }
+  .prose :global(tbody tr:last-child td) { border-bottom: none; }
+  .prose :global(th:last-child), .prose :global(td:last-child) { padding-right: 0; }
+  .prose :global(blockquote) { border-left: 3px solid #9a6b22; padding: 4px 0 4px 20px;
+                               margin: 0 0 21px; color: #4a4f56; }
+  .prose :global(figure) { margin: 26px 0; }
+  .prose :global(figure img) { width: 100%; height: auto; border: 1px solid #e4e4de; }
+  .prose :global(figcaption) { font-size: 12px; color: #8e9299; line-height: 1.7; margin-top: 9px; }
+  /* 표는 좁은 화면에서 스스로 스크롤한다. 통에 안 넣으면 문서를 밀어낸다. */
+  .prose :global(table) { display: block; overflow-x: auto; white-space: nowrap; }
+  .prose :global(tbody td), .prose :global(thead th) { white-space: normal; }
 
-  .tori-note { max-width: var(--w-prose); margin: 40px auto 0; border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; }
-  .tn-h { font-size: 0.76rem; letter-spacing: 0.08em; color: var(--accent); font-weight: 700; }
-  .tori-note p { margin: 6px 0 0; font-size: 0.95rem; line-height: 1.78; color: var(--sub); word-break: keep-all; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
 
-  .sources { max-width: var(--w-prose); margin: 46px auto 0; border-top: 1px solid var(--hair); padding-top: 18px; }
-  .sources-h { font-size: 0.78rem; letter-spacing: 0.08em; color: var(--sub); font-weight: 700; margin: 0 0 10px; }
-  .sources-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-  .sources-list li { font-size: 0.82rem; line-height: 1.6; color: var(--sub); word-break: keep-all; }
-  .src-org { color: var(--body-ink); font-weight: 600; margin-right: 6px; }
-  .src-note-inline { display: block; font-size: 0.76rem; color: var(--sub); }
-  .sources-list a { color: var(--brand); }
-  .sources-list a:hover { color: var(--brand-hover); }
-  .sources-foot { margin: 14px 0 0; font-size: 0.76rem; line-height: 1.6; color: var(--sub); word-break: keep-all; }
-  .sources-foot strong { color: var(--body-ink); font-weight: 600; }
-
-  .back { max-width: var(--w-prose); margin: 40px auto 0; font-size: 0.86rem; }
-  .back a { color: var(--brand); }
-
-  @media (max-width: 560px) {
-    .glance-grid { grid-template-columns: 1fr; gap: 14px; }
-    .glance { padding: 16px 16px 14px; }
+  @media (max-width: 720px) {
+    .wrap { padding-left: 20px; padding-right: 20px; }
+    .body-wrap { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 30px 20px 40px; }
+    .toc { position: static; }
+    .c-title { font-size: 27px; letter-spacing: -1.1px; }
+    .c-lead { font-size: 15px; }
+    .sec-h { font-size: 20px; letter-spacing: -0.7px; }
+    .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .strip-v { font-size: 21px; }
+    .tw > table { min-width: 560px; }
+    .prose :global(h2) { font-size: 20px; letter-spacing: -0.7px; }
+    .prose :global(p) { font-size: 14.5px; line-height: 1.95; }
+    .prose :global(table) { min-width: 100%; }
   }
 </style>

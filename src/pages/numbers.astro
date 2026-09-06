@@ -1,174 +1,295 @@
 ---
-// 오늘의 숫자 — 우리가 쌓은 계열 전부를 한 화면에 놓는다.
+// 오늘의 지표 — 우리가 쌓은 계열 전부를 한 화면에 놓는다.
 //
-// 왜 만들었나 (2026-08-30, 전략 전환 ③): 우리는 25개 계열을 매일 수집해 쌓는데
-// **화면에는 티커 6개와 타일 3개만 나왔다.** 나머지 열여섯 계열은 JSON 파일로만 존재했다.
-// 매일 모으기만 하고 아무도 못 보는 데이터는 자산이 아니다.
-//
-// 이 페이지가 노리는 것은 셋이다.
-//   · **AI 인용** — 값과 **기준일과 출처**가 한자리에 있어야 인용될 수 있다(`llms.txt` 참조)
-//   · **사람 검색** — 「오늘 기준금리」는 사람도 검색한다
-//   · **우리 자신** — 기사를 쓸 때 현재값을 한눈에 확인한다
+// 2026-09-05 전면 개편으로 승인된 「오늘의 지표」 설계를 그대로 구현한 판이다.
+// 그전 판은 다섯 열짜리 표 여섯 개였고, 값 옆에 추이가 없어 「지금 값」만 읽혔다.
+// 설계에서 바뀐 것은 셋이다 — 첫 화면의 대표 지표 6종 띠 · 행마다 24개 관측치
+// 스파크라인 · 묶음마다 오른쪽에 묶음 설명(지표 수·출처). 경위는 `docs/redesign-2026-09.md`.
 //
 // ★ 값은 손으로 적지 않는다. `data/series/*.json` 을 빌드 시점에 읽으므로
-//   매일 아침 파이프라인이 갱신하면 이 페이지도 함께 최신이 된다.
+//   아침 파이프라인이 갱신하면 이 화면도 함께 최신이 된다.
 import Base from '../layouts/Base.astro';
 import { url, TZ_KST, todayIn } from '../lib/site';
-// ★ 지표 묶음은 `lib/numbers.ts` 한 곳에 있다(2026-09-01). llms.txt 가 같은 목록을 읽는다 —
-//   예전처럼 손으로 베껴 두면 계열이 늘 때 한쪽만 낡는다(실제로 llms.txt 가 「25종」에 묶여 있었다).
-import { GROUPS, loadSeries as load, META as meta } from '../lib/numbers';
+// 지표 묶음은 `lib/numbers.ts` 한 곳에 있다 — llms.txt 가 같은 목록을 읽는다.
+import { GROUPS, loadSeries as load, META as meta, fmtValue as fmt } from '../lib/numbers';
 
-// 자릿수는 **정의서의 `frac` 이 우선**이다. 크기로만 정하면 환율 1,380.30 이 1,380 으로 잘린다
-// (1,000 이상은 정수로 반올림하게 짜 두었더니 실제로 그렇게 나왔다). 환율은 소수 둘째 자리가 의미 있다.
-const fmt = (v: number, frac?: number) => {
-  const f = frac ?? (Math.abs(v) >= 10000 ? 0 : Math.abs(v) >= 100 ? 1 : 2);
-  return v.toLocaleString('ko-KR', { minimumFractionDigits: f, maximumFractionDigits: f });
-};
 const dstr = (d: string) =>
-  d.length === 8 ? `${d.slice(0, 4)}.${d.slice(4, 6)}.${d.slice(6, 8)}` : `${d.slice(0, 4)}.${d.slice(4, 6)}`;
+  d.length === 8 ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` : `${d.slice(0, 4)}-${d.slice(4, 6)}`;
 
-const rows = GROUPS.map((g) => ({
-  ...g,
-  items: g.ids.map((id) => {
-    const s = load(id);
-    if (!s?.points?.length) return null;
-    const last = s.points[s.points.length - 1];
-    const prev = s.points[s.points.length - 2];
-    const diff = prev ? last.v - prev.v : null;
-    const m = meta.get(id);
-    return {
-      id, name: s.name, unit: s.unit,
-      value: fmt(last.v, m?.frac), asOf: dstr(last.d),
-      diff: diff == null ? null : (diff >= 0 ? '+' : '') + fmt(diff, m?.frac),
-      up: diff == null ? null : diff > 0,
-      cycle: s.cycle === 'D' ? '일별' : '월별',
-      src: m?.license ?? (m?.source === 'FRED' ? 'St. Louis Fed FRED' : m?.source === 'ECOS' ? '한국은행 ECOS' : '도토리경제 파생'),
-      n: s.points.length,
-    };
-  }).filter(Boolean),
-})).filter((g) => g.items.length);
+/** 주기는 정의서의 `cycle` 을 믿지 않고 **관측일 간격으로 실측한다.**
+ *  FRED 월간 계열은 날짜 키가 `YYYYMM01` 이라 여덟 자리로 와서 일간과 구별되지 않는다.
+ *  정의서 쪽이 비어 있던 계열이 실제로 열셋이었고, 그대로 두면 전부 「일간」으로 나갔다. */
+function cycleOf(points: { d: string }[]): string {
+  const last = points[points.length - 1].d;
+  if (last.length === 6) return '월간';
+  const toDay = (s: string) => Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8)) / 86400000;
+  const tail = points.slice(-9);
+  const gaps: number[] = [];
+  for (let i = 1; i < tail.length; i++) gaps.push(toDay(tail[i].d) - toDay(tail[i - 1].d));
+  if (!gaps.length) return '일간';
+  gaps.sort((a, b) => a - b);
+  const mid = gaps[Math.floor(gaps.length / 2)];
+  return mid >= 20 ? '월간' : '일간';
+}
 
-const total = rows.reduce((a, g) => a + g.items.length, 0);
+/** 최근 24개 관측치를 88×22 상자에 그린다. 값의 크기가 아니라 **구간 안의 상대 위치**다.
+ *  값이 하나로 고정된 구간(정책금리 동결 등)은 범위가 0 이라 바닥에 직선으로 눕는다. */
+const W = 88, H = 22;
+function spark(points: { v: number }[]) {
+  const vs = points.slice(-24).map((p) => p.v);
+  const n = vs.length;
+  if (n < 2) return { path: '', cy: H };
+  const lo = Math.min(...vs), hi = Math.max(...vs), rng = hi - lo;
+  const y = (v: number) => (rng === 0 ? H : H - ((v - lo) / rng) * H);
+  const d = vs.map((v, i) => `${i === 0 ? 'M' : 'L'}${((i * W) / (n - 1)).toFixed(1)} ${y(v).toFixed(1)}`).join(' ');
+  return { path: d, cy: +y(vs[n - 1]).toFixed(1), n };
+}
+
+const SHORT: Record<string, string> = { ECOS: 'ECOS', FRED: 'FRED', CUSTOMS: '관세청' };
+const FULL: Record<string, string> = {
+  ECOS: '한국은행 ECOS',
+  FRED: '미국 연방준비제도 FRED',
+  CUSTOMS: '관세청',
+};
+
+const groups = GROUPS.map((g, gi) => {
+  const rows = g.ids
+    .map((id) => {
+      const s = load(id);
+      if (!s?.points?.length) return null; // 자료가 없는 계열은 조용히 뺀다 — 빈 줄이 나가면 안 된다
+      const pts = s.points;
+      const last = pts[pts.length - 1];
+      const prev = pts[pts.length - 2];
+      const m = meta.get(id) ?? {};
+      const diff = prev ? last.v - prev.v : null;
+      const dir = diff == null ? 'flat' : diff > 0 ? 'up' : diff < 0 ? 'dn' : 'flat';
+      const sp = spark(pts);
+      return {
+        id,
+        name: m.name ?? s.name ?? id,
+        unit: m.unit ?? s.unit ?? '',
+        v: fmt(last.v, m.frac),
+        diff: diff == null ? '' : (diff > 0 ? '+' : '') + fmt(diff, m.frac),
+        dir,
+        asOf: dstr(String(last.d)),
+        cycle: cycleOf(pts),
+        src: SHORT[m.source] ?? '도토리경제',
+        full: FULL[m.source] ?? '도토리경제 산출',
+        path: sp.path,
+        cy: sp.cy,
+        n: sp.n ?? pts.length,
+      };
+    })
+    .filter(Boolean) as any[];
+  return {
+    ...g,
+    kick: `묶음 ${gi + 1}`,
+    rows,
+    count: rows.length,
+    src: [...new Set(rows.map((r) => r.full))].join(' · '),
+  };
+}).filter((g) => g.rows.length);
+
+const all = groups.flatMap((g) => g.rows);
+const total = all.length;
 const asOf = todayIn(TZ_KST);
+const pick = (id: string) => all.find((r) => r.id === id);
+const summary = ['usdkrw', 'baserate', 'kospi', 'wti', 'cpi_kr_yoy', 'reserves_kr']
+  .map((id) => pick(id))
+  .filter(Boolean) as any[];
 
 // schema.org/Dataset — 기계가 「이것은 데이터셋」으로 인식하게 한다.
 // 기사(Article)와 달리 데이터셋은 인용 대상으로 다뤄진다.
 const ld = {
   '@context': 'https://schema.org',
   '@type': 'Dataset',
-  name: '도토리경제 경제지표 시계열',
-  description:
-    `한국은행 ECOS·미 연준 FRED·관세청에서 매일 자동 수집하는 한국·미국 경제지표 ${total}종의 최신값. 환율·금리·물가·원자재·대외거래를 포함하며 각 값에 기준일과 출처를 함께 표기한다.`,
+  name: '도토리경제 거시·시장 지표',
+  description: `한국은행 ECOS·미국 연방준비제도 FRED에서 매일 06:50 수집하는 한국·미국 거시·시장 지표 ${total}종의 현재값. 환율·금리·물가·고용·원자재·대외 거래·증시를 포함하며 각 값에 기준일과 출처를 함께 표기한다.`,
   url: 'https://dotoriecon.com/numbers/',
   license: 'https://dotoriecon.com/about/',
   isAccessibleForFree: true,
   dateModified: asOf,
   creator: { '@type': 'Organization', name: '도토리경제', url: 'https://dotoriecon.com/' },
   temporalCoverage: '2016/..',
-  variableMeasured: rows.flatMap((g) =>
-    g.items.map((i: any) => ({ '@type': 'PropertyValue', name: i.name, unitText: i.unit, value: i.value, measurementTechnique: i.src })),
-  ),
+  variableMeasured: all.map((r) => ({
+    '@type': 'PropertyValue',
+    name: r.name,
+    unitText: r.unit,
+    value: r.v,
+    measurementTechnique: r.full,
+    observationDate: r.asOf,
+  })),
 };
 ---
 
 <Base
-  title="오늘의 숫자"
-  description={`한국은행 ECOS·미 연준 FRED·관세청에서 매일 자동 수집하는 경제지표 ${total}종의 최신값. 환율·금리·물가·원자재·대외거래를 기준일과 출처와 함께 한 화면에 놓았습니다.`}
-  compact
-  activeNav="warehouse"
+  title="오늘의 지표"
+  description={`분석 보고서가 참조하는 거시·시장 지표 ${total}종입니다. 6개 묶음으로 나누어 현재값과 직전 관측치 대비 변동, 기준일과 출처를 함께 싣습니다.`}
+  activeNav="numbers"
 >
   <script type="application/ld+json" set:html={JSON.stringify(ld)} slot="head" />
 
-  <section class="wrap nb">
-    <header class="nb-head">
-      <div class="kicker-en" style="color: var(--accent);">TODAY'S NUMBERS</div>
-      <h1 class="serif nb-title">오늘의 숫자</h1>
-      <p class="nb-sub">
-        한국은행 ECOS·미 연준 FRED·관세청에서 <strong>매일 아침 자동 수집</strong>하는 경제지표
-        {total}종입니다. 값마다 <strong>기준일과 출처</strong>를 함께 적었습니다.
-        인용하실 때는 기준일을 함께 밝혀 주십시오. 시점이 빠진 수치는 몇 달 뒤 틀린 문장이 됩니다.
+  <section class="th">
+    <div class="wrap">
+      <div class="kick">오늘의 지표</div>
+      <h1>거시·시장 지표 {total}종</h1>
+      <p class="lead">
+        분석 보고서가 참조하는 배경 지표입니다. {groups.length}개 묶음으로 나누어 현재값과 직전 관측치 대비
+        변동, 기준일과 출처를 함께 싣습니다. 추이는 최근 24개 관측치입니다.
       </p>
-    </header>
+      <div class="strip">
+        {summary.map((s) => (
+          <div class="strip-c">
+            <div class="strip-k">{s.name}</div>
+            <div class="strip-v mono">{s.v}<span class="strip-u">{s.unit}</span></div>
+            <div class:list={['strip-d', 'mono', s.dir]}>{s.diff}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
 
-    {rows.map((g) => (
-      <section class="nb-g">
-        <div class="nb-gh">
-          <h2 class="serif nb-gt">{g.name}</h2>
-          {g.note && <span class="nb-gn">{g.note}</span>}
+  <div class="tb">
+    {groups.map((g) => (
+      <section class="sec">
+        <div>
+          <div class="sec-k">{g.kick}</div>
+          <h2 class="sec-h">{g.name}</h2>
+          <div class="tw">
+            <div class="ind">
+              <div class="hcell">지표</div>
+              <div class="hcell a">현재값</div>
+              <div class="hcell a">직전 대비</div>
+              <div class="hcell a">추이</div>
+              <div class="hcell a">기준일</div>
+              <div class="hcell a">주기</div>
+              <div class="hcell a">출처</div>
+              {g.rows.map((r, j) => {
+                const edge = j === g.rows.length - 1 ? 'last' : '';
+                return (
+                  <>
+                    <div class={edge}><span class="nm">{r.name}</span><span class="un">{r.unit}</span></div>
+                    <div class:list={['a', edge]}><span class="v">{r.v}</span></div>
+                    <div class:list={['a', edge]}><span class:list={['dl', r.dir]}>{r.diff}</span></div>
+                    <div class:list={['a', edge]}>
+                      <svg width="88" height="22" viewBox="0 0 88 22" role="img"
+                           aria-label={`${r.name} 최근 ${r.n}개 관측치 추이`}>
+                        <path d={r.path} fill="none" stroke="#9aa0a6" stroke-width="1.2" stroke-linejoin="round" />
+                        <circle cx="88" cy={r.cy} r="2.4"
+                                fill={r.dir === 'up' ? '#c0392b' : r.dir === 'dn' ? '#2563a8' : '#a8acb1'} />
+                      </svg>
+                    </div>
+                    <div class:list={['a', edge]}><span class="meta">{r.asOf}</span></div>
+                    <div class:list={['a', edge]}><span class="meta">{r.cycle}</span></div>
+                    <div class:list={['a', edge]}><span class="meta">{r.src}</span></div>
+                  </>
+                );
+              })}
+            </div>
+          </div>
         </div>
-        <table class="nb-t">
-          <thead>
-            <tr><th>지표</th><th class="r">현재값</th><th class="r">직전 대비</th><th class="r">기준일</th><th>출처</th></tr>
-          </thead>
-          <tbody>
-            {g.items.map((i: any) => (
-              <tr>
-                <th scope="row">{i.name}</th>
-                <td class="r mono nb-v">{i.value}<span class="nb-u"> {i.unit}</span></td>
-                <td class:list={['r', 'mono', 'nb-d', i.up === true && 'is-up', i.up === false && 'is-down']}>{i.diff ?? ''}</td>
-                <td class="r mono nb-as">{i.asOf}<span class="nb-u"> {i.cycle}</span></td>
-                <td class="nb-s">{i.src}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <aside class="side">
+          <div class="side-h">묶음 설명</div>
+          {g.note && <p>{g.note}</p>}
+          <dl>
+            <dt>지표 수</dt><dd>{g.count}종</dd>
+            <dt>출처</dt><dd>{g.src}</dd>
+          </dl>
+        </aside>
       </section>
     ))}
 
-    <section class="nb-note">
-      <h2 class="serif nb-gt">이 표를 읽을 때</h2>
-      <p>
-        <strong>직전 대비</strong>는 그 계열의 바로 앞 관측값과의 차이입니다. 일별 계열은 전 영업일,
-        월별 계열은 전월과 비교한 값이므로 두 열을 같은 자로 읽으면 안 됩니다.
-        색은 한국 금융 관례를 따라 <span class="is-up">상승이 빨강</span>,
-        <span class="is-down">하락이 파랑</span>입니다.
+    <section class="foot">
+      <h2 class="foot-t">기준일이 지표마다 다른 이유</h2>
+      <p class="foot-p">
+        환율·금리·증시는 일간이고 물가·고용·대외 거래는 월간입니다. 월간 지표는 통계 작성 기관의 공표
+        일정에 따라 한 달에서 석 달의 시차가 있습니다. 따라서 <b>같은 화면의 지표라도 기준일이 서로
+        다르며, 각 행에 그 기준일을 표기합니다.</b> 두 지표를 함께 쓰는 계산에서는 각각의 기준일을
+        확인하시기 바랍니다.
       </p>
-      <p>
-        <strong>한국 소비자물가는 지수, 미국은 상승률로 옵니다.</strong> 원 제공 형태가 다르기 때문이며,
-        한국의 전년동월대비 상승률은 저희가 지수에서 계산한 파생 계열입니다.
-        나란히 놓고 비교하실 때 주의하십시오.
+      <p class="foot-p">
+        <b>직전 대비</b>는 그 계열의 바로 앞 관측값과의 차이입니다. 일간 계열은 전 영업일, 월간 계열은
+        전월과 비교한 값이므로 두 열을 같은 자로 읽어서는 안 됩니다. 색상은 한국 금융 관례에 따라
+        <span class="up">상승이 적색</span>, <span class="dn">하락이 청색</span>입니다.
+        한국 소비자물가는 지수로, 미국은 상승률로 제공되며 한국의 전년 동월 대비 상승률은 지수에서
+        산출한 파생 계열입니다.
       </p>
-      <p>
-        각 수치의 배경과 해석은 <a href={url('/forest/')}>도토리 숲</a>의 기사에,
-        지표 대시보드와 기업·무역 자료는 <a href={url('/warehouse/')}>도토리 창고</a>에 있습니다.
-        수입 관세와 부가세를 직접 계산해 보시려면 <a href={url('/import-cost/')}>수입원가 계산기</a>를
-        이용하십시오.
+      <p class="foot-p">
+        지표를 계산에 적용하시려면 <a href={url('/tools/')}>지원 도구</a>의 수입원가 계산기와
+        예금 실질수익 계산기를 이용하십시오. 두 계산기의 기본값에는 이 화면의 최신 값이 적용됩니다.
       </p>
     </section>
-  </section>
+  </div>
 </Base>
 
 <style>
-  .nb { max-width: 900px; margin: 0 auto; padding-bottom: 44px; }
-  .nb-head { border-bottom: 2px solid var(--ink); padding-bottom: 12px; }
-  .nb-title { font-size: 27px; margin: 2px 0 0; letter-spacing: -0.01em; }
-  .nb-sub { margin: 8px 0 0; font-size: 14px; color: var(--sub); line-height: 1.7; word-break: keep-all; }
-  .nb-g { margin-top: 28px; }
-  .nb-gh { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--hair); padding-bottom: 6px; }
-  .nb-gt { font-size: 17px; margin: 0; letter-spacing: -0.01em; }
-  .nb-gn { font-size: 12px; color: var(--muted); word-break: keep-all; }
-  .nb-t { width: 100%; border-collapse: collapse; margin-top: 4px; }
-  .nb-t th, .nb-t td { padding: 8px 6px; font-size: 13px; border-bottom: 1px solid var(--hair2); text-align: left; }
-  .nb-t thead th { font-size: 11px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--hair); }
-  .nb-t tbody th { font-weight: 500; color: var(--ink); }
-  .nb-t .r { text-align: right; }
-  .nb-v { font-weight: 700; font-size: 14px; }
-  .nb-u { color: var(--muted); font-size: 11px; font-weight: 400; }
-  .nb-d.is-up { color: var(--up); }
-  .nb-d.is-down { color: var(--down); }
-  .nb-as { color: var(--sub); font-size: 12px; }
-  .nb-s { color: var(--muted); font-size: 11.5px; }
-  .nb-note { margin-top: 34px; border-top: 1px solid var(--hair); padding-top: 16px; }
-  .nb-note p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.8; color: var(--sub); word-break: keep-all; }
-  .nb-note a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--hair); }
-  .nb-note a:hover { border-color: var(--accent); }
-  .is-up { color: var(--up); }
-  .is-down { color: var(--down); }
-  @media (max-width: 640px) {
-    .nb-title { font-size: 23px; }
-    .nb-t th, .nb-t td { padding: 7px 3px; font-size: 12px; }
-    .nb-s { display: none; }
-    .nb-t thead th:last-child { display: none; }
-    .nb-t tbody td:last-child { display: none; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 64px; }
+  .th { background: #fff; border-bottom: 1px solid #e4e4de; padding: 54px 0 40px; }
+  .kick { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; margin-bottom: 18px; }
+  h1 { font-size: 44px; line-height: 1.34; font-weight: 900; color: #15171a; margin: 0 0 26px; letter-spacing: -1.8px; }
+  .lead { font-size: 17px; line-height: 1.95; color: #2e3238; max-width: 900px; margin: 0 0 32px; }
+
+  .strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px;
+           background: #e4e4de; border-top: 1.6px solid #15171a; border-bottom: 1px solid #e4e4de; }
+  .strip-c { background: #fff; padding: 15px 18px 17px; }
+  .strip-k { font-size: 11.5px; color: #71767d; margin-bottom: 8px; }
+  .strip-v { font-size: 20px; font-weight: 500; color: #15171a; letter-spacing: -0.5px; }
+  .strip-u { font-size: 11.5px; color: #8e9299; margin-left: 4px; letter-spacing: 0; }
+  .strip-d { font-size: 12px; margin-top: 5px; }
+
+  .tb { max-width: 1440px; margin: 0 auto; padding: 12px 64px 54px; }
+  .sec { display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: 52px;
+         padding: 32px 0 34px; border-top: 1px solid #e4e4de; align-items: start; }
+  .sec-k { font-size: 11px; font-weight: 600; letter-spacing: 2.2px; color: #9a6b22; margin-bottom: 10px; }
+  .sec-h { font-size: 24px; font-weight: 900; color: #15171a; letter-spacing: -0.85px; line-height: 1.45; margin: 0 0 16px; }
+
+  /* 지표 격자. 열이 일곱이라 표 태그 대신 그리드로 짠다 — 좁은 화면에서 통이 가로로 스크롤한다. */
+  .ind { display: grid; grid-template-columns: minmax(0, 1fr) 146px 108px 112px 112px 68px 72px; align-items: center; }
+  .ind > div { padding: 13px 8px; border-bottom: 1px solid #eaeae4; }
+  .ind > div:nth-child(7n + 1) { padding-left: 0; }
+  .ind > div:nth-child(7n) { padding-right: 0; }
+  .ind > .hcell { padding-top: 0; padding-bottom: 9px; border-bottom: 1.6px solid #15171a;
+                  font-size: 11.5px; font-weight: 600; color: #8e9299; white-space: nowrap; }
+  .ind > .last { border-bottom: none; }
+  .ind .a { text-align: right; }
+  .ind svg { display: block; margin-left: auto; }
+  .nm { font-size: 14px; color: #15171a; font-weight: 500; }
+  .un { font-size: 11.5px; color: #8e9299; margin-left: 5px; font-weight: 400; }
+  .v { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums;
+       font-size: 19px; font-weight: 500; color: #15171a; letter-spacing: -0.5px; white-space: nowrap; }
+  .dl { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums;
+        font-size: 13px; white-space: nowrap; }
+  .meta { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums;
+          font-size: 12px; color: #8e9299; white-space: nowrap; }
+  .up { color: #c0392b; } .dn { color: #2563a8; } .flat { color: #8e9299; }
+
+  .side { border-top: 1.6px solid #d2d2ca; padding-top: 13px; }
+  .side-h { font-size: 11px; font-weight: 600; letter-spacing: 1.6px; color: #9a6b22; margin-bottom: 11px; }
+  .side p { font-size: 13px; line-height: 1.85; color: #4a4f56; margin: 0 0 12px; }
+  .side dl { margin: 0; }
+  .side dt { font-size: 11.5px; color: #8e9299; margin-top: 10px; }
+  .side dt:first-of-type { margin-top: 0; }
+  .side dd { font-size: 12.5px; color: #4a4f56; line-height: 1.7; margin: 3px 0 0; }
+
+  .foot { border-top: 1.6px solid #15171a; padding-top: 24px; margin-top: 4px; }
+  .foot-t { font-size: 16px; font-weight: 800; color: #15171a; margin: 0 0 10px; }
+  .foot-p { font-size: 14px; line-height: 1.95; color: #4a4f56; max-width: 940px; margin: 0 0 14px; }
+  .foot-p b { color: #15171a; font-weight: 600; }
+  .foot-p a { color: #16355e; border-bottom: 1px solid #d2d2ca; text-decoration: none; }
+  .foot-p a:hover { border-bottom-color: #16355e; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
+
+  /* 모바일 390px — 좌우 여백 20px, 지표 격자는 스스로 가로 스크롤하는 통 안에 둔다.
+     ★ 통에 넣지 않으면 격자가 문서를 밀어내 페이지 전체에 가로 스크롤이 생긴다. */
+  @media (max-width: 720px) {
+    .wrap, .tb { padding-left: 20px; padding-right: 20px; }
+    h1 { font-size: 27px; letter-spacing: -1.1px; }
+    .lead { font-size: 15px; line-height: 1.9; }
+    .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sec { grid-template-columns: minmax(0, 1fr); gap: 26px; padding-top: 26px; }
+    .sec-h { font-size: 20px; letter-spacing: -0.7px; }
+    .tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .ind { grid-template-columns: 150px 146px 108px 112px 112px 68px 72px; min-width: 768px; }
+    .foot-p { font-size: 13.5px; }
   }
 </style>

@@ -55,7 +55,7 @@ jobs:
 
       # 그림 크기 실측. 부모의 스코프 CSS 가 <Pic> 안의 img 에 닿지 않아 규칙이 조용히 죽으면
       # 30px 그림이 화면 폭까지 커진다. 하루에 다섯 번 터졌다(2026-08-27). 눈으로는 못 잡는다.
-      - name: 그림 크기 실측 (조판 29종 × 2폭)
+      - name: 그림 크기 실측 (조판 17종 × 2폭)
         run: |
           npx playwright install --with-deps chromium
           python3 -m http.server 8140 --directory . >/dev/null 2>&1 &

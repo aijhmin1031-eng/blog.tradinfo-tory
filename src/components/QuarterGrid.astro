@@ -1,0 +1,85 @@
+---
+// 분기 격자 — 이 사이트의 시각 서명이다. 행이 사업연도, 열이 분기.
+// 값은 낱장 프런트매터의 `quarters` 한 곳에서 온다(화면과 본문이 어긋나지 않게).
+// ★ 색 농도의 바닥을 0.18 아래로 두지 말 것 — 금액이 작은 분기가 흰색에 가까워 안 보인다.
+interface Props { from: string; values: (number | null)[]; compact?: boolean }
+const { from, values: raw, compact = false } = Astro.props;
+// 마지막 행을 네 칸으로 채운다. 아직 제출 전인 분기는 미제출 칸으로 남겨야
+// 「없는 것」과 「0」이 구별된다.
+const values = [...raw];
+while (values.length % 4 !== 0) values.push(null);
+
+const UP = '192, 57, 43', DOWN = '37, 99, 168';
+const startYear = parseInt(from.slice(0, 4), 10);
+const max = Math.max(...values.filter((v): v is number => v !== null).map(Math.abs), 1);
+
+const rows: { year: number; cells: { v: number | null; bg: string; ink: string; t: string }[] }[] = [];
+for (let i = 0; i < values.length; i += 4) {
+  rows.push({
+    year: startYear + i / 4,
+    cells: values.slice(i, i + 4).map((v) => {
+      if (v === null) return { v, bg: 'transparent', ink: '#B4B8BD', t: '' };
+      const a = 0.18 + 0.82 * Math.min(1, Math.abs(v) / max);
+      return {
+        v,
+        bg: `rgba(${v >= 0 ? UP : DOWN}, ${a.toFixed(2)})`,
+        ink: a > 0.58 ? '#FFFFFF' : v >= 0 ? '#8E2A20' : '#1B4A80',
+        t: (v > 0 ? '+' : '') + v,
+      };
+    }),
+  });
+}
+const last = raw.length - 1;
+---
+
+<div class="qg-wrap">
+  <div class={compact ? 'qg qg-c' : 'qg'}>
+    <div></div>
+    {['1분기', '2분기', '3분기', '4분기'].map((q) => <div class="qg-h">{q}</div>)}
+    {rows.map((r, ri) => (
+      <>
+        <div class="qg-y mono">{r.year}</div>
+        {r.cells.map((c, ci) => (
+          <div
+            class:list={['qg-c-cell', { 'qg-empty': c.v === null, 'qg-last': ri * 4 + ci === last }]}
+            style={c.v === null ? '' : `background: ${c.bg}`}
+          >
+            <span class="mono" style={`color: ${c.ink}`}>{c.t}</span>
+          </div>
+        ))}
+      </>
+    ))}
+  </div>
+</div>
+<div class="qg-lg">
+  <span><i style="background: #C0392B"></i>영업이익</span>
+  <span><i style="background: #2563A8"></i>영업손실</span>
+  <span><i class="qg-lg-e"></i>미제출</span>
+  <span class="qg-unit">단위 억원 · 연결</span>
+</div>
+
+<style>
+  .qg-wrap { overflow-x: auto; }
+  .qg { display: grid; grid-template-columns: 52px repeat(4, minmax(0, 1fr)); gap: 6px; align-items: center; }
+  .qg-h { font-size: 11.5px; font-weight: 600; color: #8e9299; text-align: center; padding-bottom: 5px; }
+  .qg-y { font-size: 12px; color: #4a4f56; text-align: right; padding-right: 4px; }
+  .qg-c-cell { height: 66px; border: 1px solid rgba(0, 0, 0, 0.04); display: flex;
+               align-items: center; justify-content: center; }
+  .qg-c-cell span { font-size: 14px; font-weight: 500; }
+  .qg-empty { border: 1px dashed #dcdfe3; background: #fff; }
+  .qg-last { box-shadow: 0 0 0 1.5px #15171a; }
+  .qg-c .qg-c-cell { height: 44px; }
+  .qg-c .qg-c-cell span { font-size: 12.5px; }
+  .qg-lg { display: flex; align-items: center; gap: 18px; font-size: 11.5px; color: #8e9299;
+           margin-top: 12px; flex-wrap: wrap; }
+  .qg-lg span { display: inline-flex; align-items: center; gap: 6px; }
+  .qg-lg i { width: 11px; height: 11px; display: inline-block; }
+  .qg-lg-e { border: 1px dashed #dcdfe3; }
+  .qg-unit { margin-left: auto; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
+  @media (max-width: 720px) {
+    .qg { min-width: 520px; }
+    .qg-c-cell { height: 52px; }
+    .qg-unit { margin-left: 0; }
+  }
+</style>

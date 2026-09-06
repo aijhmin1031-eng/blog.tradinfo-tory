@@ -26,7 +26,7 @@ const cats = import.meta.glob<{ default: ImageMetadata }>('../assets/cat/*.{jpg,
 // `promo` 는 우리가 우리를 광고하는 자체 배너다(2026-09-03).
 // 그림함 **원본**은 내려받기 대상이라 `public/` 에 그대로 둔다. 여기 있는 것은 화면용 썸네일뿐이다.
 const others = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/{story,poses,tori,packthumb,fig,promo}/*.{jpg,jpeg,png}',
+  '../assets/{story,poses,tori,packthumb,fig,promo,shot}/*.{jpg,jpeg,png}',
   { eager: true }
 );
 

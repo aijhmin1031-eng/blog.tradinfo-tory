@@ -67,7 +67,7 @@ async function visit(label, ua, opts = {}) {
     route.fulfill({ status: 200, body: '' });
   });
   const page = await ctx.newPage();
-  for (const path of opts.paths || ['/', '/forest/']) {
+  for (const path of opts.paths || ['/', '/numbers/']) {
     await page.goto(BASE + path, { waitUntil: 'load' });
     if (opts.click) await page.mouse.click(5, 5);
     await page.waitForTimeout(opts.dwell ?? 900);

@@ -46,13 +46,19 @@ const corps = defineCollection({
     /** 이 낱장의 숫자가 어느 시점 것인가. 한눈 카드와 함께 화면에 나간다. */
     dataAsOf: z.string(),
     hero: z.string().optional(),
-    toriNote: z.string().optional(),
+
     /**
      * 한눈 카드 — **사실만 놓는다.** 해석을 섞지 않는 것이 이 블록의 조건이다.
      * 두괄식 규약과 기계 인용을 여기서 함께 만족시킨다(`docs/corp-analysis.md` 8절).
      * `note` 에는 기준 시점·산출 조건을 적는다. 비워 두지 말 것.
      */
-    glance: z
+        // 분기 영업이익 22개(억원). 계열 파일에는 1~3분기만 오므로 4분기는
+    // 사업보고서 연간 금액에서 1~3분기를 차감한 계산값이다. 산출 근거는 본문 2장에 적는다.
+    // 격자(QuarterGrid)가 이 한 곳을 읽는다 — 화면과 본문이 어긋나지 않게.
+    quarters: z
+      .object({ from: z.string(), values: z.array(z.number().nullable()) })
+      .optional(),
+glance: z
       .array(z.object({ k: z.string(), v: z.string(), note: z.string() }))
       .min(4),
     /**

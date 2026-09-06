@@ -1,123 +1,138 @@
 ---
-/**
- * 기업 분석 착지 — `/corp/`. 2026-09-02 신설(소유주 결정, 「분석」 드롭다운이 흡수한다).
- *
- * 목록이 카드 하나에 **한눈 카드의 앞 넷**을 그대로 얹는 이유는, 이 방에 들어온 사람이
- * 찾는 것이 「어떤 회사가 있나」가 아니라 **「그 회사의 지금 숫자가 무엇인가」**이기 때문이다.
- * 제목만 늘어놓으면 한 번 더 눌러야 알 수 있고, 그 한 번에서 대부분이 떠난다.
- */
 import Base from '../../layouts/Base.astro';
-import Pic from '../../components/Pic.astro';
+import MiniGrid from '../../components/MiniGrid.astro';
 import { getCollection } from 'astro:content';
-import { url, canonicalUrl } from '../../lib/site';
+import { url } from '../../lib/site';
+import dartCorp from '../../data/dart-corp.json';
 
+// 승인된 「기업 분석 목록」 설계. 회사마다 분기 격자를 축소해 붙여
+// 목록을 훑으면서 이력이 바로 비교되게 한다.
 const corps = (await getCollection('corps', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.updated.valueOf() - a.data.updated.valueOf()
+  (a, b) => +new Date(b.data.updated) - +new Date(a.data.updated),
 );
-
-const fmtDate = (x: Date) => `${x.getFullYear()}년 ${x.getMonth() + 1}월 ${x.getDate()}일`;
-
-const listLd = {
-  '@context': 'https://schema.org',
-  '@type': 'ItemList',
-  name: '도토리경제 기업 분석',
-  itemListElement: corps.map((c, i) => ({
-    '@type': 'ListItem',
-    position: i + 1,
-    name: c.data.name,
-    url: canonicalUrl(`/corp/${c.id}/`),
-  })),
-};
+// 고유번호만 등록된 곳과 계열이 쌓인 곳은 다르다. 「수집 대상 등록」으로 적는다.
+const queue = dartCorp.companies;
 ---
 
-<Base
-  title="기업 분석"
-  description="공시된 숫자를 해부합니다. 시장이 붙인 이름표와 회사가 제출한 매출 구성표를 나란히 놓고, 어긋나는 자리를 찾습니다. 종목 추천이 아닙니다."
-  compact
-  activeNav="corp"
->
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(listLd)} />
+<Base title="기업 분석 보고서" description="전자공시(DART) 정기보고서를 대상으로 분기 재무를 5~6개 사업연도에 걸쳐 구성합니다. 보고서는 정기보고서가 제출될 때마다 갱신합니다." activeNav="corp">
+  <div class="ch">
+    <div class="wrap ch-in">
+      <div>
+        <div class="kick">기업 분석</div>
+        <h1 class="hd">기업 분석 보고서</h1>
+        <p class="lead">
+          전자공시(DART) 정기보고서를 대상으로 분기 재무를 5~6개 사업연도에 걸쳐 구성합니다.
+          보고서는 정기보고서가 제출될 때마다 갱신하며, 날짜는 최종 갱신일을 표기합니다.
+        </p>
+      </div>
+      <div class="ch-n">
+        <div class="mono ch-n-v">{corps.length}</div>
+        <div class="ch-n-k">발행 보고서</div>
+        <div class="mono ch-n-q">수집 대상 등록 {queue.length}개사</div>
+      </div>
+    </div>
+  </div>
 
-  <section class="wrap">
-    <header class="cp-head">
-      <div class="kicker-en" style="color: var(--accent);">COMPANY</div>
-      <h1 class="serif cp-title">기업 분석</h1>
-      <p class="cp-sub">
-        회사가 금융감독원에 <strong>직접 제출한 보고서 원문</strong>과 전체계정 재무제표를 받아 해부합니다.
-        시장이 붙인 이름표와 회사가 적은 매출 구성표를 나란히 놓고, 어긋나는 자리를 찾는 것이 이 방이 하는 일입니다.
-      </p>
-      <p class="cp-line">
-        <strong>종목 추천·목표주가·매수매도 의견은 쓰지 않습니다.</strong>
-        지표는 계산해 보이되 「저평가」·「고평가」 판정은 붙이지 않습니다. 판단은 읽는 분의 몫입니다.
-      </p>
-    </header>
+  <div class="wrap list">
+    {corps.map((c) => (
+      <article class="row">
+        <div class="r-id">
+          <div class="mono r-code">{c.data.stock} · {c.data.market}</div>
+          <a class="hd r-name" href={url(`/corp/${c.id}/`)}>{c.data.name}</a>
+          <div class="r-label">{c.data.label}</div>
+          {c.data.glance?.[0] && (
+            <div class="mono r-cap">{c.data.glance[0].k} {c.data.glance[0].v}</div>
+          )}
+        </div>
+        <div class="r-body">
+          <a class="hd r-title" href={url(`/corp/${c.id}/`)}>{c.data.title}</a>
+          <p class="r-desc">{c.data.description}</p>
+          <div class="mono r-meta">
+            최종 갱신 {new Date(c.data.updated).toISOString().slice(0, 10)}
+            {c.data.dataAsOf && ` · 데이터 기준 ${c.data.dataAsOf}`}
+          </div>
+        </div>
+        <div class="r-grid">
+          {c.data.quarters && <MiniGrid values={c.data.quarters.values} from={c.data.quarters.from} />}
+        </div>
+      </article>
+    ))}
 
-    {/* 착지에 그림을 한 장 둔다(2026-09-03). 이 방이 하는 일이 그림 하나로 설명된다 —
-        닫힌 보고서를 꺼내 펼치고, 그 안에서 한 줄을 짚는 일이다. */}
-    <figure class="cp-art">
-      <Pic path="corp-banner.jpg" alt="네이비 클로스로 제본된 두꺼운 보고서 네 권이 나란히 닫힌 채 놓여 있고, 그 옆에 같은 보고서 한 권이 펼쳐져 있다. 펼친 두 면에는 재무제표의 표 괘선과 숫자 자리가 줄줄이 이어지며, 오른쪽 면의 한 줄에만 형광펜 띠가 그어져 있다." width={1000} height={563} />
-      <figcaption>회사가 제출한 보고서를 펼쳐, 짚어야 할 한 줄을 찾습니다.</figcaption>
-    </figure>
+    <div class="legend">
+      <span><i style="background: #C0392B"></i>영업이익</span>
+      <span><i style="background: #2563A8"></i>영업손실</span>
+      <span class="lg-n">
+        테두리 표시는 최근 분기입니다. 색상 농도는 각 기업의 최대 금액을 기준으로 정규화하였으므로,
+        기업 간 절대 금액 비교에는 적합하지 않습니다.
+      </span>
+    </div>
 
-    {corps.length === 0 ? (
-      <p class="cp-empty">아직 공개된 낱장이 없습니다.</p>
-    ) : (
-      <ul class="cp-list">
-        {corps.map((c) => (
-          <li class="card cp-card">
-            <a class="cp-link" href={url(`/corp/${c.id}/`)}>
-              <div class="cp-id mono">
-                <span>{c.data.market}</span><span class="dot"></span><span>{c.data.stock}</span>
-                {c.data.label && (<><span class="dot"></span><span>「{c.data.label}」</span></>)}
-              </div>
-              <h2 class="cp-name serif">{c.data.name}</h2>
-              <p class="cp-desc">{c.data.description}</p>
-            </a>
-            <dl class="cp-glance">
-              {c.data.glance.slice(0, 4).map((g) => (
-                <div>
-                  <dt>{g.k}</dt>
-                  <dd class="mono">{g.v}</dd>
-                </div>
-              ))}
-            </dl>
-            <div class="cp-foot mono">갱신 {fmtDate(c.data.updated)} · 데이터 기준 {c.data.dataAsOf}</div>
-          </li>
+    <section class="queue">
+      <div class="q-hd">
+        <h2 class="hd q-t">재무 데이터 수집 대상으로 등록한 기업</h2>
+        <span class="q-s">전자공시 고유번호를 확인하여 수집 대상으로 등록하였으며, 재무 계열 축적과 분석 보고서 작성은 순차로 진행합니다.</span>
+      </div>
+      <div class="q-grid">
+        {queue.map((q) => (
+          <div class="q-c">
+            <div class="mono q-code">{q.stock}</div>
+            <div class="hd q-name">{q.name}</div>
+            <div class="q-sec">{q.sector}</div>
+          </div>
         ))}
-      </ul>
-    )}
-  </section>
+      </div>
+    </section>
+  </div>
 </Base>
 
 <style>
-  .wrap { padding-bottom: 72px; }
-  .cp-head { max-width: 760px; margin: 34px auto 0; }
-  .cp-title { font-size: clamp(1.8rem, 5vw, 2.4rem); margin: 6px 0 0; }
-  .cp-sub { margin: 14px 0 0; font-size: 1rem; line-height: 1.76; color: var(--sub); word-break: keep-all; }
-  .cp-sub strong { color: var(--body-ink); font-weight: 600; }
-  .cp-line { margin: 12px 0 0; font-size: 0.86rem; line-height: 1.7; color: var(--sub); word-break: keep-all; border-left: 2px solid var(--hair); padding-left: 12px; }
-  .cp-line strong { color: var(--body-ink); font-weight: 600; }
-  .cp-empty { max-width: 760px; margin: 30px auto 0; color: var(--sub); }
-
-  .cp-art { max-width: 760px; margin: 26px auto 0; }
-  .cp-art :global(img) { width: 100%; height: auto; display: block; border: 1px solid var(--hair); border-radius: 4px; }
-  .cp-art figcaption { margin-top: 8px; font-size: 0.8rem; color: var(--sub); text-align: right; word-break: keep-all; }
-
-  .cp-list { max-width: 760px; margin: 30px auto 0; padding: 0; list-style: none; display: grid; gap: 16px; }
-  .cp-card { padding: 20px 22px 16px; }
-  .cp-link { display: block; text-decoration: none; color: inherit; }
-  .cp-id { font-size: 0.76rem; color: var(--sub); display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
-  .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--hair); display: inline-block; }
-  .cp-name { margin: 6px 0 0; font-size: 1.44rem; letter-spacing: -0.01em; }
-  .cp-link:hover .cp-name { color: var(--brand-hover); }
-  .cp-desc { margin: 8px 0 0; font-size: 0.9rem; line-height: 1.7; color: var(--sub); word-break: keep-all; }
-
-  .cp-glance { margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--hair2); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-  .cp-glance dt { font-size: 0.72rem; color: var(--sub); word-break: keep-all; }
-  .cp-glance dd { margin: 3px 0 0; font-size: 0.98rem; font-weight: 700; color: var(--body-ink); letter-spacing: -0.01em; }
-  .cp-foot { margin: 14px 0 0; font-size: 0.72rem; color: var(--sub); }
-
-  @media (max-width: 560px) {
-    .cp-glance { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 64px; }
+  .ch { background: #fff; border-bottom: 1px solid #e4e4de; padding: 48px 0 40px; }
+  .ch-in { display: flex; align-items: flex-end; justify-content: space-between; gap: 60px; }
+  .ch-in > div:first-child { max-width: 760px; }
+  .kick { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; margin-bottom: 14px; }
+  h1 { font-size: 36px; font-weight: 900; color: #15171a; margin: 0 0 16px; letter-spacing: -1.3px; }
+  .lead { font-size: 14.5px; line-height: 1.95; color: #4a4f56; margin: 0; }
+  .ch-n { text-align: right; flex: 0 0 auto; }
+  .ch-n-v { font-size: 34px; font-weight: 500; color: #15171a; letter-spacing: -1px; }
+  .ch-n-k { font-size: 12px; color: #71767d; margin-top: 2px; }
+  .ch-n-q { font-size: 12.5px; color: #9a6b22; margin-top: 10px; }
+  .list { padding: 8px 64px 54px; }
+  .row { display: grid; grid-template-columns: 190px minmax(0, 1fr) 300px; gap: 40px;
+         padding: 30px 0; border-bottom: 1px solid #eaeae4; align-items: start; }
+  .r-code { font-size: 11px; color: #9a6b22; }
+  .r-name { display: block; font-size: 19px; font-weight: 900; color: #15171a; margin-top: 6px;
+            letter-spacing: -0.5px; text-decoration: none; }
+  .r-name:hover { color: #16355e; }
+  .r-label { font-size: 11.5px; color: #71767d; margin-top: 5px; }
+  .r-cap { font-size: 12px; color: #4a4f56; margin-top: 12px; }
+  .r-title { display: block; font-size: 21px; font-weight: 800; color: #15171a; line-height: 1.45;
+             letter-spacing: -0.6px; text-decoration: none; }
+  .r-title:hover { color: #16355e; }
+  .r-desc { font-size: 13.5px; line-height: 1.9; color: #4a4f56; margin: 12px 0 0; }
+  .r-meta { font-size: 11.5px; color: #8e9299; margin-top: 14px; }
+  .legend { display: flex; align-items: baseline; gap: 16px; padding: 18px 0 0; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #6b7076; }
+  .legend i { width: 11px; height: 11px; display: inline-block; }
+  .lg-n { color: #8e9299; display: block; line-height: 1.7; }
+  .queue { margin-top: 54px; border-top: 1.6px solid #15171a; padding-top: 26px; }
+  .q-hd { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .q-t { font-size: 17px; font-weight: 800; color: #15171a; margin: 0; }
+  .q-s { font-size: 12.5px; color: #8e9299; }
+  .q-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; background: #e4e4de;
+            border: 1px solid #e4e4de; }
+  .q-c { background: #fff; padding: 16px 18px 18px; }
+  .q-code { font-size: 11px; color: #a8acb1; }
+  .q-name { font-size: 14.5px; font-weight: 800; color: #15171a; margin-top: 6px; }
+  .q-sec { font-size: 11.5px; color: #8e9299; margin-top: 5px; }
+  .mono { font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace; font-variant-numeric: tabular-nums; }
+  @media (max-width: 720px) {
+    .wrap, .list { padding-left: 20px; padding-right: 20px; }
+    .ch-in { display: block; }
+    .ch-n { text-align: left; margin-top: 22px; }
+    h1 { font-size: 26px; letter-spacing: -0.9px; }
+    .row { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+    .r-title { font-size: 18px; }
+    .q-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>

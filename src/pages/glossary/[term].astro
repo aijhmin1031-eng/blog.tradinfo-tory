@@ -1,11 +1,11 @@
 ---
 // 용어 낱장. 41개 용어가 /glossary/ 한 장에 몰려 있어 "기준금리 뜻" 같은 검색어를
-// 통째로 놓치고 있었다. 그림함 낱장과 같은 구조로 용어마다 주소를 준다.
+// 통째로 놓치고 있었다. 용어마다 주소를 주어 개별 검색어에 대응한다.
 import Base from '../../layouts/Base.astro';
 import { getCollection } from 'astro:content';
 import { GLOSSARY, GLOSSARY_GROUPS } from '../../lib/glossary';
 import { PICTOGRAMS } from '../../lib/pictograms';
-import { CATEGORIES, url, fmtDate, isPublished } from '../../lib/site';
+import { url, fmtDate } from '../../lib/site';
 
 export async function getStaticPaths() {
   const { GLOSSARY } = await import('../../lib/glossary');
@@ -23,8 +23,8 @@ const siblings = Object.entries(GLOSSARY)
   .slice(0, 8);
 
 // 이 용어를 실제로 쓴 기사 — 본문의 <Term t="..." /> 를 훑는다.
-const posts = (await getCollection('posts', ({ data }) => !data.draft && isPublished(data.pubDate))).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+const posts = (await getCollection('corps', ({ data }) => !data.draft)).sort(
+  (a, b) => +new Date(b.data.updated) - +new Date(a.data.updated)
 );
 // Term 칩으로 표시한 기사를 먼저, 그다음 본문에 말이 나오는 기사로 채운다.
 const tagged = posts.filter((p) => (p.body ?? '').includes(`t="${term}"`));
@@ -32,7 +32,7 @@ const mentioned = posts.filter((p) => !tagged.includes(p) && (p.body ?? '').incl
 const used = [...tagged, ...mentioned].slice(0, 6);
 
 const abs = (p: string) => new URL(p, Astro.site).href;
-const desc = `${entry.label}의 뜻을 초보자의 언어로 풀이합니다. ${entry.def}`;
+const desc = `${entry.label}의 정의입니다. ${entry.def}`;
 
 const ld = {
   '@context': 'https://schema.org',
@@ -41,7 +41,7 @@ const ld = {
   description: entry.def,
   inDefinedTermSet: {
     '@type': 'DefinedTermSet',
-    name: '도토리경제 용어 도토리',
+    name: '도토리경제 용어 목록',
     url: abs(url('/glossary/')),
   },
   url: abs(url(`/glossary/${term}/`)),
@@ -53,7 +53,7 @@ const crumbs = {
   '@type': 'BreadcrumbList',
   itemListElement: [
     { '@type': 'ListItem', position: 1, name: '도토리경제', item: abs(url('/')) },
-    { '@type': 'ListItem', position: 2, name: '용어 도토리', item: abs(url('/glossary/')) },
+    { '@type': 'ListItem', position: 2, name: '용어 목록', item: abs(url('/glossary/')) },
     { '@type': 'ListItem', position: 3, name: entry.label },
   ],
 };
@@ -64,7 +64,7 @@ const crumbs = {
   <script type="application/ld+json" set:html={JSON.stringify(crumbs)} />
 
   <nav class="wrap gt-crumb">
-    <a href={url('/glossary/')}>용어 도토리</a>
+    <a href={url('/glossary/')}>용어 목록</a>
     <span>·</span>
     <span>{groupName}</span>
   </nav>
@@ -87,17 +87,17 @@ const crumbs = {
   {
     used.length > 0 && (
       <section class="wrap gt-block">
-        <h2 class="serif gt-h2">이 말이 나오는 기사</h2>
+        <h2 class="serif gt-h2">이 용어가 나오는 분석 보고서</h2>
         <ul class="gt-posts">
           {used.map((p) => (
             <li>
-              <a href={url(`/posts/${p.id}/`)}>
-                <span class:list={['kicker', CATEGORIES[p.data.category].cls]}>
-                  {CATEGORIES[p.data.category].name}
-                </span>
+              <a href={url(`/corp/${p.id}/`)}>
+                <span class="kicker">{p.data.market} · {p.data.stock}</span>
                 <span class="gt-post-title">{p.data.title}</span>
               </a>
-              <time class="mono" datetime={p.data.pubDate.toISOString()}>{fmtDate(p.data.pubDate)}</time>
+              <time class="mono" datetime={new Date(p.data.updated).toISOString()}>
+                {fmtDate(new Date(p.data.updated))}
+              </time>
             </li>
           ))}
         </ul>
@@ -120,8 +120,8 @@ const crumbs = {
 
   <section class="wrap gt-foot">
     <p class="gt-note">
-      낯선 말이 더 있으면 <a href={url('/glossary/')}>용어 도토리</a>에서 찾아보십시오.
-      기사에 쓰인 지표와 그림은 <a href={url('/warehouse/')}>도토리 창고</a>에 정리돼 있습니다.
+      다른 용어는 <a href={url('/glossary/')}>용어 목록</a>에서 찾으실 수 있습니다.
+      보고서가 참조하는 지표는 <a href={url('/numbers/')}>오늘의 지표</a>에 기준일·출처와 함께 있습니다.
     </p>
   </section>
 </Base>

@@ -31,6 +31,10 @@ import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const POSTS = join(ROOT, 'src/content/posts');
+// ★ 2026-09-05 전면 개편으로 `posts` 컬렉션이 없어졌다. 디렉터리가 없으면
+//   빈 목록으로 돌려 CI 가 멎지 않게 한다(게이트는 기사가 다시 생기면 그대로 산다).
+const listMdxDir = (dir) => { try { return readdirSync(dir); } catch { return []; } };
+
 const todayKST = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date());
 
 const args = process.argv.slice(2);
@@ -156,7 +160,7 @@ const shingles = (t) => {
   return S;
 };
 
-const files = readdirSync(POSTS).filter((f) => f.endsWith('.mdx'));
+const files = listMdxDir(POSTS).filter((f) => f.endsWith('.mdx'));
 const findings = [];
 
 for (const file of files) {
