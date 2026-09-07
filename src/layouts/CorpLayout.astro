@@ -22,7 +22,20 @@ import { url, canonicalUrl } from '../lib/site';
 interface Props { corp: CollectionEntry<'corps'>; headings?: { depth: number; slug: string; text: string }[] }
 const { corp, headings = [] } = Astro.props;
 // 차례는 본문의 실제 소제목에서 뽑는다. 손으로 적으면 본문이 바뀔 때 여기만 낡는다.
-const toc = headings.filter((h) => h.depth === 2);
+//
+// 개요 번호(1. · 1.1. · 1.1.1.)는 **원고가 아니라 조판이 매긴다**(2026-09-07 소유주 지시).
+// 원고에 손으로 적으면 장이 하나 끼어들 때 그 아래가 전부 어긋나고, 차례와 본문이
+// 서로 다른 번호를 들게 된다. 본문 쪽은 CSS 카운터가, 차례 쪽은 아래 계산이 맡는다 —
+// **둘 다 같은 문서 순서를 세므로 어긋날 수 없다.**
+let chap = 0;
+let sect = 0;
+const toc = headings
+  .filter((h) => h.depth === 2 || h.depth === 3)
+  .map((h) => {
+    if (h.depth === 2) { chap += 1; sect = 0; return { ...h, no: `${chap}.`, sub: false }; }
+    sect += 1;
+    return { ...h, no: `${chap}.${sect}.`, sub: true };
+  });
 const d = corp.data;
 const sources = dedupeSources(d.sources ?? []);
 
@@ -118,10 +131,10 @@ const crumbsLd = {
   <div class="wrap body-wrap">
     <aside class="toc">
       <div class="toc-h">차례</div>
-      {toc.map((h, i) => (
-        <a class="toc-i" href={`#${h.slug}`}>
-          <span class="mono toc-n">{i + 1}</span>
-          <span>{h.text.replace(/^\d+장\.\s*/, '')}</span>
+      {toc.map((h) => (
+        <a class:list={['toc-i', h.sub && 'toc-sub']} href={`#${h.slug}`}>
+          <span class="mono toc-n">{h.no}</span>
+          <span class="toc-t">{h.text.replace(/^\d+장\.\s*/, '')}</span>
         </a>
       ))}
       <p class="toc-f">정기보고서 제출 시마다 갱신합니다. 전망과 투자 판단은 제공하지 않습니다.</p>
@@ -217,10 +230,16 @@ const crumbsLd = {
                padding: 44px 64px 54px; align-items: start; }
   .toc { position: sticky; top: 22px; }
   .toc-h { font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; color: #8e9299; margin-bottom: 14px; }
-  .toc-i { display: flex; gap: 11px; padding: 10px 0; border-bottom: 1px solid #efefe9;
-           font-size: 13px; color: #4a4f56; text-decoration: none; line-height: 1.5; }
+  .toc-i { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #efefe9;
+           font-size: 13px; color: #2e3238; text-decoration: none; line-height: 1.55;
+           font-weight: 600; }
   .toc-i:hover { color: #16355e; }
-  .toc-n { font-size: 11.5px; color: #a8acb1; flex: 0 0 auto; }
+  /* 절은 장 아래로 한 칸 들여 쓰고 무게를 낮춘다 — 차례에서도 층이 보이게. */
+  .toc-sub { padding: 7px 0 7px 17px; font-size: 12.5px; font-weight: 400; color: #5a6067;
+             border-bottom: 1px solid #f5f5f0; }
+  .toc-n { font-size: 11.5px; font-weight: 600; color: #9a6b22; flex: 0 0 auto;
+           min-width: 22px; }
+  .toc-sub .toc-n { color: #b39463; min-width: 28px; }
   .toc-f { margin-top: 22px; font-size: 11.5px; color: #8e9299; line-height: 1.85; }
 
   .sec-k { font-size: 11px; font-weight: 600; letter-spacing: 2.2px; color: #9a6b22; margin-bottom: 11px; }
@@ -252,17 +271,48 @@ const crumbsLd = {
   /* 본문 — 이 화면의 주인은 글이다. 한 줄 44자 안팎, 행간 2.05. */
   /* global.css 의 .prose 는 margin: 0 auto 라 가운데로 밀린다. 왼쪽 정렬로 되돌린다. */
   .prose { max-width: 900px; margin: 0; }
-  .prose :global(h2) { font-family: 'Gothic A1', sans-serif; font-size: 26px; font-weight: 900;
-                       color: #15171a; letter-spacing: -0.95px; line-height: 1.45;
-                       margin: 46px 0 18px; padding-top: 34px; border-top: 1px solid #e4e4de; }
-  .prose :global(h2:first-child) { margin-top: 0; padding-top: 0; border-top: none; }
-  .prose :global(h3) { font-family: 'Gothic A1', sans-serif; font-size: 18px; font-weight: 800;
-                       color: #15171a; margin: 32px 0 12px; }
-  .prose :global(p) { font-size: 15.5px; line-height: 2.05; color: #3c4046; margin: 0 0 21px; }
+  /* ── 개요 번호 ──────────────────────────────────────────────
+     1. · 1.1. · 1.1.1. 을 **카운터가 매긴다.** 원고에는 번호가 없다.
+     장이 하나 끼어들어도 아래가 따라 밀리고, 차례(위 `toc` 계산)와
+     같은 문서 순서를 세므로 둘이 어긋날 수 없다. */
+  /* ★ 직계 자식으로 좁힌 이유: `PointCards` 가 카드 제목을 `<h3>` 로 낸다.
+     자손 선택자로 두면 그 카드에도 「1.1.」이 붙고 장 번호가 카드 수만큼 어긋난다.
+     원고의 소제목은 `.prose` 의 직계이고 컴포넌트가 낸 것은 아니다. */
+  .prose { counter-reset: h2 0; }
+  .prose > :global(h2) { counter-increment: h2; counter-reset: h3 0; }
+  .prose > :global(h3) { counter-increment: h3; counter-reset: h4 0; }
+  .prose > :global(h4) { counter-increment: h4; }
+  .prose > :global(h2)::before { content: counter(h2) "."; }
+  .prose > :global(h3)::before { content: counter(h2) "." counter(h3) "."; }
+  .prose > :global(h4)::before { content: counter(h2) "." counter(h3) "." counter(h4) "."; }
+  .prose > :global(h2)::before,
+  .prose > :global(h3)::before,
+  .prose > :global(h4)::before {
+    font-family: 'IBM Plex Mono', 'IBM Plex Sans KR', monospace;
+    font-variant-numeric: tabular-nums; font-weight: 600; color: #9a6b22;
+    letter-spacing: 0; margin-right: 0.5em; font-size: 0.74em;
+    vertical-align: 0.1em;
+  }
+
+  /* ── 층위 ───────────────────────────────────────────────────
+     장·절·항이 크기·굵기·색·서체 넷으로 동시에 갈린다.
+     크기만으로 가르면 화면 폭이 좁아질 때 층이 무너진다. */
+  .prose > :global(h2), .prose > :global(h3), .prose > :global(h4) { scroll-margin-top: 96px; }
+  .prose > :global(h2) { font-family: 'Gothic A1', sans-serif; font-size: 29px; font-weight: 900;
+                       color: #15171a; letter-spacing: -1.15px; line-height: 1.4;
+                       margin: 58px 0 20px; padding-top: 32px; border-top: 2.5px solid #15171a; }
+  .prose > :global(h2:first-child) { margin-top: 0; padding-top: 0; border-top: none; }
+  .prose > :global(h3) { font-family: 'Gothic A1', sans-serif; font-size: 20px; font-weight: 800;
+                       color: #1e3a5f; letter-spacing: -0.5px; line-height: 1.5;
+                       margin: 42px 0 14px; }
+  .prose > :global(h4) { font-family: 'IBM Plex Sans KR', sans-serif; font-size: 16px;
+                       font-weight: 600; color: #15171a; letter-spacing: -0.2px;
+                       line-height: 1.6; margin: 30px 0 10px; }
+  .prose :global(p) { font-size: 16px; line-height: 2.02; color: #3c4046; margin: 0 0 22px; }
   .prose :global(strong) { font-weight: 600; color: #15171a; }
   .prose :global(a) { color: #16355e; }
-  .prose :global(ul), .prose :global(ol) { font-size: 15.5px; line-height: 2.05; color: #3c4046;
-                                           margin: 0 0 21px; padding-left: 20px; }
+  .prose :global(ul), .prose :global(ol) { font-size: 16px; line-height: 2.02; color: #3c4046;
+                                           margin: 0 0 22px; padding-left: 20px; }
   .prose :global(li) { margin-bottom: 6px; }
   .prose :global(table) { width: 100%; border-collapse: collapse; margin: 4px 0 26px; font-size: 13.5px; }
   .prose :global(thead th) { font-size: 12px; font-weight: 600; color: #71767d; text-align: left;
@@ -292,8 +342,14 @@ const crumbsLd = {
     .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .strip-v { font-size: 21px; }
     .tw > table { min-width: 560px; }
-    .prose :global(h2) { font-size: 20px; letter-spacing: -0.7px; }
-    .prose :global(p) { font-size: 14.5px; line-height: 1.95; }
+    .prose > :global(h2) { font-size: 21px; letter-spacing: -0.8px; padding-top: 26px;
+                         margin: 40px 0 15px; border-top-width: 2px; }
+    .prose > :global(h3) { font-size: 17px; margin: 30px 0 11px; }
+    .prose > :global(h4) { font-size: 15px; margin: 22px 0 8px; }
+    .prose :global(p) { font-size: 15px; line-height: 1.98; }
+    .prose :global(ul), .prose :global(ol) { font-size: 15px; line-height: 1.98; }
+    .toc-i { font-size: 12.5px; }
+    .toc-sub { padding-left: 15px; font-size: 12px; }
     .prose :global(table) { min-width: 100%; }
   }
 </style>

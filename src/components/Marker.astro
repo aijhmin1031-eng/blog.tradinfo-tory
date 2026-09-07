@@ -1,0 +1,51 @@
+---
+/**
+ * 형광 표시 — 보고서에서 가장 중요한 한 구절에만 건다. 2026-09-07 신설(소유주 지시).
+ *
+ * 사용: `<Marker>매출은 통신사업이 크지만 원재료 매입액은 전력사업이 더 크다</Marker>`
+ *
+ * **형광펜 자국을 흉내 내는 이유**는 굵게(strong)가 이미 다른 일을 맡고 있기 때문이다.
+ * 굵게는 문장 안에서 수치를 짚고, 이 표시는 **장 전체에서 한 구절을 건져 올린다.**
+ * 층이 다르므로 생김새도 달라야 한다.
+ *
+ * 손으로 그은 느낌은 두 겹으로 만든다 — 위층은 형광 노랑의 넓은 획, 아래층은
+ * 잉크가 겹쳐 진해진 아랫자락이다. 두 획의 각도를 1도 어긋내고 양 끝을 투명으로 풀면
+ * 반듯한 사각형이 사라진다. 모서리 반지름도 네 귀가 서로 다르다(자를 대지 않은 자국).
+ *
+ * ★ 남용하면 표시가 아니게 된다. 보고서 한 편에 서넛까지다.
+ * ★ 인라인 컴포넌트는 템플릿 앞뒤 공백이 본문으로 샌다 — `</mark><style>` 을 붙여 쓴다.
+ */
+---
+
+<mark class="mk"><slot /></mark><style>
+  .mk {
+    /* 브라우저 기본 노랑 배경을 지우고 우리 획으로 갈음한다. */
+    background-color: transparent;
+    color: #15171a;
+    padding: 0.06em 0.26em 0.1em;
+    margin: 0 -0.14em;
+    /* 네 귀의 반지름을 서로 다르게 — 자를 대고 그은 자국이 아니게. */
+    border-radius: 0.75em 0.3em 0.6em 0.28em / 0.35em 0.85em 0.3em 0.7em;
+    background-image:
+      linear-gradient(100deg,
+        rgba(255, 236, 120, 0) 0.6%,
+        rgba(255, 224, 62, 0.72) 2.8%,
+        rgba(255, 230, 90, 0.58) 47%,
+        rgba(255, 219, 50, 0.74) 95%,
+        rgba(255, 236, 120, 0) 99.2%),
+      linear-gradient(96deg,
+        rgba(206, 158, 16, 0) 2%,
+        rgba(206, 158, 16, 0.26) 8%,
+        rgba(206, 158, 16, 0.09) 56%,
+        rgba(206, 158, 16, 0.28) 93%,
+        rgba(206, 158, 16, 0) 98%);
+    background-repeat: no-repeat;
+    background-size: 100% 82%, 100% 26%;
+    background-position: 0 78%, 0 96%;
+    /* 줄이 바뀌어도 각 줄에 획이 그어지게 한다(없으면 첫 줄에만 칠해진다). */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+</style>
