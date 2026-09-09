@@ -1,14 +1,13 @@
 {
-  "asOf": "2026-09-07",
+  "asOf": "2026-09-08",
   "stocks": [
     {
       "name": "대한광통신",
       "sector": "광섬유",
-      "value": "13,470",
-      "delta": "3.54%",
+      "value": "13,700",
+      "delta": "1.71%",
       "dir": "up",
       "spark": [
-        19,
         4,
         10,
         14,
@@ -16,20 +15,20 @@
         18,
         26,
         24,
-        19
+        19,
+        17
       ],
       "sparkHi": "14,860",
       "sparkLo": "12,850",
-      "basDt": "20260907"
+      "basDt": "20260908"
     },
     {
       "name": "서진시스템",
       "sector": "통신장비 함체",
-      "value": "36,600",
-      "delta": "8.77%",
-      "dir": "up",
+      "value": "35,000",
+      "delta": "4.37%",
+      "dir": "down",
       "spark": [
-        15,
         4,
         10,
         10,
@@ -37,20 +36,20 @@
         25,
         26,
         25,
-        17
+        17,
+        21
       ],
       "sparkHi": "41,350",
       "sparkLo": "33,200",
-      "basDt": "20260907"
+      "basDt": "20260908"
     },
     {
       "name": "삼성전자",
       "sector": "반도체",
-      "value": "270,000",
-      "delta": "5.68%",
-      "dir": "up",
+      "value": "269,500",
+      "delta": "0.19%",
+      "dir": "down",
       "spark": [
-        13,
         8,
         18,
         15,
@@ -58,62 +57,62 @@
         25,
         26,
         20,
-        4
+        4,
+        5
       ],
       "sparkHi": "270,000",
       "sparkLo": "250,000",
-      "basDt": "20260907"
+      "basDt": "20260908"
     },
     {
       "name": "SK하이닉스",
       "sector": "반도체",
-      "value": "1,783,000",
-      "delta": "8.26%",
+      "value": "1,793,000",
+      "delta": "0.56%",
       "dir": "up",
       "spark": [
-        15,
-        10,
-        19,
+        11,
+        20,
         17,
         15,
         24,
         26,
         20,
+        5,
         4
       ],
-      "sparkHi": "1,783,000",
+      "sparkHi": "1,793,000",
       "sparkLo": "1,596,000",
-      "basDt": "20260907"
+      "basDt": "20260908"
     },
     {
       "name": "현대차",
       "sector": "자동차",
-      "value": "393,000",
-      "delta": "2.48%",
-      "dir": "up",
+      "value": "385,000",
+      "delta": "2.04%",
+      "dir": "down",
       "spark": [
-        4,
-        11,
-        10,
+        9,
         7,
-        10,
+        4,
+        7,
         26,
-        22,
-        22,
-        15
+        21,
+        21,
+        13,
+        20
       ],
-      "sparkHi": "408,000",
+      "sparkHi": "403,500",
       "sparkLo": "378,000",
-      "basDt": "20260907"
+      "basDt": "20260908"
     },
     {
       "name": "HMM",
       "sector": "해운",
-      "value": "21,450",
-      "delta": "1.90%",
-      "dir": "up",
+      "value": "21,150",
+      "delta": "1.40%",
+      "dir": "down",
       "spark": [
-        13,
         10,
         4,
         10,
@@ -121,41 +120,41 @@
         26,
         13,
         20,
-        10
+        10,
+        17
       ],
       "sparkHi": "21,700",
       "sparkLo": "20,800",
-      "basDt": "20260907"
+      "basDt": "20260908"
     },
     {
       "name": "POSCO홀딩스",
       "sector": "철강",
-      "value": "335,500",
-      "delta": "0.45%",
+      "value": "328,500",
+      "delta": "2.09%",
       "dir": "down",
       "spark": [
-        26,
         8,
         11,
         10,
         6,
-        23,
+        24,
         4,
         12,
-        14
+        15,
+        26
       ],
       "sparkHi": "342,000",
-      "sparkLo": "328,000",
-      "basDt": "20260907"
+      "sparkLo": "328,500",
+      "basDt": "20260908"
     },
     {
       "name": "LG에너지솔루션",
       "sector": "배터리",
-      "value": "362,500",
-      "delta": "1.12%",
-      "dir": "up",
+      "value": "348,500",
+      "delta": "3.86%",
+      "dir": "down",
       "spark": [
-        23,
         9,
         10,
         4,
@@ -163,11 +162,12 @@
         26,
         13,
         18,
-        15
+        15,
+        25
       ],
       "sparkHi": "378,000",
       "sparkLo": "347,500",
-      "basDt": "20260907"
+      "basDt": "20260908"
     }
   ],
   "disclosures": [
@@ -214,32 +214,32 @@
       "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260813000255"
     },
     {
+      "date": "20260909",
+      "corp": "삼성전자",
+      "title": "임원ㆍ주요주주특정증권등거래계획보고서",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260909000516"
+    },
+    {
+      "date": "20260909",
+      "corp": "삼성전자",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260909000113"
+    },
+    {
+      "date": "20260909",
+      "corp": "SK하이닉스",
+      "title": "조회공시요구(풍문또는보도)에대한답변(미확정)",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260909800559"
+    },
+    {
       "date": "20260908",
       "corp": "삼성전자",
       "title": "최대주주등소유주식변동신고서",
       "periodic": false,
       "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260908800624"
-    },
-    {
-      "date": "20260908",
-      "corp": "HMM",
-      "title": "단일판매ㆍ공급계약체결",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260908800128"
-    },
-    {
-      "date": "20260904",
-      "corp": "SK하이닉스",
-      "title": "풍문또는보도에대한해명(미확정)",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260904800642"
-    },
-    {
-      "date": "20260903",
-      "corp": "현대차",
-      "title": "기업설명회(IR)개최(안내공시)",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903800273"
     }
   ]
 }
