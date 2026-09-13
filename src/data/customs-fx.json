@@ -1,61 +1,61 @@
 {
-  "applyDate": "20260906",
-  "fetchedAt": "2026-09-12",
+  "applyDate": "20260913",
+  "fetchedAt": "2026-09-14",
   "basis": "수입(과세)",
   "source": "관세청 관세환율정보(GW)",
   "rates": {
     "AED": {
-      "rate": 372.97,
+      "rate": 365.66,
       "unitName": "UAE Dirham",
       "country": "AE"
     },
     "ARS": {
-      "rate": 0.91,
+      "rate": 0.89,
       "unitName": "Argentine Peso",
       "country": "AR"
     },
     "AUD": {
-      "rate": 981.93,
+      "rate": 967.54,
       "unitName": "Australian Dollar",
       "country": "AU"
     },
     "BDT": {
-      "rate": 11.15,
+      "rate": 10.92,
       "unitName": "Taka",
       "country": "BD"
     },
     "BHD": {
-      "rate": 3633.37,
+      "rate": 3562.03,
       "unitName": "Bahraini Dinar",
       "country": "BH"
     },
     "BND": {
-      "rate": 1077.34,
+      "rate": 1060.98,
       "unitName": "Brunei Dollar",
       "country": "BN"
     },
     "BRL": {
-      "rate": 266.35,
+      "rate": 262.85,
       "unitName": "Brazilian Real",
       "country": "BR"
     },
     "CAD": {
-      "rate": 988.47,
+      "rate": 972.31,
       "unitName": "Canadian Dollar",
       "country": "CA"
     },
     "CHF": {
-      "rate": 1690.98,
+      "rate": 1657.63,
       "unitName": "Swiss Franc",
       "country": "CH"
     },
     "CLP": {
-      "rate": 1.47,
+      "rate": 1.44,
       "unitName": "Chilean Peso",
       "country": "CL"
     },
     "CNY": {
-      "rate": 203.94,
+      "rate": 200.26,
       "unitName": "Yuan Renminbi",
       "country": "CN"
     },
@@ -65,82 +65,82 @@
       "country": "CO"
     },
     "CZK": {
-      "rate": 65.75,
+      "rate": 64.46,
       "unitName": "Czech Koruna",
       "country": "CZ"
     },
     "DKK": {
-      "rate": 212.59,
+      "rate": 208.82,
       "unitName": "Danish Krone",
       "country": "DK"
     },
     "EGP": {
-      "rate": 26.97,
+      "rate": 26.29,
       "unitName": "Egyptian Pound",
       "country": "EG"
     },
     "ETB": {
-      "rate": 8.45,
+      "rate": 8.33,
       "unitName": "Ethiopian Birr",
       "country": "ET"
     },
     "EUR": {
-      "rate": 1589.03,
+      "rate": 1560.94,
       "unitName": "Euro",
       "country": "EU"
     },
     "FJD": {
-      "rate": 622.92,
+      "rate": 609.14,
       "unitName": "Fiji Dollar",
       "country": "FJ"
     },
     "GBP": {
-      "rate": 1852.12,
+      "rate": 1817.48,
       "unitName": "Pound Sterling",
       "country": "GB"
     },
     "HKD": {
-      "rate": 174.72,
+      "rate": 171.28,
       "unitName": "Hong Kong Dollar",
       "country": "HK"
     },
     "HUF": {
-      "rate": 4.35,
+      "rate": 4.29,
       "unitName": "Forint",
       "country": "HU"
     },
     "IDR": {
-      "rate": 0.0774,
+      "rate": 0.0763,
       "unitName": "Rupiah",
       "country": "ID"
     },
     "ILS": {
-      "rate": 454.93,
+      "rate": 444.21,
       "unitName": "Shekel",
       "country": "IL"
     },
     "INR": {
-      "rate": 14.42,
+      "rate": 14.16,
       "unitName": "Indian Rupee",
       "country": "IN"
     },
     "JOD": {
-      "rate": 1932.1,
+      "rate": 1894.22,
       "unitName": "Jordanian Dinar",
       "country": "JO"
     },
     "JPY": {
-      "rate": 8.6146,
+      "rate": 8.7027,
       "unitName": "Yen",
       "country": "JP"
     },
     "KES": {
-      "rate": 10.58,
+      "rate": 10.38,
       "unitName": "Kenyan Shilling",
       "country": "KE"
     },
     "KHR": {
-      "rate": 0.34,
+      "rate": 0.33,
       "unitName": "Riel",
       "country": "KH"
     },
@@ -150,147 +150,147 @@
       "country": "KR"
     },
     "KWD": {
-      "rate": 4460.34,
+      "rate": 4378.44,
       "unitName": "Kuwaiti Dinar",
       "country": "KW"
     },
     "KZT": {
-      "rate": 2.99,
+      "rate": 2.96,
       "unitName": "Kazakhstan tenge",
       "country": "KZ"
     },
     "LKR": {
-      "rate": 4.17,
+      "rate": 4.09,
       "unitName": "Sri Lanka Rupee",
       "country": "LK"
     },
     "LYD": {
-      "rate": 215.8,
+      "rate": 212.06,
       "unitName": "Libyan Dinar",
       "country": "LY"
     },
     "MMK": {
-      "rate": 0.65,
+      "rate": 0.64,
       "unitName": "Kyat",
       "country": "MM"
     },
     "MNT": {
-      "rate": 0.38,
+      "rate": 0.37,
       "unitName": "Tugrik",
       "country": "MN"
     },
     "MOP": {
-      "rate": 169.55,
+      "rate": 166.2,
       "unitName": "Pataca",
       "country": "MO"
     },
     "MXN": {
-      "rate": 80.63,
+      "rate": 79.36,
       "unitName": "Mexican Peso",
       "country": "MX"
     },
     "MYR": {
-      "rate": 339.44,
+      "rate": 331,
       "unitName": "Malaysian Ringgit",
       "country": "MY"
     },
     "NOK": {
-      "rate": 146.83,
+      "rate": 145.14,
       "unitName": "Norwegian Krone",
       "country": "NO"
     },
     "NPR": {
-      "rate": 9.01,
+      "rate": 8.85,
       "unitName": "Nepalese Rupee",
       "country": "NP"
     },
     "NZD": {
-      "rate": 807.13,
+      "rate": 786.12,
       "unitName": "New Zealand Dollar",
       "country": "NZ"
     },
     "OMR": {
-      "rate": 3558.97,
+      "rate": 3488.22,
       "unitName": "Rial Omani",
       "country": "OM"
     },
     "PHP": {
-      "rate": 21.94,
+      "rate": 21.46,
       "unitName": "Philippine Peso",
       "country": "PH"
     },
     "PKR": {
-      "rate": 4.93,
+      "rate": 4.84,
       "unitName": "Pakistan Rupee",
       "country": "PK"
     },
     "PLN": {
-      "rate": 366.86,
+      "rate": 361.72,
       "unitName": "Polish Zloty",
       "country": "PL"
     },
     "QAR": {
-      "rate": 375.8,
+      "rate": 368.42,
       "unitName": "Qatari Rial",
       "country": "QA"
     },
     "RON": {
-      "rate": 302.27,
+      "rate": 297.2,
       "unitName": "Romanian Leu",
       "country": "RO"
     },
     "RUB": {
-      "rate": 15.82,
+      "rate": 15.74,
       "unitName": "Russian Rouble",
       "country": "RU"
     },
     "SAR": {
-      "rate": 364.84,
+      "rate": 357.65,
       "unitName": "Saudi Riyal",
       "country": "SA"
     },
     "SEK": {
-      "rate": 142.73,
+      "rate": 139.8,
       "unitName": "Swedish Krona",
       "country": "SE"
     },
     "SGD": {
-      "rate": 1077.34,
+      "rate": 1060.99,
       "unitName": "Singapore Dollar",
       "country": "SG"
     },
     "THB": {
-      "rate": 41.32,
+      "rate": 40.77,
       "unitName": "Baht",
       "country": "TH"
     },
     "TRY": {
-      "rate": 28.36,
+      "rate": 27.7,
       "unitName": "Turkish Lira",
       "country": "TR"
     },
     "TWD": {
-      "rate": 43.22,
+      "rate": 42.56,
       "unitName": "New Taiwan Dollar",
       "country": "TW"
     },
     "USD": {
-      "rate": 1369.86,
+      "rate": 1343,
       "unitName": "US Dollar",
       "country": "US"
     },
     "UZS": {
-      "rate": 0.12,
+      "rate": 0.11,
       "unitName": "Uzbekistan Sum",
       "country": "UZ"
     },
     "VND": {
-      "rate": 0.0525,
+      "rate": 0.0517,
       "unitName": "Dong",
       "country": "VN"
     },
     "ZAR": {
-      "rate": 85.07,
+      "rate": 83.73,
       "unitName": "Rand",
       "country": "ZA"
     }
