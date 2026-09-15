@@ -172,32 +172,18 @@
   ],
   "disclosures": [
     {
-      "date": "20260814",
+      "date": "20260914",
       "corp": "삼성전자",
-      "title": "반기보고서 (2026.06)",
-      "periodic": true,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003699"
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260914000248"
     },
     {
-      "date": "20260814",
-      "corp": "SK하이닉스",
-      "title": "반기보고서 (2026.06)",
-      "periodic": true,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003509"
-    },
-    {
-      "date": "20260814",
+      "date": "20260914",
       "corp": "현대차",
-      "title": "반기보고서 (2026.06)",
-      "periodic": true,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003521"
-    },
-    {
-      "date": "20260814",
-      "corp": "POSCO홀딩스",
-      "title": "반기보고서 (2026.06)",
-      "periodic": true,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814000957"
+      "title": "특수관계인으로부터기타유가증권매수",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260914000419"
     },
     {
       "date": "20260909",
@@ -240,6 +226,20 @@
       "title": "풍문또는보도에대한해명(미확정)",
       "periodic": false,
       "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260904800642"
+    },
+    {
+      "date": "20260903",
+      "corp": "현대차",
+      "title": "기업설명회(IR)개최(안내공시)",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903800273"
+    },
+    {
+      "date": "20260903",
+      "corp": "현대차",
+      "title": "기업설명회(IR)개최(안내공시)",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903800271"
     }
   ]
 }
