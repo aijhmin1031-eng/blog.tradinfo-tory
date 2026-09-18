@@ -172,6 +172,41 @@
   ],
   "disclosures": [
     {
+      "date": "20260918",
+      "corp": "삼성전자",
+      "title": "최대주주등소유주식변동신고서",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260918800754"
+    },
+    {
+      "date": "20260918",
+      "corp": "삼성전자",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260918000212"
+    },
+    {
+      "date": "20260918",
+      "corp": "삼성전자",
+      "title": "임원ㆍ주요주주특정증권등소유상황보고서",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260918000191"
+    },
+    {
+      "date": "20260918",
+      "corp": "SK하이닉스",
+      "title": "조회공시요구(풍문또는보도)에대한답변(미확정)",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260918800583"
+    },
+    {
+      "date": "20260918",
+      "corp": "현대차",
+      "title": "기업설명회(IR)개최(안내공시)",
+      "periodic": false,
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260918800063"
+    },
+    {
       "date": "20260917",
       "corp": "삼성전자",
       "title": "임원ㆍ주요주주특정증권등소유상황보고서",
@@ -205,41 +240,6 @@
       "title": "임원ㆍ주요주주특정증권등소유상황보고서",
       "periodic": false,
       "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260909000113"
-    },
-    {
-      "date": "20260909",
-      "corp": "SK하이닉스",
-      "title": "조회공시요구(풍문또는보도)에대한답변(미확정)",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260909800559"
-    },
-    {
-      "date": "20260908",
-      "corp": "삼성전자",
-      "title": "최대주주등소유주식변동신고서",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260908800624"
-    },
-    {
-      "date": "20260908",
-      "corp": "HMM",
-      "title": "단일판매ㆍ공급계약체결",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260908800128"
-    },
-    {
-      "date": "20260904",
-      "corp": "SK하이닉스",
-      "title": "풍문또는보도에대한해명(미확정)",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260904800642"
-    },
-    {
-      "date": "20260903",
-      "corp": "현대차",
-      "title": "기업설명회(IR)개최(안내공시)",
-      "periodic": false,
-      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903800273"
     }
   ]
 }
