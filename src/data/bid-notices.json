@@ -1,326 +1,214 @@
 {
  "source": "g2b",
- "generatedAt": "2026-09-24T00:01:26.387Z",
+ "generatedAt": "2026-09-25T00:07:06.639Z",
  "window": {
-  "bgn": "202609220900",
-  "end": "202609240900"
+  "bgn": "202609230906",
+  "end": "202609250906"
  },
- "carried": 2975,
+ "carried": 3879,
  "licenseVocab": [
   {
    "name": "소프트웨어사업자(컴퓨터관련서비스사업)",
-   "count": 148
-  },
-  {
-   "name": "건설폐기물 중간처리업",
-   "count": 115
-  },
-  {
-   "name": "지반조성ㆍ포장공사업",
-   "count": 103
-  },
-  {
-   "name": "전기공사업",
-   "count": 102
+   "count": 78
   },
   {
    "name": "학술.연구용역",
-   "count": 100
+   "count": 57
+  },
+  {
+   "name": "전기공사업",
+   "count": 52
+  },
+  {
+   "name": "건설폐기물 중간처리업",
+   "count": 50
   },
   {
    "name": "정보통신공사업",
-   "count": 98
+   "count": 48
   },
   {
-   "name": "산림사업법인(숲가꾸기 및 병해충방제)",
-   "count": 79
-  },
-  {
-   "name": "토목공사업",
-   "count": 78
-  },
-  {
-   "name": "건축공사업",
-   "count": 78
-  },
-  {
-   "name": "건설폐기물 수집·운반업",
-   "count": 77
-  },
-  {
-   "name": "기계설비ㆍ가스공사업",
-   "count": 75
-  },
-  {
-   "name": "안전진단전문기관(종합분야)",
-   "count": 70
-  },
-  {
-   "name": "도장ㆍ습식ㆍ방수ㆍ석공사업",
-   "count": 68
-  },
-  {
-   "name": "건축사사무소",
-   "count": 67
-  },
-  {
-   "name": "상ㆍ하수도설비공사업",
-   "count": 65
-  },
-  {
-   "name": "철근ㆍ콘크리트공사업",
-   "count": 65
-  },
-  {
-   "name": "기타자유업(행사대행업)",
-   "count": 56
-  },
-  {
-   "name": "조경식재ㆍ시설물공사업",
-   "count": 54
-  },
-  {
-   "name": "실내건축공사업",
-   "count": 47
-  },
-  {
-   "name": "안전진단전문기관(교량 및 터널분야)",
+   "name": "지반조성ㆍ포장공사업",
    "count": 45
   },
   {
-   "name": "토목건축공사업",
+   "name": "산림사업법인(숲가꾸기 및 병해충방제)",
    "count": 43
   },
   {
-   "name": "금속창호ㆍ지붕건축물조립공사업",
-   "count": 41
+   "name": "건설폐기물 수집·운반업",
+   "count": 39
   },
   {
-   "name": "종합여행업",
+   "name": "토목공사업",
+   "count": 38
+  },
+  {
+   "name": "건축공사업",
    "count": 37
   },
   {
-   "name": "기타자유업종",
+   "name": "기계설비ㆍ가스공사업",
    "count": 36
   },
   {
-   "name": "국내외여행업",
+   "name": "안전진단전문기관(종합분야)",
+   "count": 36
+  },
+  {
+   "name": "기타자유업(행사대행업)",
    "count": 35
   },
   {
-   "name": "산림조합(지역조합)",
-   "count": 33
+   "name": "상ㆍ하수도설비공사업",
+   "count": 32
   },
   {
-   "name": "의료기기판매업",
+   "name": "철근ㆍ콘크리트공사업",
+   "count": 32
+  },
+  {
+   "name": "도장ㆍ습식ㆍ방수ㆍ석공사업",
    "count": 31
   },
   {
-   "name": "엔지니어링사업(정보통신)",
-   "count": 27
+   "name": "실내건축공사업",
+   "count": 30
   },
   {
-   "name": "전문소방공사감리업",
-   "count": 27
+   "name": "금속창호ㆍ지붕건축물조립공사업",
+   "count": 28
   },
   {
-   "name": "기술사사무소(정보통신)",
-   "count": 26
+   "name": "기타자유업종",
+   "count": 25
   },
   {
-   "name": "폐기물수집·운반업(사업장비배출시설계폐기물)",
+   "name": "건축사사무소",
    "count": 24
   },
   {
-   "name": "안전진단전문기관(건축분야)",
-   "count": 22
+   "name": "조경식재ㆍ시설물공사업",
+   "count": 24
   },
   {
-   "name": "건설엔지니어링업(설계,사업관리-건설사업관리)",
-   "count": 22
+   "name": "토목건축공사업",
+   "count": 23
   },
   {
-   "name": "의료기기제조업",
+   "name": "의료기기판매업",
    "count": 21
   },
   {
-   "name": "의료기기수입업",
-   "count": 21
-  },
-  {
-   "name": "소프트웨어사업자(디지털콘텐츠개발서비스사업)",
-   "count": 20
-  },
-  {
-   "name": "폐기물종합처분업",
+   "name": "안전진단전문기관(교량 및 터널분야)",
    "count": 19
   },
   {
-   "name": "폐기물중간재활용업(지정폐기물외 폐기물)",
+   "name": "종합여행업",
    "count": 18
   },
   {
-   "name": "전문소방시설공사업",
+   "name": "전문소방공사감리업",
    "count": 18
   },
   {
-   "name": "건설엔지니어링업(설계,사업관리-일반)",
+   "name": "국내외여행업",
    "count": 17
   },
   {
-   "name": "구조물해체ㆍ비계공사업",
-   "count": 17
+   "name": "의료기기제조업",
+   "count": 16
   },
   {
-   "name": "제작자 등(자동차-국내 제작·조립)",
-   "count": 15
+   "name": "의료기기수입업",
+   "count": 16
   },
   {
-   "name": "폐기물종합재활용업(지정폐기물외 폐기물)",
-   "count": 15
+   "name": "폐기물종합처분업",
+   "count": 13
+  },
+  {
+   "name": "안전진단전문기관(건축분야)",
+   "count": 13
+  },
+  {
+   "name": "폐기물수집·운반업(사업장비배출시설계폐기물)",
+   "count": 12
   },
   {
    "name": "폐기물중간처분업(지정폐기물외 폐기물-소각전문)",
-   "count": 15
-  },
-  {
-   "name": "건설엔지니어링업(종합)",
-   "count": 15
-  },
-  {
-   "name": "전문소방시설설계업",
-   "count": 15
-  },
-  {
-   "name": "일반소방시설공사업(전기)",
-   "count": 15
-  },
-  {
-   "name": "산림사업법인(산림토목)",
-   "count": 15
-  },
-  {
-   "name": "소프트웨어사업자(패키지소프트웨어개발.공급사업)",
-   "count": 14
-  },
-  {
-   "name": "정보시스템 감리법인",
-   "count": 14
-  },
-  {
-   "name": "제1종 환경영향평가업",
-   "count": 14
-  },
-  {
-   "name": "일반소방시설설계업(전기)",
-   "count": 14
-  },
-  {
-   "name": "일반소방시설공사업(기계)",
-   "count": 14
-  },
-  {
-   "name": "시약판매업",
-   "count": 12
-  },
-  {
-   "name": "식품판매업(집단급식소식품판매업)",
-   "count": 12
-  },
-  {
-   "name": "농업기계 사후관리업(중형)",
-   "count": 12
-  },
-  {
-   "name": "농업기계 사후관리업(대형)",
-   "count": 12
-  },
-  {
-   "name": "측량업(기타-수치지도제작업)",
-   "count": 12
-  },
-  {
-   "name": "종합국가유산수리업(보수단청업)",
-   "count": 12
-  },
-  {
-   "name": "개인정보 영향평가기관",
    "count": 11
   },
   {
-   "name": "엔지니어링사업(설비)",
+   "name": "건설엔지니어링업(설계,사업관리-일반)",
    "count": 11
   },
   {
-   "name": "건설엔지니어링업(설계,사업관리-설계등용역-일반)",
+   "name": "엔지니어링사업(정보통신)",
    "count": 11
   },
   {
-   "name": "엔지니어링사업(토질, 지질)",
-   "count": 11
-  },
-  {
-   "name": "기술사사무소(설비)",
+   "name": "소프트웨어사업자(디지털콘텐츠개발서비스사업)",
    "count": 10
   },
   {
-   "name": "폐기물최종재활용업(지정폐기물외 폐기물)",
+   "name": "기술사사무소(정보통신)",
+   "count": 10
+  },
+  {
+   "name": "식품판매업(집단급식소식품판매업)",
    "count": 9
   },
   {
-   "name": "비디오물제작업",
+   "name": "건설엔지니어링업(종합)",
    "count": 9
   },
   {
-   "name": "폐기물수집·운반업(지정폐기물)",
+   "name": "측량업(기타-수치지도제작업)",
    "count": 9
+  },
+  {
+   "name": "건설엔지니어링업(설계,사업관리-건설사업관리)",
+   "count": 9
+  },
+  {
+   "name": "소프트웨어사업자(패키지소프트웨어개발.공급사업)",
+   "count": 8
+  },
+  {
+   "name": "폐기물종합재활용업(지정폐기물외 폐기물)",
+   "count": 8
+  },
+  {
+   "name": "폐기물중간재활용업(지정폐기물외 폐기물)",
+   "count": 8
+  },
+  {
+   "name": "건설엔지니어링업(설계,사업관리-설계등용역-일반)",
+   "count": 8
+  },
+  {
+   "name": "제1종 환경영향평가업",
+   "count": 8
   },
   {
    "name": "기술사사무소(구조)",
-   "count": 9
-  },
-  {
-   "name": "일반소방시설설계업(기계)",
-   "count": 9
+   "count": 8
   },
   {
    "name": "측량업(기타-공공측량업)",
-   "count": 9
-  },
-  {
-   "name": "인쇄사",
    "count": 8
   },
   {
-   "name": "농업기계 사후관리업(소형)",
+   "name": "전문소방시설공사업",
    "count": 8
-  },
-  {
-   "name": "여객자동차운수사업(구역여객자동차운송사업-전세버스)",
-   "count": 8
-  },
-  {
-   "name": "기술사사무소(토질,지질)",
-   "count": 8
-  },
-  {
-   "name": "엔지니어링사업(구조)",
-   "count": 8
-  },
-  {
-   "name": "동물용의료기기판매업",
-   "count": 7
-  },
-  {
-   "name": "폐기물중간처분업(지정폐기물)",
-   "count": 7
-  },
-  {
-   "name": "여객자동차운수사업(자동차대여사업)",
-   "count": 7
   },
   {
    "name": "건물(시설)관리용역",
+   "count": 7
+  },
+  {
+   "name": "개인정보 영향평가기관",
    "count": 7
   },
   {
@@ -328,35 +216,31 @@
    "count": 7
   },
   {
-   "name": "지하수개발·이용시공업",
+   "name": "엔지니어링사업(구조)",
    "count": 7
   },
   {
-   "name": "측량업(기타-지하시설물측량업)",
+   "name": "일반소방시설공사업(전기)",
    "count": 7
   },
   {
-   "name": "조경공사업",
+   "name": "산림조합(지역조합)",
    "count": 7
   },
   {
-   "name": "세탁업",
+   "name": "종합국가유산수리업(보수단청업)",
+   "count": 7
+  },
+  {
+   "name": "농업기계 사후관리업(대형)",
    "count": 6
   },
   {
-   "name": "소독업",
+   "name": "농업기계 사후관리업(중형)",
    "count": 6
   },
   {
-   "name": "가축방역위생관리업",
-   "count": 6
-  },
-  {
-   "name": "산림기술용역업(종합)",
-   "count": 6
-  },
-  {
-   "name": "산림기술용역업(산림경영)",
+   "name": "제작자 등(자동차-국내 제작·조립)",
    "count": 6
   },
   {
@@ -364,123 +248,55 @@
    "count": 6
   },
   {
-   "name": "건설재해예방 전문지도기관",
-   "count": 6
+   "name": "인쇄사",
+   "count": 5
   },
   {
-   "name": "안전진단전문기관(수리분야)",
-   "count": 6
+   "name": "정보시스템 감리법인",
+   "count": 5
   },
   {
-   "name": "안전점검전문기관(토목 분야)",
-   "count": 6
+   "name": "여객자동차운수사업(자동차대여사업)",
+   "count": 5
+  },
+  {
+   "name": "폐기물수집·운반업(지정폐기물)",
+   "count": 5
   },
   {
    "name": "측량업(측지측량업)",
-   "count": 6
-  },
-  {
-   "name": "자동차관리사업(자동차매매업)",
    "count": 5
   },
   {
-   "name": "출판사",
+   "name": "측량업(기타-지하시설물측량업)",
    "count": 5
   },
   {
-   "name": "소프트웨어사업자(데이터베이스제작및검색서비스사업)",
+   "name": "지하수개발·이용시공업",
    "count": 5
   },
   {
-   "name": "국내여행업",
+   "name": "일반소방시설공사업(기계)",
    "count": 5
   },
   {
-   "name": "국제회의기획업",
+   "name": "조경공사업",
    "count": 5
+  },
+  {
+   "name": "농업기계 사후관리업(소형)",
+   "count": 4
+  },
+  {
+   "name": "시약판매업",
+   "count": 4
   },
   {
    "name": "특수건강진단기관",
-   "count": 5
-  },
-  {
-   "name": "방재관리대책대행자(재해영향평가등의 협의업무)",
-   "count": 5
-  },
-  {
-   "name": "설계업(전문설계1종)",
-   "count": 5
-  },
-  {
-   "name": "전문국가유산수리업(조경업)",
-   "count": 5
-  },
-  {
-   "name": "산업·환경설비공사업",
-   "count": 5
-  },
-  {
-   "name": "산림사업법인(숲길 조성,관리)",
-   "count": 5
-  },
-  {
-   "name": "방사선발생장치 생산허가자",
    "count": 4
   },
   {
-   "name": "방사선발생장치 판매허가자",
-   "count": 4
-  },
-  {
-   "name": "의약품판매업(의약품도매상)",
-   "count": 4
-  },
-  {
-   "name": "산업디자인전문회사(종합디자인분야)",
-   "count": 4
-  },
-  {
-   "name": "기간통신사업",
-   "count": 4
-  },
-  {
-   "name": "국제공인교정기관",
-   "count": 4
-  },
-  {
-   "name": "방송영상독립제작자",
-   "count": 4
-  },
-  {
-   "name": "유전자검사기관",
-   "count": 4
-  },
-  {
-   "name": "변리사업(변리사사무소)",
-   "count": 4
-  },
-  {
-   "name": "폐기물최종처분업(지정폐기물외 폐기물)",
-   "count": 4
-  },
-  {
-   "name": "해외건설업(전문건설업-실내건축공사업)",
-   "count": 4
-  },
-  {
-   "name": "시설경비업무",
-   "count": 4
-  },
-  {
-   "name": "이러닝콘텐츠업",
-   "count": 4
-  },
-  {
-   "name": "건물위생관리업",
-   "count": 4
-  },
-  {
-   "name": "가스난방공사업",
+   "name": "국제회의기획업",
    "count": 4
   },
   {
@@ -488,63 +304,31 @@
    "count": 4
   },
   {
-   "name": "석면해체작업감리인",
+   "name": "설계업(전문설계1종)",
    "count": 4
   },
   {
-   "name": "엔지니어링사업(상하수도)",
+   "name": "엔지니어링사업(토질, 지질)",
    "count": 4
   },
   {
-   "name": "기술사사무소(상하수도)",
+   "name": "안전진단전문기관(수리분야)",
    "count": 4
   },
   {
-   "name": "기술사사무소(조경)",
+   "name": "구조물해체ㆍ비계공사업",
    "count": 4
   },
   {
-   "name": "엔지니어링사업(조경)",
-   "count": 4
-  },
-  {
-   "name": "측량업(기타-연안조사측량업)",
-   "count": 4
-  },
-  {
-   "name": "산림사업법인(도시숲등 조성, 관리)",
-   "count": 4
-  },
-  {
-   "name": "식품제조·가공업",
+   "name": "방사선발생장치 생산허가자",
    "count": 3
   },
   {
-   "name": "산업디자인전문회사(환경디자인분야)",
+   "name": "방사선발생장치 판매허가자",
    "count": 3
   },
   {
-   "name": "변리사업(특허법인)",
-   "count": 3
-  },
-  {
-   "name": "평생교육시설(원격)",
-   "count": 3
-  },
-  {
-   "name": "손해보험업(기타보험)",
-   "count": 3
-  },
-  {
-   "name": "기타자유업(광고대행업)",
-   "count": 3
-  },
-  {
-   "name": "산학협력단",
-   "count": 3
-  },
-  {
-   "name": "일반건설기계대여업",
+   "name": "동물용의료기기판매업",
    "count": 3
   },
   {
@@ -556,11 +340,27 @@
    "count": 3
   },
   {
-   "name": "엔지니어링사업(일반산업기계)",
+   "name": "출판사",
    "count": 3
   },
   {
-   "name": "분뇨수집·운반업(구: 분뇨등수집·운반업 또는 정화조청소업)",
+   "name": "산림기술용역업(종합)",
+   "count": 3
+  },
+  {
+   "name": "산림기술용역업(산림경영)",
+   "count": 3
+  },
+  {
+   "name": "소독업",
+   "count": 3
+  },
+  {
+   "name": "가축방역위생관리업",
+   "count": 3
+  },
+  {
+   "name": "가스난방공사업",
    "count": 3
   },
   {
@@ -576,35 +376,23 @@
    "count": 3
   },
   {
-   "name": "측량업(기타-일반측량업)",
+   "name": "건설재해예방 전문지도기관",
    "count": 3
   },
   {
-   "name": "해양조사정보업(수로측량업)",
+   "name": "방재관리대책대행자(재해영향평가등의 협의업무)",
    "count": 3
   },
   {
-   "name": "지하수영향조사기관",
-   "count": 3
-  },
-  {
-   "name": "국가유산감리업",
-   "count": 3
-  },
-  {
-   "name": "감리업(종합감리)",
-   "count": 3
-  },
-  {
-   "name": "감리업(전문감리)",
-   "count": 3
-  },
-  {
-   "name": "안전점검전문기관(건축 분야)",
+   "name": "일반소방시설설계업(전기)",
    "count": 3
   },
   {
    "name": "엔지니어링사업(품질시험)",
+   "count": 3
+  },
+  {
+   "name": "안전점검전문기관(토목 분야)",
    "count": 3
   },
   {
@@ -616,11 +404,15 @@
    "count": 3
   },
   {
-   "name": "승강기ㆍ삭도공사업",
+   "name": "측량업(기타-연안조사측량업)",
    "count": 3
   },
   {
-   "name": "석면해체.제거업",
+   "name": "산업·환경설비공사업",
+   "count": 3
+  },
+  {
+   "name": "산림사업법인(산림토목)",
    "count": 3
   },
   {
@@ -628,27 +420,15 @@
    "count": 3
   },
   {
-   "name": "축산물판매업(식육판매업)",
+   "name": "산업디자인전문회사(환경디자인분야)",
    "count": 2
   },
   {
-   "name": "축산물판매업(축산물유통전문판매업)",
+   "name": "산업디자인전문회사(종합디자인분야)",
    "count": 2
   },
   {
-   "name": "철강구조물공사업",
-   "count": 2
-  },
-  {
-   "name": "항만운송관련사업(선박수리업)",
-   "count": 2
-  },
-  {
-   "name": "산업디자인전문회사(시각디자인분야)",
-   "count": 2
-  },
-  {
-   "name": "산업디자인전문회사(멀티미디어디자인분야)",
+   "name": "식품제조·가공업",
    "count": 2
   },
   {
@@ -656,59 +436,15 @@
    "count": 2
   },
   {
-   "name": "상수도관망관리대행업(세척)",
+   "name": "폐기물최종재활용업(지정폐기물외 폐기물)",
    "count": 2
   },
   {
-   "name": "창업기획자",
+   "name": "폐기물최종처분업(지정폐기물외 폐기물)",
    "count": 2
   },
   {
-   "name": "데이터분석제공사업자",
-   "count": 2
-  },
-  {
-   "name": "자동차관리사업(자동차종합정비업)",
-   "count": 2
-  },
-  {
-   "name": "어장정화ㆍ정비업",
-   "count": 2
-  },
-  {
-   "name": "폐기물수집·운반업(사업장배출시설폐기물)",
-   "count": 2
-  },
-  {
-   "name": "폐기물중간처분업(지정폐기물외 폐기물-기계적처리전문)",
-   "count": 2
-  },
-  {
-   "name": "혼잡ㆍ교통유도경비업무",
-   "count": 2
-  },
-  {
-   "name": "이러닝서비스업",
-   "count": 2
-  },
-  {
-   "name": "생명보험업(생명보험)",
-   "count": 2
-  },
-  {
-   "name": "보건관리전문기관",
-   "count": 2
-  },
-  {
-   "name": "폐기물최종처분업(지정폐기물)",
-   "count": 2
-  },
-  {
-   "name": "개별건설기계대여업",
-   "count": 2
-  },
-  {
-   "name": "기업부설연구소",
+   "name": "여객자동차운수사업(구역여객자동차운송사업-전세버스)",
    "count": 2
   },
   {
@@ -724,19 +460,35 @@
    "count": 2
   },
   {
+   "name": "일반건설기계대여업",
+   "count": 2
+  },
+  {
+   "name": "변리사업(변리사사무소)",
+   "count": 2
+  },
+  {
    "name": "회계법인",
    "count": 2
   },
   {
-   "name": "설계업(종합설계)",
+   "name": "산학협력단",
    "count": 2
   },
   {
-   "name": "식품접객업(위탁급식영업)",
+   "name": "시설경비업무",
    "count": 2
   },
   {
-   "name": "일반소방시설관리업",
+   "name": "이러닝콘텐츠업",
+   "count": 2
+  },
+  {
+   "name": "분뇨수집·운반업(구: 분뇨등수집·운반업 또는 정화조청소업)",
+   "count": 2
+  },
+  {
+   "name": "소프트웨어사업자(데이터베이스제작및검색서비스사업)",
    "count": 2
   },
   {
@@ -744,31 +496,39 @@
    "count": 2
   },
   {
+   "name": "국제공인교정기관",
+   "count": 2
+  },
+  {
+   "name": "기간통신사업",
+   "count": 2
+  },
+  {
    "name": "시설대여업",
    "count": 2
   },
   {
-   "name": "기술사사무소(일반산업기계)",
+   "name": "국내여행업",
    "count": 2
   },
   {
-   "name": "안전진단전문기관(항만분야)",
+   "name": "엔지니어링사업(조경)",
    "count": 2
   },
   {
-   "name": "엔지니어링사업(도로, 공항)",
+   "name": "기술사사무소(조경)",
    "count": 2
   },
   {
-   "name": "기술사사무소(도로,공항)",
+   "name": "국가유산감리업",
    "count": 2
   },
   {
-   "name": "기술진단전문기관(공공하수도)",
+   "name": "기술사사무소(상하수도)",
    "count": 2
   },
   {
-   "name": "기술진단전문기관(하수관로)",
+   "name": "엔지니어링사업(상하수도)",
    "count": 2
   },
   {
@@ -780,11 +540,23 @@
    "count": 2
   },
   {
-   "name": "승강기 유지관리업(중저속 승강기)",
+   "name": "안전점검전문기관(건축 분야)",
    "count": 2
   },
   {
-   "name": "산림조합중앙회",
+   "name": "감리업(전문감리)",
+   "count": 2
+  },
+  {
+   "name": "감리업(종합감리)",
+   "count": 2
+  },
+  {
+   "name": "해양조사정보업(수로측량업)",
+   "count": 2
+  },
+  {
+   "name": "측량업(기타-일반측량업)",
    "count": 2
   },
   {
@@ -792,39 +564,23 @@
    "count": 2
   },
   {
-   "name": "제작자 등(자동차-수입)",
-   "count": 1
+   "name": "전문국가유산수리업(조경업)",
+   "count": 2
   },
   {
-   "name": "실험동물공급자",
-   "count": 1
-  },
-  {
-   "name": "축산물가공업(식육가공업)",
-   "count": 1
-  },
-  {
-   "name": "축산물판매업(식육부산물전문판매업)",
-   "count": 1
-  },
-  {
-   "name": "식육포장처리업",
-   "count": 1
-  },
-  {
-   "name": "의료기기수리업",
-   "count": 1
-  },
-  {
-   "name": "의약품 제조업",
-   "count": 1
-  },
-  {
-   "name": "의약품등 수입",
-   "count": 1
+   "name": "산림사업법인(숲길 조성,관리)",
+   "count": 2
   },
   {
    "name": "초경량비행장치 전문교육기관",
+   "count": 1
+  },
+  {
+   "name": "산업디자인전문회사(시각디자인분야)",
+   "count": 1
+  },
+  {
+   "name": "산업디자인전문회사(멀티미디어디자인분야)",
    "count": 1
   },
   {
@@ -860,111 +616,15 @@
    "count": 1
   },
   {
-   "name": "손해보험업(자동차보험)",
-   "count": 1
-  },
-  {
-   "name": "청소년수련시설(청소년수련원)",
-   "count": 1
-  },
-  {
-   "name": "청소년수련시설(유스호스텔)",
-   "count": 1
-  },
-  {
-   "name": "청소년수련시설(청소년수련관)",
-   "count": 1
-  },
-  {
-   "name": "마리나선박 정비업",
-   "count": 1
-  },
-  {
-   "name": "자동차관리사업(소형자동차종합정비업)",
-   "count": 1
-  },
-  {
-   "name": "해양폐기물수거업",
-   "count": 1
-  },
-  {
-   "name": "저작권위탁관리업(저작권대리중개업)",
-   "count": 1
-  },
-  {
-   "name": "공공디자인 전문회사",
-   "count": 1
-  },
-  {
-   "name": "항공기사용사업",
-   "count": 1
-  },
-  {
-   "name": "유창청소업",
-   "count": 1
-  },
-  {
-   "name": "저수조청소업",
-   "count": 1
-  },
-  {
-   "name": "전문국가유산수리업(보존과학업)",
-   "count": 1
-  },
-  {
-   "name": "위치기반서비스사업",
-   "count": 1
-  },
-  {
-   "name": "사물위치정보사업",
-   "count": 1
-  },
-  {
-   "name": "영화제작업",
-   "count": 1
-  },
-  {
-   "name": "보험계리업",
-   "count": 1
-  },
-  {
-   "name": "응급환자이송업",
-   "count": 1
-  },
-  {
-   "name": "감정평가법인",
-   "count": 1
-  },
-  {
-   "name": "제3보험업(기타보험)",
-   "count": 1
-  },
-  {
-   "name": "안전관리전문기관",
-   "count": 1
-  },
-  {
-   "name": "일반안전진단기관",
-   "count": 1
-  },
-  {
-   "name": "보건진단기관",
-   "count": 1
-  },
-  {
-   "name": "보안관제전문업체",
-   "count": 1
-  },
-  {
-   "name": "매장유산 조사기관(육상발굴조사)",
-   "count": 1
-  },
-  {
-   "name": "원가계산용역기관(기재부기준)",
+   "name": "해외건설업(전문건설업-실내건축공사업)",
    "count": 1
   },
   {
    "name": "의료기기 시험검사기관",
+   "count": 1
+  },
+  {
+   "name": "창업기획자",
    "count": 1
   },
   {
@@ -973,6 +633,14 @@
   },
   {
    "name": "은행업",
+   "count": 1
+  },
+  {
+   "name": "자동차관리사업(자동차종합정비업)",
+   "count": 1
+  },
+  {
+   "name": "개별건설기계대여업",
    "count": 1
   },
   {
@@ -988,11 +656,35 @@
    "count": 1
   },
   {
+   "name": "손해보험업(기타보험)",
+   "count": 1
+  },
+  {
    "name": "대학",
    "count": 1
   },
   {
+   "name": "엔지니어링사업(일반산업기계)",
+   "count": 1
+  },
+  {
+   "name": "기업부설연구소",
+   "count": 1
+  },
+  {
+   "name": "설계업(종합설계)",
+   "count": 1
+  },
+  {
    "name": "공학 연구개발업",
+   "count": 1
+  },
+  {
+   "name": "식품접객업(위탁급식영업)",
+   "count": 1
+  },
+  {
+   "name": "일반소방시설관리업",
    "count": 1
   },
   {
@@ -1012,7 +704,27 @@
    "count": 1
   },
   {
+   "name": "폐기물중간처분업(지정폐기물)",
+   "count": 1
+  },
+  {
+   "name": "폐기물최종처분업(지정폐기물)",
+   "count": 1
+  },
+  {
+   "name": "보건관리전문기관",
+   "count": 1
+  },
+  {
    "name": "식품접객업(휴게음식점영업)",
+   "count": 1
+  },
+  {
+   "name": "방송영상독립제작자",
+   "count": 1
+  },
+  {
+   "name": "비디오물제작업",
    "count": 1
   },
   {
@@ -1020,7 +732,27 @@
    "count": 1
   },
   {
+   "name": "폐기물수집·운반업(사업장배출시설폐기물)",
+   "count": 1
+  },
+  {
+   "name": "평생교육시설(원격)",
+   "count": 1
+  },
+  {
+   "name": "이러닝서비스업",
+   "count": 1
+  },
+  {
+   "name": "폐기물중간처분업(지정폐기물외 폐기물-기계적처리전문)",
+   "count": 1
+  },
+  {
    "name": "폐기물중간처분업(지정폐기물외 폐기물-화학처리또는생물학적처리전문)",
+   "count": 1
+  },
+  {
+   "name": "변리사업(특허법인)",
    "count": 1
   },
   {
@@ -1029,6 +761,14 @@
   },
   {
    "name": "기술사업화전문회사",
+   "count": 1
+  },
+  {
+   "name": "유전자검사기관",
+   "count": 1
+  },
+  {
+   "name": "데이터분석제공사업자",
    "count": 1
   },
   {
@@ -1056,51 +796,11 @@
    "count": 1
   },
   {
+   "name": "건물위생관리업",
+   "count": 1
+  },
+  {
    "name": "폐기물처리신고-제46조제1항제1호신고자(동식물성잔재물, 음식물류 폐기물, 유기성 오니를 퇴비나 가축의 먹이로 재활용)",
-   "count": 1
-  },
-  {
-   "name": "엔지니어링사업(전기설비)",
-   "count": 1
-  },
-  {
-   "name": "기술사사무소(건축전기설비)",
-   "count": 1
-  },
-  {
-   "name": "엔지니어링사업(가스)",
-   "count": 1
-  },
-  {
-   "name": "엔지니어링컨설팅업(가스)",
-   "count": 1
-  },
-  {
-   "name": "엔지니어링사업(교통)",
-   "count": 1
-  },
-  {
-   "name": "기술사사무소(교통)",
-   "count": 1
-  },
-  {
-   "name": "산업안전지도사",
-   "count": 1
-  },
-  {
-   "name": "방사성동위원소 사용관련 업무대행자(방사성동위원소 등 및 방사성폐기물의 수거·처리 및 운반)",
-   "count": 1
-  },
-  {
-   "name": "엔지니어링사업(원자력, 방사선 관리)",
-   "count": 1
-  },
-  {
-   "name": "식품접객업(일반음식점영업)",
-   "count": 1
-  },
-  {
-   "name": "해양이용영향평가대행업",
    "count": 1
   },
   {
@@ -1112,7 +812,19 @@
    "count": 1
   },
   {
+   "name": "일반소방시설설계업(기계)",
+   "count": 1
+  },
+  {
+   "name": "전문소방시설설계업",
+   "count": 1
+  },
+  {
    "name": "측량업(지적측량업)",
+   "count": 1
+  },
+  {
+   "name": "석면해체작업감리인",
    "count": 1
   },
   {
@@ -1120,7 +832,15 @@
    "count": 1
   },
   {
+   "name": "지하수영향조사기관",
+   "count": 1
+  },
+  {
    "name": "기술사사무소(산업안전)",
+   "count": 1
+  },
+  {
+   "name": "기술사사무소(토질,지질)",
    "count": 1
   },
   {
@@ -1128,15 +848,27 @@
    "count": 1
   },
   {
+   "name": "안전진단전문기관(항만분야)",
+   "count": 1
+  },
+  {
+   "name": "기술진단전문기관(공공하수도)",
+   "count": 1
+  },
+  {
+   "name": "기술진단전문기관(하수관로)",
+   "count": 1
+  },
+  {
    "name": "철도시설 안전진단전문기관(정보통신)",
    "count": 1
   },
   {
-   "name": "냉매회수업",
+   "name": "엔지니어링사업(도로, 공항)",
    "count": 1
   },
   {
-   "name": "수중ㆍ준설공사업",
+   "name": "기술사사무소(도로,공항)",
    "count": 1
   },
   {
@@ -1144,11 +876,31 @@
    "count": 1
   },
   {
+   "name": "승강기 유지관리업(중저속 승강기)",
+   "count": 1
+  },
+  {
+   "name": "철강구조물공사업",
+   "count": 1
+  },
+  {
    "name": "산림조합(전문조합)",
    "count": 1
   },
   {
+   "name": "산림조합중앙회",
+   "count": 1
+  },
+  {
+   "name": "승강기ㆍ삭도공사업",
+   "count": 1
+  },
+  {
    "name": "나무병원(1종)",
+   "count": 1
+  },
+  {
+   "name": "석면해체.제거업",
    "count": 1
   },
   {
@@ -1216,33 +968,23 @@
   ],
   "경상남도": [
    "거제시",
-   "거창군",
-   "고성군",
    "김해시",
-   "남해군",
    "밀양시",
    "사천시",
-   "산청군",
    "양산시",
-   "의령군",
-   "진주시",
    "창녕군",
    "창원시",
    "통영시",
-   "하동군",
    "함안군",
    "함양군",
    "합천군"
   ],
   "경상북도": [
-   "경산시",
    "경주시",
-   "고령군",
    "구미시",
    "김천시",
    "문경시",
    "봉화군",
-   "상주시",
    "성주군",
    "안동시",
    "영덕군",
@@ -1268,13 +1010,7 @@
    "수성구",
    "중구"
   ],
-  "대전광역시": [
-   "대덕구",
-   "동구",
-   "서구",
-   "유성구",
-   "중구"
-  ],
+  "대전광역시": [],
   "부산광역시": [
    "강서구",
    "금정구",
@@ -1329,7 +1065,6 @@
    "중구"
   ],
   "인천광역시": [
-   "강화군",
    "검단구",
    "계양구",
    "남동구",
@@ -1338,7 +1073,6 @@
    "서해구",
    "연수구",
    "영종구",
-   "옹진군",
    "제물포구"
   ],
   "전남광주통합특별시": [
@@ -1371,8 +1105,6 @@
    "화순군"
   ],
   "전북특별자치도": [
-   "고창군",
-   "군산시",
    "남원시",
    "무주군",
    "완주군",
@@ -1404,17 +1136,16 @@
    "영동군",
    "옥천군",
    "제천시",
-   "증평군",
    "진천군",
    "청주시",
    "충주시"
   ]
  },
  "counts": {
-  "notices": 3879,
-  "withLicense": 2834,
-  "withRegion": 2006,
-  "withBasis": 1409
+  "notices": 3892,
+  "withLicense": 2845,
+  "withRegion": 2017,
+  "withBasis": 1415
  },
  "notices": [
   {
@@ -69771,6 +69502,46 @@
    "work_div": "servc",
    "raw": {
     "ntceSpecFileNm1": "2026년 어린이집연합회보육주간과업지시서.pdf",
+    "ntceSpecFileNm2": "2026년 울산시어린이집연합회보육주간입찰공고.pdf"
+   },
+   "bid_ntce_no": "R26BK01744466",
+   "bid_ntce_ord": "002",
+   "bid_ntce_nm": "2026년 울산광역시 보육주간기념행사",
+   "ntce_instt_nm": "울산광역시어린이집연합회",
+   "dminstt_nm": "울산광역시어린이집연합회",
+   "cntrct_cncls_mthd_nm": "제한경쟁",
+   "sucsfbid_mthd_nm": "협상에의한계약-협상에 의한 낙찰자 결정",
+   "bid_ntce_dt": "2026-09-24 16:52:22",
+   "bid_clse_dt": "2026-09-30 14:00:00",
+   "openg_dt": "2026-09-30 15:00:00",
+   "bid_qlfct_rgst_dt": "2026-09-29 18:00",
+   "dcmtg_oprtn_dt": "2026-09-28 14:00:00",
+   "dcmtg_oprtn_plce": "북구평생학습관 3층 4학습실",
+   "presmpt_prce": "59545455",
+   "asign_bdgt_amt": "65500000",
+   "vat": "5954545",
+   "prearng_prce_dcsn_mthd_nm": "단일예가",
+   "tot_prdprc_num": "1",
+   "drwt_prdprc_num": "0",
+   "indstrety_lmt_yn": "N",
+   "cmmn_spldmd_mthd_nm": "(수기)공동이행",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "Y",
+   "bid_ntce_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744466&bidPbancOrd=002",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744466&bidPbancOrd=002",
+   "licenseLimits": [],
+   "possibleRegions": [
+    "울산광역시 중구",
+    "울산광역시 남구",
+    "울산광역시 동구",
+    "울산광역시 북구",
+    "울산광역시 울주군"
+   ],
+   "basis": null
+  },
+  {
+   "work_div": "servc",
+   "raw": {
+    "ntceSpecFileNm1": "2026년 어린이집연합회보육주간과업지시서.pdf",
     "ntceSpecFileNm2": "2026년 울산시어린이집연합회보육주간입찰공고.hwp",
     "ntceSpecFileNm3": "2026년 울산시어린이집연합회보육주간입찰공고.pdf"
    },
@@ -102490,6 +102261,259 @@
   {
    "work_div": "cnstwk",
    "raw": {
+    "ntceSpecFileNm1": "붙임_3._제2026-033호_공내역서.xlsx",
+    "ntceSpecFileNm2": "붙임_1._제2026-033호_입찰공고문.hwp",
+    "ntceSpecFileNm3": "붙임_1._제2026-033호_입찰공고문.pdf"
+   },
+   "bid_ntce_no": "R26BK01744617",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "건양대학교 건양회관 5층 인테리어 공사(전기)",
+   "ntce_instt_nm": "건양대학교 산학협력단",
+   "dminstt_nm": "건양대학교 산학협력단",
+   "cntrct_cncls_mthd_nm": "제한경쟁",
+   "sucsfbid_mthd_nm": "적격심사제-추정가격 8천만원 미만인 공사(전기ㆍ정보통신ㆍ소방시설ㆍ국가유산공사)",
+   "bid_ntce_dt": "2026-09-24 17:44:26",
+   "bid_clse_dt": "2026-10-02 10:00:00",
+   "openg_dt": "2026-10-02 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "63063636",
+   "vat": "6306363",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744617&bidPbancOrd=000",
+   "main_cnstty_nm": "전기공사업",
+   "main_cnstty_presmpt_prce": "63063636",
+   "cnstrtsite_rgn_nm": "충청남도 논산시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "N",
+   "licenseLimits": [
+    "전기공사업/0037"
+   ],
+   "possibleRegions": [
+    "세종특별자치시",
+    "충청남도"
+   ],
+   "basis": null
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "붙임_3._제2026-032호_공내역서.xlsx",
+    "ntceSpecFileNm2": "붙임_1._제2026-032호_입찰공고문.hwp",
+    "ntceSpecFileNm3": "붙임_1._제2026-032호_입찰공고문.pdf"
+   },
+   "bid_ntce_no": "R26BK01744615",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "건양대학교 건양회관 5층 인테리어 공사",
+   "ntce_instt_nm": "건양대학교 산학협력단",
+   "dminstt_nm": "건양대학교 산학협력단",
+   "cntrct_cncls_mthd_nm": "제한경쟁",
+   "sucsfbid_mthd_nm": "적격심사제-추정가격 3억원 미만 2억원 이상인 공사(전문공사)",
+   "bid_ntce_dt": "2026-09-24 17:43:40",
+   "bid_clse_dt": "2026-10-02 10:00:00",
+   "openg_dt": "2026-10-02 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "270909090",
+   "vat": "27090909",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744615&bidPbancOrd=000",
+   "main_cnstty_nm": "실내건축공사업",
+   "main_cnstty_presmpt_prce": "270909090",
+   "cnstrtsite_rgn_nm": "충청남도 논산시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "indstryty_evl_rt": "100",
+   "cibl_apl_yn": "Y",
+   "licenseLimits": [
+    "실내건축공사업/4990"
+   ],
+   "possibleRegions": [
+    "세종특별자치시",
+    "충청남도"
+   ],
+   "basis": null
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "해남경찰서 황산파출소 내진보강공사(전기) 공고문.hwp",
+    "ntceSpecFileNm2": "해남경찰서 황산파출소 내진보강공사(전기) 공고문.pdf",
+    "ntceSpecFileNm3": "해남경찰서 황산파출소 내진보강공사(전기) 내역서.xlsx",
+    "ntceSpecFileNm4": "해남경찰서 황산파출소 내진보강공사(전기) 설계도서.pdf",
+    "ntceSpecFileNm5": "해남경찰서 황산파출소 내진보강공사(전기) 시방서.hwp"
+   },
+   "bid_ntce_no": "R26BK01744598",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "해남경찰서 황산파출소 내진보강공사(전기)",
+   "ntce_instt_nm": "경찰청 전남경찰청",
+   "dminstt_nm": "경찰청 전남경찰청",
+   "cntrct_cncls_mthd_nm": "수의계약",
+   "sucsfbid_mthd_nm": "소액수의견적-소액수의견적(2인 이상 견적 제출)-국민연금보험료 등 합산액 감액 적용",
+   "bid_ntce_dt": "2026-09-24 11:15:18",
+   "bid_clse_dt": "2026-10-02 10:00:00",
+   "openg_dt": "2026-10-02 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "25878182",
+   "vat": "2587818",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744598&bidPbancOrd=000",
+   "cnstrtsite_rgn_nm": "전남광주통합특별시 나주시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "N",
+   "licenseLimits": [
+    "전기공사업/0037"
+   ],
+   "possibleRegions": [
+    "전남광주통합특별시 해남군"
+   ],
+   "basis": {
+    "bssamt": "28466000",
+    "rsrvtnPrceRngBgnRate": "-2",
+    "rsrvtnPrceRngEndRate": "+2",
+    "a_value": 1555649,
+    "sftyMngcst": "499605",
+    "sftyChckMngcst": "0",
+    "rtrfundNon": "0",
+    "mrfnHealthInsrprm": "430568",
+    "npnInsrprm": "568900",
+    "odsnLngtrmrcprInsrprm": "56576",
+    "qltyMngcst": "0",
+    "envCnsrvcst": "0",
+    "scontrctPayprcePayGrntyFee": "0",
+    "usefulAmt": "0"
+   }
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "나주경찰서 노안파출소 내진보강 통신공사(시방서).hwp",
+    "ntceSpecFileNm2": "나주경찰서 노안파출소 내진보강 통신공사.xlsx",
+    "ntceSpecFileNm3": "나주경찰서 노안파출소 내진보강공사(통신) 공고문.hwp",
+    "ntceSpecFileNm4": "나주경찰서 노안파출소 내진보강공사(통신) 공고문.pdf",
+    "ntceSpecFileNm5": "노안파출소 통신도면.pdf"
+   },
+   "bid_ntce_no": "R26BK01744592",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "나주경찰서 노안파출소 내진보강공사(통신)",
+   "ntce_instt_nm": "경찰청 전남경찰청",
+   "dminstt_nm": "경찰청 전남경찰청",
+   "cntrct_cncls_mthd_nm": "수의계약",
+   "sucsfbid_mthd_nm": "소액수의견적-소액수의견적(2인 이상 견적 제출)-국민연금보험료 등 합산액 감액 적용",
+   "bid_ntce_dt": "2026-09-24 10:56:34",
+   "bid_clse_dt": "2026-10-02 10:00:00",
+   "openg_dt": "2026-10-02 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "7200000",
+   "vat": "720000",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744592&bidPbancOrd=000",
+   "cnstrtsite_rgn_nm": "전남광주통합특별시 나주시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "N",
+   "licenseLimits": [
+    "정보통신공사업/0036"
+   ],
+   "possibleRegions": [
+    "전남광주통합특별시 나주시"
+   ],
+   "basis": {
+    "bssamt": "7920000",
+    "rsrvtnPrceRngBgnRate": "-2",
+    "rsrvtnPrceRngEndRate": "+2",
+    "a_value": 393225,
+    "sftyMngcst": "0",
+    "sftyChckMngcst": "0",
+    "rtrfundNon": "0",
+    "mrfnHealthInsrprm": "160325",
+    "npnInsrprm": "211834",
+    "odsnLngtrmrcprInsrprm": "21066",
+    "qltyMngcst": "0",
+    "envCnsrvcst": "0",
+    "scontrctPayprcePayGrntyFee": "0",
+    "usefulAmt": "0"
+   }
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "나주경찰서 노안파출소 내진보강 전기공사(시방서).hwp",
+    "ntceSpecFileNm2": "나주경찰서 노안파출소 내진보강 전기공사.xlsx",
+    "ntceSpecFileNm3": "나주경찰서 노안파출소 내진보강공사(전기) 공고문.hwp",
+    "ntceSpecFileNm4": "나주경찰서 노안파출소 내진보강공사(전기) 공고문.pdf",
+    "ntceSpecFileNm5": "노안파출소 전기도면.pdf"
+   },
+   "bid_ntce_no": "R26BK01744290",
+   "bid_ntce_ord": "002",
+   "bid_ntce_nm": "나주경찰서 노안파출소 내진보강공사(전기)",
+   "ntce_instt_nm": "경찰청 전남경찰청",
+   "dminstt_nm": "경찰청 전남경찰청",
+   "cntrct_cncls_mthd_nm": "수의계약",
+   "sucsfbid_mthd_nm": "소액수의견적-소액수의견적(2인 이상 견적 제출)-국민연금보험료 등 합산액 감액 적용",
+   "bid_ntce_dt": "2026-09-24 10:05:03",
+   "bid_clse_dt": "2026-10-02 10:00:00",
+   "openg_dt": "2026-10-02 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "15532000",
+   "vat": "1549000",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744290&bidPbancOrd=002",
+   "cnstrtsite_rgn_nm": "전남광주통합특별시 나주시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "N",
+   "licenseLimits": [
+    "전기공사업/0037"
+   ],
+   "possibleRegions": [
+    "전남광주통합특별시 나주시"
+   ],
+   "basis": {
+    "bssamt": "17081000",
+    "rsrvtnPrceRngBgnRate": "-2",
+    "rsrvtnPrceRngEndRate": "+2",
+    "a_value": 760803,
+    "sftyMngcst": "0",
+    "sftyChckMngcst": "0",
+    "rtrfundNon": "0",
+    "mrfnHealthInsrprm": "310193",
+    "npnInsrprm": "409851",
+    "odsnLngtrmrcprInsrprm": "40759",
+    "qltyMngcst": "0",
+    "envCnsrvcst": "0",
+    "scontrctPayprcePayGrntyFee": "0",
+    "usefulAmt": "0"
+   }
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
     "ntceSpecFileNm1": "(입찰공고문) 지방도929호선 석병1교 보수공사.hwpx",
     "ntceSpecFileNm2": "(입찰공고문) 지방도929호선 석병1교 보수공사.pdf",
     "ntceSpecFileNm3": "(공내역서) 지방도929호선 석병1교 보수공사.xlsx"
@@ -109019,6 +109043,59 @@
     "ntceSpecFileNm3": "입찰공고문.pdf"
    },
    "bid_ntce_no": "R26BK01743738",
+   "bid_ntce_ord": "002",
+   "bid_ntce_nm": "고양 서오릉 관리사무소 환경개선 공사(전기)",
+   "ntce_instt_nm": "국가유산청 궁능유적본부 조선왕릉서부지구관리소",
+   "dminstt_nm": "국가유산청 궁능유적본부 조선왕릉서부지구관리소",
+   "cntrct_cncls_mthd_nm": "수의계약",
+   "sucsfbid_mthd_nm": "소액수의견적-소액수의견적(2인 이상 견적 제출)-국민연금보험료 등 합산액 감액 적용",
+   "bid_ntce_dt": "2026-09-24 09:35:50",
+   "bid_clse_dt": "2026-10-02 11:00:00",
+   "openg_dt": "2026-10-02 13:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "86027100",
+   "vat": "8601900",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01743738&bidPbancOrd=002",
+   "cnstrtsite_rgn_nm": "경기도",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "N",
+   "licenseLimits": [
+    "종합국가유산수리업(보수단청업)/0042",
+    "전기공사업/0037"
+   ],
+   "possibleRegions": [],
+   "basis": {
+    "bssamt": "92736420",
+    "rsrvtnPrceRngBgnRate": "-2",
+    "rsrvtnPrceRngEndRate": "+2",
+    "a_value": 5175806,
+    "sftyMngcst": "1659674",
+    "sftyChckMngcst": "0",
+    "rtrfundNon": "0",
+    "mrfnHealthInsrprm": "1433588",
+    "npnInsrprm": "1894171",
+    "odsnLngtrmrcprInsrprm": "188373",
+    "qltyMngcst": "0",
+    "envCnsrvcst": "0",
+    "scontrctPayprcePayGrntyFee": "0",
+    "usefulAmt": "0"
+   }
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "공사개요.hwpx",
+    "ntceSpecFileNm2": "입찰공고문.hwpx",
+    "ntceSpecFileNm3": "입찰공고문.pdf"
+   },
+   "bid_ntce_no": "R26BK01743738",
    "bid_ntce_ord": "001",
    "bid_ntce_nm": "고양 서오릉 관리사무소 환경개선 공사(전기)",
    "ntce_instt_nm": "국가유산청 궁능유적본부 조선왕릉서부지구관리소",
@@ -109895,6 +109972,60 @@
     "경상북도"
    ],
    "basis": null
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "★공고문(PDF).pdf",
+    "ntceSpecFileNm2": "★공내역서.xlsx"
+   },
+   "bid_ntce_no": "R26BK01744609",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "인주면 문방2리 마을안길 정비공사",
+   "ntce_instt_nm": "충청남도 아산시",
+   "dminstt_nm": "충청남도 아산시",
+   "cntrct_cncls_mthd_nm": "수의계약",
+   "sucsfbid_mthd_nm": "소액수의견적-소액수의견적(2인 이상 견적 제출)-국민연금보험료 등 합산액 감액 적용",
+   "bid_ntce_dt": "2026-09-24 13:42:07",
+   "bid_clse_dt": "2026-10-02 12:00:00",
+   "openg_dt": "2026-10-02 13:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-01 18:00",
+   "presmpt_prce": "33472727",
+   "vat": "3347273",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "rgn_lmt_bid_locplc_jdgm_bss_nm": "본사또는참여지사소재지",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744609&bidPbancOrd=000",
+   "cnstrtsite_rgn_nm": "충청남도 아산시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "Y",
+   "licenseLimits": [
+    "도장ㆍ습식ㆍ방수ㆍ석공사업/4992"
+   ],
+   "possibleRegions": [
+    "충청남도 아산시"
+   ],
+   "basis": {
+    "bssamt": "36820000",
+    "rsrvtnPrceRngBgnRate": "-3",
+    "rsrvtnPrceRngEndRate": "+3",
+    "a_value": 3606954,
+    "sftyMngcst": "553859",
+    "sftyChckMngcst": "2145945",
+    "rtrfundNon": "0",
+    "mrfnHealthInsrprm": "369861",
+    "npnInsrprm": "488690",
+    "odsnLngtrmrcprInsrprm": "48599",
+    "qltyMngcst": "0",
+    "envCnsrvcst": "0",
+    "scontrctPayprcePayGrntyFee": "0",
+    "usefulAmt": "0"
+   }
   },
   {
    "work_div": "cnstwk",
@@ -112945,6 +113076,39 @@
    "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01739064&bidPbancOrd=000",
    "licenseLimits": [
     "기타자유업(행사대행업)/9901"
+   ],
+   "possibleRegions": [],
+   "basis": null
+  },
+  {
+   "work_div": "servc",
+   "raw": {
+    "ntceSpecFileNm1": "공고문 .hwp",
+    "ntceSpecFileNm2": "공고문.pdf",
+    "ntceSpecFileNm3": "제안요청서.hwp"
+   },
+   "bid_ntce_no": "R26BK01744620",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "인천대학교 네트워크 장비 교체사업",
+   "ntce_instt_nm": "인천대학교",
+   "dminstt_nm": "인천대학교",
+   "cntrct_cncls_mthd_nm": "일반경쟁",
+   "sucsfbid_mthd_nm": "협상에의한계약-협상에 의한 낙찰자 결정",
+   "bid_ntce_dt": "2026-09-24 20:17:19",
+   "bid_clse_dt": "2026-10-06 10:00:00",
+   "openg_dt": "2026-10-06 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-05 18:00",
+   "presmpt_prce": "2545454545",
+   "asign_bdgt_amt": "2800000000",
+   "vat": "254545455",
+   "prearng_prce_dcsn_mthd_nm": "비예가",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(전자)공동이행",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744620&bidPbancOrd=000",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744620&bidPbancOrd=000",
+   "licenseLimits": [
+    "정보통신공사업/0036"
    ],
    "possibleRegions": [],
    "basis": null
@@ -120363,6 +120527,41 @@
   {
    "work_div": "servc",
    "raw": {
+    "ntceSpecFileNm1": "[붙임1] 입찰공고문(테이스트 오브 조선 운영).pdf",
+    "ntceSpecFileNm2": "[붙임2] 과업지시서(테이스트 오브 조선 운영).hwp",
+    "ntceSpecFileNm3": "[붙임3] 제안요청서(테이스트 오브 조선 운영).hwp"
+   },
+   "bid_ntce_no": "R26BK01744590",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "테이스트 오브 조선 운영 용역 입찰공고",
+   "ntce_instt_nm": "(재)한국정신문화재단",
+   "dminstt_nm": "(재)한국정신문화재단",
+   "cntrct_cncls_mthd_nm": "제한경쟁",
+   "sucsfbid_mthd_nm": "협상에의한계약-협상에 의한 낙찰자 결정",
+   "bid_ntce_dt": "2026-09-24 10:26:01",
+   "bid_clse_dt": "2026-10-06 17:00:00",
+   "openg_dt": "2026-10-06 18:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-05 18:00",
+   "presmpt_prce": "59090909",
+   "asign_bdgt_amt": "65000000",
+   "vat": "5909091",
+   "prearng_prce_dcsn_mthd_nm": "비예가",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744590&bidPbancOrd=000",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744590&bidPbancOrd=000",
+   "licenseLimits": [
+    "기타자유업(행사대행업)/9901"
+   ],
+   "possibleRegions": [
+    "경상북도"
+   ],
+   "basis": null
+  },
+  {
+   "work_div": "servc",
+   "raw": {
     "ntceSpecFileNm1": "공고문_국가유산 야행사업.hwpx",
     "ntceSpecFileNm2": "공고문_국가유산 야행사업.pdf",
     "ntceSpecFileNm3": "6 제안 요청서 및 서식(야행) (수정) (2).hwpx",
@@ -120704,6 +120903,60 @@
    "licenseLimits": [],
    "possibleRegions": [],
    "basis": null
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "입찰공고문(남양주 광릉 방화선 정비 사업).hwp",
+    "ntceSpecFileNm2": "입찰공고문(남양주 광릉 방화선 정비 사업).pdf",
+    "ntceSpecFileNm3": "시방서.hwp"
+   },
+   "bid_ntce_no": "R26BK01744599",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "2026년 남양주 광릉 방화선 정비 사업",
+   "ntce_instt_nm": "국가유산청 궁능유적본부 조선왕릉동부지구관리소",
+   "dminstt_nm": "국가유산청 궁능유적본부 조선왕릉동부지구관리소",
+   "cntrct_cncls_mthd_nm": "수의계약",
+   "sucsfbid_mthd_nm": "소액수의견적-소액수의견적(2인 이상 견적 제출)-국민연금보험료 등 합산액 감액 적용",
+   "bid_ntce_dt": "2026-09-24 11:25:31",
+   "bid_clse_dt": "2026-10-07 10:00:00",
+   "openg_dt": "2026-10-07 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-06 18:00",
+   "presmpt_prce": "67257272",
+   "vat": "6725727",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "89.745",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01744599&bidPbancOrd=000",
+   "cnstrtsite_rgn_nm": "경기도 남양주시",
+   "rgn_duty_jntcontrct_yn": "N",
+   "cibl_apl_yn": "N",
+   "licenseLimits": [
+    "전문국가유산수리업(조경업)/0043"
+   ],
+   "possibleRegions": [
+    "경기도"
+   ],
+   "basis": {
+    "bssamt": "72503340",
+    "rsrvtnPrceRngBgnRate": "-2",
+    "rsrvtnPrceRngEndRate": "+2",
+    "a_value": 4815021,
+    "sftyMngcst": "1391571",
+    "sftyChckMngcst": "0",
+    "rtrfundNon": "0",
+    "mrfnHealthInsrprm": "1395800",
+    "npnInsrprm": "1844242",
+    "odsnLngtrmrcprInsrprm": "183408",
+    "qltyMngcst": "0",
+    "envCnsrvcst": "0",
+    "scontrctPayprcePayGrntyFee": "0",
+    "usefulAmt": "0"
+   }
   },
   {
    "work_div": "servc",
@@ -128152,6 +128405,47 @@
     "전문국가유산수리업(보존과학업)/1127"
    ],
    "possibleRegions": [],
+   "basis": null
+  },
+  {
+   "work_div": "cnstwk",
+   "raw": {
+    "ntceSpecFileNm1": "공사입찰설명서(지방,지역제한,50억이상100억미만,장기,사실조사).hwpx",
+    "ntceSpecFileNm2": "공사입찰설명서(지방,지역제한,50억이상100억미만,장기,사실조사).pdf"
+   },
+   "bid_ntce_no": "R26BK01742861",
+   "bid_ntce_ord": "000",
+   "bid_ntce_nm": "긴급]한국삼육중·고 체육관, 급식실 및 특별교실 증축공사[건축, 토목, 설비]",
+   "ntce_instt_nm": "조달청 서울지방조달청",
+   "dminstt_nm": "서울특별시교육청 한국삼육고등학교",
+   "cntrct_cncls_mthd_nm": "제한경쟁",
+   "sucsfbid_mthd_nm": "적격심사제-추정가격이 100억원 미만 50억원 이상인 입찰공사(실적제한 아님, 종합공사)",
+   "bid_ntce_dt": "2026-09-24 17:02:21",
+   "bid_clse_dt": "2026-10-08 10:00:00",
+   "openg_dt": "2026-10-08 11:00:00",
+   "bid_qlfct_rgst_dt": "2026-10-07 18:00",
+   "presmpt_prce": "5535560000",
+   "vat": "553556000",
+   "prearng_prce_dcsn_mthd_nm": "복수예가",
+   "tot_prdprc_num": "15",
+   "drwt_prdprc_num": "4",
+   "sucsfbid_lwlt_rate": "87.495",
+   "indstrety_lmt_yn": "Y",
+   "cmmn_spldmd_mthd_nm": "(전자)공동이행",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "Y",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01742861&bidPbancOrd=000",
+   "main_cnstty_nm": "건축공사업",
+   "main_cnstty_presmpt_prce": "5535560000",
+   "cnstrtsite_rgn_nm": "서울특별시 노원구",
+   "rgn_duty_jntcontrct_yn": "N",
+   "indstryty_evl_rt": "100",
+   "cibl_apl_yn": "Y",
+   "licenseLimits": [
+    "건축공사업/0002"
+   ],
+   "possibleRegions": [
+    "서울특별시"
+   ],
    "basis": null
   },
   {
@@ -143799,6 +144093,116 @@
     "정보통신공사업/0036"
    ],
    "possibleRegions": [],
+   "basis": null
+  },
+  {
+   "work_div": "servc",
+   "raw": {
+    "ntceSpecFileNm1": "군포시립어린이집 위탁체 모집공고.hwp",
+    "ntceSpecFileNm2": "군포시립어린이집 위탁운영체(자) 신청서류.hwp",
+    "ntceSpecFileNm3": "군포시립어린이집 위탁체 모집공고.pdf"
+   },
+   "bid_ntce_no": "R26BK01736671",
+   "bid_ntce_ord": "001",
+   "bid_ntce_nm": "군포시립어린이집 위탁운영체[자] 모집 공고 (변경위탁)",
+   "ntce_instt_nm": "경기도 군포시",
+   "dminstt_nm": "경기도 군포시",
+   "cntrct_cncls_mthd_nm": "제한경쟁",
+   "sucsfbid_mthd_nm": "협상에의한계약-협상에 의한 낙찰자 결정",
+   "bid_ntce_dt": "2026-09-24 09:26:26",
+   "openg_dt": "2026-10-16 18:00:00",
+   "presmpt_prce": "456714000",
+   "asign_bdgt_amt": "502385400",
+   "vat": "45671400",
+   "prearng_prce_dcsn_mthd_nm": "비예가",
+   "indstrety_lmt_yn": "N",
+   "cmmn_spldmd_mthd_nm": "(없음)공동수급불허",
+   "cmmn_spldmd_corp_rgn_lmt_yn": "N",
+   "bid_ntce_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01736671&bidPbancOrd=001",
+   "bid_ntce_dtl_url": "https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=R26BK01736671&bidPbancOrd=001",
+   "licenseLimits": [],
+   "possibleRegions": [
+    "서울특별시 종로구",
+    "서울특별시 중구",
+    "서울특별시 용산구",
+    "서울특별시 성동구",
+    "서울특별시 광진구",
+    "서울특별시 동대문구",
+    "서울특별시 중랑구",
+    "서울특별시 성북구",
+    "서울특별시 강북구",
+    "서울특별시 도봉구",
+    "서울특별시 노원구",
+    "서울특별시 은평구",
+    "서울특별시 서대문구",
+    "서울특별시 마포구",
+    "서울특별시 양천구",
+    "서울특별시 강서구",
+    "서울특별시 구로구",
+    "서울특별시 금천구",
+    "서울특별시 영등포구",
+    "서울특별시 동작구",
+    "서울특별시 관악구",
+    "서울특별시 서초구",
+    "서울특별시 강남구",
+    "서울특별시 송파구",
+    "서울특별시 강동구",
+    "경기도 수원시",
+    "경기도 수원시 장안구",
+    "경기도 수원시 권선구",
+    "경기도 수원시 팔달구",
+    "경기도 수원시 영통구",
+    "경기도 성남시",
+    "경기도 성남시 수정구",
+    "경기도 성남시 중원구",
+    "경기도 성남시 분당구",
+    "경기도 의정부시",
+    "경기도 안양시",
+    "경기도 안양시 만안구",
+    "경기도 안양시 동안구",
+    "경기도 부천시",
+    "경기도 부천시 원미구",
+    "경기도 부천시 소사구",
+    "경기도 부천시 오정구",
+    "경기도 광명시",
+    "경기도 평택시",
+    "경기도 동두천시",
+    "경기도 안산시",
+    "경기도 안산시 상록구",
+    "경기도 안산시 단원구",
+    "경기도 고양시",
+    "경기도 고양시 덕양구",
+    "경기도 고양시 일산동구",
+    "경기도 고양시 일산서구",
+    "경기도 과천시",
+    "경기도 구리시",
+    "경기도 남양주시",
+    "경기도 오산시",
+    "경기도 시흥시",
+    "경기도 군포시",
+    "경기도 의왕시",
+    "경기도 하남시",
+    "경기도 용인시",
+    "경기도 용인시 처인구",
+    "경기도 용인시 기흥구",
+    "경기도 용인시 수지구",
+    "경기도 파주시",
+    "경기도 이천시",
+    "경기도 안성시",
+    "경기도 김포시",
+    "경기도 화성시",
+    "경기도 화성시 만세구",
+    "경기도 화성시 효행구",
+    "경기도 화성시 병점구",
+    "경기도 화성시 동탄구",
+    "경기도 광주시",
+    "경기도 양주시",
+    "경기도 포천시",
+    "경기도 여주시",
+    "경기도 연천군",
+    "경기도 가평군",
+    "경기도 양평군"
+   ],
    "basis": null
   },
   {
